@@ -315,3 +315,10 @@ Zusätzlicher Android-Test `achtfahrer-ueberholen` über 65 virtuelle Sekunden: 
 - GitHub Pages ist veröffentlicht: **https://lancester.github.io/radsportmanager/**. Neuer optionaler Preset **„NEU · 8 Fahrer überholen · 65 s“**, daneben die bisherigen Tests. **Noch kein echter Android-Rechenzeitbericht** zum neuen R-06-Test, deshalb keine Smartphone-Laufzeit oder Hochrechnung vorwegnehmen.
 
 **Weiter bewusst offen:** Garantiert kollisionsfreie Fahrt bei unvorhergesehener Führungsbremsung, Lenkwinkel/Querbeschleunigung/Fahrtechnik und Kurven-/Reibkreis-Kopplung, echte autonome Spurwahl/Überholtaktik, realistische W′-Wiederauffüllung und FTP-Trainingssteuerung, gemeinsame 160-Fahrer-/200-km-Rennsimulation und Managerspiel. Diese Weiterarbeiten nicht als bereits erledigt darstellen. Grundlagen, Testgeometrie und Grenzen: [R-06](physik/R06_SICHERHEIT_SPUR_FTP.md).
+
+
+## Neuer R-07-Android-Test (erst nach CI/Pages-Deployment)
+
+Neuer 65-s-Achtfahrer-Modus `achtfahrer-autonom-ueberholen`: F8 **wählt selbstständig** eine durch eine konstante-Geschwindigkeit-Vorausschau konfliktfrei erscheinende Spur, verschiebt sich physisch dorthin und fordert **erst dann** 360 W an. Der Wunsch ist auf **CP 300 W / W′ 12 kJ** begrenzt; **FTP 285 W** bleibt ein eigener Telemetrieparameter. Alle Werte sind bewusst fiktive Testwerte. Ausgegeben werden Überholereignisse, Agenten-Spurentscheidungen, Zeit/Arbeit, W′-Reserve und echte Browser-Messungen.
+
+Die bestehenden R-06- und früheren Modi bleiben separat auswählbar. **Die reale Android-Rechenzeit dieses Modus ist vor einem Nutzerbericht unbekannt.** Eine erfolgreiche GitHub-Node-Smoke-Prüfung bestätigt keine Smartphone-Laufzeit. [Modellgrenzen R-07](ai/R07_UEBERHOLAGENT.md).
