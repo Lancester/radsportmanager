@@ -5,7 +5,8 @@
 ## Bereits festgelegt
 
 - Öffentliches GitHub-Repository Lancester/radsportmanager mit Hauptbranch main eingerichtet; Schreibzugriff der verbundenen GitHub-App bestätigt.
-- Vollständige deutsche Projektdokumentation als Basis für spätere Chats erstellt.
+- 14 deutschsprachige Projektdateien auf main eingecheckt (README, Konzept, Technik, Entscheidungen, Validierung, Roadmap, Arbeitsanleitung und Issue-Vorlagen).
+- Sieben konkrete GitHub-Issues #1 bis #7 angelegt. Keine kostenpflichtige CI-Rechenzeit ausgelöst.
 - Grundrichtung: realistischer, kostenloser Offline-Radsportmanager mit langfristigem Einzelspieler-Karrieremodus.
 - Spieler leitet das Gesamtteam; sportliche Leiter führen Rennen autonom. Taktikabstimmung vor Rennen.
 - Zunächst isolierten, nachvollziehbaren Rennsimulator entwickeln und validieren; erst danach den umfassenden Manager.
@@ -21,7 +22,7 @@
 
 ## Nächster konkreter Schritt
 
-1. Die ersten GitHub-Issues als Arbeitsplan verwenden; nächstes Hauptthema: **messbare Anforderungen und Referenzszenarien für die Rennsimulation**.
+1. **Issue #1 – Simulationsanforderungen und Referenzszenarien** als nächstes Hauptthema bearbeiten. Siehe https://github.com/Lancester/radsportmanager/issues/1 .
 2. Eingabedaten und erwartete Ausgaben der isolierten Engine spezifizieren.
 3. Kleine erste Physik-/Leistungsmodelle mit reproduzierbaren Tests entwickeln.
 4. Einen mobilen Benchmark mit 160 fiktiven Fahrern über ca. 200 km aufbauen; erst dann die endgültige Technologieentscheidung bestätigen.
@@ -30,6 +31,6 @@
 
 | Datum | Änderung | Prüfung | Ergebnis |
 | --- | --- | --- | --- |
-| 03.11.2026 | Projektstruktur und fachlicher/technischer Konzeptstand nach GitHub übernommen | Nur redaktionell, kein Programmcode | Nächste Phase: Simulation spezifizieren |
+| 03.11.2026 | 14 Dateien in main übernommen, sieben Issues (#1–#7) angelegt | GitHub-Leseprüfung und Issue-URLs; kein Programmcode, keine CI | Als Nächstes Issue #1 konkretisieren |
 
 **Hinweis:** Der genaue Issue- und Pull-Request-Stand muss bei jeder neuen Arbeitsrunde live auf GitHub geprüft werden.
