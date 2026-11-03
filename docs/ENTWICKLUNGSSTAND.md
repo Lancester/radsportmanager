@@ -819,3 +819,62 @@ Helfer/Kapitän, Fahren in der Spitze, Führungswechsel und
 Verfolgungsentscheidungen – nicht bloß die größeren Rückstände
 einzeln Abgehängter abschaffen. `legacy` nur noch explizite
 R-10-/R-11-Vergleichsoption. Issue #42 bleibt offen.
+
+
+## R-14: Teamtempo, rotierende Helfer und autonome Feldverfolgung (04.11.2026)
+
+**Implementiert** durch `src/engine/race/team-pacing.ts` und
+Integration in den 10-Sekunden-Takt von
+`race-simulator.ts`: Teamziele (Kapitän/Sprinter je
+Strategie) werden mit aktiven nahen Helfern abgestimmt,
+Führungswünsche nach je 90 s rotiert und durch
+W′-Reserve sowie Lage der tatsächlichen Fahrer begrenzt.
+Gezielte Verfolgung startet nur bei einer gemessenen
+75–400-m-Lücke zu einer kleinen abgesetzten Spitzengruppe,
+wenn der eigene geschützte Fahrer im größeren Hauptfeld
+fährt. **Keine** automatische Jagd auf weit abgehängte
+Einzelfahrer. Die bisherige unkoordinierte Helferverfolgung
+wurde nur im aktiven Rennkontext ersetzt; `chooseRacePower`
+bleibt isoliert kompatibel. Attacke, Erholung, Sprint
+behalten Vorrang.
+
+**Echte Wirkung:** `team-pace` und `team-chase`
+werden als Ereignisse sowie `teamPaceStarts` und
+`teamChaseStarts` als gezählte Auftragsanfänge protokolliert.
+Browserseite `docs/rennen.html` und
+`docs/race/app.js` zeigen die neuen Mannschaftsaktionen.
+Der Physikintegrator, CP/W′, Fahrer-/Streckenparameter,
+R-01–R-08 und der R-13-Formationswindschatten wurden
+**nicht** verändert. Auch bei großen Rückständen
+keine künstlichen Aufholboni.
+
+**Verifizierter Feature-Branch-Teststand:**
+[PR-Regression #41737911881](https://github.com/Lancester/radsportmanager/actions/runs/41737911881)
+**221/221 bestanden**;
+[separate Vollrennen-/Browserdiagnose #41738013741](https://github.com/Lancester/radsportmanager/actions/runs/41738013741)
+**sieben fiktive 30-Fahrer-/50-km-Rennen und TypeScript-ESM-Build
+erfolgreich**. Deren Auftragsstarts:
+Hügelig geschützt 2026: **182 Führungs-/6 Verfolgungseinsätze**,
+hügelig offensiv 2026: **110/7**,
+flach Sprint 2026: **223/0**,
+hügelig geschützt 2027: **164/9**,
+hügelig offensiv 2027: **84/2**,
+flach Sprint 2027: **185/0**,
+Helfer F03 schwächer: **97/6**.
+Die Flachrennen hatten keine bestätigte Flucht;
+null Verfolgung ist dort die korrekte Reaktion.
+Die Resultate hängen von der jetzt geänderten
+tatsächlichen Wattarbeit ab; **kein** auf frühere
+Gruppenzahlen festgelegtes Ergebnis.
+
+**Fachdokument mit vollständig nachprüfbaren
+Tabellen und Grenzen:**
+[R14_TEAM_FUEHRUNG_VERFOLGUNG.md](race/R14_TEAM_FUEHRUNG_VERFOLGUNG.md).
+
+**Nächster sinnvoller Schritt:** Die Startzahlen sind
+Team-Auftragswechsel, **noch keine** nachgewiesenen
+physischen Führungswechsel im realen 2D-Peloton.
+Geprüfte Führung an der tatsächlich vorderen Position,
+koordinierter Wechsel der Helfer, intelligentere
+Teamreaktion und sportliche Leiter als spätere Spielfigur.
+Issue #42 bleibt dafür offen. Keine Detail-Lenkphysik.
