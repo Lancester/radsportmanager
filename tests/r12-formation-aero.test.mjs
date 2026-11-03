@@ -47,12 +47,12 @@ test('R12: sortier-, eingabe- und duplikatsicher, keine Statusmutation',()=>{
   assert.throws(()=>formationAeroFactors([{id:'B',positionM:NaN}]),RangeError);
 });
 test('R13: Standard ist identisch zur expliziten Formationsregel, Legacy bleibt separat',()=>{
-  const standard=simulateRace(createRaceExample({seed:2026,profile:'flach'}));
-  const explicit=createRaceExample({seed:2026,profile:'flach'});
+  const standard=simulateRace(createRaceExample({seed:2026,profile:'flach',homeStrategy:'sprint'}));
+  const explicit=createRaceExample({seed:2026,profile:'flach',homeStrategy:'sprint'});
   explicit.aeroModel='formation';
-  const oldAlias=createRaceExample({seed:2026,profile:'flach'});
+  const oldAlias=createRaceExample({seed:2026,profile:'flach',homeStrategy:'sprint'});
   oldAlias.aeroModel='formation-experiment';
-  const legacy=createRaceExample({seed:2026,profile:'flach'});
+  const legacy=createRaceExample({seed:2026,profile:'flach',homeStrategy:'sprint'});
   legacy.aeroModel='legacy';
   assert.deepEqual(standard,simulateRace(explicit));
   assert.deepEqual(standard,simulateRace(oldAlias));
@@ -110,7 +110,7 @@ test('R13: ein vollständig abgehängter Einzelner erhält keinerlei großen Pel
   const alone={id:'ABGEHAENGT',positionM:800};
   const aero=formationAeroFactors([...pack,alone]);
   assert.equal(aero.get('ABGEHAENGT'),1);
-  assert.ok(aero.get('P19')<aero.get('P01'));
+  assert.ok(aero.get('P19')<aero.get('P1'));
   assert.ok(aero.get('P19')>=R12_AERO_EXPERIMENT.minimumAeroFactor);
 });
 
