@@ -1,0 +1,11 @@
+{
+  "name": "radsportmanager",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:r01": "node --experimental-strip-types --test tests/r01-flat.test.mjs"
+  },
+  "engines": {
+    "node": ">=22.6.0"
+  }
+}
