@@ -43,6 +43,8 @@ export type RaceEventType =
 export interface RaceEvent {
   timeS:number;km:number;type:RaceEventType;
   riderId?:string;teamId?:string;description:string;
+  /** Abstandsereignisse behalten den tatsächlich gemessenen Gruppenspalt. */
+  gapM?:number;
 }
 export interface RaceSnapshot {
   timeS:number;km:number;leaderId:string;activeRiders:number;
@@ -342,18 +344,18 @@ export function simulateRace(x:RaceInput):RaceResult {
             breakawayActive=true;catchSinceS=null;counters.breakaways++;
             if(events.length<1100)events.push({timeS:t,
               km:best.positionM/1000,type:'breakaway',
-              description:`Fluchtgruppe (${groups[0].length} Fahrer) hat ${leadGap.toFixed(0)} m Vorsprung`});
+              gapM:leadGap,description:`Fluchtgruppe (${groups[0].length} Fahrer) hat ${leadGap.toFixed(0)} m Vorsprung`});
           }
         }else breakawaySinceS=null;
       }else{
-        if(!escaped||leadGap<35){
+        if(groups.length<2||leadGap<=35){
           if(catchSinceS===null)catchSinceS=t;
           if(t-catchSinceS>=40){
             breakawayActive=false;breakawaySinceS=null;catchSinceS=null;
             counters.caughtBreakaways++;
             if(events.length<1100)events.push({timeS:t,
-              km:best.positionM/1000,type:'breakaway-caught',
-              description:'Fluchtgruppe wurde wieder eingeholt oder aufgelöst'});
+              km:best.positionM/1000,type:'breakaway-caught',gapM:leadGap,
+              description:`Fluchtgruppe eingeholt: Abstand nur noch ${leadGap.toFixed(0)} m`});
           }
         }else catchSinceS=null;
       }

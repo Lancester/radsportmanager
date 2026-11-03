@@ -1,6 +1,6 @@
 # Radsportmanager – Open-Source-Projekt (Arbeitstitel)
 
-**Status: Konzeptphase, Stand 03.11.2026.** Noch keine Rennsimulation und keine spielbare Version.
+**Status: R-10-Rennprototyp, Stand 03.11.2026.** Vollständige 50-km-Rennen mit 30 Fahrern/fünf Teams sind im Browser simulierbar. Der große Karrieremanager ist **noch nicht spielbar**, und Peloton-/Taktikrealismus ist noch nicht kalibriert.
 
 Ein kostenloser, langfristig motivierender **Offline-Radsportmanager**. Die Spielerrolle ist die Leitung eines professionellen Radsportteams: Fahrer und Mitarbeiter verpflichten, die Organisation führen, Ziele und Saison planen. Sportliche Leiter betreuen die Rennen eigenständig. Schwerpunkt ist eine **glaubwürdige, erklärbare Rennsimulation**, nicht eine 3D-Rennsteuerung.
 

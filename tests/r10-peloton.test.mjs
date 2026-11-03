@@ -115,3 +115,17 @@ test('R10: vollständige gruppengrößenbezogene Snapshots statt nur der ersten 
   assert.ok(snap.leadingGapM>=0);
  }
 });
+
+test('R10: Einholen darf niemals bei noch großer Führungsgruppe-Lücke gemeldet werden',()=>{
+ const result=simulateRace(createRaceExample());
+ const caught=result.events.filter(e=>e.type==='breakaway-caught');
+ const escaped=result.events.filter(e=>e.type==='breakaway');
+ assert.equal(caught.length,result.diagnostics.caughtBreakaways);
+ assert.equal(escaped.length,result.diagnostics.breakaways);
+ for(const e of caught){
+  assert.ok(e.gapM<=35,`Falsch gemeldetes Einholen bei ${e.gapM} m`);
+ }
+ for(const e of escaped){
+  assert.ok(e.gapM>=75,`Flucht ohne ausreichenden Vorsprung: ${e.gapM} m`);
+ }
+});
