@@ -360,3 +360,10 @@ Der neue browserseitige Überholtest ist noch **keine tatsächliche Android-Mess
 - GitHub Pages ist veröffentlicht: **https://lancester.github.io/radsportmanager/**. Neuer optionaler Preset **„NEU · 8 Fahrer überholen · 65 s“**, daneben die bisherigen Tests. **Noch kein echter Android-Rechenzeitbericht** zum neuen R-06-Test, deshalb keine Smartphone-Laufzeit oder Hochrechnung vorwegnehmen.
 
 **Weiter bewusst offen:** Garantiert kollisionsfreie Fahrt bei unvorhergesehener Führungsbremsung, Lenkwinkel/Querbeschleunigung/Fahrtechnik und Kurven-/Reibkreis-Kopplung, echte autonome Spurwahl/Überholtaktik, realistische W′-Wiederauffüllung und FTP-Trainingssteuerung, gemeinsame 160-Fahrer-/200-km-Rennsimulation und Managerspiel. Diese Weiterarbeiten nicht als bereits erledigt darstellen. Grundlagen, Testgeometrie und Grenzen: [R-06](physik/R06_SICHERHEIT_SPUR_FTP.md).
+
+
+## R-07 – neues Testpaket autonomes Überholen (03.11.2026)
+
+Neue automatisierte R-07-Prüfungen: richtige Wahl einer freien Überholspur, Alternative bei belegter bevorzugter Seite, **kein Manöver bei beidseitiger Blockade**, Prognose eines von hinten aufrückenden Fahrers, Straßenbreiten-Limit, Argumentvalidierung, echte Achtfahrer-Integration mit `agent-lane-choice`/`lane-complete`/`overtake`, **identische Physik und W′-Rest** für den zeitlich identisch vorgegebenen Kontrolllauf, CP/W′-Erschöpfung, alte R-03G-Regressionen und deterministische Wiederholungen.
+
+**Kein Test-Erfolg vor Bestätigung des GitHub-Runners.** Frühere Messwerte (134/134 Tests, R-06-Überholungen) bleiben unabhängig von R-07 gültig. Browserpreset `autoPassing` ist neu und muss nach Pages-Build auf einem echten Android-Gerät gemessen werden. [R-07-Design](ai/R07_UEBERHOLAGENT.md).

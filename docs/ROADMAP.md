@@ -118,3 +118,10 @@ Im nächsten Prototyp kann ein Agent eine Lücke schließen wollen, bekommt aber
 Erster Radsportgruppenprototyp mit vorausschauender Sicherheitsreaktion auf **extern bekannte** Führungsbremsung, zeitlich stetiger **vorgegebener** seitlicher Bewegung und protokolliertem Überholen. Die tatsächliche Pedalleistung lässt sich für späteres Training als Zeit/Arbeit über dem **eigenständigen FTP-Wert** auswerten.
 
 **Danach:** automatisierte Spurwahl als eigenständiges, testbares Modul; Fahrtechnik- und Reibkreis-/Kurven-Kopplung; realistische CP/W′-Erholung und Belastung unter CP; größere Fahrerfelder erst nach abgeschlossener Sicherheit/Performanceprüfung. [R-06](physik/R06_SICHERHEIT_SPUR_FTP.md).
+
+
+## R-07 autonome Überholentscheidung (03.11.2026)
+
+Erste autonome, nachvollziehbare Spursuche für F8 mit beidseitiger Konfliktprüfung, physikalisch stetigem Seitenwechsel und **erst danach** einer CP/W′-begrenzten Wattanforderung. Alternative freie Seite oder Verzicht bei zu engem Manöver. Direkter Vergleich zur identisch befohlenen externen Bewegung über 65 virtuelle Sekunden.
+
+Nächster Meilenstein nach automatischer Abnahme: sichere Rückkehr ins Feld, bewegliche Lücken mit mehreren aktiven Fahrern, fahrtechnische Seitenbeschleunigung und Kurvenkopplung. [Details](ai/R07_UEBERHOLAGENT.md).

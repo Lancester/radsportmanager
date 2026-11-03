@@ -494,3 +494,14 @@ In R-05 hat F8 im **frei erfundenen** Profil `CP=220 W`, `FTP=210 W` und anfäng
 - GitHub Pages ist veröffentlicht: **https://lancester.github.io/radsportmanager/**. Neuer optionaler Preset **„NEU · 8 Fahrer überholen · 65 s“**, daneben die bisherigen Tests. **Noch kein echter Android-Rechenzeitbericht** zum neuen R-06-Test, deshalb keine Smartphone-Laufzeit oder Hochrechnung vorwegnehmen.
 
 **Weiter bewusst offen:** Garantiert kollisionsfreie Fahrt bei unvorhergesehener Führungsbremsung, Lenkwinkel/Querbeschleunigung/Fahrtechnik und Kurven-/Reibkreis-Kopplung, echte autonome Spurwahl/Überholtaktik, realistische W′-Wiederauffüllung und FTP-Trainingssteuerung, gemeinsame 160-Fahrer-/200-km-Rennsimulation und Managerspiel. Diese Weiterarbeiten nicht als bereits erledigt darstellen. Grundlagen, Testgeometrie und Grenzen: [R-06](physik/R06_SICHERHEIT_SPUR_FTP.md).
+
+
+## R-07 in Entwicklung – autonome Überholspur, sichere Prognose und CP-gezügelte Attacke (03.11.2026)
+
+Auf Wunsch des Nutzers wurden mehrere kleine, zusammenhängende Entwicklungen **in einem Durchgang** erarbeitet: (1) eigene Überholspur-Entscheidungsfunktion mit Alternativseite und „nicht überholen“ bei Konflikten, (2) Integration mit kontinuierlicher Querbewegung und Kontrolle auch zwischen Simulationsschritten, (3) einfache Angriffswatt-Anforderung **erst nach abgeschlossenem Spurwechsel**, stets durch vorhandene R-05-Abstands- und CP/W′-Regeln begrenzt.
+
+Neue Dateien `src/engine/ai/overtake-controller.ts` und `tests/r07-overtake-ai.test.mjs` sowie optionale `overtakeAgents` in `src/engine/physics/drafting-group.ts`. Zwei Referenzläufe sind vollständig vergleichbar: **automatisch entschiedener Spurwechsel** versus **gleicher seitlicher Weg und gleicher Wattverlauf, extern fest vorgegeben**. Zusätzlich Blockade beider Seiten, Alternativspur, ungültige Wünsche, W′-Erschöpfung und Energieerhaltung in den Tests.
+
+Neuer Android-Knopf `8 Fahrer · autonome Überhol-KI`. Frühere Benchmark-Presets bleiben enthalten. **Stand bei Implementierung:** bisher 134/134 Tests verifiziert, **neue Suite und GitHub-Pages-Deployment erst nach echtem CI-Lauf als bestätigt ansehen**. Noch keine Android-Laufzeit dieses Agenten vorhanden.
+
+Fachliche Grenzen: Spurwahl-Prognose nur mit derzeitiger Geschwindigkeit anderer Fahrer; keine Lenkwinkel-/Kurven- oder Fahrtechnikphysik, keine automatische Rückkehr ins Feld oder taktische Team-KI; kein vollwertiges Peloton. [R-07-Details](ai/R07_UEBERHOLAGENT.md).

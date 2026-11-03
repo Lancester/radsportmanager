@@ -125,3 +125,8 @@ Der Achtfahrer-Prototyp erhält vorausschauende Reaktion auf bekannte Führungsb
 - GitHub Pages ist veröffentlicht: **https://lancester.github.io/radsportmanager/**. Neuer optionaler Preset **„NEU · 8 Fahrer überholen · 65 s“**, daneben die bisherigen Tests. **Noch kein echter Android-Rechenzeitbericht** zum neuen R-06-Test, deshalb keine Smartphone-Laufzeit oder Hochrechnung vorwegnehmen.
 
 **Weiter bewusst offen:** Garantiert kollisionsfreie Fahrt bei unvorhergesehener Führungsbremsung, Lenkwinkel/Querbeschleunigung/Fahrtechnik und Kurven-/Reibkreis-Kopplung, echte autonome Spurwahl/Überholtaktik, realistische W′-Wiederauffüllung und FTP-Trainingssteuerung, gemeinsame 160-Fahrer-/200-km-Rennsimulation und Managerspiel. Diese Weiterarbeiten nicht als bereits erledigt darstellen. Grundlagen, Testgeometrie und Grenzen: [R-06](physik/R06_SICHERHEIT_SPUR_FTP.md).
+
+
+## R-07: Erste tatsächlich selbst gewählte Überholspur
+
+Der Radsportmanager-Prototyp erweitert die feste Seitenbewegung um einen **deterministischen Spurwahl-Agenten** für einen von acht Fahrern. Er prüft vorhersehbare Konflikte für zwei freie Seiten, verzichtet bei Blockade und fordert erst nach einem stetigen Seitenwechsel zusätzliche, **CP/W′-begrenzte** Angriffswatt an. Vorhandene Physik, Energiegleichung und Abstandsregel bleiben maßgeblich. Kein neuronales Modell, noch keine autonome Rückkehr ins Feld oder 160-Fahrer-Peloton. [R-07-Funktionsweise](docs/ai/R07_UEBERHOLAGENT.md).

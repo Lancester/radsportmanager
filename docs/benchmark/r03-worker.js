@@ -1,5 +1,5 @@
 import {R03_PAIR_EXAMPLE, simulateTwoRiders} from './generated/physics/drafting-pair.js';
-import {createEightRiderExample, createEightRiderAgentExample, createEightRiderR05Example, createEightRiderPassExample, simulateGroup} from './generated/physics/drafting-group.js';
+import {createEightRiderExample, createEightRiderAgentExample, createEightRiderR05Example, createEightRiderPassExample, createEightRiderAutoPassExample, createEightRiderTimedPassWithCpExample, simulateGroup} from './generated/physics/drafting-group.js';
 const round = x => Math.round(x * 1e6) / 1e6;
 function once(pairs, durationS) {
   let checksum = 0;
@@ -14,8 +14,9 @@ function once(pairs, durationS) {
   return {checksum: round(checksum), steps};
 }
 /** Echter gemeinsamer 8er-Lauf – anders als 80 voneinander unabhängige Paare. */
-function onceGroup(durationS, agent = false, r05 = false, passing = false) {
-  const result = simulateGroup(passing ? createEightRiderPassExample(durationS) :
+function onceGroup(durationS, agent = false, r05 = false, passing = false, autoPassing = false) {
+  const result = simulateGroup(autoPassing ? createEightRiderAutoPassExample(durationS) :
+    passing ? createEightRiderPassExample(durationS) :
     r05 ? createEightRiderR05Example(durationS) :
     agent ? createEightRiderAgentExample(durationS) : createEightRiderExample(durationS));
   let checksum = 0;
@@ -51,6 +52,8 @@ function onceGroup(durationS, agent = false, r05 = false, passing = false) {
       null : round(result.riders[7].averageCrankPowerW),
     timeAboveFtpS:result.riders[7].timeAboveFtpS === undefined ?
       null : round(result.riders[7].timeAboveFtpS),
+    autoLaneChoices:result.events.filter(e=>e.type==='agent-lane-choice').length,
+    autonomousOvertakes:result.riders[7].autonomousOvertakes??0,
     workAboveFtpJ:result.riders[7].workAboveFtpJ === undefined ?
       null : round(result.riders[7].workAboveFtpJ),
   };
@@ -58,21 +61,22 @@ function onceGroup(durationS, agent = false, r05 = false, passing = false) {
 self.onmessage = e => {
   if (e.data?.type !== 'run') return;
   try {
-    const {pairs, durationS, repeats, group = false, agent = false, r05 = false, passing = false} = e.data.preset;
+    const {pairs, durationS, repeats, group = false, agent = false, r05 = false, passing = false, autoPassing = false} = e.data.preset;
     if (!Number.isSafeInteger(durationS) || durationS < 1 || durationS > 120 ||
         repeats !== 3 || (!group && (!Number.isSafeInteger(pairs) || pairs < 1 || pairs > 80))) {
       throw Error('Ungültige Testgröße');
     }
-    if (group && !(durationS === 120 || (passing && durationS === 65))) throw Error('Ungültiges Achtfahrerprofil');
+    if (group && !(durationS === 120 || ((passing||autoPassing) && durationS === 65))) throw Error('Ungültiges Achtfahrerprofil');
     if (agent && !group) throw Error('Agenten-Preset benötigt Achtfahrergruppe');
     if (r05 && (!agent || !group)) throw Error('CP/Wprime-Test benötigt Achtfahrer-Agenten');
-    if (passing && (!group || agent || r05)) throw Error('Überholen ohne KI/CP als isolierter Test');
-    if (group) onceGroup(passing?25:30, agent, r05, passing); else once(1, 2); // Warmup, nicht messen
+    if (passing && (!group || agent || r05 || autoPassing)) throw Error('Überholen ohne KI/CP als isolierter Test');
+    if (autoPassing && (!group || passing || agent || r05)) throw Error('Autonome Überhol-KI als eigenständiger Test');
+    if (group) onceGroup(passing||autoPassing?25:30, agent, r05, passing, autoPassing); else once(1, 2); // Warmup, nicht messen
     const times=[];
     let expected;
     for (let i=0; i<repeats; i++) {
       const start = performance.now();
-      const output = group ? onceGroup(durationS, agent, r05, passing) : once(pairs, durationS);
+      const output = group ? onceGroup(durationS, agent, r05, passing, autoPassing) : once(pairs, durationS);
       const ms = performance.now() - start;
       if (expected !== undefined && expected !== output.checksum) throw Error('Unterschiedliche Simulationsergebnisse!');
       expected = output.checksum;
@@ -81,7 +85,7 @@ self.onmessage = e => {
     }
     const sorted = [...times].sort((a,b)=>a-b);
     self.postMessage({type:'result', result:{
-      mode: group ? (passing ? 'achtfahrer-ueberholen' : r05 ? 'achtfahrer-sicher-cp' : agent ? 'achtfahrer-agent' : 'achtfahrer-gruppe') : 'unabhaengige-paare',
+      mode: group ? (autoPassing ? 'achtfahrer-autonom-ueberholen' : passing ? 'achtfahrer-ueberholen' : r05 ? 'achtfahrer-sicher-cp' : agent ? 'achtfahrer-agent' : 'achtfahrer-gruppe') : 'unabhaengige-paare',
       pairs: group ? null : pairs,
       riderCount: group ? 8 : pairs * 2,
       durationS, repeats,
@@ -89,7 +93,7 @@ self.onmessage = e => {
         pairs * Math.ceil(durationS / (R03_PAIR_EXAMPLE.stepSeconds ?? 0.2)),
       medianMs: sorted[1], rawTimesMs:times, checksum:expected,
       ...(group ? (() => {
-        const check = onceGroup(durationS, agent, r05, passing);
+        const check = onceGroup(durationS, agent, r05, passing, autoPassing);
         return {finalGapM: check.finalGapM, gapEvents: check.gapEvents,
           firstGapTimeS: check.firstGapTimeS, lastRiderSpeedKmh: check.lastRiderSpeedKmh,
           ...(agent ? {agentDecisionCount:check.agentDecisionCount,
@@ -101,13 +105,23 @@ self.onmessage = e => {
               averageF8PowerW:check.averageF8PowerW,
               timeAboveFtpS:check.timeAboveFtpS,
               workAboveFtpJ:check.workAboveFtpJ} : {})} : {}),
-          ...(passing?{overtakes:check.overtakes,laneChanges:check.laneChanges,
-            finalLateralF8M:check.finalLateralF8M}: {})};
+          ...(passing||autoPassing ? {
+            overtakes:check.overtakes,laneChanges:check.laneChanges,
+            finalLateralF8M:check.finalLateralF8M
+          }: {}),
+          ...(autoPassing ? {
+            autoLaneChoices:check.autoLaneChoices,
+            autonomousOvertakes:check.autonomousOvertakes,
+            wPrimeRemainingJ:check.wPrimeRemainingJ,
+            wPrimeSpentJ:check.wPrimeSpentJ,
+            averageF8PowerW:check.averageF8PowerW,
+            timeAboveFtpS:check.timeAboveFtpS
+          }: {})};
       })() : {}),
       browser: navigator.userAgent,
       timestamp: new Date().toISOString(),
       runtime: 'Web Worker (Browser)',
-      scenario: group ? (passing ? 'R-06: 8 Fahrer, extern befohlene, stetige Querbewegung und Überholen, noch keine Spur-KI' : r05 ? 'R-05: 8 Fahrer, F8 mit KI und CP-Wprime, aktiver Abstandsregler' : agent ? 'R-04: 8 Fahrer, F8 mit regelbasierter Luecken-KI' : 'R-03G, 8 Fahrer gemeinsam, vorgegebene Wattzahlen, keine KI') :
+      scenario: group ? (autoPassing ? 'R-07: 8 Fahrer, autonomer Spurentscheid, physisches Ueberholen, CP-Wprime-Limit, noch keine Fahrtechnik' : passing ? 'R-06: 8 Fahrer, extern befohlene, stetige Querbewegung und Überholen, noch keine Spur-KI' : r05 ? 'R-05: 8 Fahrer, F8 mit KI und CP-Wprime, aktiver Abstandsregler' : agent ? 'R-04: 8 Fahrer, F8 mit regelbasierter Luecken-KI' : 'R-03G, 8 Fahrer gemeinsam, vorgegebene Wattzahlen, keine KI') :
         'R-03, unabhängige Zweiergruppen, keine Peloton-Interaktion',
     }});
   } catch(e) { self.postMessage({type:'error',message:String(e?.message ?? e)}); }
