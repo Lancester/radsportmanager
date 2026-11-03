@@ -204,3 +204,12 @@ Die Zusammenführung wurde über [PR #20](https://github.com/Lancester/radsportm
 **Nächste Nutzeraktion:** GitHub Repository `Lancester/radsportmanager` → Settings → Pages → Source **GitHub Actions** auswählen; falls nötig den bestehenden Workflow unter Actions manuell erneut starten. Erst nach erfolgreichem Deployment die vorgeschlagenen Testläufe in Chrome auf dem Android-Gerät ausführen und den Ergebnisbericht hier teilen.
 
 **Nachfolgende Entwicklung:** Auf Grundlage dieser echten Messungen 3–8 gekoppelte Fahrer auf einer gemeinsamen Zeitachse mit Positions-/Windschatten-Nachbarschaft statt unabhängiger Paare implementieren. [Issue #23](https://github.com/Lancester/radsportmanager/issues/23) bleibt bis zur Android-Messung und späteren Gruppenerweiterung offen.
+
+
+## GitHub-Abschluss des Android-Benchmark-Bausteins (03.11.2026)
+
+Die Android-Testwebseite, die Browser-Worker-Dateien und der kleine Build-/Pages-Workflow wurden über [PR #24](https://github.com/Lancester/radsportmanager/pull/24) **erfolgreich in main** übernommen. Die Dateien wurden danach unmittelbar über den GitHub-Connector auf main geprüft; lokale Quelldatei-Hashes von HTML, app.js und r03-worker.js stimmen mit den GitHub-Blobs überein.
+
+**Aktueller tatsächlicher Status:** 64/64 Node-Tests erfolgreich, TypeScript-Browsermodul lokal kompiliert und Worker-Logik synthetisch unter Node aufgerufen. **Der echte GitHub-Pages-Publish und ein Browser-/Android-Lauf wurden noch nicht bestätigt.** Ein lokaler Playwright-/Chromium-Aufruf war durch den Container-Netzwerkzugriff blockiert. Keine Android-Zahlen erfinden.
+
+**Nächste Nutzeraktion:** Einmalig Repository → Settings → Pages → Source „GitHub Actions“ auswählen, anschließend auf erfolgreichen Workflow und Pages-Link prüfen, gegebenenfalls den bestehenden Workflow manuell starten. Danach Testläufe auf Android Chrome und JSON-Ergebnis hier im Chat. [Issue #23](https://github.com/Lancester/radsportmanager/issues/23) bleibt offen; echte Gruppendynamik mit 3–8 Fahrern kommt erst danach.
