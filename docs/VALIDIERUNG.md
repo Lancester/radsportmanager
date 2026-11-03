@@ -120,3 +120,27 @@ Noch fehlend: empirisch kalibrierte Windschattenparameter, Querwind, 3+ Fahrer, 
 Ein kleiner GitHub-Pages-Workflow soll bei relevantem Commit genau dieselben 64 Tests wiederholen und die Browserseite veröffentlichen. Die tatsächliche GitHub-Ausführung wird erst nach erfolgreichem Workflowlauf als bestanden verbucht. Die Android-Messwerte werden nach Nutzerbericht in die Validierungsdokumentation aufgenommen.
 
 [Android-Testanleitung und Testgrenzen](ANDROID_BENCHMARK.md).
+
+
+## Erster tatsächlich durchgeführter Android-Test (03.11.2026)
+
+**Ergebnis vom Nutzer direkt aus dem Android-Browser übermittelt:** Die veröffentlichte GitHub-Pages-Webseite und ihr Web Worker führen die R-03-Physik tatsächlich auf Android aus. Die frühere Formulierung, dass es noch keinen echten Android-Lauf gibt, ist damit für den **kleinen Test** überholt. **Mittlerer und großer Test sind weiterhin offen.**
+
+| Messgröße | Erster Android-Test |
+| --- | --- |
+| Veröffentlichter Git-Stand | `dffcf78` (Fix-Commit aus PR #25) |
+| Browser | Chrome 156 auf Android (User-Agent meldet eine reduzierte Android-Kennung, keine verifizierte OS-Version) |
+| Zeitpunkt des Berichts (UTC) | 2026-11-03T17:00:40.740Z |
+| Testumfang | 1 Zweiergruppe, 2 Fahrer, 12 virtuelle Sekunden |
+| Rechenschritte | 60 pro Wiederholung |
+| Wiederholungen | 3 |
+| Rechenzeiten | **18,8 ms / 7,1 ms / 4,6 ms** |
+| Median | **7,1 ms** |
+| Simulations-Prüfsumme | **276,626283** (innerhalb der drei Wiederholungen gleich) |
+| Laufzeitumgebung | **Web Worker im Android-Browser** |
+
+**Interpretation:** Echter erster Machbarkeitsnachweis für die R-03-Zweierfahrt auf Android, inklusive vom Browser zurückgelieferter, reproduzierbarer Prüfzahl und messbarer Laufzeit. Der deutliche Unterschied zwischen den drei Messungen könnte mit JIT-Warm-up, Caches oder Systemschwankungen zusammenhängen; er ist **nicht** als Ursache verifiziert. Die Prüfsumme wurde bisher nur zwischen den Wiederholungen auf diesem Gerät als gleich bestätigt, **noch nicht separat gegen eine unabhängige Node-Referenz derselben Buildversion verglichen**.
+
+**Nicht daraus ableiten:** Keine Zusage für 20 oder 160 Fahrer in realen Gruppen, keine Aussage über 200 km, Akku-/Temperatur-/Speicherkosten und keine Web-Worker-Verhaltensprüfung bei Sperrbildschirm oder langer Laufzeit. Der Test mit 160 Fahrern auf der Webseite besteht vorerst aus **80 unabhängigen Zweiergruppen**.
+
+**Nächste Messung:** Auf derselben Webseite den **mittleren Test (10 Paare, jeweils 120 virtuelle Sekunden)** und dann den **großen Test (80 Paare, jeweils 120 virtuelle Sekunden)** ausführen, jeweils Berichte im Chat teilen. Die Zeiten über verschiedene Größen sind interessanter als eine lineare Hochrechnung aus dem kleinen Test.
