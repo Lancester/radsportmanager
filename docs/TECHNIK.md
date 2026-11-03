@@ -73,3 +73,11 @@ Details: [physik/GEMEINSAMER_KERN.md](physik/GEMEINSAMER_KERN.md). Nächster Sch
 `src/engine/physics/motion-core.ts` stellt nun den **wiederverwendbaren Integrationsschritt** `advanceMotionStep` bereit, bei dem nur die aerodynamische Kraft mit einem von außen errechneten Schutzfaktor skaliert wird. `drafting-pair.ts` verwendet diese Funktion für **zwei Fahrer auf gemeinsamer Simulationsuhr**, statt eine zweite Physikengine aufzubauen.
 
 Node.js: 64/64 Tests lokal bestanden und keine Typfehler. Noch **kein Android-Browser/Web Worker** verfügbar. Die Node-Kurzmessung wiederholter 12-s-Zweierfahrten ist nicht mit einem 160-Fahrer-Rennen vergleichbar. [Fachmodell](physik/R03_WINDSCHATTEN_ZWEI_FAHRER.md).
+
+## Erstes Android-Benchmark-Frontend (03.11.2026)
+
+Der bestehende R-03-TypeScript-Code wird per `npm run build:benchmark` (TypeScript 5.8.3, `--rewriteRelativeImportExtensions`) in Browser-`.js` übersetzt und in `docs/benchmark/generated/` abgelegt. Die kleine `docs/index.html` lädt `benchmark/app.js`, die einen **Modul-Web-Worker** `benchmark/r03-worker.js` ausführt. Dieser importiert die **kompilierten Originaldateien** von `motion-core.ts`, `drafting-pair.ts` und `steady-state.ts`, ohne zweiten Physics-Quellcode.
+
+Auf GitHub Pages wird durch einen **einzigen kleinen, pfadbegrenzt ausgelösten Workflow** (Node 22, zuerst 64 Tests, dann Compiler, Pages-Deployment, Timeout 10 min) veröffentlicht. Der Repo-Admin muss **Source: GitHub Actions** einmalig aktivieren. GitHub Standard-Runner in diesem öffentlichen Repository kostenlos; dies sind trotzdem echte Actions-Jobs, nicht „ohne Actions“.
+
+Details, Testgrößen, Grenzen und genaue mobile Schritte: [ANDROID_BENCHMARK.md](ANDROID_BENCHMARK.md). Noch **kein echter Android-Benchmark**.
