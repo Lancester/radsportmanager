@@ -468,3 +468,14 @@ In R-05 hat F8 im **frei erfundenen** Profil `CP=220 W`, `FTP=210 W` und anfäng
 **Sicherheit:** Keine Bremsung in diesem **Abreißszenario**, weil F8 langsamer wird. Der separate bestandene Drei-Fahrer-Bremstest und 116/116 erfolgreich geprüfte GitHub-Tests belegen nur den vorhandenen begrenzten Längsabstandsschutz. **Keine Garantie kollisionsfreier Rennen**, kein automatischer 2D-Spurwechsel, kein Mehrfahrer-Kurven-/Reibkreis-Modell.
 
 **Messmeilenstein erfüllt:** R-05-Worker mit CP/W′ und aktiver Abstandsregelung ist tatsächlich auf Android lauffähig. **Nicht** mit einem validierten physiologischen W′bal-Modell oder mehrstündiger 160-Fahrer-Rennsimulation verwechseln. Die gemessene W′-Regeneration beruht weiterhin auf einer frei gewählten Testheuristik; `ftpW` ist bewusst separat von `criticalPowerW`. Offene technische Nachfolgeaufgaben siehe Issues [#30](https://github.com/Lancester/radsportmanager/issues/30) und [#32](https://github.com/Lancester/radsportmanager/issues/32).
+
+
+## R-06 – in Integration: drei kleine Teilentwicklungen gebündelt (03.11.2026)
+
+**Auftrag des Nutzers:** Mehrere sinnvolle technische Schritte gemeinsam umsetzen, ohne nach jeder kleinen Änderung wieder einen Android-Knopf bedienen zu müssen.
+
+**Umgesetzt im Entwicklungsbranch:** (1) Vorausschauende Längsabstandssteuerung mit optionalem ausdrücklich bekanntem Führungsbremsbefehl und physikalisch bilanzierter Bremse, (2) stetige extern befohlene Querverschiebung, Prüfung der gesamten Längs-/Querbewegung zwischen Schritten und echtes Überholereignis, (3) tatsächliche Kurbelwatt-Statistik relativ zur eigenständig gespeicherten FTP (Durchschnittsleistung, Zeit/Arbeit oberhalb FTP). Alte Achtfahrer-Szenarien bleiben ohne diese Zusätze unverändert. **Noch keine autonome Überhol-KI.**
+
+**Abnahme ausstehend:** Bestehende **116 Tests**, neue R-06-Tests, TypeScript-Browser-Build und GitHub-Pages-Deployment müssen den echten GitHub-Actions-Lauf erst bestehen. Kein unbekanntes Android-Ergebnis behaupten. Neue Webseite mit zusätzlichem **65-s-Achtfahrer-Überholpreset** soll nach Erfolg automatisch veröffentlicht werden. Die bisherige Android-R-05-Messung von **21,5 ms** wird nicht ungeprüft auf neue Bewegungen übertragen.
+
+**Weiter offen:** Wirklich robuste Sicherheit bei unvorhergesehenen Bremsmanövern, intelligente sichere Spurwahl, dynamische Fahrtechnik-/Kurvenphysik, kalibrierte CP/W′-/FTP-Trainingseffekte, volle 160-Fahrer-Etappen. [R-06-Fachdokumentation](physik/R06_SICHERHEIT_SPUR_FTP.md).
