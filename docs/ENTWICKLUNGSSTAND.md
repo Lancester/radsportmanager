@@ -629,3 +629,19 @@ Der R-10-GitHub-Runner meldete beispielsweise für den hügeligen geschützten L
 **Nicht als sportlich abschließend validieren:** Zwar weniger Chaos als in R-09, aber **20–22** Gruppen im hügeligen 30-Fahrer-Rennen und bis zu neun Minuten Zeitspreizung sind noch kritisch. Bei identischer Tagesform veränderte die offensive Nordwind-Leitlinie die Zielzeit von Kapitän F01 nur um rund **3,78 Sekunden**. Das zeigt den nächsten fachlichen Bedarf: Teamarbeit und Verfolgung **qualitativ** verbessern, tatsächliche Gruppenbildung/Attacken gegen realistische Rennabläufe plausibilisieren, und erst danach größeren Feldern/Langdistanzen Priorität geben. **Keine zusätzliche Detail-Lenk- oder Reifenphysik ohne nachgewiesenen Spielnutzen.**
 
 **Browser:** https://lancester.github.io/radsportmanager/rennen.html läuft im bestehenden Web Worker. Veröffentlicht und im GitHub-Runner getestet; **echte Android-Laufzeit des 50-km-Rennens weiterhin unbekannt**.
+
+
+## R-11: Mehr-Seed- und Fahrerprofil-Diagnose – in Prüfung (03.11.2026)
+
+**Auftrag aus Issue #42, ohne Änderung der Grundsatzentscheidung:** Vor einem weiteren Balancing der abstrakten 30-Fahrer-Rennen zuerst mehrere Seeds, Strecken und Fahrerprofile untersuchen. Kein neuer Reifen-/Lenk-/Kurven-Mikrophysikcode.
+
+**Im Feature-Branch `feature/r11-mehrseed-balancing-diagnose` implementiert (noch nicht auf main):**
+- `src/engine/race/race-audit.ts` prüft die Ziel-/Energiebilanzen, Gruppen-Snapshot-Summen und belegte Flucht-/Einholabstände. Es misst u. a. Median-Gruppenzahl an 5-km-Snapshots, Anteil isolierter Fahrer, Ausreißer, tatsächliche Einholungen und Wattmittel.
+- `tests/r11-race-balance.test.mjs` deckt zwei Seeds, zwei Streckenprofile, eine veränderte Teamleitlinie, einen CP/FTP/W′-Kontrast von Helfer F03 und fehlerhafte Gruppen-/Fluchtereignisse ab. Die Tests sind **geschrieben, aber noch nicht durch GitHub Actions bestätigt**.
+- `scripts/r11-balance-diagnostics.mjs` bietet sieben kurze vollständige, **nur manuell** zu startende 50-km-Rennen mit strukturierten Messwerten. Keine neue große automatische Monte-Carlo-Reihe.
+- Ein minimaler schreibgeschützter PR-Testworkflow führt kleine Regressionstests vor dem Merge aus. Die ursprüngliche main-/Pages-CI bleibt unverändert.
+- Methodik und Grenzen: [R11_MEHRSEED_BALANCING.md](race/R11_MEHRSEED_BALANCING.md).
+
+**Letzter zuvor bestätigter Renn-Teststand:** R-10, 198/198, erfolgreicher GitHub-Actions-Lauf #41717987913. **R-11-Teststand erst nach einem tatsächlich erfolgreichen Check berichten.** Die R-11-Diagnose ist noch keine sportliche Validierung und liefert noch keine Android-50-km-Laufzeit.
+
+**Exakter nächster Schritt:** PR-Regression prüfen, manuelle sieben Vergleichsrennen ausführen, konkrete Mehr-Seed-/Gruppen-/Strategieeffekte fachlich auswerten. Erst danach eine gezielte kleine Verbesserung für Helfer-/Kapitän-/Verfolger-Zusammenarbeit formulieren und erneut gegen dieselben Fälle prüfen. Issue #42 bleibt offen; die Erweiterung auf 60/100/160 Fahrer ist nachrangig.
