@@ -342,3 +342,27 @@ tatsächliche Übernahme der Frontposition und Relaisablöse
 Gegnerreaktionen und stabile unterschiedliche
 Rennverläufe. Separate, spätere Spielsysteme
 nicht hier beginnen.
+
+
+### R-15/R-16 – finaler geprüfter main-Stand (04.11.2026)
+
+**[PR #52](https://github.com/Lancester/radsportmanager/pull/52)
+gemergt**, Commit `26a195b540c0c39d1ca5911198fd058bcd6be70b`.
+[Main-Actions #41742236444](https://github.com/Lancester/radsportmanager/actions/runs/41742236444)
+**vollständig erfolgreich: 232/232 Tests, 0 Fehler,
+drei volle 50-km-Rennen, Browser-ESM-Build und
+GitHub-Pages-Veröffentlichung**.
+Zuvor wurden im [einmaligen A/B-Lauf #41741844022](https://github.com/Lancester/radsportmanager/actions/runs/41741844022)
+**14 komplette Rennen und 420 Zielankünfte** geprüft.
+
+**Verbindlicher aktueller Rennmodus:** Mehrhelferteams,
+Sprintzüge, frontnah geprüftes Tempo, situationsabhängige
+Verfolgung und Angriffe. Bisherige R-14-Taktik optional
+mit `tacticModel='r14'`; normaler Standard R-15/R-16.
+Auch eine fünfköpfige Helfergruppe wurde isoliert getestet;
+in den sieben 30-Fahrer-Referenzrennen wurden
+maximal drei Helfer eines Teams gleichzeitig eingesetzt.
+**Rundfahrten, Karrieremodus und Managerpersonal
+gehören ausdrücklich nicht zu dieser Rennengine.**
+Nächster reiner Rennengine-Schritt: realere Positionsübernahme
+und Ablösearbeit, nicht neue Karrierefeatures.
