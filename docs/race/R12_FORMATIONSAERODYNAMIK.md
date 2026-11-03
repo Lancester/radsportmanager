@@ -185,6 +185,8 @@ sie allein wegen geringerer Gruppenmaxima freizugeben.
 **Teststatus:** Nach dem ersten A/B-Diagnoselauf:
 [PR-Regression #41730702259](https://github.com/Lancester/radsportmanager/actions/runs/41730702259)
 **209/209 Tests**, einschließlich sieben neuer R-12-Tests.
-Der gesonderte TypeScript-Browser-Build wird im
-Feature-Branch vor dem Merge geprüft. GitHub-Runner-
-Laufzeiten sind weiterhin **keine Android-Laufzeiten**.
+Der gesonderte [TypeScript-/Browser-Build #41730888302](https://github.com/Lancester/radsportmanager/actions/runs/41730888302)
+war **erfolgreich**: TypeScript-Kompilierung und vollständiger
+30-Fahrer-ESM-Lauf mit aktivierter Aero-Variante. Der temporäre
+Workflow ist danach entfernt worden. GitHub-Runner-Laufzeiten
+sind weiterhin **keine Android-Laufzeiten**.
