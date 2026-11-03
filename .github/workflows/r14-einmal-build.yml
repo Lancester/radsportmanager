@@ -1,0 +1,32 @@
+name: R-14 – einmaliger Build-/Renncheck
+on:
+  push:
+    branches: [feature/r14-teamfuehrung-verfolgung]
+permissions:
+  contents: read
+jobs:
+  r14-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Browser-TypeScript und echter Rennsmoke-Test
+        run: |
+          npm install --no-save --ignore-scripts --no-audit --no-fund typescript@5.8.3
+          npm run build:benchmark
+          node --input-type=module <<'NODE'
+          import {createRaceExample, simulateRace} from './docs/benchmark/generated/race/race-simulator.js';
+          const r=simulateRace(createRaceExample({seed:2026,profile:'flach',homeStrategy:'sprint'}));
+          if(r.finisherCount!==30 || r.diagnostics.teamPaceStarts<1 ||
+            r.classification.some(x=>Math.abs(x.energyResidualJ)>0.05))
+            throw new Error('R14 Browser-Test fehlgeschlagen');
+          console.log('R14-BROWSER',JSON.stringify({
+            finishers:r.finisherCount,
+            teamPaceStarts:r.diagnostics.teamPaceStarts,
+            teamChaseStarts:r.diagnostics.teamChaseStarts,
+            maximumGroups:r.diagnostics.maximumGroups
+          }));
+          NODE
