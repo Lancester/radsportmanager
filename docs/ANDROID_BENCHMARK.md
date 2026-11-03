@@ -109,3 +109,29 @@ Da die Testseite öffentlich ist, darf sie **keine privaten echten Fahrerdaten, 
 **Nicht daraus ableiten:** Keine Zusage für 20 oder 160 Fahrer in realen Gruppen, keine Aussage über 200 km, Akku-/Temperatur-/Speicherkosten und keine Web-Worker-Verhaltensprüfung bei Sperrbildschirm oder langer Laufzeit. Der Test mit 160 Fahrern auf der Webseite besteht vorerst aus **80 unabhängigen Zweiergruppen**.
 
 **Nächste Messung:** Auf derselben Webseite den **mittleren Test (10 Paare, jeweils 120 virtuelle Sekunden)** und dann den **großen Test (80 Paare, jeweils 120 virtuelle Sekunden)** ausführen, jeweils Berichte im Chat teilen. Die Zeiten über verschiedene Größen sind interessanter als eine lineare Hochrechnung aus dem kleinen Test.
+
+
+## Alle drei echten Android-Benchmarks abgeschlossen (03.11.2026, Nachtrag)
+
+**Messquelle:** Vom Nutzer direkt kopierte Ergebnisberichte der öffentlichen GitHub-Pages-Seite. Alle drei Berichte stammen aus **Browser-Physikversion `dffcf78`**, Testversion `r03-android-v1`, **Web Worker auf Android / Chrome 156**. Der übermittelte User-Agent ist datenschutzbedingt verallgemeinert (`Android 10; K`); daraus lässt sich das reale Gerätemodell oder seine tatsächliche Android-Version **nicht** sicher bestimmen.
+
+| Kennzahl | Klein | Mittel | Groß |
+| --- | ---: | ---: | ---: |
+| Unabhängige Zweiergruppen | 1 | 10 | 80 |
+| Insgesamt berechnete Fahrer | 2 | 20 | 160 |
+| Virtuelle Sekunden je Paar | 12 | 120 | 120 |
+| Integrationsschritte je Wiederholung (Paar-Schritte) | 60 | 6.000 | 48.000 |
+| Rechenzeiten, ms (3 Wiederholungen) | 18,8 / 7,1 / 4,6 | 75,0 / 35,5 / 26,2 | 257,7 / 191,8 / 166,5 |
+| **Median, ms** | **7,1** | **35,5** | **191,8** |
+| Reproduzierbare Prüfsumme im Bericht | 276,626283 | 24.318,863289 | 194.550,906309 |
+| Zeitpunkt des Nutzerberichts, UTC | 17:00:40.740 | 17:03:49.672 | 17:03:59.174 |
+
+**Vergleich:** Zwischen 10 und 80 Zweiergruppen bleibt die simulierte Dauer je Paar gleich (120 s); die Zahl der Rechenschritte steigt **8-fach** (6.000 → 48.000), die Median-Laufzeit jedoch nur **5,40-fach** (35,5 → 191,8 ms). Umgerechnet sind das ca. **5,92 µs** bzw. **4,00 µs** je Paar-Zeitschritt, wobei Startkosten/JIT und andere Systemeffekte in der Laufzeit enthalten sind. Der kleine Test ist aufgrund anderer Simulationsdauer und stärkerer Startkosteneffekte nicht für eine lineare Skalierung geeignet.
+
+**Konsistenzcheck:** Die längeren Tests benutzen dieselben simulierten Paare und dieselbe Zeitspanne. Die große Prüfsumme 194.550,906309 stimmt bis auf **0,000003** mit dem Achtfachen der mittleren Prüfsumme (194.550,906312) überein – eine mit der sechsstelligen Rundung verträgliche Abweichung. Der Web Worker selbst hat auch jeweils drei gleiche Prüfsummen je Test als Voraussetzung für einen Erfolgsbericht kontrolliert. **Ein unabhängiger Node-Vergleich exakt derselben Build-Version steht noch aus.**
+
+**Was dieser Erfolg belegt:** Der Browser lädt und führt unsere kompilierte echte R-03-TypeScript-Engine im Android-Web-Worker aus; die vorgegebenen Szenarien werden reproduzierbar abgeschlossen. Die große Messung verarbeitet 80 Zweiergruppen über jeweils 120 virtuelle Sekunden in einem Median von rund **0,192 s realer Laufzeit**.
+
+**Was nicht belegt ist:** Die 160 Fahrer fahren **nicht miteinander** im selben Feld, sondern in **80 unabhängig berechneten Paaren**. Kein gemeinsames Peloton, keine Mehrfach-Windschattennachbarschaft, keine taktische/Positions-KI, kein Querwind, keine Ausdauer-/Ermüdungsrechnung, keine 200-km-Strecke und keine Langzeitmessung bezüglich Akku, Wärme und Sperrbildschirm. Die reale Laufzeit könnte bei diesen Wechselwirkungen deutlich ansteigen. **Keine Extrapolation auf ein vollständiges Rennen.**
+
+**Folge:** Der erste Android-Benchmark ist als Messmeilenstein **erledigt**. [Issue #23](https://github.com/Lancester/radsportmanager/issues/23) bleibt **offen**, weil seine nächste Entwicklungsstufe – eine echte gemeinsame 3–8-Fahrer-Gruppe mit Nachbarschaftsinteraktionen und darauf folgendem Android-Test – noch nicht umgesetzt ist. Für diesen Schritt zuerst ein kleines deterministisches 3-/8-Fahrer-Modell, danach Browser- und Android-Messungen auf identischem Szenario-Commit. **Keine weiteren Nutzerfragen für die bereits übermittelten Messwerte erforderlich.**
