@@ -259,3 +259,14 @@ Ausführliche [R-13-Umsetzung und Abnahme](race/R13_FORMATIONSWINDSCHATTEN_STAND
 
 Methodik, reale Runner-Abnahmen und Grenzen:
 [R14_TEAM_FUEHRUNG_VERFOLGUNG.md](race/R14_TEAM_FUEHRUNG_VERFOLGUNG.md).
+
+
+## D-085 bis D-087 – Rennengine strikt getrennt; Mehrhelfer und Renn-KI (04.11.2026)
+
+| ID | Status | Entscheidung | Abgrenzung |
+| --- | --- | --- | --- |
+| D-085 | **Nutzergrenze verbindlich** | R-15 und R-16 sowie folgende R-Engine-Schritte entwickeln allein die autonome **Rennsimulation eines einzelnen Rennens**. | Rundfahrten, Kalender, Verträge, Trainingsplanung, Transfers, Team-/Sportdirektorenverwaltung und Karrieremodus werden hier ausdrücklich **nicht** umgesetzt. |
+| D-086 | **Technisch implementiert als R-15** | Statt maximal eines Helfers kann ein Team bei passender Lage mehrere bis zu fünf geeignete Helfer einsetzen, mit eigener Führungs-/Unterstützeraufgabe, Frontpositionsprüfung und CP/W′-Belastungsgrenzen. | Auftragszuweisung ist keine unsichtbare Positionsveränderung und kein Beweis einer vollständigen 2D-Staffelfahrt. |
+| D-087 | **Technisch implementiert als R-16** | Flucht-/Verfolgungs-/Angriffsentscheidungen anhand gemessener Gruppengröße, Abstand, Reststrecke, Relativtempo, Rennposition, Strategie und W′; opportunistische statt starrer Angriffsfenster. | Kein Ergebnisbonus, keine Einholgarantie. Bestehende `tacticModel='r14'`-Variante bleibt für A/B reproduzierbar; neuer Standard `r15-r16`. |
+
+[Detailmodell und Prüfkonzept](race/R15_R16_MEHRHELFER_RENNINTELLIGENZ.md).
