@@ -298,8 +298,8 @@ export function simulateRace(x:RaceInput):RaceResult {
               const meanCp=group.reduce((n,r)=>n+r.dayCpW,0)/group.length;
               const grade=x.segments[segmentFor(s,boundaries)].gradeFraction;
               return t-s.lastAttackS>=420&&t>=250&&
-                obs.progress>=0.18&&obs.progress<0.88&&
-                obs.reserveFraction>=0.42&&
+                s.positionM/totalM>=0.18&&s.positionM/totalM<0.88&&
+                s.physiology.remainingWPrimeJ/s.profile.wPrimeCapacityJ>=0.42&&
                 s.positionM>=groupFront-40&&
                 s.positionM>=leader.positionM-120&&
                 s.dayCpW>=meanCp*0.93&&grade>=-0.03;
