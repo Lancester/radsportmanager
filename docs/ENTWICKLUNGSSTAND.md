@@ -524,3 +524,14 @@ Fachliche Grenzen: Spurwahl-Prognose nur mit derzeitiger Geschwindigkeit anderer
 **Drei erfüllte technische Ziele im gebündelten Paket:** autonome, nachvollziehbare Wahl unter mehreren Seiten / Verzicht bei Blockade; vorausschauende swept-Konfliktprüfung mit tatsächlicher stetiger Querbewegung; physikalisch konsistente, begrenzte Angriffswatt mit CP/W′, FTP-Telemetrie und realer Abstandsregel. Die Prognose selbst setzt vorläufig konstante aktuelle Geschwindigkeiten der Nachbarn voraus.
 
 **Verbleibende Grenzen:** Noch kein selbstständiges Wiedereinscheren, keine koordinierte dynamische Spurwahl vieler Fahrer, keine fahrtechnische Querbeschleunigung/Lenkung/Kurven-Reibkreisphysik, keine Garantie kollisionsfreier Feldfahrt, keine kalibrierte CP/W′-Regeneration und kein vollständiges Rennen/Managerspiel. Genau diese Grenzen nicht als erreicht ausgeben. [R-07-Dokumentation](ai/R07_UEBERHOLAGENT.md).
+
+
+## R-08 – gebündeltes Entwicklungspaket im Branch (03.11.2026)
+
+**Beauftragt:** Zwei bis drei größere Aufgaben möglichst ohne Nutzerinteraktion gemeinsam bearbeiten.
+
+**Drei neue optionale Bausteine:** `rejoin-controller.ts` prüft nach einem autonomen Überholvorgang eine konservative Rückkehr auf die Heimatspur mit Vorfahrtabstand; `lane-coordination.ts` reserviert gegenläufige/kollidierende parallele Spurziele für mehrere Fahrer reproduzierbar nach stabilen IDs; `steering-limits.ts` erweitert neue Szenarien um ein glattes Seitenbewegungsprofil mit begrenzter Seitengeschwindigkeit und Querbeschleunigung, einschließlich **nur näherungsweisem** Kurven-Haftungsbudget.
+
+**Gemeinsame Demo:** Ein Fahrer überholt und schert bei großem Vorsprung automatisch vor der Gruppe ein; ein zweiter Fall mit zwei KI-Fahrern zeigt simultane freie Spuren mit physikalischer Bewegung und CP/W′-begrenzt angeforderter Leistung. Alte R-03 bis R-07-Szenarien ohne neue Optionen sollen sich nicht ändern. Neue Android-Knöpfe für 115-s-Wiedereinscheren und 70-s-Mehrfahrer-KI.
+
+**Prüfstatus vor CI:** Code und 19 neue Tests vorbereitet, zuvor **150 erfolgreich**; eine Aussage über Gesamttest/Pages/Android ist erst nach realem Run erlaubt. Das neue glatte Bewegungsprofil enthält keine tatsächliche Fahrradlenkung. Kein ganzes Rennen, keine 160 Fahrer, keine automatische Teamtaktik. [Dokumentation](ai/R08_WIEDEREINSCHEREN_MULTIAGENT.md).
