@@ -20,6 +20,8 @@ export interface TacticObservation {
   teamCaptainGapM:number|null;
   deficitToLeaderM:number;
   reserveFraction:number;
+  /** R-14 verhindert alte unkoordinierte Mehrfach-Verfolgung/Tempoarbeit. */
+  coordinatedTeamPace?:boolean;
 }
 export interface TacticDecision {
   desiredPowerW:number;
@@ -64,13 +66,15 @@ export function chooseRacePower(o:TacticObservation):TacticDecision {
       reason:'Vorab gewählte offensive Leitlinie: begrenzte Attacke'};
   }
   // Nur bei Rückstand wird die Verfolgung teurer, nie automatisch schneller.
-  if((o.strategy==='sprint'||o.strategy==='kapitaen_schuetzen') &&
+  if(!o.coordinatedTeamPace &&
+     (o.strategy==='sprint'||o.strategy==='kapitaen_schuetzen') &&
      o.role==='helfer' && o.deficitToLeaderM>60 && o.progress<0.90 &&
      o.reserveFraction>0.28){
     return {intent:'verfolgung',desiredPowerW:cp+16+18*o.aggression,
       reason:'Helfer arbeitet gegen eine abgesetzte Spitze'};
   }
-  if(o.strategy==='kapitaen_schuetzen'&&o.role==='helfer' &&
+  if(!o.coordinatedTeamPace &&
+     o.strategy==='kapitaen_schuetzen'&&o.role==='helfer' &&
      o.teamCaptainGapM!==null&&o.teamCaptainGapM<30 &&
      o.reserveFraction>0.15) {
     return {intent:'helferarbeit',desiredPowerW:cp*1.04,
