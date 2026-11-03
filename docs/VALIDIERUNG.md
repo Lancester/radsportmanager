@@ -91,3 +91,14 @@ Dokumentation: [physik/DYNAMISCHE_STRECKE.md](physik/DYNAMISCHE_STRECKE.md). Neu
 Der separat ausgeführte Test `npm run test:corners` überprüft Radius-/Gripgrenzen, frühzeitiges Bremsen, das Fehlen von Geschwindigkeits-Sprüngen, nasse Fahrbahn, unterschiedliche Radträgheit, stationäre Geschwindigkeit, Abschnitts-Energiebilanz, reproduzierbare Resultate, Inputvalidierung, unerreichbare Bremswege, Kurvenvorschau über Abschnittsgrenzen, Zeitschrittänderung und zwei Kurven.
 
 **14 von 14 neuen Tests lokal erfolgreich.** Die alten stationären/dynamischen Tests wurden **nicht erneut** als gemeinsame Suite ausgeführt; **kein** GitHub-Actions-Test. Quelle und Benchmarkgrenzen: [physik/KURVEN_UND_ROTATION.md](physik/KURVEN_UND_ROTATION.md).
+
+## Erste tatsächlich gemeinsame Gesamtsuite und Benchmarks (03.11.2026)
+
+Erstmals wurden alle bisherigen Physikmodule nach ihrer Zusammenführung in **einem lokalen Testlauf** geprüft:
+
+- R-01: 7 bestanden; R-02: 9 bestanden; dynamische Strecken: 15 bestanden; Kurven/Rotation: 14 bestanden; **gemeinsame Integration: 4 bestanden**.
+- **Gesamt 49 von 49 Tests bestanden**, keine Fehler, Node.js 22.16.0. Zusätzlich TypeScript-Typprüfung mit `tsc 5.8.3` erfolgreich.
+- Benchmark auf lokaler Node-Umgebung: jeweils drei Läufe; Median **7,14 ms für 1**, **126,15 ms für 20** und **960,46 ms für 160 voneinander unabhängige Fahrer über je 4 km**. Ohne Gruppendynamik/KI und ohne Android ist das keine Messung eines Rennens.
+- Keine GitHub Actions oder Cloud-Lasttests gestartet.
+
+Detaillierte Testabnahme und Grenzen: [physik/GEMEINSAMER_KERN.md](physik/GEMEINSAMER_KERN.md).
