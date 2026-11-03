@@ -27,7 +27,7 @@ export interface DynamicRouteResult {
   reports: SectionReport[];
 }
 export function simulateDynamicRoute(input: DynamicRouteInput): DynamicRouteResult {
-  const r: CornerRouteResult = simulateMotionRoute(input);
+  const r: CornerRouteResult = simulateMotionRoute({ ...input, maxSteps: input.maxSteps ?? 2_000_000 });
   // Keine neuen Felder in der ursprünglichen öffentlichen Schnittstelle.
   const { totalTimeS, totalDistanceM, totalElevationChangeM,
     finalSpeedMps, peakSpeedMps, steps, reports } = r;
