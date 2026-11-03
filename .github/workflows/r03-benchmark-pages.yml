@@ -47,7 +47,7 @@ jobs:
       - name: Erzeugtes Browsermodul mit Node ESM smoke-testen
         run: |
           node --input-type=module <<'NODE'
-          const m = await import('./docs/benchmark/generated/drafting-pair.js');
+          const m = await import('./docs/benchmark/generated/physics/drafting-pair.js');
           const result = m.simulateTwoRiders(m.R03_PAIR_EXAMPLE);
           const expected = m.R03_PAIR_EXAMPLE.durationS;
           const timeDifference = Math.abs(result.elapsedS - expected);
@@ -60,7 +60,7 @@ jobs:
             throw new Error('Browsermodul liefert keine gueltigen physikalischen Ergebnisse');
           }
           console.log('Browsermodul importierbar und Simulation plausibel');
-          const group = await import('./docs/benchmark/generated/drafting-group.js');
+          const group = await import('./docs/benchmark/generated/physics/drafting-group.js');
           const eight = group.simulateGroup(group.createEightRiderExample(120));
           if (!Number.isFinite(eight.elapsedS) || Math.abs(eight.elapsedS-120)>1e-9 ||
               eight.riders.length !== 8 || eight.events.every(e=>e.type!=='gap-opened') ||
