@@ -139,6 +139,15 @@ jobs:
           const attackRace=race.simulateRace(race.createRaceExample({
             homeStrategy:'offensiv',
           }));
+          console.log('R10 Gruppen-Check: maximumGroups',firstRace.diagnostics.maximumGroups,
+            'Verfolgungsstarts',firstRace.diagnostics.chases,
+            'Pack-Leistungsregler',firstRace.diagnostics.paceSupportSteps,
+            'Fluchten',firstRace.diagnostics.breakaways);
+          if(firstRace.diagnostics.maximumGroups>=30||
+             firstRace.diagnostics.chases>=319||
+             firstRace.diagnostics.paceSupportSteps<=0) {
+            throw new Error('R10 Gruppenabstraktion verbessert den Ausgangslauf nicht');
+          }
           console.log('R09 50km-Rennen:',firstRace.classification.length,'Fahrer,',
             firstRace.durationS.toFixed(1),'s, Sieger',firstRace.winnerId,
             'Attacken',firstRace.diagnostics.attacks,
