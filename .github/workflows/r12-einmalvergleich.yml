@@ -20,6 +20,20 @@ jobs:
           node --experimental-strip-types scripts/r12-aero-comparison.mjs | tee r12-aero-auswertung.txt
           test "$(grep -c '^R12-VERGLEICH ' r12-aero-auswertung.txt)" -eq 7
           test "$(grep -c '^R12-GESAMT ' r12-aero-auswertung.txt)" -eq 1
+      - name: TypeScript-Browserbuild auf dem Feature-Branch prüfen
+        run: |
+          npm install --no-save --ignore-scripts --no-audit --no-fund typescript@5.8.3
+          npm run build:benchmark
+          node --input-type=module <<'NODE'
+          import {createRaceExample, simulateRace} from './docs/benchmark/generated/race/race-simulator.js';
+          const input=createRaceExample({profile:'flach',seed:2026});
+          input.aeroModel='formation-experiment';
+          const result=simulateRace(input);
+          if(result.finisherCount!==30 || result.diagnostics.minimumAeroFactor>0.81 ||
+            result.classification.some(x=>!Number.isFinite(x.finishTimeS)))
+            throw new Error('R12: Browserbuild/Aero-Testvariante fehlgeschlagen');
+          console.log('R12 Browser-ESM mit 30 Fahrern erfolgreich');
+          NODE
       - name: Ergebnis aufbewahren
         uses: actions/upload-artifact@v4
         with:
