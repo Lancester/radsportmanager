@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0c1522">
+<title>Radsportmanager – Erstes 50-km-Rennen</title>
+<style>
+:root{color-scheme:dark;font:16px/1.48 system-ui,-apple-system,"Segoe UI",sans-serif;background:#0b1522;color:#e7eef8}
+*{box-sizing:border-box}body{margin:0}main{max-width:1020px;margin:auto;padding:24px 17px 50px}
+a{color:#88cfe9}p{color:#b9c9da;margin:0 0 14px}
+h1{font-size:clamp(1.8rem,6vw,3rem);line-height:1.13;margin:10px 0 13px}
+h2{font-size:1.2rem;margin:0 0 10px}.eyebrow{color:#67c3c5;letter-spacing:.14em;text-transform:uppercase;font-size:.76rem;font-weight:800}
+.lead{font-size:1.07rem;max-width:680px}.panel{background:#142339;border:1px solid #2a4360;padding:19px;border-radius:18px;margin:18px 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:13px}
+label{display:block;color:#c5d9e8;font-size:.85rem;font-weight:700;margin-bottom:6px}
+select,input{display:block;width:100%;border:1px solid #55718b;border-radius:11px;background:#0d1b30;color:white;font:inherit;min-height:46px;padding:9px}
+button{cursor:pointer;background:#2480a0;border:1px solid #469dba;color:white;font:inherit;font-weight:800;padding:12px 18px;border-radius:12px;min-height:49px}
+button.secondary{background:transparent;border-color:#506c87;color:#c4e0ed}button:disabled{opacity:.5;cursor:default}
+.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}
+.small{font-size:.85rem;color:#9eb5cc}.muted{color:#a9bbce}
+.status{padding:12px 14px;border:1px solid #3b6079;background:#0b1a2c;border-radius:10px;margin-top:13px}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:11px;margin:13px 0}
+.metric{background:#0e2033;border:1px solid #2d4961;border-radius:12px;padding:13px}
+.metric b{display:block;font-size:1.45rem;font-variant-numeric:tabular-nums}
+.table-wrap{overflow-x:auto;border-radius:12px;border:1px solid #2b435b}
+table{width:100%;border-collapse:collapse;font-size:.9rem}th{text-align:left;background:#0d1e30;color:#a9c9de}td,th{padding:9px 11px;border-bottom:1px solid #2b3d53}tr:last-child td{border-bottom:0}
+td.numeric,th.numeric{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.mark{color:#79d6aa;font-weight:800}.events{margin:0;padding-left:21px}.events li{margin:8px 0;color:#d0dbe6}
+.compare{background:#0e2033;padding:13px;border-radius:11px;border:1px solid #2d4961}
+[hidden]{display:none!important}a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #f2d588;outline-offset:3px}
+</style>
+</head>
+<body>
+<main>
+<div class="eyebrow">Radsportmanager · R-09 · Rennprototyp</div>
+<h1>Unser erstes vollständiges Radrennen</h1>
+<p class="lead">30 fiktive Fahrer · 5 Teams · 50 Kilometer. Du legst die Strategie deines Teams <strong>vor dem Rennen</strong> fest. Die Fahrer und sportlichen Leiter handeln danach automatisch. Start, Attacken, Windschatten, Steigungen, Abfahrten, Leistungslimits und Zielzeiten werden berechnet.</p>
+<p><a href="./index.html">Bisherige Physiktests</a> · <a href="https://github.com/Lancester/radsportmanager">Quellcode</a></p>
+
+<section class="panel" aria-labelledby="prepareTitle">
+<h2 id="prepareTitle">1. Rennbesprechung im Teambus</h2>
+<p class="small">Du führst das fiktive Team <strong>Nordwind</strong>. Die anderen vier Teams verfolgen eigene Leitlinien. Noch kein Trainer-/Personal- oder Vertragsmanagement.</p>
+<div class="fields">
+ <div><label for="profile">Streckencharakter</label><select id="profile"><option value="wellig">Wellig · zwei Anstiege und Abfahrten</option><option value="flach">Flach · überwiegend Ebene</option></select></div>
+ <div><label for="strategy">Deine Teamleitlinie</label><select id="strategy"><option value="kapitaen_schuetzen">Kapitän schützen</option><option value="offensiv">Offensiv fahren</option><option value="sprint">Auf den Sprint setzen</option><option value="ausgewogen">Ausgewogen fahren</option></select></div>
+ <div><label for="seed">Renn-Seed (reproduzierbar)</label><input id="seed" type="number" min="0" max="2147483647" value="2026" step="1"></div>
+</div>
+<div class="actions">
+ <button id="start" type="button">50-km-Rennen simulieren</button>
+ <button id="compare" class="secondary" type="button">Zwei Taktiken vergleichen</button>
+ <button id="cancel" class="secondary" type="button" disabled>Abbrechen</button>
+</div>
+<div class="status" id="status" role="status" aria-live="polite">Bereit. Die Berechnung läuft lokal im Web Worker deines Browsers.</div>
+</section>
+
+<section class="panel" id="raceResults" aria-labelledby="resultTitle" hidden>
+ <h2 id="resultTitle">2. Rennergebnis</h2>
+ <div class="metrics">
+  <div class="metric"><span class="small">Sieger</span><b id="winner">–</b></div>
+  <div class="metric"><span class="small">Siegerzeit</span><b id="winnerTime">–</b></div>
+  <div class="metric"><span class="small">Teams/Fahrer im Ziel</span><b id="finishers">–</b></div>
+  <div class="metric"><span class="small">Rechenzeit</span><b id="runtime">–</b></div>
+ </div>
+ <p class="small" id="stats"></p>
+ <div class="table-wrap"><table><thead><tr><th>Platz</th><th>Fahrer</th><th>Team</th><th class="numeric">Zeit</th><th class="numeric">Rückstand</th><th class="numeric">Ø Watt</th><th class="numeric">Rest-W′</th></tr></thead><tbody id="classification"></tbody></table></div>
+</section>
+
+<section class="panel" id="raceEvents" hidden aria-labelledby="eventsTitle">
+<h2 id="eventsTitle">3. Wichtige Rennereignisse</h2>
+<p class="small">Die Texte beruhen ausschließlich auf protokollierten Entscheidungen oder physikalisch berechneten Zuständen.</p>
+<ol class="events" id="eventList"></ol>
+</section>
+
+<section class="panel" id="raceGroups" hidden aria-labelledby="groupsTitle">
+<h2 id="groupsTitle">4. Rennverlauf und Gruppen</h2>
+<div class="table-wrap"><table><thead><tr><th>Rennkilometer</th><th>Führender</th><th class="numeric">Aktive Fahrer</th><th class="numeric">Abstandsgruppen</th><th class="numeric">Abstand zur nächsten Gruppe</th></tr></thead><tbody id="groupList"></tbody></table></div>
+<p class="small" style="margin-top:12px">Gruppen entstehen vorläufig aus Abständen auf einer gemeinsamen Strecke. Das ist bewusst eine vereinfachte Peloton-Darstellung, keine millimetergenaue Spur- und Kollisionssimulation.</p>
+</section>
+
+<section class="panel" id="compareResults" hidden aria-labelledby="comparisonTitle">
+<h2 id="comparisonTitle">Strategievergleich mit identischem Renn-Seed</h2>
+<p>Beide Simulationen haben exakt dieselben Fahrer, Strecke und modellierte Tagesform. Nur die Leitlinie von Team Nordwind unterscheidet sich.</p>
+<div class="compare" id="comparisonText"></div>
+</section>
+
+<p class="small">**Stand:** Erster technischer Rennprototyp mit fiktiven Fahrerwerten und vereinfachter Gruppen-/Ermüdungslogik. Ergebnisse sind noch <strong>nicht</strong> gegen echte Profirennen kalibriert. Keine Registrierung, keine Datenübertragung, noch keine dauerhafte Karriere oder Offline-PWA. Der Browser muss die Seite zum ersten Mal online laden.</p>
+</main>
+<script type="module" src="./race/app.js"></script>
+</body>
+</html>
