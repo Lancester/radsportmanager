@@ -15,6 +15,10 @@ export interface OvertakeAgentConfig {
   maneuverPredictionStepS:number;
   maxManeuverHorizonS:number;
   attackPowerW:number;
+  /** Einfache, konservative Rückkehr vor die gesamte Heimatspur-Gruppe. */
+  autoRejoin?:boolean;
+  rejoinAfterPasses?:number;
+  rejoinLeadGapM?:number;
 }
 export interface LaneObservation {
   riders:ReadonlyArray<{
@@ -48,6 +52,14 @@ export function validateOvertakeAgent(c:OvertakeAgentConfig):void {
   check('maxManeuverHorizonS',c.maxManeuverHorizonS,
     c.maxManeuverHorizonS>=1&&c.maxManeuverHorizonS<=15);
   check('attackPowerW',c.attackPowerW,c.attackPowerW>0&&c.attackPowerW<=1500);
+  if(c.autoRejoin!==undefined&&typeof c.autoRejoin!=='boolean')
+    throw new RangeError('Überholagent: autoRejoin');
+  if(c.rejoinAfterPasses!==undefined&&
+     (!Number.isSafeInteger(c.rejoinAfterPasses)||c.rejoinAfterPasses<1||c.rejoinAfterPasses>7))
+    throw new RangeError('Überholagent: rejoinAfterPasses');
+  if(c.rejoinLeadGapM!==undefined)
+    check('rejoinLeadGapM',c.rejoinLeadGapM,
+      c.rejoinLeadGapM>c.minClearanceLongM&&c.rejoinLeadGapM<=50);
 }
 
 /** Vorausberechnung mit KONSTANTEN aktuellen Geschwindigkeiten:
