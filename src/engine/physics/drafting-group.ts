@@ -8,6 +8,8 @@ import type {LaneCommand} from './lateral-motion.ts';
 import {emptyFtpWork,accumulateFtpWork,meanCrankPowerW} from '../physiology/ftp-work.ts';
 import type {FtpWorkState} from '../physiology/ftp-work.ts';
 import {decideGapPower, initialGapState, validateGapConfig, F8_GAP_AGENT} from '../ai/gap-controller.ts';
+import {decideOvertakeLane,validateOvertakeAgent,R07_F8_AGENT} from '../ai/overtake-controller.ts';
+import type {OvertakeAgentConfig} from '../ai/overtake-controller.ts';
 import type {GapAgentConfig, GapAgentState} from '../ai/gap-controller.ts';
 import {decideFollowingSafety,validateFollowingSafety} from '../ai/following-safety.ts';
 import type {FollowingSafetyOptions} from '../ai/following-safety.ts';
@@ -37,6 +39,8 @@ export interface GroupInput {
   /** Zeitlich vorgegebene Seitenbewegung mit begrenzter Quer-Geschwindigkeit. */
   laneCommands?:LaneCommand[];
   roadHalfWidthM?:number;
+  /** Nur bei Angabe entscheidet ein Fahrer selbst über eine einzelne freie Überholspur. */
+  overtakeAgents?:OvertakeAgentConfig[];
 }
 export interface GroupRiderSummary {
   id: string; positionM: number; speedMps: number; lateralPositionM: number;
@@ -55,6 +59,8 @@ export interface GroupRiderSummary {
   averageCrankPowerW?:number;
   timeAboveFtpS?:number;
   workAboveFtpJ?:number;
+  autonomousOvertakes?:number;
+  autonomousLaneM?:number;
 }
 export interface GroupSnapshot {
   timeS: number;
@@ -63,7 +69,7 @@ export interface GroupSnapshot {
   openGaps: number;
 }
 export interface GroupEvent {
-  timeS: number; type: 'gap-opened' | 'command' | 'agent-decision' | 'safety' | 'cp-limit' | 'lane-command' | 'lane-complete' | 'overtake'; riderId: string;
+  timeS: number; type: 'gap-opened' | 'command' | 'agent-decision' | 'safety' | 'cp-limit' | 'lane-command' | 'lane-complete' | 'overtake' | 'agent-lane-choice'; riderId: string;
   leaderId?: string; gapM?: number;
   agentMode?: string; powerW?: number; reason?: string; brakeForceN?: number;
   passedRiderId?:string; lateralPositionM?:number;
@@ -206,6 +212,17 @@ export function simulateGroup(input:GroupInput):GroupResult {
       r.lateralPositionM,Math.abs(r.lateralPositionM)<=roadHalfWidthM);
   }
   const externalBrakes=new Map<string,number>();
+  const autoLanes=new Map<string,{
+    config:OvertakeAgentConfig;mode:'search'|'moving'|'passing';target?:number
+  }>();
+  for(const config of input.overtakeAgents??[]){
+    validateOvertakeAgent(config);
+    if(!ids.has(config.riderId)||autoLanes.has(config.riderId))
+      throw new RangeError('Unbekannter oder doppelter Überholagent');
+    autoLanes.set(config.riderId,{config,mode:'search'});
+  }
+  if(autoLanes.size&&input.laneCommands?.some(c=>autoLanes.has(c.riderId)))
+    throw new RangeError('Kein externer Spurauftrag für autonom fahrenden Agenten');
   const agentEveryS=input.agentDecisionEveryS??1;
   finite('agentDecisionEveryS',agentEveryS,agentEveryS>=0.2&&agentEveryS<=10);
   const agentConfigs=input.gapAgents??[];
@@ -251,10 +268,11 @@ export function simulateGroup(input:GroupInput):GroupResult {
       wPrimeRemainingJ:physiology.get(r.id)!.state.remainingWPrimeJ,
       wPrimeSpentJ:0,wPrimeRecoveredJ:0}:{}),
     ...(ftpStats.has(r.id)?{averageCrankPowerW:0,timeAboveFtpS:0,workAboveFtpJ:0}:{}),
+    ...(autoLanes.has(r.id)?{autonomousOvertakes:0}:{}),
   }));
   const events:GroupEvent[]=[],snapshots:GroupSnapshot[]=[];
   let t=0,steps=0,nextSample=sampleEveryS,cmdIndex=0,laneCmdIndex=0;
-  let nextAgentDecision=controllers.size?0:Infinity;
+  let nextAgentDecision=(controllers.size||autoLanes.size)?0:Infinity;
   while(t<input.durationS-1e-10){
     while(cmdIndex<commands.length&&commands[cmdIndex].timeS<=t+1e-10){
       const cmd=commands[cmdIndex++],index=riders.findIndex(r=>r.id===cmd.riderId);
@@ -269,7 +287,7 @@ export function simulateGroup(input:GroupInput):GroupResult {
       events.push({timeS:t,type:'lane-command',riderId:cmd.riderId,
         lateralPositionM:cmd.targetLateralPositionM});
     }
-    if(controllers.size && nextAgentDecision<=t+1e-9){
+    if((controllers.size||autoLanes.size) && nextAgentDecision<=t+1e-9){
       const gaps=nearestSameLane(riders,params);
       const byId=new Map(riders.map(r=>[r.id,r]));
       for(const r of riders){
@@ -288,7 +306,21 @@ export function simulateGroup(input:GroupInput):GroupResult {
           leaderId:leader?.id,gapM:nearest?.gapM,
           agentMode:decision.state.mode,powerW:decision.powerW,reason:decision.reason});
       }
-      // Kein zweiter, vom Bewegungsintegrator unabhängiger Zeitschritt.
+      for(const r of riders){
+        const auto=autoLanes.get(r.id);
+        if(!auto||auto.mode!=='search')continue;
+        const decision=decideOvertakeLane(auto.config,{
+          riders,roadHalfWidthM
+        });
+        if(decision.action==='move'){
+          laneTargets.set(r.id,{target:decision.targetLateralPositionM,
+            rate:auto.config.maxLateralSpeedMps});
+          auto.mode='moving';auto.target=decision.targetLateralPositionM;
+          events.push({timeS:t,type:'agent-lane-choice',riderId:r.id,
+            lateralPositionM:decision.targetLateralPositionM,reason:decision.reason});
+        }
+      }
+      // Dieselbe Uhr für Lücken- und Spur-Agenten, kein versteckter zweiter Solver.
       nextAgentDecision+=agentEveryS;
     }
     const factors=aeroFactorsForGroup(riders,params);
@@ -310,6 +342,9 @@ export function simulateGroup(input:GroupInput):GroupResult {
     const appliedBrakes:number[]=[];
     for(const r of riders){
       let requestedPowerW=controllers.get(r.id)?.powerW??r.crankPowerW;
+      const auto=autoLanes.get(r.id);
+      if(auto?.mode==='passing')requestedPowerW=Math.max(
+        requestedPowerW,auto.config.attackPowerW);
       let brakeForceN=externalBrakes.get(r.id)??0;
       if(brakeForceN>0)requestedPowerW=0;
       if(input.followingSafety){
@@ -381,6 +416,11 @@ export function simulateGroup(input:GroupInput):GroupResult {
         events.push({timeS:t+dt,type:'lane-complete',riderId:r.id,
           lateralPositionM:lane.target});
         laneTargets.delete(r.id);
+        const auto=autoLanes.get(r.id);
+        if(auto?.mode==='moving'&&Math.abs(auto.target!-lane.target)<1e-9){
+          auto.mode='passing';
+          s.autonomousLaneM=lane.target;
+        }
       }
       r.lateralPositionM=newLaterals[i];
       s.lateralPositionM=r.lateralPositionM;
@@ -419,8 +459,13 @@ export function simulateGroup(input:GroupInput):GroupResult {
       } else s.lastAppliedPowerW=actualPowers[i];
     }
     t+=dt;steps++;
-    for(const pass of passes)events.push({timeS:t,type:'overtake',
-      riderId:pass.riderId,passedRiderId:pass.passedRiderId});
+    for(const pass of passes){
+      events.push({timeS:t,type:'overtake',
+        riderId:pass.riderId,passedRiderId:pass.passedRiderId});
+      const s=summaries.find(x=>x.id===pass.riderId);
+      if(s&&autoLanes.has(pass.riderId))
+        s.autonomousOvertakes=(s.autonomousOvertakes??0)+1;
+    }
     const nextGaps=adjacentGaps(riders);
     for(const [id,gap] of nextGaps){
       const was=previous.get(id);
@@ -489,4 +534,28 @@ export function createEightRiderPassExample(durationS=65):GroupInput {
   return {...example,commands:[{timeS:10,riderId:'F8',crankPowerW:500}],
     laneCommands:[{timeS:3,riderId:'F8',targetLateralPositionM:2,
       maxLateralSpeedMps:0.8}],roadHalfWidthM:3};
+}
+
+/** R-07: F8 sieht selbst eine nahe Führung, prüft (+2 m/-2 m) und
+ * fordert erst NACH vollendetem Spurwechsel mehr Watt an.
+ * CP=300 W/W′=12 kJ/FTP=285 W: frei erfundene Demonstrationswerte.
+ * Keine echte Fahrertechnik-/Kurvenauslegung, kein automatisches Wiedereinscheren.
+ */
+export function createEightRiderAutoPassExample(durationS=65):GroupInput {
+  const input=createEightRiderExample(durationS);
+  return {...input,commands:[],gapAgents:[],
+    followingSafety:undefined,
+    overtakeAgents:[{...R07_F8_AGENT,candidateLanesM:[...R07_F8_AGENT.candidateLanesM]}],
+    physiology:[{riderId:'F8',criticalPowerW:300,ftpW:285,
+      wPrimeCapacityJ:12000,recoveryEfficiency:0.3}],
+    roadHalfWidthM:3};
+}
+/** Kontrolllauf: gleiche CP/W′-Reserve, exakt dieselben Watt- und Spurvorgaben,
+ * aber via externem Zeitplan statt autonomer Spurentscheidung.
+ */
+export function createEightRiderTimedPassWithCpExample(durationS=65):GroupInput {
+  const input=createEightRiderAutoPassExample(durationS);
+  return {...input,overtakeAgents:[],laneCommands:[{
+    timeS:0,riderId:'F8',targetLateralPositionM:2,maxLateralSpeedMps:0.8,
+  }],commands:[{timeS:2.5,riderId:'F8',crankPowerW:360}]};
 }
