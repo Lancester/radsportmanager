@@ -93,3 +93,16 @@ Ausführliche Herleitung, 4-km-Demo, 15 Tests und **alle offenen Punkte**: [phys
 | D-042 | **Offen** | Individuelle Fahrtechnik/Kurvenlinie, Regen/Reifen, Reibkreis und genaue Trägheitsparameter. | Nicht als fertiges Rennmodell ausgeben. |
 
 Der erste **getrennte Prototyp** und die offene Fragenliste liegen unter [physik/KURVEN_UND_ROTATION.md](physik/KURVEN_UND_ROTATION.md). Vor R-03 die verschiedenen Teilmodelle mit gemeinsamer Testsuite integrieren.
+
+## Gemeinsame Physik-Engine und Fahrerkompetenzen (03.11.2026)
+
+| ID | Status | Entscheidung | Begründung |
+| --- | --- | --- | --- |
+| D-043 | **Beschlossen: Softwarearchitektur** | Ein gemeinsamer dynamischer TypeScript-Rechenkern berechnet die Kräfte und Geschwindigkeitsentwicklung; alte dynamische und Kurven-APIs sind nur Adapter. Die separaten R-01-/R-02-Gleichgewichtstests bleiben. | Eine konsistente Physikbasis, überprüfbare Referenzen und einfachere Erweiterbarkeit. |
+| D-044 | **Beschlossen: Spielkonzept für später** | **Fahrtechnik und Risikobereitschaft** eines Fahrers beeinflussen Kurven, Abfahrten, Linienwahl und Gefahr von Fahrfehlern. | Explizite Anforderung des Nutzers, glaubwürdiger Manager statt reine Wattwertung. |
+| D-045 | **Beschlossen: Spielkonzept für später** | **Individuelles fahrerisches Talent und spezielle Trainingseinheiten** sollen die Entwicklung von Fahrtechnik und Abfahrtsvermögen beeinflussen. | Langfristiger Talent-/Trainer-/Trainingsnutzen im Karrieremodus. |
+| D-046 | **Offen: Umsetzung und Balancing** | Konkrete Werte, Trainingsgrenzen, Fehler-/Sturzrisiken, Reaktionszeiten, Risikoprofil und Fahrtechnik-Kalibrierung. | Nicht als bestehende Engine-Eigenschaften oder pauschale Wattboni interpretieren. |
+
+Im aktuellen Code ist davon **noch keine Fahrer-KI oder ein Trainingssystem** implementiert. Die Risiken werden erst anhand überprüfbarer Situations- und Wahrscheinlichkeitsmodelle ausgearbeitet, siehe [Issue #19](https://github.com/Lancester/radsportmanager/issues/19).
+
+Die einheitliche dynamische Architektur, Testausführung und ehrliche Messgrenzen stehen in [physik/GEMEINSAMER_KERN.md](physik/GEMEINSAMER_KERN.md).
