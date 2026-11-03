@@ -1,5 +1,5 @@
-import {R03_PAIR_EXAMPLE, simulateTwoRiders} from './generated/drafting-pair.js';
-import {createEightRiderExample, createEightRiderAgentExample, simulateGroup} from './generated/drafting-group.js';
+import {R03_PAIR_EXAMPLE, simulateTwoRiders} from './generated/physics/drafting-pair.js';
+import {createEightRiderExample, createEightRiderAgentExample, simulateGroup} from './generated/physics/drafting-group.js';
 const round = x => Math.round(x * 1e6) / 1e6;
 function once(pairs, durationS) {
   let checksum = 0;

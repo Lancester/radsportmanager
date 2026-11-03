@@ -12,7 +12,7 @@
     "bench:isolated": "node --experimental-strip-types benchmarks/isolated-riders.mjs",
     "test:r03": "node --experimental-strip-types --test tests/drafting-pair.test.mjs",
     "bench:r03": "node --experimental-strip-types benchmarks/r03-pair.mjs",
-    "build:benchmark": "tsc --target ES2022 --module ES2022 --moduleResolution Bundler --rewriteRelativeImportExtensions true --skipLibCheck --outDir docs/benchmark/generated src/engine/physics/drafting-pair.ts src/engine/physics/drafting-group.ts",
+    "build:benchmark": "tsc --target ES2022 --module ES2022 --moduleResolution Bundler --rewriteRelativeImportExtensions true --skipLibCheck --rootDir src/engine --outDir docs/benchmark/generated src/engine/physics/drafting-pair.ts src/engine/physics/drafting-group.ts",
     "test:gruppe": "node --experimental-strip-types --test tests/drafting-group.test.mjs",
     "test:agent": "node --experimental-strip-types --test tests/gap-controller.test.mjs"
   },
