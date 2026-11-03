@@ -1,11 +1,14 @@
 {
-  "name":"radsportmanager",
-  "private":true,
-  "type":"module",
-  "scripts":{
-    "test":"node --experimental-strip-types --test tests/*.test.mjs",
-    "test:r01":"node --experimental-strip-types --test tests/r01-flat.test.mjs",
-    "test:r02":"node --experimental-strip-types --test tests/r02-climb.test.mjs"
+  "name": "radsportmanager",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
+    "test:r01": "node --experimental-strip-types --test tests/r01-flat.test.mjs",
+    "test:r02": "node --experimental-strip-types --test tests/r02-climb.test.mjs",
+    "test:route": "node --experimental-strip-types --test tests/dynamic-route.test.mjs"
   },
-  "engines":{"node":">=22.6.0"}
+  "engines": {
+    "node": ">=22.6.0"
+  }
 }
