@@ -117,6 +117,26 @@ jobs:
             auto.riders.some(r=>!Number.isFinite(r.energyResidualJ))) {
             throw new Error('R07 autonome Spurwahl, CP-Reserve oder Physikvergleich ungültig');
           }
+          const returning=group.simulateGroup(group.createEightRiderRejoinExample(115));
+          const rejoinEvents=returning.events.filter(e=>e.type==='agent-rejoin-choice');
+          console.log('R08 Rejoin: Entscheidungen',rejoinEvents.length,
+            'Abgeschlossene Rückkehr',returning.riders[7].autonomousRejoins,
+            'Überholvorgänge',returning.riders[7].autonomousOvertakes,
+            'F8 y',returning.riders[7].lateralPositionM);
+          if(returning.riders[7].autonomousRejoins!==1 ||
+            returning.riders[7].autonomousOvertakes<7 ||
+            Math.abs(returning.riders[7].lateralPositionM)>1e-7)
+            throw new Error('R08 Wiedereinscheren nicht abgeschlossen');
+          const multi=group.simulateGroup(group.createEightRiderMultiAgentExample(70));
+          const choices=multi.events.filter(e=>e.type==='agent-lane-choice');
+          console.log('R08 Multi-Agent:',choices.map(e=>e.riderId+':'+e.lateralPositionM),
+            'Überholvorgänge',multi.events.filter(e=>e.type==='overtake').length,
+            'Querdynamik',multi.riders.map(r=>r.maximumSteeringAccelerationMps2??0));
+          if(choices.length<2||choices.find(e=>e.riderId==='F7')?.lateralPositionM!==2||
+            choices.find(e=>e.riderId==='F8')?.lateralPositionM!==-2||
+            multi.riders.some(r=>!Number.isFinite(r.energyResidualJ))||
+            multi.riders.some(r=>(r.maximumSteeringAccelerationMps2??0)>1.500001))
+            throw new Error('R08 koordinierte Spurwahl oder Querdynamik ungültig');
           NODE
       - name: Git-Commit des Teststands für Bericht notieren
         run: git rev-parse --short HEAD > docs/benchmark/version.txt
