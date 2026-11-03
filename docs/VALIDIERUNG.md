@@ -85,3 +85,9 @@ Ausführliche Werte: [physik/R02_BERG.md](physik/R02_BERG.md). Es wurden weder e
 15 neue dynamische Node.js-Tests bestanden. Die unveränderten 16 früheren R-01/R-02-Tests wurden dabei nicht erneut ausgeführt. Prüfungen: Übergänge exakt am Abschnittsende, ununterbrochene Geschwindigkeit, Verhalten auf Ebene/Berg/Abfahrt, manuelle Bremsung, mechanische Arbeits-/Höhenbilanz, Start aus dem Stillstand, eindeutige Reproduzierbarkeit und Zeitauflösungs-Konvergenz. Referenzbeispiel: 4 km, **470,8713 s**, Höhendifferenz 0 m.
 
 Dokumentation: [physik/DYNAMISCHE_STRECKE.md](physik/DYNAMISCHE_STRECKE.md). Neue Testdatei: tests/dynamic-route.test.mjs, mit npm run test:route oder in der gesamten npm-test-Suite ausführbar. Keine GitHub-Actions-Durchläufe und noch kein Android-Benchmark.
+
+## Kurvenvorschau und Radrotation: 14 neue lokale Tests (03.11.2026)
+
+Der separat ausgeführte Test `npm run test:corners` überprüft Radius-/Gripgrenzen, frühzeitiges Bremsen, das Fehlen von Geschwindigkeits-Sprüngen, nasse Fahrbahn, unterschiedliche Radträgheit, stationäre Geschwindigkeit, Abschnitts-Energiebilanz, reproduzierbare Resultate, Inputvalidierung, unerreichbare Bremswege, Kurvenvorschau über Abschnittsgrenzen, Zeitschrittänderung und zwei Kurven.
+
+**14 von 14 neuen Tests lokal erfolgreich.** Die alten stationären/dynamischen Tests wurden **nicht erneut** als gemeinsame Suite ausgeführt; **kein** GitHub-Actions-Test. Quelle und Benchmarkgrenzen: [physik/KURVEN_UND_ROTATION.md](physik/KURVEN_UND_ROTATION.md).
