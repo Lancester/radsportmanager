@@ -224,3 +224,16 @@ Referenzfaktoren für 121 Fahrer in ein nur längskoordinatenbasiertes
 30er-Modell. Sportlich sinnvolle neue Faktorwerte bleiben **offen**.
 Die beschlossene Priorität vollständiger Rennen vor Mikrophysik
 wird dadurch **nicht verändert**.
+
+
+## D-078/D-079 – Experimentierauftrag, keine neue Kalibrierungsentscheidung (03.11.2026)
+
+| ID | Status | Gegenstand | Grenze |
+| --- | --- | --- | --- |
+| D-078 | **Beschlossen: kontrollierter Umsetzungsschritt** | Das R-10-Windschattenmodell bleibt als **bitidentischer Standard** erhalten. Daneben wird die `formation-experiment`-Variante mit mehreren lokal vorgelagerten Fahrern für sieben identische R-11-Fälle testbar gemacht. Auswirkungen müssen ausschließlich aus unverändertem `advanceMotionStep` und CP/W′ kommen; keine kinematischen Zeit- oder Positionsboni. | Der erfolgreiche technische A/B-Test ist kein Beschluss, die Variante zum Standard zu machen. |
+| D-079 | **Offen: fachliche Kalibrierung** | 24-m-Radius, zehn Vorderleute, 34 % erster gewichteter Anteil, 5,5 % weitere gewichtete Beiträge und Rest-Aero-Faktor 0,40 sind **Testheuristiken**, keine bestätigten Profi-Rennwerte. | R-12 hält auf Flachstrecken zwar deutlich mehr Fahrer zusammen, erhöht jedoch in allen sieben Vergleichsrennen den Rückstand des letzten Fahrers. Ein neues offizielles Windschattenmodell oder neue Gesamt-Pelotonarchitektur ist **nicht beschlossen**. |
+
+[R-12-Umsetzung, verifizierte 14 Rennläufe, Vor-/Nachteile](race/R12_FORMATIONSAERODYNAMIK.md).
+**Priorität:** echte glaubwürdige Rennverläufe und autonome Taktik
+vor Detail-Lenkphysik. Zuerst isoliert lokale Formation, Gruppenführung,
+Abgehängten-/Verfolgungsdynamik prüfen; dann Parameterentscheidung.
