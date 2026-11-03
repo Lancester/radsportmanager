@@ -56,7 +56,7 @@ Verbindliche fachliche Anforderung und vorgeschlagene Umsetzung: [PELOTON_POSITI
 
 | ID | Status | Entscheidung | Grund |
 | --- | --- | --- | --- |
-| D-029 | **Favorit** | Fahrernennleistung als **Pedal-/Kurbel-Watt** interpretieren und einen separaten Antriebswirkungsgrad `η` anwenden. | Verständlicher Bezug zu Powermetern; vermeidet Verwechseln von Kurbel- und Radleistung. |
+| D-029 | **Beschlossen (03.11.2026)** | Fahrerleistung wird grundsätzlich als **Pedal-/Kurbel-Watt** definiert; Verluste im Antrieb werden separat bei der Übertragung ans Hinterrad berechnet. | Explizit vom Nutzer bestätigt, wie Powermeter; saubere Energiebilanz. |
 | D-030 | **Zu prüfen** | In R-01 zunächst `η = 0,975` und konstante Fahrerhaltung/CdA verwenden; Vergleich `η = 1` als theoretischen Kontrollfall. | Reproduzierbare Referenz, noch keine kalibrierte realistische Standardannahme. |
 
-Die Rechnung und die offenen Fragen stehen unter [physik/R01_EBENE.md](physik/R01_EBENE.md). Noch keine endgültige Bestätigung der Zahlen als Standardwerte.
+Die Rechnung und die übrigen offenen Fragen stehen unter [physik/R01_EBENE.md](physik/R01_EBENE.md). **D-029 ist bestätigt;** der konkrete Wirkungsgrad von 97,5 %, spätere CdA-Variation und die Reihenfolge von Beschleunigungsmodellen sind weiterhin zu besprechen. Die Zahlen von R-01 sind Testwerte, keine kalibrierten Standardwerte.

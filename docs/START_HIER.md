@@ -18,6 +18,8 @@
 - Kleine, nachvollziehbare Änderungen; Code möglichst auf Feature-Branches mit Pull Request; main stabil halten.
 - Nach jeder abgeschlossenen Arbeit docs/ENTWICKLUNGSSTAND.md aktualisieren: erledigt, geprüft, noch offen, exakter nächster Schritt, Issue/PR/Commit.
 - Bei Chatabbruch zunächst GitHub inspizieren und nicht blind dieselben Änderungen erneut durchführen.
+- **Nutzer braucht die GitHub-Dateien nicht selbst durchzuarbeiten:** Jede Arbeitsrunde liefert eine verständliche Chat-Zusammenfassung mit Ergebnissen, Annahmen und Konsequenzen.
+- **Alle neu aufgeworfenen entscheidungsrelevanten Fragen auch im Chat transparent stellen**, nicht nur in einer Dokumentationsdatei vermerken. Explizit beschlossene Punkte von offenen Vorschlägen trennen; aus Schweigen keine Zustimmung ableiten.
 - Keine Zugangsdaten, private Nutzerdaten oder fremde geschützte Logos/Daten in das öffentliche Repository hochladen.
 - Mobil zuerst: Alles möglichst via Android-Handy, GitHub und Webbrowser; kein lokaler Laptop oder eigene Serverdatenbank voraussetzen.
 - Kosten kontrollieren: kleine Tests automatisch, große Monte-Carlo-Testläufe ausschließlich manuell; Ressourcenlimits setzen.
