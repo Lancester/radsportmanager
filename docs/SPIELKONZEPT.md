@@ -65,3 +65,13 @@ Genauer Umfang von Sponsoren/Finanzen, Teamligen, Trainingssystem, Personalstufe
 Der Nutzen folgt aus **physikalischen Eingabewerten**, nicht einer künstlichen Geschwindigkeits- oder Siegquote: Materialmasse, CdA, Reifen-Rollwiderstand und eventuell Antriebswirkungsgrad. Je nach Bergprofil, flachem Zeitfahren, Sprint oder Positionsverhalten können sich die Vorteile unterscheiden. Teure Ausrüstung muss nicht für jede Strecke die beste sein.
 
 **Noch offen:** Preise und Verfügbarkeit, Fahrerausrüstung vs. teamweite Anschaffung, Reglement je Rennart, Verschleiß/Wartung, Sponsorenverträge, echte Daten und Balancing. Nicht als implementiert darstellen. Erste kontrollierte Physikbeispiele in [physik/R02_BERG.md](physik/R02_BERG.md).
+
+## Fahrerisches Talent, Fahrtechnik, Risikobereitschaft und Training (03.11.2026)
+
+**Vom Nutzer ausdrücklich gewünschte langfristige Spielmechanik:** Fahrer haben eine individuelle Fähigkeit, in Abfahrten und Kurven eine geeignete Linie zu wählen, kontrolliert zu bremsen, Risiken abzuwägen und sich bei schwierigen Rennsituationen zu behaupten. Fahrtechnik kann durch **Erfahrung und spezielle Trainingseinheiten** verbessert werden; angeborenes bzw. vorhandenes fahrerisches Talent beeinflusst das erreichbare Potenzial.
+
+**Risikobereitschaft** ist davon zu unterscheiden: Ein risikofreudiger Fahrer kann aggressivere Linien, eine geringere Sicherheitsmarge oder spätere Bremspunkte wählen; das soll jedoch nicht automatisch sinnvoll oder erfolgreich sein. Gute Fahrtechnik ist nicht dasselbe wie hohe Risikofreude.
+
+Im späteren Teammanager ergeben sich daraus Entscheidungen über Trainer, Trainingszeit, Einsatzrollen, Renntaktik und Nachwuchsförderung. Auswirkungen sollen sich aus **realem Fahrverhalten und Modellkonsequenzen** ergeben, nicht aus pauschalen +5-%-Tempo- oder Siegboni.
+
+**Noch offen:** konkrete Fähigkeitswerte, Trainingsdynamik, individuelle Unterschiede, Nässe-/Haftbedingungen und plausible Fehler-/Sturzwahrscheinlichkeiten. Bisher ausschließlich **Konzept**, nicht programmiert. [Entwicklungsaufgabe #19](https://github.com/Lancester/radsportmanager/issues/19).

@@ -59,3 +59,11 @@ Speicherstände versionieren, Änderungen mit automatischen Regressionstests pr�
 Die stationären Physiktests auf Ebene und Anstieg benutzen nun denselben **TypeScript-Rechenkern** `src/engine/physics/steady-state.ts`, um die Grundgleichungen nicht doppelt pflegen zu müssen. `r01-flat.ts` und `r02-climb.ts` sind schlanke Szenario-Adapter. `npm test` führt sieben vorhandene und neun neue Tests ohne externe Abhängigkeiten lokal unter Node.js 22.16 aus.
 
 Das ist noch keine dynamische mehrstündige Simulation. Die Engine besitzt bewusst weder Wind/Bergab- noch Peloton-/KI-Funktionalität. Erst nach zusätzlichen Physikschritten soll das Web-Worker-/Android-Benchmark-Gerüst entstehen.
+
+## Dynamische Engine vereinheitlicht (03.11.2026)
+
+**Jetzt ein einziger dynamischer Solver:** `src/engine/physics/motion-core.ts` integriert Kräfte, Position und Tempo. `dynamic-route.ts` und `corner-route.ts` sind API-kompatible Adapter. Die stationäre `steady-state.ts` bleibt für unabhängig berechenbare R-01-/R-02-Vergleiche bestehen.
+
+**49 Tests in einem lokalen Node.js-22.16-Lauf bestanden;** TypeScript 5.8.3 ohne Typfehler. Lokal benchmarkbar mit `node --experimental-strip-types benchmarks/isolated-riders.mjs`; nur **1/20/160 voneinander unabhängige Fahrer über je 4 km**, kein Peloton oder echter Android/Web-Worker-Lauf.
+
+Details: [physik/GEMEINSAMER_KERN.md](physik/GEMEINSAMER_KERN.md). Nächster Schritt R-03 (zunächst Zweier-Windschatten), danach ein realer Android-Worker-Performancecheck.

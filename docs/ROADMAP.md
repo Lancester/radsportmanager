@@ -67,3 +67,11 @@ Als nächste kleinen Physikbausteine werden **vorausschauende Kurvengeschwindigk
 Ein separater Technikprototyp kann vor einer als Geschwindigkeitskontrollpunkt modellierten Kurve bremsen und berücksichtigt die rotierenden Laufräder bei Beschleunigungen. **14 lokale Tests bestanden.** Große Lücken: Kurvenbogen statt Punkt, Fahrtechnik/Grip, Gruppen, Wind und Physiologie.
 
 **Als Nächstes bevorzugt:** (1) gemeinsame dynamische Engine aus bestehenden Teilmodulen formen und gesamte Regressionstests ausführen; (2) erstes kleines Windschatten-/Gruppenexperiment R-03; (3) Web Worker plus Android-Benchmark für echte Mobilmessungen. Kein automatisches Großrechnen auf GitHub.
+
+## Aktueller Meilenstein und nächster Arbeitsschritt (03.11.2026)
+
+**Abgeschlossen:** Der gemeinsame dynamische Physikkern vereinigt Strecken-/Kraftrechnung, Steigung, Abfahrt, manuelle Bremskraft, Kurvenvorschau und Laufradträgheit. **49 lokale Tests bestanden**, 4 davon neue Integrationstests. Die alten APIs laufen auf einem gemeinsamen Solver.
+
+**Nächster fachlicher Schritt:** R-03 zuerst **zwei Fahrer** bei gleicher Geschwindigkeit und unterschiedlicher Position im Windschatten; anschließend Positionswechsel und kleine Gruppen mit physikalischen Energieunterschieden. Smartphone-/Web-Worker-Rechenleistung erst an einer frühen Gruppensimulation bewerten. Später: Fahrtechnik, Risikoprofil, fahrerisches Talent und Training (Issue #19) im Karrieremodus.
+
+Die Performance-Messung mit 160 voneinander unabhängigen 4-km-Fahrten auf Node.js ist **kein** vollständiges 160-Fahrer-Rennen.

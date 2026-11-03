@@ -50,3 +50,7 @@ Nun kann **ein einzelner Fahrer** über mehrere Abschnitte ohne Geschwindigkeits
 ## Kurvenvorschau und Laufradträgheit
 
 Neuer, getrennt getesteter Prototyp: [Kurven und Radrotation erklärt](docs/physik/KURVEN_UND_ROTATION.md). Bisher kann der Testfahrer vor einer Kurve aufgrund von Radius und Reifenhaftung bremsen; eine rotierende Laufradträgheit beeinflusst Beschleunigung und Energie. **14 lokale Tests bestanden**, Aufruf `npm run test:corners`. Das ist noch **keine fahrbare App oder Peloton-Rennengine**.
+
+## Gemeinsamer dynamischer Physikkern
+
+Die bisherigen dynamischen Physikprototypen sind jetzt in `src/engine/physics/motion-core.ts` zusammengeführt. Die APIs für R-01, R-02, dynamische Abschnitte und Kurven bleiben bestehen. **49 Tests lokal gemeinsam bestanden**; vier neue Integrationstests verbinden Anstieg, Abfahrt, Bremsen, Kurvenvorschau und Laufradträgheit. Erklärung und Benchmarkgrenzen: [docs/physik/GEMEINSAMER_KERN.md](docs/physik/GEMEINSAMER_KERN.md). `npm test` führt alle aus. Noch kein Windschatten, keine Peloton-KI oder Smartphone-Version.
