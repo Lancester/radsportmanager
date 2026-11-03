@@ -250,3 +250,16 @@ Die Android-Testwebseite, die Browser-Worker-Dateien und der kleine Build-/Pages
 **Nicht daraus ableiten:** Keine Zusage für 20 oder 160 Fahrer in realen Gruppen, keine Aussage über 200 km, Akku-/Temperatur-/Speicherkosten und keine Web-Worker-Verhaltensprüfung bei Sperrbildschirm oder langer Laufzeit. Der Test mit 160 Fahrern auf der Webseite besteht vorerst aus **80 unabhängigen Zweiergruppen**.
 
 **Nächste Messung:** Auf derselben Webseite den **mittleren Test (10 Paare, jeweils 120 virtuelle Sekunden)** und dann den **großen Test (80 Paare, jeweils 120 virtuelle Sekunden)** ausführen, jeweils Berichte im Chat teilen. Die Zeiten über verschiedene Größen sind interessanter als eine lineare Hochrechnung aus dem kleinen Test.
+
+
+## Aktuellster Stand: alle drei Android-Web-Worker-Tests erfolgreich (03.11.2026)
+
+Die Testwebseite wurde mit dem Browserstand **`dffcf78`** tatsächlich auf Android (Chrome 156) benutzt. Nach dem bereits dokumentierten Klein-Test wurden **auch Mittel und Groß erfolgreich gemessen**. Jeweils drei Läufe:
+
+- **1 unabhängiges Paar / 2 Fahrer / 12 virtuelle Sekunden / 60 Paar-Schritte:** Median **7,1 ms**, Prüfsumme 276,626283.
+- **10 unabhängige Paare / 20 Fahrer / je 120 virtuelle Sekunden / 6.000 Paar-Schritte:** Median **35,5 ms**, Rohzeiten 75 / 35,5 / 26,2 ms, Prüfsumme **24.318,863289**.
+- **80 unabhängige Paare / 160 Fahrer / je 120 virtuelle Sekunden / 48.000 Paar-Schritte:** Median **191,8 ms**, Rohzeiten 257,7 / 191,8 / 166,5 ms, Prüfsumme **194.550,906309**.
+
+Die zwei 120-s-Prüfsummen skalieren achtfach (Abweichung 0,000003 infolge Endrundung). 8-fache Zahl von Zweiergruppen ergibt etwa **5,40-fache Median-Laufzeit**; der genaue Grund der nichtlinearen Skalierung wurde nicht untersucht. Das ist ein erfolgreicher **erster echter Android-Physikbenchmark**, aber **noch kein vollständiges 160-Fahrer-Peloton oder 200-km-Rennen**.
+
+**[Detaillierte Auswertung](ANDROID_BENCHMARK.md)**. **Nächste Entwicklung:** zuerst deterministische **3–8 Fahrer auf einer gemeinsamen Uhr mit echten Nachbarschafts-/Abstandsinteraktionen**, danach auf dem Android-Web-Worker benchmarken. [Issue #23](https://github.com/Lancester/radsportmanager/issues/23) bleibt dafür offen. Keine GitHub-Actions-Dauerlast oder automatischer großer Monte-Carlo-Test erforderlich; aus diesen Daten noch keine Zusage zur Langzeit-Performance machen.
