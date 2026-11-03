@@ -47,6 +47,8 @@ jobs:
         run: npm install --no-save --ignore-scripts --no-audit --no-fund typescript@5.8.3
       - name: Alle Physiktests ausführen
         run: npm test
+      - name: Drei volle Rennverläufe fachlich diagnostizieren
+        run: node --experimental-strip-types scripts/r09-race-diagnostics.mjs
       - name: Exakt vorhandene R-03-Engine für Browser übersetzen
         run: npm run build:benchmark
       - name: Erzeugtes Browsermodul mit Node ESM smoke-testen
