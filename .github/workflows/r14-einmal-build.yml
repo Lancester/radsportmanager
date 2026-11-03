@@ -13,6 +13,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Sieben reproduzierbare Standardrennen diagnostizieren
+        run: |
+          node --experimental-strip-types scripts/r14-team-diagnostics.mjs | tee r14-ergebnisse.txt
+          test "$(grep -c '^R14-RENNDIAGNOSE ' r14-ergebnisse.txt)" -eq 7
+          test "$(grep -c '^R14-ZUSAMMENFASSUNG ' r14-ergebnisse.txt)" -eq 1
+      - name: Diagnosedaten als Artefakt sichern
+        uses: actions/upload-artifact@v4
+        with:
+          name: r14-sieben-teamrennen
+          path: r14-ergebnisse.txt
+          retention-days: 14
       - name: Browser-TypeScript und echter Rennsmoke-Test
         run: |
           npm install --no-save --ignore-scripts --no-audit --no-fund typescript@5.8.3
