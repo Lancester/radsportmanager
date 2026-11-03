@@ -102,3 +102,13 @@ Erstmals wurden alle bisherigen Physikmodule nach ihrer Zusammenführung in **ei
 - Keine GitHub Actions oder Cloud-Lasttests gestartet.
 
 Detaillierte Testabnahme und Grenzen: [physik/GEMEINSAMER_KERN.md](physik/GEMEINSAMER_KERN.md).
+
+## R-03 – erste gekoppelte Zweierfahrer-Tests (03.11.2026)
+
+**Vollständige lokale Suite erfolgreich:** 64/64, davon **15 neue R-03-Tests** und **49 vorherige Regressionstests**, keine Fehler, Node.js 22.16.0. TypeScript 5.8.3 Typprüfung ebenfalls bestanden.
+
+Neue Checks: Luftwiderstandsreduktion vs. unveränderter Rollwiderstand, vordere/hintere Position, Längs- und Seitenabstand, statische Wattreferenzen bei 39,6 km/h, synchrone Integrationsschritte, Kräfte-/Energiebilanzen, Lückenzunahme, Führungswechsel, Kollisionserkennung, szenarische Leistungsänderung, Zeitschrittkonvergenz, identische Wiederholung und Eingabevalidierung.
+
+**Benchmark (rein lokal, kein Android):** 1, 10 und 100 wiederholte 12-s-Zweierläufe haben in 3 Node-Messläufen Medianlaufzeiten von ca. **0,82 / 8,39 / 41,15 ms**. Dies sind *unabhängige Zweierfahrten*, keine miteinander wechselwirkenden 200-km-Gruppen.
+
+Noch fehlend: empirisch kalibrierte Windschattenparameter, Querwind, 3+ Fahrer, 2D-Bewegung, Leistungs-Dauer-Profil und echte Android-/Web-Worker-Laufzeitmessung. Herleitung und Quellengrundlage: [physik/R03_WINDSCHATTEN_ZWEI_FAHRER.md](physik/R03_WINDSCHATTEN_ZWEI_FAHRER.md).
