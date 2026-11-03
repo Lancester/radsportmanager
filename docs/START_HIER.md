@@ -35,3 +35,12 @@ Die erste Rennoberfläche ist unter `docs/rennen.html` geplant; Code unter `src/
 ## Text zum Einfügen in einen neuen Chat
 
 Lies bitte zuerst im GitHub-Repository Lancester/radsportmanager die Dateien docs/START_HIER.md, docs/ENTWICKLUNGSSTAND.md und docs/ENTSCHEIDUNGEN.md. Prüfe main, offene Issues/PRs und den letzten Teststand. Arbeite auf Deutsch am dokumentierten nächsten Schritt weiter. Gehe nicht ohne Rücksprache über festgelegte Grundsatzentscheidungen hinweg. Aktualisiere nach der Arbeit die Dokumentation.
+
+
+## Neue Entwicklungspriorität ab R-09 (03.11.2026)
+
+**Wichtig für jeden neuen Chat/Entwicklungsblock:** Der Nutzer hat ausdrücklich entschieden, nicht weiter immer detailliertere Lenkwinkel-/Kurven-/Überholphysik zu entwickeln. **Erste vollständige Rennen, glaubwürdige Zeitabstände, Gruppen, Fahrer-/Team-KI und später der Management-Karrieremodus haben Vorrang.** Neue Mikrophysik nur, wenn ein konkretes Rennen dadurch nachweislich plausibler wird.
+
+Die neue Engine `src/engine/race/race-simulator.ts` verwendet den existierenden Bewegungsintegrator und CP/W′-Rechner **direkt**, aber vereinfacht Gruppengeometrie und Windschatten. Die alten detaillierten R-03–R-08-Module sind weiterhin wertvolle Regressionen/Labore, **nicht weggefallen**, jedoch nicht automatisch die Laufzeitbasis jedes kompletten Rennens. Erste Testoberfläche: `docs/rennen.html`. [Vollständiger R-09-Entwurf](RENNPROTOTYP_R09.md).
+
+**Für Weiterarbeit:** R-09-Code/Tests und GitHub-Runner-Status zuerst prüfen. Rennplausibilität/Strategievarianten/Fahrermengen optimieren, **keine** neue hochaufgelöste Kurvenphysik ohne konkrete Notwendigkeit.
