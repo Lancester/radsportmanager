@@ -67,9 +67,9 @@ export function decideFollowingSafety(
   // Wer sich dem Vordermann nähert, darf nicht weiter beschleunigen.
   const control=closing>0.005 && (
     predictedGap < desired+closing*options.reactionSeconds+1.0 ||
-    required+options.desiredExtraGapM >= centerGapM);
+    required+options.desiredExtraGapM+1.0 >= centerGapM);
   // Bei echter Gefahr proaktiv bis zur physikalischen Deceleration-Grenze bremsen.
-  const danger=closing>0.005 && (predictedGap<desired || required>=centerGapM);
+  const danger=closing>0.005 && (predictedGap<desired || required+options.desiredExtraGapM>=centerGapM);
   const brakeA=danger ? Math.min(options.maximumDecelerationMps2,
     Math.max(0.05, (ownSpeedMps**2-leaderSpeedMps**2)/
       (2*Math.max(0.15,remaining-options.desiredExtraGapM)))) : 0;
