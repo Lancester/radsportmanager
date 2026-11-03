@@ -13,6 +13,7 @@ const presets = {
   klein: {pairs: 1, durationS: 12, repeats: 3},
   mittel: {pairs: 10, durationS: 120, repeats: 3},
   gross: {pairs: 80, durationS: 120, repeats: 3},
+  gruppe: {group: true, durationS: 120, repeats: 3},
 };
 let commit = 'unbekannt';
 fetch('./benchmark/version.txt', {cache: 'no-store'})
@@ -50,11 +51,16 @@ function run(presetName) {
         status.textContent = `Berechnung ${msg.current} von ${msg.total} abgeschlossen …`;
       } else if (msg.type === 'result') {
         const result = msg.result;
-        lastReport = {commit, benchmarkVersion: 'r03-android-v1', ...result};
+        lastReport = {commit, benchmarkVersion: 'r03-android-v2', ...result};
         runtime.textContent = result.medianMs.toLocaleString('de-DE', {maximumFractionDigits: 1});
-        detail.textContent = `${result.pairs} unabhängige Paare (also ${result.pairs * 2} Fahrer), ` +
-          `${result.durationS} virtuelle Sekunden je Paar, ${result.repeats} Messwiederholungen. ` +
-          `Alle Wiederholungen ergaben dieselbe Prüfzahl.`;
+        detail.textContent = result.mode === 'achtfahrer-gruppe'
+          ? `8 Fahrer interagieren gemeinsam über ${result.durationS} virtuelle Sekunden. ` +
+            `Nach 30 s reduziert Fahrer F8 testweise seine Leistung. ` +
+            `Endlücke: ${result.finalGapM.toLocaleString('de-DE')} m; Lückenereignisse: ${result.gapEvents}. ` +
+            `Alle ${result.repeats} Wiederholungen ergaben dieselbe Prüfzahl. Keine KI.`
+          : `${result.pairs} unabhängige Paare (also ${result.pairs * 2} Fahrer), ` +
+            `${result.durationS} virtuelle Sekunden je Paar, ${result.repeats} Messwiederholungen. ` +
+            `Alle Wiederholungen ergaben dieselbe Prüfzahl.`;
         report.value = JSON.stringify(lastReport, null, 2);
         copy.disabled = false;
         status.textContent = 'Test erfolgreich. Kopiere den Bericht und sende ihn mir hier im Chat.';
