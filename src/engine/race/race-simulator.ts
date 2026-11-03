@@ -303,7 +303,7 @@ export function simulateRace(x:RaceInput):RaceResult {
               const groupFront=group[0].positionM;
               const meanCp=group.reduce((n,r)=>n+r.dayCpW,0)/group.length;
               const grade=x.segments[segmentFor(s,boundaries)].gradeFraction;
-              const opening=t-s.lastAttackS>=420&&t>=250&&
+              const opening=t-s.lastAttackS>=900&&t>=250&&
                 s.positionM/totalM>=0.18&&s.positionM/totalM<0.88&&
                 reserve>=0.42&&s.positionM>=groupFront-40&&
                 s.positionM>=leader.positionM-120&&
