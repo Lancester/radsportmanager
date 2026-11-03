@@ -198,3 +198,16 @@ Unfall-/Pannenereignisse können später als strukturierte Zufallsereignisse hin
 3. Wollen wir später realistische **Anfahrer-/Positionskämpfe** im Sprint modellieren, obwohl sie deutlich schwieriger sind als reine Wattberechnungen?
 
 Eine endgültige Festlegung dieser offenen Punkte ist für die jetzige Dokumentation noch nicht nötig.
+
+
+## 9. Ergänzende Referenzszenarien zur Feldposition (03.11.2026)
+
+Der Nutzer hat das Fahren im Feld als eigenständige Fahrerfähigkeit festgelegt. Neue Vorschläge:
+
+- **R-09 – Positionierungsfähigkeit bei gleicher Physiologie:** Bei ansonsten gleichen Fahrern/Teams und gleichen Seeds soll höheres Positionskönnen **statistisch häufiger** zu günstigeren Positionen vor Schlüsselstellen oder geringerem Aufrückaufwand führen. Keine garantierten Siege und kein direkter Wattbonus.
+- **R-10 – Enge Zufahrt vor einem Anstieg:** Frühes vs. spätes Aufrücken; Straßenbreite, Verkehr und Teamhilfe bestimmen die tatsächlich erreichbare Position. Gruppenriss und Energieeinsatz nachvollziehbar.
+- **R-11 – Ziehharmonika-Effekt:** Enge Kurven und Beschleunigungswellen können für hintere Fahrer zusätzliche Belastungen verursachen; keine pauschale Strafe für jede hintere Position.
+
+Vollständige Fachanforderung, Zustandsmodell, offene Entscheidungen und Quellen: [PELOTON_POSITIONIERUNG.md](PELOTON_POSITIONIERUNG.md).
+
+Der bisherige Abschnitt mit acht Szenarien bleibt als ursprünglicher Entwicklungsstand erhalten; **jetzt sind elf Szenarien R-01 bis R-11 konzeptionell beschrieben**. Es wurde noch keines softwareseitig validiert.
