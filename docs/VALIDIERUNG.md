@@ -50,3 +50,17 @@ Ein automatischer Testbericht soll Testversion, Seed-Bereich, Code-Commit, Szena
 ## Abnahmeprinzip
 
 Ein Rennen darf überraschend ausgehen. Entscheidend ist, dass die Engine plausible Ursachen dafür kennt und die langfristigen Verteilungen realistisch sind. Die Teststrategie selbst wird nach ersten Experimenten weiterentwickelt.
+
+
+## Konkrete Testszenarien und Messkriterien
+
+Siehe **[REFERENZSZENARIEN.md](REFERENZSZENARIEN.md)**, Abschnitte 3 bis 5, für:
+- die acht Testfälle **R-01 bis R-08** mit Beispielparametern;
+- reproduzierbare Vergleichsbedingungen (feste Eingaben, Seed und Engine-Version);
+- qualitative, physikalisch begründete Erwartungen ohne erfundene Siegerquoten;
+- die übergreifenden Anforderungen **A-01 bis A-12**;
+- den Unterschied zwischen **dokumentierten Testfällen** und tatsächlich **bestandenen Tests**.
+
+**Reihenfolge:** Zuerst R-01 (Ebene) und R-02 (Berg) mit deterministischer Physik; später R-04 (Ermüdung), R-03 (Windschatten) und R-05/R-06 (Renn-KI). Diese Reihenfolge ist vorläufig und wird gemeinsam abgestimmt.
+
+**Noch keine Messdaten:** Monte-Carlo-Testzahlen, Benchmarkzeiten und statistische Verteilungen sind weiterhin offen.

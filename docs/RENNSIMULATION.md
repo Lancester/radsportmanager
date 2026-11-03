@@ -82,3 +82,16 @@ Der Bericht setzt solche Events in natürliche Sprache um. Er darf keine erfunde
 Pelotondynamik, Windschatten in dichten/gesplitteten Gruppen, Reaktion auf Seitenwind, Sprintpositionierung, Verfolgungsarbeit, Langzeitermüdung, Verpflegung, taktisches Verhalten sowie Kalibrierung für Klassiker, Bergetappen, Sprints und Rundfahrten.
 
 **Abnahmekriterium für Weiterentwicklung:** Nicht bloß „läuft“, sondern nachvollziehbare, reproduzierbare und im statistischen Vergleich fachlich vertretbare Ergebnisse.
+
+
+## Konkrete Anforderungen und Referenzszenarien (Issue #1)
+
+Die ausführliche, versionierte Fachspezifikation liegt in **[REFERENZSZENARIEN.md](REFERENZSZENARIEN.md)**.
+
+Sie enthält:
+- die schrittweisen Entwicklungsstufen **M0** (Einzelfahrerphysik) bis **M4** (voller Rennprototyp mit Bericht);
+- zwölf prüfbare Anforderungen **A-01 bis A-12**;
+- acht Szenarien **R-01 bis R-08** für Ebene, Berg, Windschatten, wiederholte Attacken, Fluchtgruppe/Peloton, Sprint, Seitenwind und Einzelzeitfahren;
+- erste Eingabe-/Ausgabedaten mit SI-Einheiten und die Grenzen der bisherigen Modellannahmen.
+
+**Status:** Entwurf zur fachlichen Abstimmung; keine Simulation implementiert oder validiert. Wir beginnen bewusst bei überprüfbarer Einzelfahrerphysik, bevor Gruppen und Taktik ergänzt werden.
