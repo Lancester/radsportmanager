@@ -172,12 +172,14 @@ export function decideIntelligentCrew(input:{
       b.reserveFraction-a.reserveFraction||a.id.localeCompare(b.id));
     // Zeitbasierter Wechsel beeinflusst nur die Bereitschaft zur aktiven
     // Führungsaufgabe; die Fahrposition bleibt physikalisch berechnet.
-    const shift=Math.floor(rotation/Math.max(1,sorted.length));
     const selected=[...sorted.slice(0,requested)];
-    const leader=selected[rotation%selected.length];
+    const frontEligible=selected.filter(r=>
+      gapToFront(r)<=R15_R16.frontWorkRadiusM);
+    const leader=frontEligible.length?
+      frontEligible[rotation%frontEligible.length]:null;
     for(const rider of selected){
       const frontEligible=gapToFront(rider)<=R15_R16.frontWorkRadiusM;
-      const duty:CrewDuty=rider.id===leader.id&&frontEligible?
+      const duty:CrewDuty=leader!==null&&rider.id===leader.id&&frontEligible?
         'fuehrung':'unterstuetzung';
       const effort=mission==='jagd'?
         (duty==='fuehrung'?1.12:1.035):
