@@ -1,6 +1,6 @@
 # Tests, Realismus, Kalibrierung und Performance
 
-**Status:** Teststrategie, noch keine Messdaten.
+**Status:** 198/198 automatische Tests, drei vollständige 50-km-Rennverläufe und echte GitHub-Runner-Diagnosen; **noch keine reale Android-Gesamtrennmessung oder empirische Profirennkalibrierung**.
 
 ## Warum testen?
 
