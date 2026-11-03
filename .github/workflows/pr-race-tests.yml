@@ -1,0 +1,30 @@
+name: Kleine PR-Tests – Renn- und Physikregressionen
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/engine/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - 'package.json'
+      - '.github/workflows/pr-race-tests.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+      - name: Node.js 22 einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Gesamte kleine Regressionstests ausführen
+        run: npm test
+      - name: Manuelles Diagnose-Script auf Syntax prüfen
+        run: node --check scripts/r11-balance-diagnostics.mjs
