@@ -566,3 +566,20 @@ Fachliche Grenzen: Spurwahl-Prognose nur mit derzeitiger Geschwindigkeit anderer
 
 **Nächste Schritte:** (1) Testdaten und tatsächliche Rennresultate untersuchen, (2) Attacken, Gruppenentscheidungen und Fahrerrollen verbessern, (3) erst dann 60/160 Fahrer und 100–200-km-Distanzen auf Smartphone prüfen. [R-09-Details](race/R09_ERSTES_RENNEN.md).
 
+
+
+## R-09: Erster vollständiger Rennsimulator statt weiterer Mikro-Fahrphysik (03.11.2026)
+
+**Neuer verbindlicher Auftrag:** Nutzer möchte jetzt tatsächliche Rennen samt Taktik, Gruppen, Streckenprofilen und Ergebnissen prüfen können, statt zunächst noch mehr Lenk-/Reifen-Kleindetails zu programmieren.
+
+**Erarbeitet im Entwicklungsbranch:**
+- `src/engine/race/race-simulator.ts` – **2–60 Fahrer, 1–30 Teams, 1–60 Streckenabschnitte**, vollständige Strecke statt einzelner 65-s-Manöver; fiktive **30 Fahrer, 5 Teams, 50 km** flach oder hügelig als erster Demo-Lauf.
+- Wiederverwendet: **`advanceMotionStep`** für physikalische Geschwindigkeit, Steigung, aerodynamische Kräfte, Antriebs-/Bremsarbeit; **`critical-power.ts`** für CP/W′-Limit. FTP weiterhin separat.
+- Neue `src/engine/race/race-tactics.ts`: vier Teamleitlinien, Rollen Kapitän/Sprinter/Helfer, einfache Wattentscheidungen zu Grundtempo, Windschatten, Angriff, Verfolgung, Erholung, Zielsprint und Unterstützung des Kapitäns. Keine neuronale KI, kein direkter Tempobonus.
+- Erste vollständige Ergebnisliste mit Zielzeit, Sekundenabstand, watt- und W′-bezogenen Kennzahlen, Ereignissen und Abstandsgruppen. Fahrer-Technik wirkt über physikalische Bremsung in technischen Abfahrten statt 3D-Kurvenmodell.
+- `docs/rennen.html` plus `docs/race/app.js` und `docs/race/race-worker.js`: **mobile Team-Rennbesprechung, Start des ganzen Rennens, Ergebnisliste, Rennlog, Gruppen und identischer Zwei-Taktiken-Vergleich**, alles lokal im Browser-Web-Worker.
+- `tests/r09-race.test.mjs`: echte 50-km-Abnahmen über das zuvor bestätigte Testpaket **169/169** hinaus.
+
+**Wesentliche Abgrenzung:** R-03–R-08-Überholspur- und Kollisions-Labor bleibt bestehen, wird aber **nicht** in jedem 30-Fahrer-Rennen ausgeführt; Gruppen/Windschatten werden für die vollständige Rennsimulation bewusst abstrahiert. Kein vollwertiges 2D-Peloton, keine garantierte Kollisionsfreiheit, keine gegen Profirennen kalibrierten Ergebnisse, noch keine Karriere.
+
+**Prüfstatus:** Diese Runde muss GitHub-Tests, Browser-ESM-Smoke und Pages-Deployment **erst real bestehen**, bevor wir sie als fertig melden. **Noch keine tatsächliche Android-Laufzeit** für die 50-km-Rennen. Ausführlich: [RENNPROTOTYP_R09.md](RENNPROTOTYP_R09.md).
