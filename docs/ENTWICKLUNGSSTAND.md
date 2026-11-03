@@ -263,3 +263,17 @@ Die Testwebseite wurde mit dem Browserstand **`dffcf78`** tatsächlich auf Andro
 Die zwei 120-s-Prüfsummen skalieren achtfach (Abweichung 0,000003 infolge Endrundung). 8-fache Zahl von Zweiergruppen ergibt etwa **5,40-fache Median-Laufzeit**; der genaue Grund der nichtlinearen Skalierung wurde nicht untersucht. Das ist ein erfolgreicher **erster echter Android-Physikbenchmark**, aber **noch kein vollständiges 160-Fahrer-Peloton oder 200-km-Rennen**.
 
 **[Detaillierte Auswertung](ANDROID_BENCHMARK.md)**. **Nächste Entwicklung:** zuerst deterministische **3–8 Fahrer auf einer gemeinsamen Uhr mit echten Nachbarschafts-/Abstandsinteraktionen**, danach auf dem Android-Web-Worker benchmarken. [Issue #23](https://github.com/Lancester/radsportmanager/issues/23) bleibt dafür offen. Keine GitHub-Actions-Dauerlast oder automatischer großer Monte-Carlo-Test erforderlich; aus diesen Daten noch keine Zusage zur Langzeit-Performance machen.
+
+## In Entwicklung: R-03G – Achtfahrergruppe auf gemeinsamer Uhr (03.11.2026)
+
+**Vom Nutzer ausdrücklich beauftragt:** acht Fahrer miteinander fahren lassen und klären, ob schon KI-Entscheidungen stattfinden. **Antwort: Noch keine taktische KI.** Vorgaben für Pedalleistung/Spur bleiben extern; die physikalische Reaktion ist dynamisch.
+
+**Neuer Implementierungsstand im Entwicklungsbranch:** `src/engine/physics/drafting-group.ts` mit 3–8 Fahrern, tatsächlich gemeinsamen Zeitschritten und Windschatten aus mehreren vorausfahrenden Nachbarn. Vorläufige Mehrfahrer-Abschirmung ist mathematisch gedeckelt, nicht empirisch kalibriert. Kollisionen in einer Spur lösen einen Fehler aus, da noch kein autonomes Ausweichen existiert. Als kontrollierbares Testbeispiel wird F8 nach Sekunde 30 um 45 W schwächer; eine Lücke bildet sich aus der Bewegungsphysik und löst ein dokumentiertes Ereignis aus.
+
+**Prüfstatus beim Erstellen des Branches:** **16 neue Tests lokal** mit einer mathematisch entsprechenden Testversion des Physikintegrators erfolgreich; TypeScript 5.8.3 Typprüfung für das neue Modul bestanden. Der **vollständige echte GitHub-Integrationslauf aus 64 bisherigen + 16 neuen Tests** muss durch den vorhandenen kleinen Pages-Workflow nach Übernahme in `main` erst noch bestätigt werden. Bis dahin **nicht** „80/80 auf GitHub bestanden“ behaupten.
+
+**Android:** Die vorhandene öffentliche Webseite bekommt einen vierten Testknopf **„8 Fahrer gemeinsam · 120 s“**, der die **kompilierte Original-TypeScript-Gruppenengine** als Web Worker verwendet. Testergebnis einschließlich Prüfsumme, Lückenweite, Ereigniszeit und tatsächlicher Rechenzeit wird lokal ausgegeben; noch **keine echte Android-Messung** des Gruppenmodus. Die alten 1/10/80-Paar-Presets bleiben nutzbar.
+
+**Technische Erklärung:** [physik/R03G_ACHTFAHRER.md](physik/R03G_ACHTFAHRER.md).
+
+**Nächster Schritt:** Pull Request prüfen und in main übernehmen; GitHub Actions mit **80 Tests und Gruppen-ESM-Smoke-Test** prüfen. Danach vom Nutzer echten Android-Worker-Benchmark für 8 gekoppelte Fahrer über 120 s abfragen. Später: natürliches Aufrücken/Verdrängen, Taktik-Agenten, kalibrierte Aero-Modelle und größere Gruppen.

@@ -89,3 +89,9 @@ Der erste deutschsprachige, statische Android-/Browser-Benchmark für **R-03-Zwe
 **Unmittelbar:** GitHub Pages → Source **GitHub Actions** aktivieren; App-Link/Build prüfen; Android 1/10/80-Paar-Test durchführen und Bericht auswerten. **Danach:** 3–8 tatsächlich gekoppelte Fahrer auf einer gemeinsamen Uhr mit gegenseitiger Position/Windschatten. Erst nach validierten Mobilwerten Optimierung und größere Gruppen.
 
 [Anleitung](ANDROID_BENCHMARK.md) · [Issue #23](https://github.com/Lancester/radsportmanager/issues/23).
+
+## Achtfahrer-Gruppenexperiment R-03G (03.11.2026)
+
+Ein neuer, vorläufiger Physikbaustein verbindet **3–8 Fahrer auf derselben Simulationsuhr**, mit abstands-/seitenabhängiger Windschattenwirkung **aller vorausfahrenden Nachbarn**, Energiebericht und Lückenereignissen. Die KI trifft **noch keine Entscheidungen**; für den ersten Test sind Wattzahlen und Spur vorgegeben.
+
+**Nächste Meilensteine:** (1) 80 GitHub-Tests inklusive echter Integration erfolgreich, (2) neuen Achtfahrer-Web-Worker-Test auf Android ausführen, (3) Positions-/Spurwechselkontrolle und individuelle Fahrtechnik vorbereiten, (4) später regelbasierte taktische Agenten und realistisch kalibrierte Feld-Aerodynamik ergänzen. [Dokumentation](physik/R03G_ACHTFAHRER.md).

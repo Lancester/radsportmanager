@@ -159,3 +159,11 @@ Ein kleiner GitHub-Pages-Workflow soll bei relevantem Commit genau dieselben 64 
 Die Prüfsummen der beiden 120-s-Tests stimmen bis auf 0,000003 mit einer achtfachen Skalierung überein. Die Resultate sind vom Browser-internen Reproduzierbarkeitscheck bestätigt; ein separat ausgeführter Node-Referenzvergleich **derselben Version** fehlt noch. Zwischen 10 und 80 Paaren: 8-fache Rechenarbeit bei ca. 5,40-facher Medianzeit. Die höhere Leistung pro Schritt kann u. a. durch JIT-/Warm-up und andere Laufzeiteffekte entstehen; Ursache nicht unabhängig untersucht.
 
 **Abgrenzung:** Test mit 160 Fahrern bedeutet 80 **unabhängige Zweiergruppen**, nicht ein gekoppeltes Peloton. Keine Validierung einer 200-km-Etappe, komplexer Feldpositionierung, Querwind, KI, Batterieverbrauch oder thermischer Drosselung. Der echte Android-Web-Worker-Funktionstest ist damit bestanden; die realistische Gruppen-/Langzeitprüfung steht aus. Vollständiger Messbericht: [ANDROID_BENCHMARK.md](ANDROID_BENCHMARK.md).
+
+## Achtfahrergruppe R-03G: neuer lokaler Prüfblock (03.11.2026)
+
+**16 neue isolierte lokale Tests erfolgreich** unter Node.js 22.16 und TypeScript 5.8.3, derzeit **mit mathematisch entsprechendem lokalen Bewegungsintegrator**. Geprüft: acht Fahrer synchron, Mehrfachabschirmung, stärkere Abschirmung durch mehrere Vorderleute (gedeckelt), Abstand/Seitenversatz, stationäre Anfangsformation, Lücke durch fest befohlenen Leistungsabfall, Energiegleichgewicht für alle Fahrer, unabhängige Rechenreihenfolge, Zeitschrittweite, Drei-Fahrer-Fall, keine rückwärts gerichtete Schutzwirkung, Kollisionserkennung, Eingabevalidierung, deterministische Ergebnisse und kein Rollwiderstandsbonus.
+
+**Noch ausstehend:** Vollständige Testsuite mit **dem echten** vorhandenen `motion-core.ts` über GitHub Actions: bisher 64 Regressionstests plus 16 neue = **80 erwartete** Tests; Ergebnis erst nach tatsächlicher Ausführung bestätigen. Auch der echte Android-Gruppenworker ist noch nicht gemessen.
+
+[Gruppenmodell und alle Grenzen](physik/R03G_ACHTFAHRER.md).
