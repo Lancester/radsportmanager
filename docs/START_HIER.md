@@ -77,3 +77,16 @@ Der R-10-GitHub-Runner meldete beispielsweise für den hügeligen geschützten L
 **Wiederverwendung ausdrücklich bestätigt:** Vollrennen verwenden unverändert `motion-core.ts` (`advanceMotionStep`) und `critical-power.ts`; der neue `peloton.ts` ergänzt ausschließlich begrenzte Wattwünsche und abstrahierten Windschatten. **R-03 bis R-08 bleiben unveränderte Labortests**, werden nicht als komplettes 2D-Peloton in die 30-Fahrer-Simulation hineinkopiert.
 
 **Für die kommenden Arbeiten:** Noch nicht 160 Fahrer oder 200 km als ausgereift ausgeben. Nächste sachliche Abnahme: qualitative Abstands-/Attacken-/Verfolgungslogik über mehrere Fahrerprofile und Strecken, danach erst größere Fahrerfelder (60 → 100 → 160) und tatsächlicher Android-Gesamtrennbenchmark. **Keine neue Detail-Lenkphysik ohne beobachteten Rennnutzen.**
+
+
+## Aktueller nächster Arbeitsschritt nach R-10 (03.11.2026)
+
+R-11 erweitert zunächst die **Messbasis statt die Physik**: zwei Seeds,
+flache/hügelige 50-km-Strecken, Teamtaktik-Kontrast und fiktive Fahrerprofile
+mithilfe von `src/engine/race/race-audit.ts`,
+`tests/r11-race-balance.test.mjs` und dem **manuell** ausführbaren
+`scripts/r11-balance-diagnostics.mjs`. Die Methodik liegt in
+[docs/race/R11_MEHRSEED_BALANCING.md](race/R11_MEHRSEED_BALANCING.md).
+Erst PR-Testabnahme und Auswertung der Diagnosen, danach gezieltes
+Helfer-/Kapitän-/Peloton-Balancing. R-01 bis R-08 nicht neu entwerfen;
+Issue #42 behält Priorität. Noch keine R-11-Testzahlen als verifiziert ausgeben.

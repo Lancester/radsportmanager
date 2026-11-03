@@ -475,3 +475,21 @@ Der R-10-GitHub-Runner meldete beispielsweise für den hügeligen geschützten L
 **Nicht als sportlich abschließend validieren:** Zwar weniger Chaos als in R-09, aber **20–22** Gruppen im hügeligen 30-Fahrer-Rennen und bis zu neun Minuten Zeitspreizung sind noch kritisch. Bei identischer Tagesform veränderte die offensive Nordwind-Leitlinie die Zielzeit von Kapitän F01 nur um rund **3,78 Sekunden**. Das zeigt den nächsten fachlichen Bedarf: Teamarbeit und Verfolgung **qualitativ** verbessern, tatsächliche Gruppenbildung/Attacken gegen realistische Rennabläufe plausibilisieren, und erst danach größeren Feldern/Langdistanzen Priorität geben. **Keine zusätzliche Detail-Lenk- oder Reifenphysik ohne nachgewiesenen Spielnutzen.**
 
 **Browser:** https://lancester.github.io/radsportmanager/rennen.html läuft im bestehenden Web Worker. Veröffentlicht und im GitHub-Runner getestet; **echte Android-Laufzeit des 50-km-Rennens weiterhin unbekannt**.
+
+
+## R-11: zusätzliche Diagnose vor dem nächsten taktischen Balancing (03.11.2026)
+
+Die dokumentierten R-10-Ergebnisse sind die bislang bestätigte Basis. Für Issue #42
+ergänzt [R-11 Mehr-Seed-Balancing](race/R11_MEHRSEED_BALANCING.md)
+eine **noch zu prüfende** Regression auf zwei Seeds, Flach-/Hügelstrecke,
+Variationen der Teamleitlinie und des fiktiven CP/FTP/W′-Fahrerprofils.
+Die neue Auswertung prüft intern vollständige Klassifikationen, physikalische
+Energiebilanzen, Fahrerzahlen pro Gruppensnapshot und die gemessenen Lücken
+bei bestätigten Fluchten und Einholungen. Sie erstellt zusätzlich isolierte
+Gruppen-/Zeit-/Leistungsdiagnosen.
+
+**Keine Kalibrierung:** Ein guter Testlauf bedeutet nur, dass die Simulation
+konsistent rechnet; 20–22 Gruppen, Ergebnisabstände und Teamtaktik benötigen
+weiterhin eine gesonderte sportliche Plausibilitätsprüfung. Sieben manuell
+ausführbare Läufe dürfen weder als empirische Aussage noch als 160-Fahrer- oder
+Android-Leistungsnachweis dargestellt werden.
