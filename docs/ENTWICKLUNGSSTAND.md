@@ -913,3 +913,69 @@ Verfolgungsorganisation und Sportdirektoren
 entwickeln. Keine ungebetene Detail-Lenkphysik.
 [Alle sieben R-14-Fälle und Grenzen](race/R14_TEAM_FUEHRUNG_VERFOLGUNG.md).
 Issue #42 bleibt offen.
+
+
+## R-15/R-16 – zusammen implementierte reine Rennengine-Verbesserungen (04.11.2026)
+
+**Nutzergrenze verbindlich:** Keine Rundfahrten oder Karrieremodus-
+Features im Arbeitspaket der Rennengine. Teamrollen- und
+Sportdirektor-Einstellungen sind mögliche spätere
+Managementoberflächen; hier werden **nur** die tatsächlichen
+autonomen Entscheidungen der bereits vorhandenen Rennfahrer
+weiterentwickelt.
+
+**R-15:** `race-team-ai.ts` teilt einer Mannschaft bis zu
+fünf verfügbare Helfer für dieselbe Jagd-/Sprintzug-/
+Schutzmission zu, statt genau einen nach R-14.
+Ein einzelner tatsächlich frontnaher Fahrer erhält
+Führungs-Watt, weitere Helfer andere (meist geringere)
+Anforderungen. W′, körperliche Position und Distanz
+zum geschützten Fahrer begrenzen die Beteiligung.
+Echte Frontnähe wird zusätzlich pro Fahrsekunde
+diagnostiziert; Aufträge sind noch keine
+physikalisch garantierte 2D-Staffelfahrt.
+
+**R-16:** Abschätzung der Verfolgung anhand kleiner
+tatsächlich vorausliegender Flucht, gemessener
+Lücke, Hauptfeldgröße, Relativgeschwindigkeit,
+Reststrecke, Teaminteresse und W′. Eine
+ausgewogene Mannschaft kann bei moderater
+Gefahr andere Mannschaften die Arbeit
+leisten lassen. Die alten zwei starren
+Attackenfenster werden **nur im neuen
+Rennmodus** durch situative Angriffe
+mit Erholungs-/W′- und Positionsprüfung
+ersetzt. Die bisherige R-14-KI bleibt
+für einen kontrollierten Vergleich
+über `RaceInput.tacticModel='r14'` wählbar.
+Standard ist `'r15-r16'`.
+
+**Unverändert:** `advanceMotionStep`, die
+CP/W′-Bilanz, physikalischer Brems-/Streckenkern,
+der R-13-Formationswindschatten, R-01–R-08
+und die vollständige 30-Fahrer-/50-km-Berechnung.
+Keine künstliche Einholung oder Angleichung
+großer natürlicher Rückstände.
+
+**Testmethodik:** Neue Isolationstests für
+fünf Helfer innerhalb derselben Mannschaft,
+physische Frontposition, Sprintzug,
+Erschöpfung, taktische Gefahrenabschätzung,
+strategisches Mitfahren, dynamischen Angriff
+und deterministische Vollrennen.
+`scripts/r15-r16-comparison.mjs` vergleicht
+**sieben identische Seed-/Team-/Streckenfälle**
+je mit R-14 und R-15/R-16, also
+14 vollständige Rennen und 420 klassifizierte
+Ergebnisse. Separate Browser-ESM-Abnahme.
+Die finalen GitHub-Actions-Resultate
+stehen in der
+[R-15/R-16-Fachnotiz](race/R15_R16_MEHRHELFER_RENNINTELLIGENZ.md).
+
+**Folgende Entwicklung weiterhin ausschließlich
+Rennengine:** real messbare Frontübernahmen,
+Positionsziele, Relaisarbeit, intelligentere
+Kooperation/Konkurrenz und gezielte
+Verfolgungsentscheidungen mit verschiedenen
+Fahrerfeldern. Issue #42 bleibt für
+weitere Rennmechanik offen.
