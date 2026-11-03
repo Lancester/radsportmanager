@@ -11,7 +11,7 @@ import {decideGapPower, initialGapState, validateGapConfig, F8_GAP_AGENT} from '
 import {decideOvertakeLane,validateOvertakeAgent,R07_F8_AGENT} from '../ai/overtake-controller.ts';
 import type {OvertakeAgentConfig} from '../ai/overtake-controller.ts';
 import type {GapAgentConfig, GapAgentState} from '../ai/gap-controller.ts';
-import {decideFollowingSafety,validateFollowingSafety} from '../ai/following-safety.ts';
+import {decideFollowingSafety,validateFollowingSafety,R05_SAFETY} from '../ai/following-safety.ts';
 import type {FollowingSafetyOptions} from '../ai/following-safety.ts';
 import {applyCpWprimeStep,initialCpState,validateCpProfile,R05_F8_PROFILE} from '../physiology/critical-power.ts';
 import type {CpWprimeProfile,CpWprimeState} from '../physiology/critical-power.ts';
@@ -544,7 +544,7 @@ export function createEightRiderPassExample(durationS=65):GroupInput {
 export function createEightRiderAutoPassExample(durationS=65):GroupInput {
   const input=createEightRiderExample(durationS);
   return {...input,commands:[],gapAgents:[],
-    followingSafety:undefined,
+    followingSafety:{...R05_SAFETY},
     overtakeAgents:[{...R07_F8_AGENT,candidateLanesM:[...R07_F8_AGENT.candidateLanesM]}],
     physiology:[{riderId:'F8',criticalPowerW:300,ftpW:285,
       wPrimeCapacityJ:12000,recoveryEfficiency:0.3}],
