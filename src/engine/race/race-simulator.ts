@@ -297,12 +297,16 @@ export function simulateRace(x:RaceInput):RaceResult {
               const groupFront=group[0].positionM;
               const meanCp=group.reduce((n,r)=>n+r.dayCpW,0)/group.length;
               const grade=x.segments[segmentFor(s,boundaries)].gradeFraction;
-              return t-s.lastAttackS>=420&&t>=250&&
+              const reserve=s.physiology.remainingWPrimeJ/
+                s.profile.wPrimeCapacityJ;
+              const continuing=s.intent==='angriff'&&
+                t-s.lastAttackS<40&&reserve>=0.18;
+              const opening=t-s.lastAttackS>=420&&t>=250&&
                 s.positionM/totalM>=0.18&&s.positionM/totalM<0.88&&
-                s.physiology.remainingWPrimeJ/s.profile.wPrimeCapacityJ>=0.42&&
-                s.positionM>=groupFront-40&&
+                reserve>=0.42&&s.positionM>=groupFront-40&&
                 s.positionM>=leader.positionM-120&&
                 s.dayCpW>=meanCp*0.93&&grade>=-0.03;
+              return continuing||opening;
             })(),
           }:{})
         };
