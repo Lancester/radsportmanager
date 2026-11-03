@@ -127,6 +127,7 @@ export interface ExternalMotionStep {
   aeroLossJ: number;
   rollingLossJ: number;
   gravityWorkJ: number;
+  brakeLossJ: number;
   kineticEnergyChangeJ: number;
   energyResidualJ: number;
 }
@@ -138,10 +139,14 @@ export function advanceMotionStep(input: {
   gradeFraction?: number;
   aeroFactor?: number;
   maxDriveForceN?: number;
+  /** Bremskraft am Kontakt, nach oben durch realistische Modellgrenze begrenzt. */
+  brakeForceN?: number;
 }): ExternalMotionStep {
   const { speedMps, stepSeconds, crankPowerW, rider } = input;
   const aeroFactor = input.aeroFactor ?? 1;
   const gradeFraction = input.gradeFraction ?? 0;
+  const brakeForceN = input.brakeForceN ?? 0;
+  check('brakeForceN',brakeForceN,brakeForceN>=0&&brakeForceN<=1500);
   check('speedMps', speedMps, speedMps >= 0 && speedMps < 100);
   check('stepSeconds', stepSeconds, stepSeconds > 0 && stepSeconds <= 1);
   check('crankPowerW', crankPowerW, crankPowerW >= 0);
@@ -150,16 +155,17 @@ export function advanceMotionStep(input: {
   const massEff = effectiveAccelerationMassKg(rider);
   const step = integrate(speedMps, stepSeconds,
     {lengthM: 1, gradeFraction, crankPowerW},
-    rider, massEff, crankPowerW, 0, input.maxDriveForceN ?? 180, aeroFactor);
+    rider, massEff, crankPowerW, brakeForceN, input.maxDriveForceN ?? 180, aeroFactor);
   const ds = step.distanceM;
   const driveWorkJ = step.forces.drive * ds;
   const aeroLossJ = step.forces.aero * ds;
   const rollingLossJ = step.forces.roll * ds;
   const gravityWorkJ = step.forces.gravity * ds;
+  const brakeLossJ = step.forces.brake * ds;
   const kineticEnergyChangeJ = 0.5 * massEff * (step.endV**2 - speedMps**2);
   return {endSpeedMps: step.endV, distanceM: ds, driveWorkJ,
-    aeroLossJ, rollingLossJ, gravityWorkJ, kineticEnergyChangeJ,
-    energyResidualJ: driveWorkJ - aeroLossJ - rollingLossJ - gravityWorkJ - kineticEnergyChangeJ};
+    aeroLossJ, rollingLossJ, gravityWorkJ, brakeLossJ, kineticEnergyChangeJ,
+    energyResidualJ: driveWorkJ - aeroLossJ - rollingLossJ - gravityWorkJ - brakeLossJ - kineticEnergyChangeJ};
 }
 export function simulateMotionRoute(x: CornerRouteInput): CornerRouteResult {
   validate(x);
