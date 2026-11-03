@@ -198,3 +198,16 @@ Ausführliche Erklärung und Quellen: [physik/R05_ABSTAND_CP_WPRIME.md](physik/R
 | D-076 | **Beschlossen als erste Teststufe** | Teams setzen ihre Leitlinie vor dem Start, Fahrer handeln mit begrenzten Wattwünschen eigenständig; Angriffe, Verfolgung, Windschatten, Erholung, Zielsprints erzeugen physikalisch nachvollziehbare Unterschiede. | Noch keine vollständige sportliche-Leiter- oder Trainings-/Transfersimulation; Parameter fiktiv. |
 | D-077 | **Vorläufiger Arbeitsplan** | Browser-Worker-Rennen über 50 km, vollständige Zeitrangliste und Rennbericht; identischer Seed ermöglicht Vergleich zweier Leitlinien. Danach sportliches Balancing, Gruppenphysik-Validierung und schrittweise größere Fahrerfelder. | Die fiktiven Ergebniswerte sind nicht gegen echte Profi-Renndaten validiert. |
 
+
+
+## R-09: Kurskorrektur hin zu vollständigen Rennen (03.11.2026)
+
+| Entscheidung | Status | Inhalt |
+| --- | --- | --- |
+| D-074 | **Verbindliche neue Entwicklungspriorität** | Ab jetzt **vollständige Rennen mit Gruppen, Zeitabständen, Teams und Taktik** vor weiterer mikroskopischer Lenkwinkel-/Kurven-/Überholphysik. |
+| D-075 | **Architektur** | Bestehendes `motion-core.ts` und CP/W′ direkt wiederverwenden; R-03–R-08 bleiben erhalten als Labor-/Regressionstests, werden nicht zwangsweise in die skalierbare 30-Fahrer-Engine kopiert. |
+| D-076 | **Spielmechanik** | Die Teamleitung wählt **vor dem Rennen eine Leitlinie**; Fahrer handeln daraufhin offline und deterministisch in mehreren taktischen Rollen. Entscheidungen ändern **Watt**, nicht Positionen/Ergebnisse direkt. |
+| D-077 | **Abstraktion** | Windschatten- und Gruppengeometrie bei mehr Fahrern als zweidimensionale Spurkonflikte zunächst **vereinfachen**, Abfahrts-Fahrtechnik über verfügbare Geschwindigkeit und physikalisch tatsächlich ausgeführte Bremsung abbilden. |
+| D-078 | **Validierungsgrenze** | Zunächst fiktive 5 Teams × 6 Fahrer, 50 km flach/wellig, reproducible Seed, echte Zielankunft aller Fahrer und Taktikvergleich. Realitätskalibrierung und Karriere später. Keine reale Profisimulation behaupten. |
+
+**Nicht vollständig recycelter Code ist nicht nutzlos:** Die hochaufgelösten R-03–R-08-Labormodelle bleiben zum Prüfen besonderer Situationen verwendbar, ohne jedes neue Rennen damit auszuführen. [R-09-Gesamtentwurf](RENNPROTOTYP_R09.md).
