@@ -213,3 +213,16 @@ Die Android-Testwebseite, die Browser-Worker-Dateien und der kleine Build-/Pages
 **Aktueller tatsächlicher Status:** 64/64 Node-Tests erfolgreich, TypeScript-Browsermodul lokal kompiliert und Worker-Logik synthetisch unter Node aufgerufen. **Der echte GitHub-Pages-Publish und ein Browser-/Android-Lauf wurden noch nicht bestätigt.** Ein lokaler Playwright-/Chromium-Aufruf war durch den Container-Netzwerkzugriff blockiert. Keine Android-Zahlen erfinden.
 
 **Nächste Nutzeraktion:** Einmalig Repository → Settings → Pages → Source „GitHub Actions“ auswählen, anschließend auf erfolgreichen Workflow und Pages-Link prüfen, gegebenenfalls den bestehenden Workflow manuell starten. Danach Testläufe auf Android Chrome und JSON-Ergebnis hier im Chat. [Issue #23](https://github.com/Lancester/radsportmanager/issues/23) bleibt offen; echte Gruppendynamik mit 3–8 Fahrern kommt erst danach.
+
+
+## GitHub-Actions-Fehlerdiagnose: R-03-Pages-Publish (03.11.2026)
+
+**Betroffener Lauf:** [Actions Run #41676386568](https://github.com/Lancester/radsportmanager/actions/runs/41676386568), Job `deploy`, ID `126058035865`.
+
+**Vom tatsächlichen Job-Protokoll bestätigt:** Checkout, Node.js, TypeScript-Installation, **alle 64 Physiktests** und die Browser-JavaScript-Übersetzung waren erfolgreich. Erst der zusätzliche Node-ESM-**Smoketest** beendete sich mit Exit-Code 1; die GitHub-Pages-Schritte wurden dadurch **übersprungen**.
+
+**Ursache:** Der Workflow verlangte mit `result.elapsedS !== 12` eine *exakt* repräsentierte Gleitkomma-Zeit. Die Simulationsuhr benutzt 0,2-s-Schritte und liegt durch Rechenrundung bei ungefähr `11.999999999999986` Sekunden (Abweichung 1,4×10⁻¹⁴ s). Das ist eine normale Rundungsabweichung, **kein Fehler in der Fahrphysik**. Die Node.js-20- und Ubuntu-Meldungen im Screenshot waren nur Warnung/Hinweis.
+
+**Korrektur:** Workflow-Smokeprüfung verlangt nun `abs(result.elapsedS - durationS) <= 10^-9 s` und kontrolliert zusätzlich Endpositions-Finitheit und positive Schrittzahl; sie gibt Prüfwerte bei Fehlern aus. Es werden **keine Physikformeln, Simulationstests oder Benutzerdaten** geändert.
+
+**Wichtig:** Nach dem Code-Fix erneut gestarteter Pages-Build muss *erst noch erfolgreich abgeschlossen* sein; aus dem alten Lauf lässt sich kein tatsächlicher Pages-Status ableiten. Sollte ein anschließender `configure-pages`-/`deploy-pages`-Schritt scheitern, Pages-Einstellung oder GitHub-Berechtigungen anhand dessen Logs prüfen. Der Nutzer muss nichts an Node.js oder Ubuntu ändern.
