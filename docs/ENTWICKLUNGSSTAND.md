@@ -554,3 +554,15 @@ Fachliche Grenzen: Spurwahl-Prognose nur mit derzeitiger Geschwindigkeit anderer
 **Grenzen:** Ein Konflikt in der Vorhersage führt zur Zurückhaltung, aber eine unerwartete Änderung der Geschwindigkeit/Spur anderer Fahrer kann im laufenden, eigentlichen Solver weiterhin einen Sicherheitsfehler auslösen. Keine voll gekoppelte Fahrrad-Lenk-/Kurvendynamik, keine intelligenten mittigen Peloton-Lücken und noch keine vollständige Fahrerfeld-/Renn-KI mit 160 Fahrern. FTP, CP/W′ und langfristiges Training sind weiterhin nicht sportwissenschaftlich kalibriert.
 
 **Nächste Aufgaben:** Wiedereinscheren in variierende, tatsächlich sichere Lücken; bewegliche Hindernisse und gemeinsames Aushandeln geplanter Spurwechsel; tatsächliche 2D-Lenk-/Kurven-/Bremshaftungsphysik und später ein vollständiges Rennfeld. [R-08-Modell](ai/R08_WIEDEREINSCHEREN_MULTIAGENT.md).
+
+
+## Beschlossener Richtungswechsel und R-09-Rennprototyp (03.11.2026)
+
+**Der Nutzer fordert ausdrücklich, kein weiteres Mikrophysik-Klein-Klein zu entwickeln:** Vorfahrt für **vollständige Rennsimulationen, autonome Teamtaktik, Ereignisse und Zielzeitklassen**. Details der Kurven-/Lenk- und Reifenphysik bleiben vorläufig zurückgestellt. Bestehender R-01–R-08-Physikcode wird **nicht gelöscht**, sondern zentrale `motion-core.ts`-Integrationsphysik und `critical-power.ts` direkt wiederverwendet; für viele Fahrer werden Windschatten und Gruppen **bewusst anders, abstrahiert** berechnet. Die bisherige Achtfahrer-2D-Kollisions-/Positions-KI ist **nicht automatisch** im 30-Fahrer-Modus aktiv.
+
+**R-09 im Entwicklungsbranch:** `src/engine/race/race-tactics.ts` (Leitlinien für fiktive Teams, Rollen und begrenzte Wattwünsche), `src/engine/race/race-simulator.ts` (30 fiktive Fahrer/fünf Teams, 50-km-Flach-/Hügelstrecke, echte Geschwindigkeit und Steigung, CP/W′, Windschatten, technisch vereinfachte Abfahrt, komplette Rangliste, Gruppen- und taktische Events). `docs/rennen.html` mit Rennbesprechung und Taktikvergleich im Web Worker, neue R-09-Tests, Einbindung im bestehenden GitHub-Pages-Workflow.
+
+**Abnahme ausstehend:** Die bisher **169/169 bestandenen** Tests müssen zusammen mit den neuen Rennintegrationstests erneut laufen. TS-Browser-Build, Renn-Smoketest, Github Pages und echter Android-Lauf dürfen erst nach Prüfung als erfolgreich bezeichnet werden. **Erste Rennresultate noch nicht gegen echte Profi-Rennen validiert.**
+
+**Nächste Schritte:** (1) Testdaten und tatsächliche Rennresultate untersuchen, (2) Attacken, Gruppenentscheidungen und Fahrerrollen verbessern, (3) erst dann 60/160 Fahrer und 100–200-km-Distanzen auf Smartphone prüfen. [R-09-Details](race/R09_ERSTES_RENNEN.md).
+

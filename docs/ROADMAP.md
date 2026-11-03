@@ -132,3 +132,15 @@ Nächster Meilenstein nach automatischer Abnahme: sichere Rückkehr ins Feld, be
 Erster regelbasierter Rückwechsel nach ausreichend Überholungen und sicherem Vorrang vor der bisherigen Reihe; mehrere Agenten mit deterministischen, vorausschauend reservierten Spuren; optionale glatte seitliche Bewegung mit begrenzter Querbeschleunigung und vereinfachtem Kurvenkraftbudget.
 
 **Folgende Stufen weiter offen:** dynamische Feldlücken/Reflexreaktionen und verlässliche Kollisionsvermeidung bei abruptem Bremsen, reale 2D-Lenk-/Kurven-/Reibkreisphysik, Taktik/Teamrollen, Ermüdung über lange Etappen, größerer gekoppelter Fahrermodus. [R-08](ai/R08_WIEDEREINSCHEREN_MULTIAGENT.md).
+
+
+## Neue höchste Priorität: R-09 · Erste komplette Rennen statt weiterem Physik-Klein-Klein (03.11.2026)
+
+**Beschlossener Richtungswechsel:** Der bisherige Physikkern hat seinen Zweck erfüllt. Er wird als Grundlage beibehalten; detaillierte Lenk-/Kurven-/Überhol-Simulation ist **zurückgestellt**. Keine weitere Verfeinerung bloß, weil sie technisch möglich ist.
+
+**Schritt R-09 (in Umsetzung):** Eine kurze, aber **vollständige 50-km-Rennsimulation** mit 30 Fahrern/fünf Teams, Strecke mit wechselnden Steigungen und technischen Abfahrten, Teamleitlinien und autonom getroffenen Watt-/Taktikentscheidungen. Gemeinsamer bisheriger Bewegungskern und CP/W′-System, vereinfachte skalierbare Windschatten-/Gruppenlogik. Rennereignisse, echte Zielzeit und Klassifikation, Vergleich auf derselben Strecke/gleichem Seed. Smartphone-Web-Worker-Oberfläche und CI. Siehe [R-09](race/R09_ERSTES_RENNEN.md).
+
+**Nächster fachlicher Schritt erst nach tatsächlichen Rennen:** Auswerten, warum bestimmte Fahrer gewinnen, ob Gruppen, Angriffe, Zielsprints und Abfahrten glaubwürdig sind und ob reale Leistungskriterien nötig sind. Taktik und sportliche-Leiter-Kompetenz sinnvoll vertiefen. Danach optional 60/160 Fahrer und länger Distanz – nur wenn Rechenzeit auf Android bekannt ist.
+
+**Keine Priorität mehr:** Issue #39 (innenliegende Überhollücken, Details der Reifenhaftung, Querbeschleunigung) bleibt optional zurückgestellt, solange die vollständige Rennschleife noch nicht glaubwürdig ist.
+

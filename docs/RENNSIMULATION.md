@@ -135,3 +135,19 @@ Der neue Prototyp `src/engine/physics/corner-route.ts` bestimmt aus Radius, Reif
 Die neue Datei `src/engine/physics/drafting-pair.ts` simuliert **zwei** Fahrer mit gleicher Uhr, eigenen Positionen/Leistungen und abstands-/seitenversatzabhängigem Windschatten. Sie verwendet **denselben** existierenden Bewegungsintegrator `advanceMotionStep` aus `motion-core.ts`: Nur die aerodynamische Widerstandskraft wird durch einen variablen Faktor reduziert. Kein direkter Watt- oder Siegerbonus.
 
 Statische Referenz: bei 39,6 km/h benötigt der fiktive Fahrer im Wind 281,14 Pedal-Watt, dicht hinter einem Vordermann 216,00 Pedal-Watt; *die zugehörige Kurve ist noch nicht empirisch kalibriert*. 15 neue lokale Tests bestanden, zusammen **64/64**. Grenzen, Formeln, Quellen und neue Fragen: [physik/R03_WINDSCHATTEN_ZWEI_FAHRER.md](physik/R03_WINDSCHATTEN_ZWEI_FAHRER.md).
+
+
+## Tatsächlich implementierter Start der Rennschleife: R-09 (03.11.2026)
+
+Die ältere Einleitung oben beschreibt den **historischen Konzeptstand**. Der neue ausführbare Prototyp `src/engine/race/race-simulator.ts` setzt zuerst eine vollständige Distanz/Ergebnisliste um, nicht den kompletten bereits gewünschten Profi-Rennrealismus.
+
+- Eine **fiktive**, deterministische 50-km-Strecke mit 30 Fahrern und fünf Teams in `createRaceExample`.
+- Gleiche **Bewegungsphysik `advanceMotionStep`** und dasselbe **CP/W′-Modul `applyCpWprimeStep`** wie in R-01–R-08.
+- Neuer bewusster **vereinfachter Gruppen- und Windschatten-Ansatz** für Skalierbarkeit – die alte 2D-/Achtfahrer-Kollisions- und Überhol-KI wird **nicht automatisch im neuen Rennmodus verwendet**.
+- Fahrer-KI `src/engine/race/race-tactics.ts` mit Wattwunsch aus **vorgegebener Teamleitlinie**, Rolle, Rennfortschritt und W′-Reserve. Die Wattwünsche werden nicht direkt in Geschwindigkeit umgerechnet, sondern dem bestehenden Physikkern übergeben.
+- Abfahrts-Fahrtechnik wird durch eine plausible Geschwindigkeitsgrenze mit **realer Bremskraft** abgebildet, nicht durch Lenkwinkel/Schräglage.
+- Echte Zeit-Finish-Liste, Abstände, gruppierte Rennzwischenstände und chronologische taktische Ereignisse, identisch reproduzierbar per Seed.
+- Neue Android-/Browseransicht `docs/rennen.html` mit Strategieauswahl und zwei identischen Rennbedingungen für einen Taktikvergleich.
+
+**Noch nicht kalibriert oder vollständig:** genaue aerodynamische Wirkung größerer Gruppen, Lenk-/Kollisionsfreiheitsgarantie, Langzeitermüdung unter CP, echte Ausreißer-Peloton-Aushandlung, Etappentaktik und Managerkarriere. W′-Regeneration bleibt vorläufige Heuristik, fiktive Startwerte und Ergebnisverteilungen sind noch nicht mit echten Rennen abgeglichen. Vollständige R-09-Tests/Browser-Build zuerst in GitHub Actions bestätigen. Siehe [R-09-Entwicklungsdokument](race/R09_ERSTES_RENNEN.md).
+
