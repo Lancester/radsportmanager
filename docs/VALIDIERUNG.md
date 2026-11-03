@@ -541,3 +541,43 @@ quantifiziert**. Die nächste Abnahme sollte deshalb ein sauberer
 A/B-Vergleich für 2–3er-Flucht und dichtes 30er-Feld bei gleicher
 Motorik/CP/W′ und denselben R-11-Seeds sein. Die 42-m-Diagnosegrenze
 ist kein aerodynamischer Einflussradius.
+
+
+## R-12: tatsächlicher A/B-Vergleich der Formationswindschatten-Variante (03.11.2026)
+
+- [PR-Tests #41730702259](https://github.com/Lancester/radsportmanager/actions/runs/41730702259):
+  **209/209 Tests**, inklusive sieben zusätzlicher R-12-Prüfungen zu
+  solo/2er/3er/30er-Formation, Distanz, deterministischer
+  Eingabesortierung, ungültigen Werten, bitidentischem
+  `legacy` und vollständigem 50-km-A/B-Rennen mit Energie-/
+  CP/W′-Bilanz.
+- [Einmaliger A/B-Lauf #41730692771](https://github.com/Lancester/radsportmanager/actions/runs/41730692771):
+  **14 vollständige 50-km-Rennen**, jeweils dieselben sieben
+  R-11-Fälle mit alter und neuer Aerodynamik. Die sieben
+  gemessenen Legacy-Maximalgruppen stimmen exakt mit der
+  früheren Referenz überein. Alle 420 Fahrer erreichten im Modell
+  das Ziel.
+- [Build-/Browserkontrolle #41730888302](https://github.com/Lancester/radsportmanager/actions/runs/41730888302):
+  TypeScript-ESM-Build und 30-Fahrer-Rennen mit aktivierter
+  `formation-experiment`-Variante erfolgreich. Der hierfür
+  einmalige Workflow wurde aus dem Feature-Branch entfernt.
+- Aero-Restfaktor der neuen Variante kann bis 0,4 sinken;
+  er ist **kein** kalibrierter Messwert. Die 42-m-Gruppen-
+  Grenze aus R-10 ist davon strikt getrennt.
+
+**Befund:** Auf dem Flachprofil verbessert sich zwar der
+Peloton-Zusammenhalt in der 42-m-Abstandsdiagnose von
+12 auf 3–4 maximale Gruppen und die mediane Zielzeitlücke
+sinkt deutlich, aber der letzte Rückstand wächst in
+**allen sieben** Vergleichen; Flach 2027 334,1 → 937,5 s.
+Vier der sieben Maximalgruppenwerte werden kleiner,
+zwei größer, einer bleibt gleich. Der Hügelkurs
+bleibt uneinheitlich. **Die Experimentvariante wird nicht
+als freigegebene Rennphysik, empirisches Ergebnis oder
+qualitativ abschließend verbessertes Gesamtmodell bewertet.**
+Alle Fälle und W′-/Wattwerte: [R-12-Fachdokument](race/R12_FORMATIONSAERODYNAMIK.md).
+
+**Weiter offen:** realistische Dichte/Querspur im Peloton,
+Mindestabstand, tatsächlicher Team-Führungswechsel,
+Feld-Verfolgungslogik, abgehängte Fahrer und unabhängige
+Realrenndaten. Kein Android-50-km-Vergleich.
