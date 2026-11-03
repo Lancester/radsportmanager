@@ -57,6 +57,17 @@ Verbindliche fachliche Anforderung und vorgeschlagene Umsetzung: [PELOTON_POSITI
 | ID | Status | Entscheidung | Grund |
 | --- | --- | --- | --- |
 | D-029 | **Beschlossen (03.11.2026)** | Fahrerleistung wird grundsätzlich als **Pedal-/Kurbel-Watt** definiert; Verluste im Antrieb werden separat bei der Übertragung ans Hinterrad berechnet. | Explizit vom Nutzer bestätigt, wie Powermeter; saubere Energiebilanz. |
-| D-030 | **Zu prüfen** | In R-01 zunächst `η = 0,975` und konstante Fahrerhaltung/CdA verwenden; Vergleich `η = 1` als theoretischen Kontrollfall. | Reproduzierbare Referenz, noch keine kalibrierte realistische Standardannahme. |
+| D-030 | **Beschlossen als Testkonvention, nicht kalibriert (03.11.2026)** | Für R-01/R-02 wird vorläufig `η = 0,975` genutzt; `η` bleibt frei parametrierbar und wird später fachlich kalibriert. `η = 1` ist ein theoretischer Kontrollfall. | Vom Nutzer bestätigt, ohne daraus einen universellen Wirkungsgrad zu behaupten. |
 
-Die Rechnung und die übrigen offenen Fragen stehen unter [physik/R01_EBENE.md](physik/R01_EBENE.md). **D-029 ist bestätigt;** der konkrete Wirkungsgrad von 97,5 %, spätere CdA-Variation und die Reihenfolge von Beschleunigungsmodellen sind weiterhin zu besprechen. Die Zahlen von R-01 sind Testwerte, keine kalibrierten Standardwerte.
+Die Rechnung und die übrigen offenen Fragen stehen unter [physik/R01_EBENE.md](physik/R01_EBENE.md). **D-029 und die R-01-Empfehlungen sind bestätigt:** 97,5 % als vorläufiger Testwert, variable CdA-Parameter für spätere Ausrüstung und Körperhaltung sowie zunächst stationäre Einzeltests, Beschleunigung später. Der endgültig realistisch kalibrierte Wirkungsgrad bleibt offen. Die Zahlen von R-01 sind Testwerte, keine kalibrierten Standardwerte.
+
+## R-02 und Materialinvestitionen: bestätigte Grundrichtung (03.11.2026)
+
+| ID | Status | Entscheidung | Grund |
+| --- | --- | --- | --- |
+| D-031 | **Beschlossen** | CdA des Fahrers/Rads darf abhängig von Körperhaltung, Ausstattung und später Pelotonposition variieren. | Aerodynamik ist physikalische Eigenschaft, kein pauschaler Bonus. |
+| D-032 | **Beschlossen** | Für die ersten Einzelreferenzen stationäre Fahrten; **Beschleunigung und Bremsen später ausdrücklich ergänzen**. | Zunächst isolierte und prüfbare Gleichungen. |
+| D-033 | **Beschlossen** | Verbesserte Ausrüstung soll im Karrieremodus **käuflich und budgetabhängig** sein: kleine Teams besitzen anfangs weniger hochwertige Optionen. Wirkung über Masse, CdA, Crr und ggf. Wirkungsgrad, nicht über direkte Ergebnisboni. | Wirtschaftliche Entscheidungen wirken realistisch und streckenabhängig. |
+| D-034 | **Zu prüfen** | Produktgruppen, konkrete Werte, Preise, Reglement, Haltbarkeit und Wechselwirkungen (z. B. Aero-Position vs. abrufbare Leistung). | Recherche und Balancing fehlen. |
+
+**Umsetzung bisher:** R-02 besitzt konfigurierbare Materialmasse und CdA und berechnet deren physikalische Wirkung. Noch **kein Shop, kein Team-Budget und keine dynamischen Haltungswechsel**. Fachliche Herleitung: [physik/R02_BERG.md](physik/R02_BERG.md).

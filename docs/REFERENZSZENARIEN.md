@@ -221,3 +221,14 @@ Der fachliche Ebenenfall **R-01** wurde als ausführbarer **stationärer** Einze
 - **300 W am Pedal** (η = 0,975): 40,545023 km/h, 29:35,80 min.
 - Der vorläufige Antriebswirkungsgrad und andere Beispielparameter sind ausdrücklich **noch nicht final kalibriert**.
 - 7/7 lokale Tests bestanden, **kein** GitHub-Actions-Lauf und noch **keine** Gesamt-Rennsimulation.
+
+## 11. R-02 – tatsächlich berechneter Bergreferenzfall (03.11.2026)
+
+Der stationäre Anstieg R-02 ist als gemeinsame physikalische Erweiterung von R-01 programmiert. Vollständige Rechnung, Annahmen, Kosten-/Materialausblick und neun neue Tests: [physik/R02_BERG.md](physik/R02_BERG.md).
+
+- 8 km Straßenlänge, 7 % Steigung = **558,633 m Höhengewinn**, nicht genau 560 m.
+- **60 kg Fahrer + 8 kg Material, 300 Pedal-W:** **19,342501 km/h**, **24:48,95**.
+- **80 kg Fahrer + 8 kg Material, 300 Pedal-W:** **15,682984 km/h**, **30:36,39**.
+- Kontrollvarianten: 2 kg leichtere Ausrüstung und geringeres CdA; bei 0 % exakt identische Resultate zu R-01.
+- Lokal 9 neue Tests + 7 alte R-01-Tests bestanden. **Kein** Android- oder GitHub-Actions-Test.
+- Alle Zahlen gelten für das stark vereinfachte, konstante stationäre Modell. Die Materialeffekte sind Demonstrationswerte, nicht produktbezogene Zusagen.

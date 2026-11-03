@@ -38,3 +38,7 @@ Das Repository ist **öffentlich**, aber eine Open-Source-Lizenz wurde noch **ni
 ## Erster programmierter Physiktest
 
 Der Test **R-01 – Ebene, 20 km, 250/300 Watt** ist als erstes isoliertes, deterministisches TypeScript-Modul umgesetzt. Die verständliche Herleitung und die Ergebnisse stehen in [docs/physik/R01_EBENE.md](docs/physik/R01_EBENE.md). Lokale Tests: `npm run test:r01` (Node.js mit TypeScript-Stripping). **Das ist noch kein spielbarer Rennmanager.**
+
+## Zweiter Physiktest: R-02 am Berg
+
+Neu: [R-02 – stationärer Anstieg](docs/physik/R02_BERG.md) mit Schwerkraft, geometrisch korrekter Steigung und vereinfachten Vergleichen zwischen Fahrer- und Materialgewicht sowie CdA. **16 lokale Tests** prüfen R-01 und R-02 gemeinsam; `npm test`. Die spätere Ausrüstung soll eine budgetabhängige strategische Entscheidung sein; der Karriere- und Kaufteil ist noch nicht implementiert.
