@@ -181,3 +181,10 @@ Der Nutzer hat ausdrücklich den Fokus von immer detaillierterer Lenk-/Überhol-
 
 **Erste Ergebnisse sind vorläufig und müssen gegen plausible Renndaten balanciert werden.** Keine langfristige Teamkarriere und keine wissenschaftlich kalibrierte Ermüdung. [Entwicklungsplan](docs/race/R09_ERSTES_RENNEN.md).
 
+
+
+## NEU: Erster vollständiger Radsport-Rennprototyp (R-09)
+
+Ab hier geht es um **komplette Rennen und Teamtaktik**, nicht immer detailliertere Kurven-/Lenkmikrophysik. Ein neues, für größere Fahrerfelder **bewusst abstrahiertes** Rennen mit **30 fiktiven Fahrern aus 5 Teams über 50 km** verwendet den bewährten **gemeinsamen Bewegungskern und CP/W′ direkt wieder**. Windschatten, Teamrollen, Angriffe, Verfolgung, Sprints, Hügel und Abfahrten erzeugen Gruppen und ein Zielklassement. Eine Smartphone-freundliche Testseite unter [`docs/rennen.html`](docs/rennen.html) bietet vorab Teamstrategie und Streckenwahl sowie einen Test mit identischem Seed und unterschiedlicher Leitlinie.
+
+Die detaillierten Gruppen-/Überhol-Labormodule R-03–R-08 **bleiben erhalten und werden getestet**, müssen aber nicht in die skalierbare 30-Fahrer-Engine gezwungen werden. Erste Rennresultate sind noch **nicht** mit echten Profirennen kalibriert. [Architektur und Grenzen](docs/RENNPROTOTYP_R09.md).
