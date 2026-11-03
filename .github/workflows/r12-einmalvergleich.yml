@@ -1,0 +1,28 @@
+name: R-12 – einmalige 14-Rennen-Windschatten-Diagnose
+on:
+  push:
+    branches: [feature/r12-aero-formation-vergleich]
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Repository laden
+        uses: actions/checkout@v4
+      - name: Node einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sieben R-11-Fälle mit beiden Windschattenmodellen vergleichen
+        run: |
+          node --experimental-strip-types scripts/r12-aero-comparison.mjs | tee r12-aero-auswertung.txt
+          test "$(grep -c '^R12-VERGLEICH ' r12-aero-auswertung.txt)" -eq 7
+          test "$(grep -c '^R12-GESAMT ' r12-aero-auswertung.txt)" -eq 1
+      - name: Ergebnis aufbewahren
+        uses: actions/upload-artifact@v4
+        with:
+          name: r12-aero-ab-diagnose
+          path: r12-aero-auswertung.txt
+          retention-days: 14
