@@ -1,6 +1,6 @@
 # R-11 – mehrere Seeds und Fahrerprofile: Balancing-Diagnose
 
-**Stand: 03.11.2026 – Implementierung im Arbeitsbranch, GitHub-Actions-Abnahme ausstehend.**
+**Stand: 03.11.2026 – PR #47 in main; 202/202 Regressionstests, Browser-Build und GitHub Pages erfolgreich. Zusätzliche 7-Rennen-Diagnose noch nicht ausgeführt.**
 
 ## Anlass und Umfang
 
@@ -84,3 +84,21 @@ Wattwerte oder Gruppen-Schwellen anpassen. **Issue #42 bleibt offen.**
 
 **Keine Änderung am Nutzerbeschluss:** vollständige Rennen und glaubwürdige
 autonome Taktik vor weiterer Kurven-, Reifen- oder Lenk-Mikrophysik.
+
+
+## Verifizierte technische Abnahme
+
+- [PR #47](https://github.com/Lancester/radsportmanager/pull/47) mit den vier
+  R-11-Regressionstests ist auf main übernommen.
+- [Pull-Request-Tests #41727050681](https://github.com/Lancester/radsportmanager/actions/runs/41727050681):
+  **202 bestanden, 0 Fehler**, einschließlich aller R-11-Tests und
+  Syntaxprüfung des Diagnoseskripts.
+- [main-Workflow #41727203475](https://github.com/Lancester/radsportmanager/actions/runs/41727203475):
+  **202 bestanden, 0 Fehler**, drei ursprüngliche 50-km-Rennproben,
+  TypeScript-Browser-Build, ESM-Smoke-Test und GitHub Pages erfolgreich.
+
+**Grenze der Bestätigung:** 202 erfolgreiche Tests beweisen keinen
+realitätsnahen Pelotonablauf. Der neue siebenläufige Mehr-Seed-Diagnoselauf
+wurde **nicht** zusätzlich gestartet; deshalb stehen hier absichtlich keine
+erfundenen neuen Messergebnisse. Die 20–22 Maximalgruppen der alten
+hügeligen R-10-Basis bleiben ein zu untersuchender Befund.
