@@ -22,6 +22,8 @@ export interface TacticObservation {
   reserveFraction:number;
   /** R-14 verhindert alte unkoordinierte Mehrfach-Verfolgung/Tempoarbeit. */
   coordinatedTeamPace?:boolean;
+  /** R-16: opportunistische Angriffsentscheidung statt fixer Streckenfenster. */
+  attackOpportunity?:boolean;
 }
 export interface TacticDecision {
   desiredPowerW:number;
@@ -60,10 +62,13 @@ export function chooseRacePower(o:TacticObservation):TacticDecision {
   // Klar definierte Ausreißfenster: keine mehrstündige harte Attacke.
   const inWindow=(o.progress>=0.22&&o.progress<0.245) ||
      (o.progress>=0.64&&o.progress<0.66);
-  if(o.strategy==='offensiv' && o.role==='kapitaen' && inWindow &&
+  if(o.strategy==='offensiv' && o.role==='kapitaen' &&
+     (o.attackOpportunity??inWindow) &&
      o.reserveFraction>0.32){
     return {intent:'angriff',desiredPowerW:cp+65+55*o.aggression,
-      reason:'Vorab gewählte offensive Leitlinie: begrenzte Attacke'};
+      reason:o.attackOpportunity===undefined?
+        'Vorab gewählte offensive Leitlinie: begrenzte Attacke':
+        'Rennlage, Fahrerposition und W′-Reserve erlauben Angriff'};
   }
   // Nur bei Rückstand wird die Verfolgung teurer, nie automatisch schneller.
   if(!o.coordinatedTeamPace &&

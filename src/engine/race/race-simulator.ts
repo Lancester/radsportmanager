@@ -17,6 +17,8 @@ import {chooseRacePower,stabilizeRaceDecision} from './race-tactics.ts';
 import {decidePackInstruction,pelotonGroups} from './peloton.ts';
 import {formationAeroFactors} from './formation-aero.ts';
 import {decideTeamPace} from './team-pacing.ts';
+import {decideIntelligentCrew} from './race-team-ai.ts';
+import type {CrewMission,CrewDuty} from './race-team-ai.ts';
 import type {TeamPaceKind} from './team-pacing.ts';
 import type {RaceRole,RaceStrategy,RaceIntent,TacticDecision} from './race-tactics.ts';
 
@@ -41,11 +43,13 @@ export interface RaceInput {
   /** Standard: Formations-Windschatten. 'legacy' bewahrt den R-10-Vergleich.
    * 'formation-experiment' bleibt als Alias für R-12-Vergleichsdaten erhalten. */
   aeroModel?:'formation'|'legacy'|'formation-experiment';
+  /** Standard: R-15/R-16-Renn-KI. R-14 zum kontrollierten Vergleich. */
+  tacticModel?:'r14'|'r15-r16';
   stepSeconds?:number;
   maxRaceTimeS?:number;
 }
 export type RaceEventType =
-  'start'|'attack'|'chase'|'sprint'|'recovery'|'segment'|'group-split'|'breakaway'|'breakaway-caught'|'finish'|'team-pace'|'team-chase';
+  'start'|'attack'|'chase'|'sprint'|'recovery'|'segment'|'group-split'|'breakaway'|'breakaway-caught'|'finish'|'team-pace'|'team-chase'|'sprint-train';
 export interface RaceEvent {
   timeS:number;km:number;type:RaceEventType;
   riderId?:string;teamId?:string;description:string;
@@ -73,7 +77,9 @@ export interface RaceResult {
     groupSplits:number;maximumGroups:number;teams:number;
     breakaways:number;caughtBreakaways:number;paceSupportSteps:number;
     meanAeroFactor:number;minimumAeroFactor:number;
-    teamPaceStarts:number;teamChaseStarts:number};
+    teamPaceStarts:number;teamChaseStarts:number;
+    multiHelperAssignments:number;maxSimultaneousTeamHelpers:number;
+    sprintTrainAssignments:number;actualFrontWorkSteps:number};
 }
 interface State {
   rider:RaceRider;physical:CornerRider;profile:CpWprimeProfile;
@@ -83,6 +89,8 @@ interface State {
   driveWorkJ:number;brakeLossJ:number;energyResidualJ:number;
   crankWorkJ:number;intentSinceS:number;lastChaseEndS:number;
   teamPaceKind:TeamPaceKind|null;
+  crewMission:CrewMission|null;crewDuty:CrewDuty|null;
+  lastAttackS:number;
 }
 const ensure=(label:string,n:number,condition:boolean)=>{
   if(!Number.isFinite(n)||!condition)throw new RangeError('Rennsimulation: '+label);
@@ -137,6 +145,9 @@ export function validateRace(x:RaceInput):void {
     for(const k of ['descentSkill','sprintSkill','aggression'] as const)
       ensure(k,r[k],r[k]>=0&&r[k]<=1);
   }
+  if(x.tacticModel!==undefined&&
+    x.tacticModel!=='r14'&&x.tacticModel!=='r15-r16')
+    throw new RangeError('Rennsimulation: tacticModel ungültig');
   if(x.aeroModel!==undefined &&
     x.aeroModel!=='legacy'&&x.aeroModel!=='formation'&&
     x.aeroModel!=='formation-experiment')
@@ -165,7 +176,8 @@ function buildStates(x:RaceInput):State[] {
       decision:{desiredPowerW:dayCpW,intent:'grundtempo',reason:'Rennstart'},
       intent:'grundtempo',driveWorkJ:0,brakeLossJ:0,energyResidualJ:0,
       crankWorkJ:0,intentSinceS:0,lastChaseEndS:-1e9,
-      teamPaceKind:null};
+      teamPaceKind:null,crewMission:null,crewDuty:null,
+      lastAttackS:-1e9};
   });
 }
 function splitGroups(active:State[]):State[][] {
@@ -209,7 +221,9 @@ export function simulateRace(x:RaceInput):RaceResult {
   let aeroFactorSum=0,aeroFactorSamples=0,minimumAeroFactor=1;
   const counters={attacks:0,chases:0,sprints:0,groupSplits:0,
     breakaways:0,caughtBreakaways:0,paceSupportSteps:0,
-    teamPaceStarts:0,teamChaseStarts:0};
+    teamPaceStarts:0,teamChaseStarts:0,
+    multiHelperAssignments:0,maxSimultaneousTeamHelpers:0,
+    sprintTrainAssignments:0,actualFrontWorkSteps:0};
   while(states.some(s=>s.finishTimeS===null)){
     if(t>=(x.maxRaceTimeS??30000))throw new RangeError('Rennsimulation: Zeitlimit überschritten');
     const active=states.filter(s=>s.finishTimeS===null);
@@ -230,16 +244,37 @@ export function simulateRace(x:RaceInput):RaceResult {
       formationAeroFactors(ordered.map(s=>({id:s.rider.id,
         positionM:s.positionM}))):null;
     if(t>=nextTacticS-1e-9){
-      const orders=decideTeamPace({
+      const coordinated=x.tacticModel!=='r14';
+      const planningRiders=active.map(s=>({
+        id:s.rider.id,teamId:s.rider.teamId,role:s.rider.role,
+        positionM:s.positionM,speedMps:s.speedMps,
+        criticalPowerW:s.dayCpW,
+        reserveFraction:s.physiology.remainingWPrimeJ/
+          s.profile.wPrimeCapacityJ,
+        aggression:s.rider.aggression,
+      }));
+      const teamRefs=x.teams.map(team=>({
+        id:team.id,strategy:team.strategy,
+      }));
+      const planned=coordinated?decideIntelligentCrew({
         timeS:t,progress:Math.min(1,leader.positionM/totalM),
-        teams:x.teams.map(team=>({id:team.id,strategy:team.strategy})),
-        riders:active.map(s=>({
-          id:s.rider.id,teamId:s.rider.teamId,role:s.rider.role,
-          positionM:s.positionM,criticalPowerW:s.dayCpW,
-          reserveFraction:s.physiology.remainingWPrimeJ/
-            s.profile.wPrimeCapacityJ,
-        })),
+        remainingM:Math.max(0,totalM-leader.positionM),
+        teams:teamRefs,riders:planningRiders,
+      }):null;
+      const orders=coordinated?null:decideTeamPace({
+        timeS:t,progress:Math.min(1,leader.positionM/totalM),
+        teams:teamRefs,riders:planningRiders,
       });
+      if(planned){
+        const counts=new Map<string,number>();
+        for(const order of planned.orders.values()){
+          const teamId=byId.get(order.riderId)!.rider.teamId;
+          counts.set(teamId,(counts.get(teamId)??0)+1);
+        }
+        counters.maxSimultaneousTeamHelpers=Math.max(
+          counters.maxSimultaneousTeamHelpers,...counts.values(),0);
+      }
+      const attackGroups=coordinated?splitGroups(active):[];
       for(const s of states){
         if(s.finishTimeS!==null)continue;
         const cap=captainByTeam.get(s.rider.teamId);
@@ -255,29 +290,69 @@ export function simulateRace(x:RaceInput):RaceResult {
           deficitToLeaderM:Math.max(0,leader.positionM-s.positionM),
           reserveFraction:s.physiology.remainingWPrimeJ/s.profile.wPrimeCapacityJ,
           coordinatedTeamPace:true,
+          ...(coordinated?{
+            attackOpportunity:(()=>{
+              const reserve=s.physiology.remainingWPrimeJ/
+                s.profile.wPrimeCapacityJ;
+              // Begonnene Attacke darf sich auch bei gelungener Ablösung
+              // vom Feld fortsetzen; sie endet nach 40 s oder W′-Mangel.
+              if(s.intent==='angriff'&&t-s.lastAttackS<40&&reserve>=0.18)
+                return true;
+              const group=attackGroups.find(g=>g.includes(s));
+              if(!group||group.length<4)return false;
+              const groupFront=group[0].positionM;
+              const meanCp=group.reduce((n,r)=>n+r.dayCpW,0)/group.length;
+              const grade=x.segments[segmentFor(s,boundaries)].gradeFraction;
+              const opening=t-s.lastAttackS>=900&&t>=250&&
+                s.positionM/totalM>=0.18&&s.positionM/totalM<0.88&&
+                reserve>=0.42&&s.positionM>=groupFront-40&&
+                s.positionM>=leader.positionM-120&&
+                s.dayCpW>=meanCp*0.93&&grade>=-0.03;
+              return opening;
+            })(),
+          }:{})
         };
         const baseProposal=chooseRacePower(obs);
-        const order=orders.get(s.rider.id);
-        // Volle W′-/Sprint-/Angriffssouveränität hat Vorrang vor Teamarbeit.
-        const eligible=order&&
+        const crew=planned?.orders.get(s.rider.id);
+        const oldOrder=orders?.get(s.rider.id);
+        const assignedKind:TeamPaceKind|null=crew?
+          (crew.mission==='jagd'?'verfolgung':'fuehrung'):
+          (oldOrder?.kind??null);
+        const desired=crew?.desiredPowerW??oldOrder?.desiredPowerW;
+        // Angriffe und zwingende Erholung behalten Vorrang.
+        const eligible=assignedKind!==null&&
           !['sprint','angriff','erholung'].includes(baseProposal.intent);
-        const proposal=eligible?{
-          desiredPowerW:order.desiredPowerW,
-          intent:order.kind==='verfolgung'?'verfolgung' as const:'helferarbeit' as const,
-          reason:order.reason,
+        const proposal:TacticDecision=eligible?{
+          desiredPowerW:desired!,
+          intent:assignedKind==='verfolgung'?'verfolgung':'helferarbeit',
+          reason:crew?.reason??oldOrder!.reason,
         }:baseProposal;
-        // Wechsel einer Schicht wird nicht durch die alte Chase-Hysterese
-        // zu mehreren gleichzeitig führenden Helfern verlängert.
-        const decision=order?.kind==='verfolgung'||s.teamPaceKind==='verfolgung'?
-          proposal:stabilizeRaceDecision({
+        // Taktischer Wechsel darf keinen 'alten' Verfolger ohne Auftrag
+        // durch die allgemeine Hysterese im Einsatz halten.
+        const decision=coordinated||assignedKind==='verfolgung'||
+          s.teamPaceKind==='verfolgung'?proposal:stabilizeRaceDecision({
             previous:s.decision,proposal,timeS:t,
             previousSinceS:s.intentSinceS,
             lastChaseEndS:s.lastChaseEndS,
             reserveFraction:obs.reserveFraction,
           });
         const acceptedKind=eligible&&
-          decision.intent===(order.kind==='verfolgung'?'verfolgung':'helferarbeit')?
-          order.kind:null;
+          decision.intent===(assignedKind==='verfolgung'?'verfolgung':'helferarbeit')?
+          assignedKind:null;
+        const newMission=eligible&&crew?crew.mission:null;
+        const newDuty=eligible&&crew?crew.duty:null;
+        if(newMission!==s.crewMission||newDuty!==s.crewDuty){
+          if(newMission)counters.multiHelperAssignments++;
+          if(newMission==='sprintzug'){
+            counters.sprintTrainAssignments++;
+            if(events.length<1000&&s.crewMission!=='sprintzug')events.push({
+              timeS:t,km:s.positionM/1000,type:'sprint-train',
+              riderId:s.rider.id,teamId:s.rider.teamId,
+              description:`${s.rider.name}: Sprintzug-Einsatz für den Sprinter`,
+            });
+          }
+          s.crewMission=newMission;s.crewDuty=newDuty;
+        }
         if(acceptedKind!==s.teamPaceKind){
           s.teamPaceKind=acceptedKind;
           if(acceptedKind==='verfolgung')counters.teamChaseStarts++;
@@ -286,7 +361,7 @@ export function simulateRace(x:RaceInput):RaceResult {
             timeS:t,km:s.positionM/1000,
             type:acceptedKind==='verfolgung'?'team-chase':'team-pace',
             riderId:s.rider.id,teamId:s.rider.teamId,
-            description:`${s.rider.name}: ${order!.reason}`,
+            description:`${s.rider.name}: ${proposal.reason}`,
           });
         }
         const before=s.intent;
@@ -294,6 +369,8 @@ export function simulateRace(x:RaceInput):RaceResult {
           if(before==='verfolgung')s.lastChaseEndS=t;
           s.intentSinceS=t;
         }
+        if(decision.intent==='angriff'&&s.intent!=='angriff')
+          s.lastAttackS=t;
         s.decision=decision;s.intent=decision.intent;
         if(before!==decision.intent && events.length<1000){
           const kind=decision.intent==='angriff'?'attack':
@@ -314,6 +391,14 @@ export function simulateRace(x:RaceInput):RaceResult {
     }
     const next=new Map<string,ReturnType<typeof advanceMotionStep>>();
     const powers=new Map<string,number>();
+    // Gruppe nur einmal für alle Fahrer dieser Sekunde ermitteln.
+    const actualGroupFront=new Map<string,number>();
+    for(const group of pelotonGroups(ordered.map(s=>({
+      id:s.rider.id,positionM:s.positionM,
+    })))){
+      for(const member of group)
+        actualGroupFront.set(member.id,group[0].positionM);
+    }
     for(const s of active){
       const index=segmentFor(s,boundaries);
       const segment=x.segments[index];
@@ -326,6 +411,10 @@ export function simulateRace(x:RaceInput):RaceResult {
         tacticalIntent:s.intent,
         reserveFraction:s.physiology.remainingWPrimeJ/s.profile.wPrimeCapacityJ,
       });
+      if(s.crewDuty==='fuehrung'&&s.teamPaceKind!==null&&
+        actualGroupFront.has(s.rider.id)&&
+        actualGroupFront.get(s.rider.id)!-s.positionM<=18)
+        counters.actualFrontWorkSteps++;
       const aeroFactor=formationFactors?
         Math.min(pack.aeroFactor,formationFactors.get(s.rider.id)!):
         pack.aeroFactor;
