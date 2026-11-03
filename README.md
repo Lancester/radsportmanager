@@ -70,3 +70,8 @@ Die erste mobilfreundliche Testwebseite unter `docs/index.html` soll den echten 
 ## NEU: Acht Fahrer fahren erstmals gemeinsam
 
 Der experimentelle Baustein `src/engine/physics/drafting-group.ts` lässt **3–8 Fahrer wirklich gleichzeitig mit Positions-/Windschatten-Wechselwirkung** fahren. Der Testfahrer F8 bekommt in Sekunde 30 eine von außen vorgegebene niedrigere Wattzahl und verliert durch die Physik den Anschluss. **Noch keine Fahrer-KI oder vollständiges Peloton.** Die Android-Benchmarkseite enthält einen zusätzlichen Testknopf für diese gemeinsame Gruppe. Formeln und Grenzen: [docs/physik/R03G_ACHTFAHRER.md](docs/physik/R03G_ACHTFAHRER.md).
+
+
+## Erste regelbasierte Fahrer-KI (R-04)
+
+Ein kleiner **erklärbarer TypeScript-Fahrer-Agent** darf im Achtfahrer-Test eine wachsende Lücke erkennen und für kurze Zeit begrenzt zusätzliche Watt anfordern. Keine ML-Bibliotheken, keine Cloud, keine direkte Änderung von Geschwindigkeit oder Ergebnis. Vergleichbare Web-Worker-Tests **ohne KI / mit Regel-KI** auf GitHub Pages. Noch kein vollwertiges Peloton oder Managerspiel. [Funktionsweise und Grenzen](docs/ai/LUECKENAGENT.md).
