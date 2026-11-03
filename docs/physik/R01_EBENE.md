@@ -130,11 +130,11 @@ Das sind **frei gewählte mathematische Sensitivitätsbeispiele**, keine gemesse
 
 ## 8. Fachliche Fragen zur Besprechung
 
-1. Wollen wir zukünftig **Watt am Pedal** (wie beim Powermeter) als einheitliche Fahrerleistungsgröße verwenden? Das ist meine Empfehlung; die Antriebsverluste rechnen wir dann separat.
+1. **ENTSCHEIDEN / bestätigt am 03.11.2026:** Fahrerleistung wird in **Watt am Pedal / an der Kurbel** definiert. Der Antriebswirkungsgrad wird separat angewandt.
 2. Ist ein veränderlicher CdA-Wert für Körperhaltung/Ausrüstung sinnvoll? Ich empfehle **ja**, später zusätzlich gruppenabhängige Abschirmung.
 3. Sollen wir für die ersten Referenzfälle die vereinfachte **stationäre Fahrt** beibehalten und **Beschleunigung erst danach** ergänzen? Das halte ich zur Fehlereingrenzung für sinnvoll.
 
-Diese Vorschläge sind noch nicht verbindlich beschlossen.
+**Noch zu besprechen:** Frage 2 (variabler CdA/Körperhaltung) und Frage 3 (stationär beginnen, Beschleunigung später). Außerdem ist der Wert 97,5 % für den Antriebswirkungsgrad weiterhin nur eine beispielhafte Annahme – die grundsätzliche Trennung von Pedal- und Radleistung ist hingegen beschlossen.
 
 ## 9. Quellen und Grenzen
 
