@@ -341,3 +341,10 @@ Die bestehenden R-06- und früheren Modi bleiben separat auswählbar. **Die real
 **Drei erfüllte technische Ziele im gebündelten Paket:** autonome, nachvollziehbare Wahl unter mehreren Seiten / Verzicht bei Blockade; vorausschauende swept-Konfliktprüfung mit tatsächlicher stetiger Querbewegung; physikalisch konsistente, begrenzte Angriffswatt mit CP/W′, FTP-Telemetrie und realer Abstandsregel. Die Prognose selbst setzt vorläufig konstante aktuelle Geschwindigkeiten der Nachbarn voraus.
 
 **Verbleibende Grenzen:** Noch kein selbstständiges Wiedereinscheren, keine koordinierte dynamische Spurwahl vieler Fahrer, keine fahrtechnische Querbeschleunigung/Lenkung/Kurven-Reibkreisphysik, keine Garantie kollisionsfreier Feldfahrt, keine kalibrierte CP/W′-Regeneration und kein vollständiges Rennen/Managerspiel. Genau diese Grenzen nicht als erreicht ausgeben. [R-07-Dokumentation](ai/R07_UEBERHOLAGENT.md).
+
+
+## Neue R-08-Presets für Android, nach GitHub-Veröffentlichung zu testen (03.11.2026)
+
+Zwei getrennte Browser-Web-Worker-Szenarien auf https://lancester.github.io/radsportmanager/: `achtfahrer-wiedereinscheren` mit **115 virtuellen Sekunden** (F8 überholt und schert nur bei ausreichend Vorsprung sicher auf die Heimatspur zurück) sowie `achtfahrer-mehrfach-ki` mit **70 virtuellen Sekunden** (F7 und F8 suchen gleichzeitig koordinierte Überholspuren, mit begrenzter Querbeschleunigung). Beide verwenden den aus TypeScript kompilierten Original-Gruppenkern. Die Berichte nennen u. a. `rejoinChoices`, `autonomousRejoins`, `multiAgentChoices`, `totalAutonomousOvertakes`, `maxSteeringAccelerationMps2` und die tatsächlich gemessenen Worker-Zeiten.
+
+**Bis GitHub-Actions-Deployment und echten Nutzerläufen keine Erfolgsaussage über die Android-Laufzeit treffen.** Derzeit nur 8 interagierende Fahrer, keine fertige Rennsimulator-KI. [Hintergrund](ai/R08_WIEDEREINSCHEREN_MULTIAGENT.md).
