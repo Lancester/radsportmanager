@@ -68,6 +68,16 @@ jobs:
             throw new Error('Achtfahrer-Gruppe liefert keine plausiblen Browserergebnisse');
           }
           console.log('Achtfahrer-Gruppenmodul erfolgreich, Schritte:',eight.steps);
+          const withAgent = group.simulateGroup(group.createEightRiderAgentExample(120));
+          const agentEvents = withAgent.events.filter(e => e.type === 'agent-decision');
+          const oldGap = eight.riders[6].positionM - eight.riders[7].positionM;
+          const newGap = withAgent.riders[6].positionM - withAgent.riders[7].positionM;
+          console.log('Lücke ohne Agent:',oldGap,'mit Agent:',newGap,'Agentenaktionen:',agentEvents.length);
+          if (agentEvents.length === 0 || newGap >= oldGap ||
+              withAgent.riders.some(r => !Number.isFinite(r.energyResidualJ))) {
+            throw new Error('Regelagent erzielt keine nachvollziehbare Änderung');
+          }
+          console.log('Regelagent kontrolliert den Wattwunsch erfolgreich');
           NODE
       - name: Git-Commit des Teststands für Bericht notieren
         run: git rev-parse --short HEAD > docs/benchmark/version.txt
