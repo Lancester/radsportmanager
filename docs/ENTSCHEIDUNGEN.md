@@ -82,3 +82,14 @@ Die Rechnung und die übrigen offenen Fragen stehen unter [physik/R01_EBENE.md](
 | D-038 | **Zu prüfen** | Rotierende Laufradträgheit, Profilglättung, Haft-/Kurvenlimits, physische Leistungsdauer und Smartphone-Rechenleistung ergänzen. | Relevante Lücken zum realitätsnahen Rennbetrieb. |
 
 Ausführliche Herleitung, 4-km-Demo, 15 Tests und **alle offenen Punkte**: [physik/DYNAMISCHE_STRECKE.md](physik/DYNAMISCHE_STRECKE.md). Die offenen Fragen müssen gemäß [START_HIER.md](START_HIER.md) auch mit dem Nutzer im Chat besprochen werden.
+
+## Kurvenvorschau und Laufradrotation (03.11.2026)
+
+| ID | Status | Festlegung | Begründung |
+| --- | --- | --- | --- |
+| D-039 | **Beschlossen: Entwicklungsrichtung** | Vorausschauendes Bremsen vor Kurven und rotierende Laufradträgheit ergänzen, bevor R-03 (Gruppen/Windschatten) beginnt. | Expliziter Nutzerauftrag; keine Geschwindigkeits-Sprünge und nachvollziehbare Fahrtechnik. |
+| D-040 | **Testmodell, noch zu kalibrieren** | Kurve vorläufig als punktförmiges Geschwindigkeitsziel nach Radius, Grip und Sicherheitsfaktor (derzeit 0,7). | Prüffähiger erster Schritt; kein voller Kurvenbogen oder Reifen-Reibkreis. |
+| D-041 | **Testmodell, noch zu kalibrieren** | Laufradträgheit über m_eff = m + I/r² nur in Beschleunigung und kinetischer Energie; tatsächliche Masse bleibt für Schwerkraft/Reifenhaftung. | Vermeidet doppelte Anrechnung der Laufradmasse, mechanisch konsistent. |
+| D-042 | **Offen** | Individuelle Fahrtechnik/Kurvenlinie, Regen/Reifen, Reibkreis und genaue Trägheitsparameter. | Nicht als fertiges Rennmodell ausgeben. |
+
+Der erste **getrennte Prototyp** und die offene Fragenliste liegen unter [physik/KURVEN_UND_ROTATION.md](physik/KURVEN_UND_ROTATION.md). Vor R-03 die verschiedenen Teilmodelle mit gemeinsamer Testsuite integrieren.
