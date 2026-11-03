@@ -232,3 +232,18 @@ Der stationäre Anstieg R-02 ist als gemeinsame physikalische Erweiterung von R-
 - Kontrollvarianten: 2 kg leichtere Ausrüstung und geringeres CdA; bei 0 % exakt identische Resultate zu R-01.
 - Lokal 9 neue Tests + 7 alte R-01-Tests bestanden. **Kein** Android- oder GitHub-Actions-Test.
 - Alle Zahlen gelten für das stark vereinfachte, konstante stationäre Modell. Die Materialeffekte sind Demonstrationswerte, nicht produktbezogene Zusagen.
+
+
+## 12. R-12 – dynamischer Fünf-Abschnitte-Kurs (03.11.2026)
+
+Die stationären Szenarien R-01/R-02 wurden um einen **ersten dynamischen Einzeltest** ergänzt: Ebene (1 km, 250 W), +7 % Anstieg (1 km, 300 W), −7 % Abfahrt (1 km, 0 W), 200 m ausdrücklich befohlenes Bremsen (20 N, 0 W) und 800 m Wiederbeschleunigung auf der Ebene (250 W).
+
+- Ausgangstempo 28,8 km/h; **keine** zurückgesetzte Geschwindigkeit an Abschnittsgrenzen.
+- Fiktiver Fahrer und Material zusammen 80 kg; vorläufig η = 0,975.
+- **4 km / 470,8713 s** Gesamtzeit, **60,68 km/h** Spitzengeschwindigkeit, netto 0 Höhenmeter.
+- 15 neue lokale TypeScript-Tests bestanden; bisherige 16 stationäre Tests nicht erneut ausgeführt, deren Quelldateien unverändert.
+- Die Bremskraft wird vorgegeben, **nicht** durch vorausschauende Kurven-KI bestimmt.
+- Modell-/Kraftformeln, Eingaben, Grenzfälle, offene Fragen: [physik/DYNAMISCHE_STRECKE.md](physik/DYNAMISCHE_STRECKE.md).
+- Umsetzung: [PR #15](https://github.com/Lancester/radsportmanager/pull/15), [Issue #14](https://github.com/Lancester/radsportmanager/issues/14) abgeschlossen.
+
+Die bereits gelisteten elf Szenarien R-01 bis R-11 bleiben unverändert. R-12 ist ein **numerisch getestetes Physikbeispiel**, **keine** validierte realistische Rennsimulation.
