@@ -148,3 +148,30 @@ Im Gegensatz zum bisherigen 160-Fahrer-Test aus 80 unabhängigen Paaren fährt d
 **Status:** Die Browsermodule und GitHub-Pages-Bereitstellung wurden auf GitHub erfolgreich geprüft, aber ein **tatsächlich auf dem Android-Smartphone durchgeführter Achtfahrer-Benchmark liegt noch nicht vor**. Der Vergleich mit der 191,8-ms-Messung für 80 unabhängige Zweiergruppen darf deshalb nicht als direkte Hochrechnung verstanden werden.
 
 **KI-Abgrenzung:** Noch keine autonome Renn-/Positions-KI. Die Wattvorgaben sind extern und die Spur ist fest; die körperliche Reaktion, Energie und Lücke folgen aus mechanischen Rechnungen.
+
+
+## Erste echte Android-Messung der gekoppelten Achtfahrergruppe (03.11.2026)
+
+**Tatsächlicher Nutzerbericht vom Android-Smartphone, nicht von Node.js oder GitHub Actions:** Der neue gekoppelte Achtfahrer-Test wurde erfolgreich im veröffentlichten **Web Worker** ausgeführt. Szenario-/Build-Version `r03-android-v2`, Commit **`5caca02`** (entspricht dem verifizierten Merge-Commit `5caca0213f1ece1d32ae7d8345b686909a5ba2a9`), Chrome **156** unter Android. Der User-Agent `Android 10; K` erlaubt **keine** sichere Bestimmung der konkreten Hardware oder Android-Version.
+
+| Kennzahl | Gemessen bzw. vom Worker zurückgemeldet |
+| --- | ---: |
+| Fahrermodus | **8 Fahrer gemeinsam** (`achtfahrer-gruppe`) |
+| Virtuelle Zeit | **120 s** |
+| Gemeinsame Schritte je Wiederholung | **600** à 0,2 s |
+| Drei reale Rechenzeiten | **52,9 / 26,8 / 19,7 ms** |
+| **Median** | **26,8 ms** |
+| Ergebnis-Prüfsumme | **10560,145488** (innerhalb aller 3 Wiederholungen identisch) |
+| Endlücke zwischen F7 und F8 | **100,414498 m** |
+| Erfasste Lückenereignisse | **1** |
+| Zeitpunkt der ersten offenen Lücke | **44 s** virtuelle Zeit |
+| Letztes Tempo von F8 | **34,762058 km/h** |
+| Zeitpunkt des Berichts (UTC) | **2026-11-03T17:26:40.842Z** |
+
+**Plausibilitätskontrolle:** In der Demo haben zunächst acht Fahrer auf einer Ebene feste Wattzahlen und Abstände. Nach **30 virtuellen Sekunden** wird bei F8 **durch ein vorgegebenes Testkommando**, nicht durch KI, die Leistung um 45 W gesenkt. F8 fällt durch die dynamische Kraftrechnung zurück, die Windschattenwirkung wird bei wachsender Lücke kleiner und die Lücke überschreitet bei **Sekunde 44** die vorläufige Meldeschwelle von **8 m**. Das im Android-Bericht festgestellte **100,414498-m-Ergebnis** passt zum zuvor lokal geprüften Gruppentest. Die ursprüngliche GitHub-Actions-Testserie mit **80/80 bestandenen Tests** und erfolgreich ausgelieferter Webseite ist separat verifiziert.
+
+**Bedeutung:** Erster tatsächlich auf Android ausgeführter **gekoppelter** Mehrfahrerphysiktest – im Unterschied zu den bisherigen **80 unabhängigen Zweiergruppen**. Der Lauf dauerte auf diesem Browser im Median nur rund **0,027 reale Sekunden**, um **120 virtuelle Sekunden** mit acht dynamisch wechselwirkenden Fahrern zu berechnen.
+
+**Grenzen:** Die drei Laufzeiten streuen erheblich; beispielsweise können JIT-Warm-up und Hintergrundlast dazu beitragen, die Ursache ist aber nicht diagnostiziert. Der 160-Fahrer-Vergleichstest mit 191,8 ms berechnete **80 getrennte Zweiergruppen** und ist **kein direkter Skalierungsvergleich**. Gruppen-Aerodynamik bleibt heuristisch (max. 35 % Luftwiderstandsreduktion), keine selbständige Fahrtechnik, taktische KI, Spurwechsel- oder Kollisionsvermeidung, kein Querwind, keine Ermüdung, keine 200-km-Etappe, keine Akku-/Temperatur- oder Sperrbildschirm-Messung. **Daher keine belastbare Prognose für 160 miteinander interagierende Fahrer.**
+
+**Nächste fachliche Entwicklungsentscheidung:** Vor größerem Peloton zuerst eine begrenzte **regelbasierte Reaktion** auf sich öffnende Lücken (z. B. mehr Leistung aufbringen oder zurückfallen), danach sichere seitliche Positionsbewegung und die schon beschlossenen individuellen Fähigkeiten (Fahrtechnik, Positionierung, Risiko). **Das ist ein Vorschlag, keine bisher implementierte oder vom Nutzer beschlossene KI.** Der Physikkern bleibt für tatsächlich gefahrene Geschwindigkeiten maßgeblich.
