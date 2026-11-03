@@ -198,3 +198,29 @@ Ausführliche Erklärung und Quellen: [physik/R05_ABSTAND_CP_WPRIME.md](physik/R
 | D-076 | **Beschlossen als erste Teststufe** | Teams setzen ihre Leitlinie vor dem Start, Fahrer handeln mit begrenzten Wattwünschen eigenständig; Angriffe, Verfolgung, Windschatten, Erholung, Zielsprints erzeugen physikalisch nachvollziehbare Unterschiede. | Noch keine vollständige sportliche-Leiter- oder Trainings-/Transfersimulation; Parameter fiktiv. |
 | D-077 | **Vorläufiger Arbeitsplan** | Browser-Worker-Rennen über 50 km, vollständige Zeitrangliste und Rennbericht; identischer Seed ermöglicht Vergleich zweier Leitlinien. Danach sportliches Balancing, Gruppenphysik-Validierung und schrittweise größere Fahrerfelder. | Die fiktiven Ergebniswerte sind nicht gegen echte Profi-Renndaten validiert. |
 
+
+
+## Noch offene Fachfrage nach R-11: differenzierter Peloton-Windschatten (03.11.2026)
+
+**Status: zu prüfen, nicht beschlossen.** Der nach D-074 bis D-077
+beschlossene vorläufige Gruppenansatz ist weiterhin unverändert im
+Rennmodus. Nach der tatsächlich durchgeführten
+[R-11-Mehr-Seed-Diagnose](race/R11_MEHRSEED_BALANCING.md)
+(maximal 20–24 Abstandsgruppen bei 30 hügeligen Fahrern) zeigt
+die **Codeprüfung**, dass der Rennmodus maximal 19 % aerodynamischen
+Widerstandsnachlass **nur anhand des direkten Vordermanns** gewährt.
+Ein Unterschied zwischen einer kleinen Fluchtgruppe und einer tief
+geschützten Position in einem dichten großen Peloton ist noch nicht
+vorhanden. Das isolierte R-03-Labormodell mit mehreren Vorderleuten
+bleibt vorhanden, ist aber **nicht** Teil des Vollrennmodus.
+
+**Vorgeschlagene Abklärung vor einer neuen Parameter-/Architekturentscheidung:**
+lokales Feld-Dichte-/Positionsmodell ohne vollständige 2D-Lenkphysik
+als **separate, schaltbare Testvariante** entwerfen, Aerodynamik für
+Einzelfahrer, kleine Fluchtgruppe und dichteres Peloton testen,
+gegen dasselbe motion-core-/CP/W′-Modell und identische sieben R-11-
+Rennen vergleichen. Kein direktes Übernehmen extremer Windkanal-
+Referenzfaktoren für 121 Fahrer in ein nur längskoordinatenbasiertes
+30er-Modell. Sportlich sinnvolle neue Faktorwerte bleiben **offen**.
+Die beschlossene Priorität vollständiger Rennen vor Mikrophysik
+wird dadurch **nicht verändert**.
