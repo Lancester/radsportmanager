@@ -5,6 +5,10 @@
 import { advanceMotionStep } from './motion-core.ts';
 import {decideGapPower, initialGapState, validateGapConfig, F8_GAP_AGENT} from '../ai/gap-controller.ts';
 import type {GapAgentConfig, GapAgentState} from '../ai/gap-controller.ts';
+import {decideFollowingSafety,validateFollowingSafety} from '../ai/following-safety.ts';
+import type {FollowingSafetyOptions} from '../ai/following-safety.ts';
+import {applyCpWprimeStep,initialCpState,validateCpProfile,R05_F8_PROFILE} from '../physiology/critical-power.ts';
+import type {CpWprimeProfile,CpWprimeState} from '../physiology/critical-power.ts';
 import type { CornerRider } from './motion-core.ts';
 import { R03_DRAFT, requiredCrankPowerAtSpeedW } from './drafting-pair.ts';
 import type { DraftingParameters, PairedRiderInput } from './drafting-pair.ts';
@@ -18,6 +22,10 @@ export interface GroupInput {
   /** Regelbasierte Agenten (optional); ohne dieses Feld bleibt R-03G unverändert. */
   gapAgents?: GapAgentConfig[];
   agentDecisionEveryS?: number;
+  /** Nur bei Angabe wird aktive Abstands-/Bremskontrolle eingeschaltet. */
+  followingSafety?: FollowingSafetyOptions;
+  /** Nicht angegebene Fahrer behalten das bisherige unbegrenzte Watt-Testmodell. */
+  physiology?: CpWprimeProfile[];
 }
 export interface GroupRiderSummary {
   id: string; positionM: number; speedMps: number; lateralPositionM: number;
@@ -27,6 +35,12 @@ export interface GroupRiderSummary {
   lastAppliedPowerW: number;
   agentPursuitSeconds: number;
   agentExtraDriveWorkJ: number;
+  brakeLossJ: number;
+  safetyBrakeSeconds: number;
+  cpLimitedSeconds: number;
+  wPrimeRemainingJ?: number;
+  wPrimeSpentJ?: number;
+  wPrimeRecoveredJ?: number;
 }
 export interface GroupSnapshot {
   timeS: number;
@@ -35,9 +49,9 @@ export interface GroupSnapshot {
   openGaps: number;
 }
 export interface GroupEvent {
-  timeS: number; type: 'gap-opened' | 'command' | 'agent-decision'; riderId: string;
+  timeS: number; type: 'gap-opened' | 'command' | 'agent-decision' | 'safety' | 'cp-limit'; riderId: string;
   leaderId?: string; gapM?: number;
-  agentMode?: string; powerW?: number; reason?: string;
+  agentMode?: string; powerW?: number; reason?: string; brakeForceN?: number;
 }
 export interface GroupResult {
   elapsedS: number; steps: number; riders: GroupRiderSummary[];
@@ -157,6 +171,15 @@ export function simulateGroup(input:GroupInput):GroupResult {
       throw new RangeError('Agenten-Höchstleistung unter der aktuellen Basisleistung');
     controllers.set(config.riderId,{config,state:initialGapState(),powerW:rider.crankPowerW});
   }
+  if(input.followingSafety) validateFollowingSafety(input.followingSafety);
+  const physiology=new Map<string,{profile:CpWprimeProfile;state:CpWprimeState;limited:boolean}>();
+  for(const profile of input.physiology??[]){
+    validateCpProfile(profile);
+    if(!ids.has(profile.riderId)||physiology.has(profile.riderId))
+      throw new RangeError('Unbekanntes oder doppeltes CP/Wprime-Profil');
+    physiology.set(profile.riderId,{profile,state:initialCpState(profile),limited:false});
+  }
+  const safetyState=new Map<string,boolean>();
   for(const c of commands){
     if(!ids.has(c.riderId))throw new RangeError('Unbekannte Fahrer-ID im Befehl');
     finite('command.timeS',c.timeS,c.timeS>=0&&c.timeS<=input.durationS);
@@ -169,6 +192,10 @@ export function simulateGroup(input:GroupInput):GroupResult {
     driveWorkJ:0,aeroLossJ:0,rollingLossJ:0,kineticEnergyChangeJ:0,
     energyResidualJ:0,shelteredTimeS:0,lastAppliedPowerW:r.crankPowerW,
     agentPursuitSeconds:0,agentExtraDriveWorkJ:0,
+    brakeLossJ:0,safetyBrakeSeconds:0,cpLimitedSeconds:0,
+    ...(physiology.has(r.id)?{
+      wPrimeRemainingJ:physiology.get(r.id)!.state.remainingWPrimeJ,
+      wPrimeSpentJ:0,wPrimeRecoveredJ:0}:{}),
   }));
   const events:GroupEvent[]=[],snapshots:GroupSnapshot[]=[];
   let t=0,steps=0,nextSample=sampleEveryS,cmdIndex=0;
@@ -211,10 +238,55 @@ export function simulateGroup(input:GroupInput):GroupResult {
       throw new RangeError('Zeitschritt unter numerischer Grenze');
     }
     const previous=adjacentGaps(riders);
-    // Alle acht Fahrer aus demselben Zustand berechnen, DANN gleichzeitig übernehmen.
+    // ZUERST entscheiden alle Fahrer aus demselben alten Zustand.
+    // Sicherheitsbefehle übersteuern den Agenten, CP/W′ limitiert danach.
+    const currentById=new Map(riders.map(r=>[r.id,r]));
+    const actualPowers:number[]=[];
+    const appliedBrakes:number[]=[];
+    for(const r of riders){
+      let requestedPowerW=controllers.get(r.id)?.powerW??r.crankPowerW;
+      let brakeForceN=0;
+      if(input.followingSafety){
+        const ahead=previous.get(r.id);
+        const leader=ahead?currentById.get(ahead.leaderId):undefined;
+        if(ahead&&leader&&
+           Math.abs(leader.lateralPositionM-r.lateralPositionM)<
+             params.overtakingLaneSeparationM){
+          const decision=decideFollowingSafety({
+            centerGapM:ahead.gapM,ownSpeedMps:r.speedMps,
+            leaderSpeedMps:leader.speedMps,
+            massKg:r.physical.riderMassKg+r.physical.equipmentMassKg,
+          },input.followingSafety);
+          if(decision.tooLateToGuarantee)
+            throw new RangeError('Bremsweg unzureichend: '+r.id+' folgt '+leader.id);
+          if(!decision.powerAllowed)requestedPowerW=0;
+          brakeForceN=decision.brakeForceN;
+          const engaged=!decision.powerAllowed||brakeForceN>0;
+          if(engaged!==Boolean(safetyState.get(r.id))){
+            events.push({timeS:t,type:'safety',riderId:r.id,
+              leaderId:leader.id,gapM:ahead.gapM,powerW:requestedPowerW,
+              brakeForceN,reason:decision.reason});
+            safetyState.set(r.id,engaged);
+          }
+        }
+      }
+      const phys=physiology.get(r.id);
+      if(phys){
+        const result=applyCpWprimeStep(phys.profile,phys.state,requestedPowerW,dt);
+        phys.state=result.state;requestedPowerW=result.appliedPowerW;
+        if(result.limited!==phys.limited){
+          events.push({timeS:t,type:'cp-limit',riderId:r.id,
+            powerW:requestedPowerW,
+            reason:result.limited?'Wprime erschöpft: Leistung gedrosselt':'Leistungsreserve wieder verfügbar'});
+          phys.limited=result.limited;
+        }
+      }
+      actualPowers.push(requestedPowerW);appliedBrakes.push(brakeForceN);
+    }
+    // Physik EINES unveränderten Integrators, inklusive mechanischer Bremsarbeit.
     const changes=riders.map((r,i)=>advanceMotionStep({
-      speedMps:r.speedMps,stepSeconds:dt,
-      crankPowerW:controllers.get(r.id)?.powerW??r.crankPowerW,
+      speedMps:r.speedMps,stepSeconds:dt,crankPowerW:actualPowers[i],
+      brakeForceN:appliedBrakes[i],
       rider:r.physical,gradeFraction:0,aeroFactor:factors[i],
     }));
     const oldPositions=riders.map(r=>r.positionM);
@@ -226,21 +298,30 @@ export function simulateGroup(input:GroupInput):GroupResult {
       const r=riders[i],u=changes[i],s=summaries[i];
       r.positionM=newPositions[i];r.speedMps=u.endSpeedMps;
       s.driveWorkJ+=u.driveWorkJ;s.aeroLossJ+=u.aeroLossJ;
+      s.brakeLossJ+=u.brakeLossJ;
+      if(appliedBrakes[i]>0)s.safetyBrakeSeconds+=dt;
+      const cp=physiology.get(r.id);
+      if(cp){
+        s.cpLimitedSeconds=cp.state.powerLimitedSeconds;
+        s.wPrimeRemainingJ=cp.state.remainingWPrimeJ;
+        s.wPrimeSpentJ=cp.state.spentAboveCpJ;
+        s.wPrimeRecoveredJ=cp.state.recoveredJ;
+      }
       s.rollingLossJ+=u.rollingLossJ;s.kineticEnergyChangeJ+=u.kineticEnergyChangeJ;
       s.energyResidualJ+=u.energyResidualJ;
       if(factors[i]<1-1e-6)s.shelteredTimeS+=dt;
       const controller=controllers.get(r.id);
       if(controller){
-        s.lastAppliedPowerW=controller.powerW;
+        s.lastAppliedPowerW=actualPowers[i];
         if(controller.state.mode==='nachsetzen'){
           controller.state.pursuitSeconds+=dt;
           s.agentPursuitSeconds+=dt;
           // Überschussarbeit am Antrieb nur als Näherungsdiagnose:
           // genaue Differenz zum Baseline-Rennen ist separat zu vergleichen.
-          const extra=Math.max(0,controller.powerW-r.crankPowerW);
+          const extra=Math.max(0,actualPowers[i]-r.crankPowerW);
           s.agentExtraDriveWorkJ+=extra*r.physical.drivetrainEfficiency*dt;
         }
-      } else s.lastAppliedPowerW=r.crankPowerW;
+      } else s.lastAppliedPowerW=actualPowers[i];
     }
     t+=dt;steps++;
     const nextGaps=adjacentGaps(riders);
@@ -289,4 +370,15 @@ export function createEightRiderExample(durationS=120):GroupInput {
 export function createEightRiderAgentExample(durationS=120):GroupInput {
   const input=createEightRiderExample(durationS);
   return {...input,gapAgents:[{...F8_GAP_AGENT}],agentDecisionEveryS:1};
+}
+
+/** Vorläufiger kombinierter R-05-Test: F8 mit Entscheidung, Sicherheitsregler
+ * und eigenständiger CP/W′-Reserve; FTP separat als späteres Trainingsattribut.
+ */
+export function createEightRiderR05Example(durationS=120):GroupInput {
+  const input=createEightRiderAgentExample(durationS);
+  return {...input,followingSafety:{
+    minimumCenterGapM:1.8,desiredExtraGapM:0.7,reactionSeconds:0.25,
+    maximumDecelerationMps2:3,approachTimeS:1,
+  },physiology:[{...R05_F8_PROFILE}]};
 }
