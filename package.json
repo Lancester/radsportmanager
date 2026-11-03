@@ -7,7 +7,9 @@
     "test:r01": "node --experimental-strip-types --test tests/r01-flat.test.mjs",
     "test:r02": "node --experimental-strip-types --test tests/r02-climb.test.mjs",
     "test:route": "node --experimental-strip-types --test tests/dynamic-route.test.mjs",
-    "test:corners": "node --experimental-strip-types --test tests/corner-route.test.mjs"
+    "test:corners": "node --experimental-strip-types --test tests/corner-route.test.mjs",
+    "test:unified": "node --experimental-strip-types --test tests/unified-motion.test.mjs",
+    "bench:isolated": "node --experimental-strip-types benchmarks/isolated-riders.mjs"
   },
   "engines": {
     "node": ">=22.6.0"
