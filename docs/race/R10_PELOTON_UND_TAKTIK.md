@@ -88,3 +88,24 @@ Der R-10-GitHub-Runner meldete beispielsweise für den hügeligen geschützten L
 **Wiederverwendung ausdrücklich bestätigt:** Vollrennen verwenden unverändert `motion-core.ts` (`advanceMotionStep`) und `critical-power.ts`; der neue `peloton.ts` ergänzt ausschließlich begrenzte Wattwünsche und abstrahierten Windschatten. **R-03 bis R-08 bleiben unveränderte Labortests**, werden nicht als komplettes 2D-Peloton in die 30-Fahrer-Simulation hineinkopiert.
 
 **Für die kommenden Arbeiten:** Noch nicht 160 Fahrer oder 200 km als ausgereift ausgeben. Nächste sachliche Abnahme: qualitative Abstands-/Attacken-/Verfolgungslogik über mehrere Fahrerprofile und Strecken, danach erst größere Fahrerfelder (60 → 100 → 160) und tatsächlicher Android-Gesamtrennbenchmark. **Keine neue Detail-Lenkphysik ohne beobachteten Rennnutzen.**
+
+
+## R-10 – endgültige Abnahme und Fluchtkorrektur (03.11.2026)
+
+**Aktuell verifizierter Code:** [PR #45](https://github.com/Lancester/radsportmanager/pull/45) führte die neue Peloton-/Taktiklogik ein; [PR #46](https://github.com/Lancester/radsportmanager/pull/46) beseitigte eine irreführende Einholmeldung. Der abschließende [GitHub-Actions-Run #41717987913](https://github.com/Lancester/radsportmanager/actions/runs/41717987913) ist **vollständig erfolgreich: 198 Tests, 198 bestanden, 0 fehlgeschlagen**, drei reale 50-km-Testsimulationen, TypeScript-Browser-Build und Pages-Veröffentlichung.
+
+**Drei vollständige Vergleichsrennen mit identischem Seed 2026 (je 30 fiktive Fahrer und 50 km):**
+
+| Rennen | Maximale Abstandsgruppen: R09 → R10 | Verfolgungsstarts: R09 → R10 | Bestätigte Flucht / tatsächlich eingeholt nach R10 |
+| --- | ---: | ---: | ---: |
+| Hügelig, Kapitän schützen | **30 → 20** | **319 → 36** | **1 / 1** |
+| Hügelig, T1 offensiv | **29 → 22** | **155 → 21** | **1 / 0** |
+| Flach, T1 Sprint | **15 → 12** | **415 → 64** | **1 / 0** |
+
+**Warum die geänderten Fluchtzahlen wichtig sind:** Der ursprüngliche PR #45 verwendete „nicht mehr mindestens 75 m Fluchtvorsprung“ irrtümlich als gleichbedeutend mit „eingeholt“. PR #46 meldet einen erfolgreichen Wiederanschluss erst bei tatsächlich auf **höchstens 35 m** geschlossener Lücke über den verlangten Zeitraum. Ereignisse tragen jetzt die jeweils gemessene `gapM` für später nachprüfbare Rennberichte. Die weiter oben festgehaltenen älteren R-10-Fluchtzahlen **2/1** in zwei Szenarien gehören ausdrücklich zur **Zwischenversion vor dieser Korrektur**, nicht zum heutigen Stand.
+
+**Weitere reale Diagnosen aus dem endgültigen GitHub-Runner:** Hügelig „Kapitän schützen“: Sieger **F13**, Siegerzeit **4.464,8 s**, letzter Rückstand **581,4 s**, maximal **20** Abstandsgruppen und **26** protokollierte Gruppenaufteilungen. Hügelig T1 offensiv: maximal **22** Gruppen und **21** Verfolgungsstarts. Flach: maximal **12** Gruppen und **64** Verfolgungsstarts. Die tatsächlichen Renn-Ergebnisse folgen weiterhin dem vorherigen `motion-core.ts`-Physikintegrator und CP/W′, nicht einem Ergebnisbonus.
+
+**Nicht als sportlich abschließend validieren:** Zwar weniger Chaos als in R-09, aber **20–22** Gruppen im hügeligen 30-Fahrer-Rennen und bis zu neun Minuten Zeitspreizung sind noch kritisch. Bei identischer Tagesform veränderte die offensive Nordwind-Leitlinie die Zielzeit von Kapitän F01 nur um rund **3,78 Sekunden**. Das zeigt den nächsten fachlichen Bedarf: Teamarbeit und Verfolgung **qualitativ** verbessern, tatsächliche Gruppenbildung/Attacken gegen realistische Rennabläufe plausibilisieren, und erst danach größeren Feldern/Langdistanzen Priorität geben. **Keine zusätzliche Detail-Lenk- oder Reifenphysik ohne nachgewiesenen Spielnutzen.**
+
+**Browser:** https://lancester.github.io/radsportmanager/rennen.html läuft im bestehenden Web Worker. Veröffentlicht und im GitHub-Runner getestet; **echte Android-Laufzeit des 50-km-Rennens weiterhin unbekannt**.
