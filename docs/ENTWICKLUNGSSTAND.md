@@ -392,3 +392,19 @@ Die zwei 120-s-Prüfsummen skalieren achtfach (Abweichung 0,000003 infolge Endru
 **Technischer Abnahmestand:** Reale Browser-Web-Worker-Ausführung beider Varianten bestätigt; zuvor [95/95 GitHub-Tests und erfolgreicher Pages-Publish](https://github.com/Lancester/radsportmanager/actions/runs/41692857294) bestanden. **Erste Agentenmeilenstein-Messung abgeschlossen**, aber weiterhin **keine autonome Spur- und Kollisionsvermeidung, kein CP/W′/Ermüdungsmodell, keine Gruppen-Berg-/Kurvenfahrt, kein 160-Fahrer-Peloton oder kompletter Manager**. Die Aero-Abschirmung im Gruppenmodell ist nicht empirisch kalibriert.
 
 **Empfohlene nächste technische Arbeit:** Sichere Abstandsregelung mit physikalisch begründeter Bremsung/Leistungsrücknahme, noch bevor Fahrer vollautomatisch Positionswechsel und Angriffe fahren. Danach CP/W′/Ermüdung integrieren, damit zusätzliche Watt nicht unbegrenzt zur Verfügung stehen.
+
+
+## In Umsetzung: R-05 · Abstand und CP/W′ für Achtfahrer-KI (03.11.2026)
+
+**Nutzerauftrag:** Abstands-/Kollisionsvermeidung und direkt anschließend CP/W′-Leistungsreserven mit der bisherigen KI verbinden. FTP als eigenständige grundlegende Kennzahl für die spätere Trainingssteuerung festhalten.
+
+**Neuer Code im Entwicklungsbranch:**
+- `src/engine/ai/following-safety.ts` – optionale longitudinale Reaktion: frühzeitig Watt wegnehmen und bei deutlicher Gefahr eine **reale Bremskraft** fordern. Bei nicht mehr ausreichend möglichem Bremsweg wird eine **Gefahr als Fehler** gemeldet. Noch keine garantierte vollständige Kollisionsvermeidung oder 2D-Spurentscheidung.
+- `src/engine/physiology/critical-power.ts` – individuell gespeicherte **CP und W′** mit zwingender Joule-Bilanz, Wattbegrenzung bei Reserveende, bewusst vereinfachter Unter-CP-Erholung. **FTP wird separat und unverändert gespeichert**, niemals ungeprüft in CP umgerechnet.
+- `src/engine/physics/motion-core.ts` – optional `brakeForceN` im bereits gemeinsamen Integrator; Energiegleichung enthält `brakeLossJ`.
+- `src/engine/physics/drafting-group.ts` – Agentenwunsch → Sicherheitsregler → CP/W′ → gemeinsamer Physikschritt. Alte 8-Fahrer-Szenarien ohne Optionen bleiben verfügbar.
+- Eigene R-05-Tests und separater Browserknopf `KI + Abstand + CP/W′`; über den vorhandenen kleinen Pages-Workflow erst zu prüfen.
+
+**Vorheriger bestätigter Stand:** 95/95 Tests, echter Android-KI-Vergleich 21,6 ms ohne vs. 32,9 ms mit F8-Lückenregel. **Neuer R-05-Code/Android-Modus noch nicht als erfolgreich getestet behaupten**, bis der GitHub-Actions-Gesamtlauf und später die echte Android-Messung erfolgreich sind.
+
+**Grenzen/offen:** FTP-Trainingszonen, CP/W′-Rekonstitutionsparameter und Langzeitermüdung, sichere Spurbewegung, Kurven-/Gefällebremsen im Feld und das zusammenhängende 160-Fahrer-Rennen sind noch nicht entwickelt. [R-05-Erklärung](physik/R05_ABSTAND_CP_WPRIME.md).
