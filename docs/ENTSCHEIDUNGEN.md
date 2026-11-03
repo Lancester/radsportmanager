@@ -187,3 +187,14 @@ Ausführliche Erklärung und Quellen: [physik/R05_ABSTAND_CP_WPRIME.md](physik/R
 | D-073 | **Noch offen** | Sichere Rückkehr zwischen Fahrer, echte Kurvendynamik, automatisches Reagieren auf bewegliche Hindernisse, Fahrerfähigkeiten und Teamstrategie. | Erst nach nachgewiesener Gesamtintegration weiterentwickeln. |
 
 [Ausführliche technische Einordnung](ai/R08_WIEDEREINSCHEREN_MULTIAGENT.md).
+
+
+## D-074 bis D-077: Prioritätswechsel zu echten Rennen (03.11.2026)
+
+| ID | Status | Entscheidung | Abgrenzung |
+| --- | --- | --- | --- |
+| D-074 | **Vom Nutzer ausdrücklich beschlossen** | Die nächsten Entwicklungsschritte liefern **vollständige Rennsimulationen** statt immer genauerer Kurven-, Lenk- und Überholbewegungen. Zuerst 30 Fahrer/50 km, Mannschaften, Strecken, Taktik, Ergebnisliste; später Skalierung und Kalibrierung. | Die R-01–R-08-Experimente bleiben im Repository, werden jedoch nicht ungefragt weiter vertieft. |
+| D-075 | **Beschlossen** | **Physikalische Gleichungen und CP/W′ aus bestehenden Modulen weiterverwenden**; fürs Rennfeld zunächst vereinfachte Abstandsgruppen-/Windschattenberechnung mit klar gekennzeichneten Grenzen, ohne vollständige 2D-Kollision. | Nicht behaupten, dass alle Detailmodule im Rennmodus aktiv wären. |
+| D-076 | **Beschlossen als erste Teststufe** | Teams setzen ihre Leitlinie vor dem Start, Fahrer handeln mit begrenzten Wattwünschen eigenständig; Angriffe, Verfolgung, Windschatten, Erholung, Zielsprints erzeugen physikalisch nachvollziehbare Unterschiede. | Noch keine vollständige sportliche-Leiter- oder Trainings-/Transfersimulation; Parameter fiktiv. |
+| D-077 | **Vorläufiger Arbeitsplan** | Browser-Worker-Rennen über 50 km, vollständige Zeitrangliste und Rennbericht; identischer Seed ermöglicht Vergleich zweier Leitlinien. Danach sportliches Balancing, Gruppenphysik-Validierung und schrittweise größere Fahrerfelder. | Die fiktiven Ergebniswerte sind nicht gegen echte Profi-Renndaten validiert. |
+
