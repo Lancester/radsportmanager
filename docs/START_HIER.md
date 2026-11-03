@@ -170,3 +170,18 @@ Erst durch getrennte A/B-Tests entscheiden, welche Dichteparameter
 für den realen Rennmodus taugen. Keine 121er-Peloton-Extremwerte
 ungeprüft übernehmen. R-01–R-08 und CP/W′-Kerne unverändert;
 keine Mikrolenkphysik.
+
+
+### Verifikation R-12 auf main (03.11.2026)
+
+Nach [PR #49](https://github.com/Lancester/radsportmanager/pull/49)
+bestätigt der vollständig erfolgreiche
+[Actions-Lauf #41731492676](https://github.com/Lancester/radsportmanager/actions/runs/41731492676)
+**209/209 Tests**, die alten Referenzrennen, TypeScript-ESM und
+Pages. Neues Formations-Aero **nur opt-in**,
+`legacy` weiterhin Standard. Alle **14 A/B-Rennen** separat
+[erfolgreich ausgeführt](https://github.com/Lancester/radsportmanager/actions/runs/41730692771).
+**Nicht** aus geringer Gruppenanzahl einen fertigen realistischen
+Pelotonmodus ableiten. Exakter nächster Schritt ist die
+Abgestimmtheit von Gruppenschutz, Tempoarbeit und Abgehängten,
+nicht wieder detaillierte Lenkphysik.
