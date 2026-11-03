@@ -61,3 +61,9 @@ Einzelne Aufgaben in GitHub Issues führen; dieses Dokument enthält die überge
 Nach R-01 (Ebene) und R-02 (Anstieg) existiert ein erster eigenständiger dynamischer Einzelfahrer-Rechenkern mit Streckenabschnitten, bergab antriebswirksamer Schwerkraft, Beschleunigung und **explizitem** Bremsen. 15 neue lokale Tests bestanden, Verweise in [physik/DYNAMISCHE_STRECKE.md](physik/DYNAMISCHE_STRECKE.md).
 
 Als nächste kleinen Physikbausteine werden **vorausschauende Kurvengeschwindigkeiten**, **rotierende Trägheit**, **feinere Straßenprofile** und Wind/Windschatten vorgeschlagen; Reihenfolge und Modellkomplexität sind noch nicht entschieden. Weiterhin kein kompletter Rennsimulator oder Manager.
+
+## Physik-Zwischenschritt abgeschlossen: erste Kurvenvorschau und Laufradträgheit (03.11.2026)
+
+Ein separater Technikprototyp kann vor einer als Geschwindigkeitskontrollpunkt modellierten Kurve bremsen und berücksichtigt die rotierenden Laufräder bei Beschleunigungen. **14 lokale Tests bestanden.** Große Lücken: Kurvenbogen statt Punkt, Fahrtechnik/Grip, Gruppen, Wind und Physiologie.
+
+**Als Nächstes bevorzugt:** (1) gemeinsame dynamische Engine aus bestehenden Teilmodulen formen und gesamte Regressionstests ausführen; (2) erstes kleines Windschatten-/Gruppenexperiment R-03; (3) Web Worker plus Android-Benchmark für echte Mobilmessungen. Kein automatisches Großrechnen auf GitHub.

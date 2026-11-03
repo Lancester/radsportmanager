@@ -6,7 +6,8 @@
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "test:r01": "node --experimental-strip-types --test tests/r01-flat.test.mjs",
     "test:r02": "node --experimental-strip-types --test tests/r02-climb.test.mjs",
-    "test:route": "node --experimental-strip-types --test tests/dynamic-route.test.mjs"
+    "test:route": "node --experimental-strip-types --test tests/dynamic-route.test.mjs",
+    "test:corners": "node --experimental-strip-types --test tests/corner-route.test.mjs"
   },
   "engines": {
     "node": ">=22.6.0"
