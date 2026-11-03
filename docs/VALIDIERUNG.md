@@ -493,3 +493,19 @@ konsistent rechnet; 20–22 Gruppen, Ergebnisabstände und Teamtaktik benötigen
 weiterhin eine gesonderte sportliche Plausibilitätsprüfung. Sieben manuell
 ausführbare Läufe dürfen weder als empirische Aussage noch als 160-Fahrer- oder
 Android-Leistungsnachweis dargestellt werden.
+
+
+### R-11 tatsächlich abgenommener Teststand (03.11.2026)
+
+[PR #47](https://github.com/Lancester/radsportmanager/pull/47) ist in main;
+[Actions #41727050681](https://github.com/Lancester/radsportmanager/actions/runs/41727050681)
+hat die **vier neuen R-11-Tests und die gesamte Suite mit 202/202**
+bestanden. [Actions #41727203475](https://github.com/Lancester/radsportmanager/actions/runs/41727203475)
+bestätigt anschließend auf main erneut **202/202**, die drei alten
+vollständigen Renn-Diagnoseläufe, Browser-Build und Pages.
+
+**Abnahmeumfang:** mathematische/technische Konsistenz, nicht echte
+Rennrealistik. Die ergänzte manuelle Sieben-Läufe-Diagnose ist noch
+nicht ausgeführt oder in Zahlen ausgewertet. Die Hauptkritik am R-10-
+Peloton bleibt unverändert; der nächste Balancing-Schritt folgt erst
+auf eine nachvollziehbare Mehr-Seed-Auswertung.
