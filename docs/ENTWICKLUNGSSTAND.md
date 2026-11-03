@@ -645,3 +645,14 @@ Der R-10-GitHub-Runner meldete beispielsweise für den hügeligen geschützten L
 **Letzter zuvor bestätigter Renn-Teststand:** R-10, 198/198, erfolgreicher GitHub-Actions-Lauf #41717987913. **R-11-Teststand erst nach einem tatsächlich erfolgreichen Check berichten.** Die R-11-Diagnose ist noch keine sportliche Validierung und liefert noch keine Android-50-km-Laufzeit.
 
 **Exakter nächster Schritt:** PR-Regression prüfen, manuelle sieben Vergleichsrennen ausführen, konkrete Mehr-Seed-/Gruppen-/Strategieeffekte fachlich auswerten. Erst danach eine gezielte kleine Verbesserung für Helfer-/Kapitän-/Verfolger-Zusammenarbeit formulieren und erneut gegen dieselben Fälle prüfen. Issue #42 bleibt offen; die Erweiterung auf 60/100/160 Fahrer ist nachrangig.
+
+
+## R-11 nach PR #47: kleine Balancing-Regression integriert und verifiziert (03.11.2026)
+
+**Code in main:** [PR #47](https://github.com/Lancester/radsportmanager/pull/47), Squash-Commit `69d9e4126ed9623b2daf2b94ee19c8f9bbf5d3df`. Der neue [Pull-Request-Testlauf #41727050681](https://github.com/Lancester/radsportmanager/actions/runs/41727050681) war erfolgreich: **202/202 Tests, 0 Fehler**, darunter **vier R-11-Tests**. Der nach dem Merge ausgelöste [main-Lauf #41727203475](https://github.com/Lancester/radsportmanager/actions/runs/41727203475) ist ebenfalls vollständig **erfolgreich**: **202/202 Tests**, drei bisherige 50-km-Diagnoserennen, TypeScript-Browser-Build, ESM-Smoke-Test und GitHub-Pages-Deployment.
+
+**Ergebnis:** Alle bisherigen R-01–R-10-Regressionen blieben grün. R-11 misst jetzt gruppenbezogene Beobachtungen über mehrere Seeds/Strecken/Fahrerprofile und verhindert irreführende Einholmeldungen in der Diagnose. Die vorhandenen fahrphysikalischen und taktischen Kerne wurden **nicht** geändert. Der R-10-Hügelkurs verbleibt daher erwartungsgemäß bei maximal **20 bzw. 22** Abstandsgruppen und die T1-Strategieänderung bei ungefähr **3,783 s** Unterschied für F01 (Seed 2026). Diese Werte sind **keine Realismus-Abnahme**.
+
+**Noch offen:** Das zusätzliche `scripts/r11-balance-diagnostics.mjs` wurde im PR auf Syntax geprüft, aber seine sieben 50-km-Vergleichsläufe wurden **noch nicht als eigener Diagnoselauf ausgeführt und ausgewertet**. Für andere Seeds/Fahrerprofile liegen damit noch keine im Entwicklungsstand dokumentierten numerischen Diagnoseergebnisse vor. Keine Android-Messung; keine 60/100/160-Fahrer-Validierung.
+
+**Nächster konkreter Schritt:** Die kurze manuelle R-11-Diagnose ausführen, Gruppen-/Einzelfahrer-/Watt- und Teamstrategie-Unterschiede **fachlich auswerten**, und danach in Issue #42 eine kleine, isolierte Verbesserung von Helfer-/Kapitän-/Verfolger-Arbeit entwickeln und gegen dieselben Seeds prüfen. Keine Änderung der D-074–D-077-Grundsatzentscheidungen.
