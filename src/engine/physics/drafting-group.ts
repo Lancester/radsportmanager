@@ -327,8 +327,18 @@ export function simulateGroup(input:GroupInput):GroupResult {
     if(steps===0)snapshots.push(snapshot(t,riders,factors,threshold));
     const nextCommand=commands[cmdIndex]?.timeS??Infinity;
     const nextLane=laneCommands[laneCmdIndex]?.timeS??Infinity;
+    // Beim automatisch gesteuerten Manöver exakt am erreichten Ziel
+    // einen Integrationsschnitt setzen: vorher kein Attacke-Watt, danach
+    // (und nur nach vollständigem Spurwechsel) Angriff mit CP/W′-Limit.
+    let autoLaneFinishS=Infinity;
+    for(const [id,agent] of autoLanes){
+      if(agent.mode!=='moving')continue;
+      const r=riders.find(x=>x.id===id)!;
+      autoLaneFinishS=Math.min(autoLaneFinishS,
+        Math.abs(agent.target!-r.lateralPositionM)/agent.config.maxLateralSpeedMps);
+    }
     const dt=Math.min(stepSeconds,input.durationS-t,nextCommand-t,nextLane-t,
-      nextSample-t,nextAgentDecision-t);
+      nextSample-t,nextAgentDecision-t,autoLaneFinishS);
     if(!(dt>1e-11)){
       if(nextSample<=t+1e-10){nextSample+=sampleEveryS;continue;}
       throw new RangeError('Zeitschritt unter numerischer Grenze');
