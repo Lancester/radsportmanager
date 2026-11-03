@@ -1,6 +1,6 @@
 # Entwicklungsstand
 
-**Aktueller Stand: 03.11.2026 · Phase 2: R-03-Windschatten vorhanden; Android-Browser-Benchmark vorbereitet, echte Android-Messung steht aus.** Die früheren Phasenstände weiter unten sind als chronologisches Journal zu lesen; die aktuelle nächste Aufgabe steht im letzten Abschnitt.
+**Aktueller Stand: 03.11.2026 · R-10: erster 30-Fahrer-50-km-Rennprototyp aus R-09 vorhanden, Peloton- und Renn-KI verbessert; die neuen Tests werden gerade vollständig geprüft.** Frühere Phasenstände weiter unten sind das chronologische Journal. Der echte Android-Median für komplette 50-km-Rennen ist noch nicht gemessen.
 
 ## Bereits festgelegt
 
