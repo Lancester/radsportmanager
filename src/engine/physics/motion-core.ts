@@ -100,6 +100,7 @@ function integrate(v0: number, dt: number, section: CornerSection, rider: Corner
   const residual = (endV: number) => endV - v0 - dt *
     computeForces((v0 + endV) / 2, section, rider, power, brakeN, maxDriveN, aeroFactor).net / massEff;
   let endV = 0;
+  let effectiveDt = dt;
   if (residual(0) < 0) {
     let lo = 0, hi = Math.max(1, v0 + 1);
     while (residual(hi) < 0) {
@@ -111,9 +112,19 @@ function integrate(v0: number, dt: number, section: CornerSection, rider: Corner
       if (residual(mid) < 0) lo = mid; else hi = mid;
     }
     endV = (lo + hi) / 2;
+  } else if (v0 > 0) {
+    // Bei Stillstand VOR Ende des Zeitschritts darf die Strecke nicht
+    // noch mit v0/2 über die volle dt angerechnet werden.
+    // Impliziter Mittelpunktwert liefert einen zur Energiebilanz
+    // konsistenten, verkürzten Bremsweg bis vEnd=0.
+    const stopNet = computeForces(v0 / 2, section, rider, power,
+      brakeN, maxDriveN, aeroFactor).net;
+    if (stopNet < 0) {
+      effectiveDt = Math.min(dt, -v0 * massEff / stopNet);
+    }
   }
   const vMid = (v0 + endV) / 2;
-  return { endV, distanceM: vMid * dt,
+  return { endV, distanceM: vMid * effectiveDt,
     forces: computeForces(vMid, section, rider, power, brakeN, maxDriveN, aeroFactor) };
 }
 /** Ein gemeinsamer Integrationsschritt für unabhängig oder gekoppelt simulierte Fahrer.
