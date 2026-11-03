@@ -57,3 +57,11 @@ Geplante Qualität der Entscheidungen:
 ## Noch offene Spieldesign-Fragen
 
 Genauer Umfang von Sponsoren/Finanzen, Teamligen, Trainingssystem, Personalstufen, Spielschwierigkeit, realen Lizenzen, Renndetails, Zeitsprüngen und möglichen optionalen Onlinevergleichen. Diese Punkte nicht vor Abschluss des Engine-Kerns unnötig festschreiben.
+
+## Ausrüstungsinvestitionen als strategische Teamentscheidung (03.11.2026)
+
+**Vom Nutzer gewünscht und als Grundrichtung beschlossen:** Mit kleinem Budget beginnt ein Team mit einfacherem Material. Später kann es insbesondere in leichtere/aerodynamischere Rahmen und Laufräder, Zeitfahranzüge und andere geeignete Ausrüstung investieren.
+
+Der Nutzen folgt aus **physikalischen Eingabewerten**, nicht einer künstlichen Geschwindigkeits- oder Siegquote: Materialmasse, CdA, Reifen-Rollwiderstand und eventuell Antriebswirkungsgrad. Je nach Bergprofil, flachem Zeitfahren, Sprint oder Positionsverhalten können sich die Vorteile unterscheiden. Teure Ausrüstung muss nicht für jede Strecke die beste sein.
+
+**Noch offen:** Preise und Verfügbarkeit, Fahrerausrüstung vs. teamweite Anschaffung, Reglement je Rennart, Verschleiß/Wartung, Sponsorenverträge, echte Daten und Balancing. Nicht als implementiert darstellen. Erste kontrollierte Physikbeispiele in [physik/R02_BERG.md](physik/R02_BERG.md).
