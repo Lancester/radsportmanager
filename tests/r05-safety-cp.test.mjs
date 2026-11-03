@@ -131,7 +131,7 @@ test('R05: echte Vordermanngefahr wird nicht mit KI-Temposprung gelöst',()=>{
 test('R05: tatsächliches Gruppenbremsen, keine künstliche Positionsänderung',()=>{
  const x=createEightRiderExample();
  x.riders=x.riders.slice(0,3);x.commands=[];x.durationS=8;
- x.riders[2].positionM=x.riders[1].positionM-4.7;
+ x.riders[2].positionM=x.riders[1].positionM-4.4;
  x.riders[2].speedMps=11.5;
  x.followingSafety={...R05_SAFETY};
  const r=simulateGroup(x);
