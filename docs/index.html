@@ -36,7 +36,8 @@
       <button data-preset="mittel">Mittel · 10 Paare · 120 s</button>
       <button data-preset="gross">Groß · 80 Paare · 120 s</button>
       <button data-preset="gruppe">8 Fahrer · ohne KI · 120 s</button>
-      <button data-preset="agent">NEU · 8 Fahrer · mit Regel-KI</button>
+      <button data-preset="agent">8 Fahrer · Regel-KI</button>
+      <button data-preset="r05">NEU · KI + Abstand + CP/W′</button>
     </div>
     <div class="buttons" style="margin-top:9px"><button class="secondary" id="cancel" disabled>Test abbrechen</button></div>
     <div class="state" id="status" role="status" aria-live="polite">Bereit. Wähle einen Test.</div>
@@ -57,7 +58,7 @@
   <section class="panel" aria-labelledby="whatTitle">
     <h2 id="whatTitle">3. Was sagen die Ergebnisse aus?</h2>
     <p>Die drei bisherigen Tests rechnen 2, 20 oder 160 Fahrer in unabhängigen Zweiergruppen. Der neue Test berechnet <strong>acht tatsächlich gekoppelte Fahrer</strong>, deren Windschatten von allen vorausfahrenden Nachbarn beeinflusst wird.</p>
-    <p>In beiden Achtfahrer-Tests reduziert ein externer Befehl F8s Leistung ab Sekunde 30. <strong>Ohne KI</strong> fällt F8 physikalisch zurück. <strong>Mit Regel-KI</strong> beobachtet F8 die Lücke und kann zeitweise begrenzt zusätzliche Watt einsetzen. Die KI verändert niemals direkt Position oder Geschwindigkeit. Sichere Spurwechsel, umfassende Taktik, Ermüdungsphysiologie und lange Etappen fehlen weiterhin.</p>
+    <p>In beiden Achtfahrer-Tests reduziert ein externer Befehl F8s Leistung ab Sekunde 30. <strong>Ohne KI</strong> fällt F8 physikalisch zurück. <strong>Mit Regel-KI</strong> beobachtet F8 die Lücke und kann zeitweise begrenzt zusätzliche Watt einsetzen. Die KI verändert niemals direkt Position oder Geschwindigkeit. Der neue R-05-Test ergänzt einen vorausschauenden longitudinalen Abstandsschutz und eine begrenzte CP/W′-Reserve; sichere Spurwechsel, vollständig kalibrierte Ermüdungsphysiologie und lange Etappen fehlen weiterhin.</p>
     <p class="small">Laufzeit und Ergebnisse entstehen lokal im Browser. Die Webseite ist öffentlich, aber es gibt kein Benutzerkonto und keinen Ergebnis-Upload. Ein Export erfolgt nur, wenn du ihn selbst kopierst.</p>
   </section>
   <p class="foot">Version <span id="version">wird geladen</span> · <a class="link" href="https://github.com/Lancester/radsportmanager">Quellcode auf GitHub</a></p>
