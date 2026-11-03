@@ -93,3 +93,67 @@ export function advanceSteering(
     steeringAccelerationMps2:(nextV-lateralSpeedMps)/dt,
     availableSteeringAccelerationMps2:accel};
 }
+
+/** R-08: Zweiter, für längere Manöver bevorzugter Querverlauf.
+ * Ein kubischer Smoothstep y(u)=y0+dy*(3u²-2u³) besitzt an beiden
+ * Enden v_y=0, begrenzte maximale Quergeschwindigkeit und
+ * begrenzte maximale Querbeschleunigung.
+ */
+export interface SteeringProfile {
+  startM:number;
+  targetM:number;
+  durationS:number;
+  elapsedS:number;
+  maximumAccelerationMps2:number;
+  maximumSpeedMps:number;
+}
+export interface ProfileSteeringStep extends SteeringStep {
+  state:SteeringProfile;
+}
+export function beginSteeringProfile(
+  startM:number,targetM:number,maxRateMps:number,
+  roadHalfWidthM:number,forwardSpeedMps:number,limits:SteeringLimits,
+):SteeringProfile {
+  valid('startM',startM,Math.abs(startM)<=roadHalfWidthM);
+  valid('targetM',targetM,Math.abs(targetM)<=roadHalfWidthM);
+  valid('maxRateMps',maxRateMps,maxRateMps>0&&maxRateMps<=2.5);
+  const accel=steeringAccelerationBudgetMps2(limits,forwardSpeedMps);
+  if(accel<=1e-7)throw new RangeError('Querfahrdynamik: kein Querbeschleunigungsbudget');
+  const distance=Math.abs(targetM-startM);
+  if(distance<1e-10)throw new RangeError('Querfahrdynamik: Ziel bereits erreicht');
+  const durationS=Math.max(1.5*distance/maxRateMps,
+    Math.sqrt(6*distance/accel));
+  return {startM,targetM,durationS,elapsedS:0,
+    maximumAccelerationMps2:6*distance/(durationS*durationS),
+    maximumSpeedMps:1.5*distance/durationS};
+}
+const smooth=(u:number)=>u*u*(3-2*u);
+const derivative=(u:number)=>6*u*(1-u);
+const second=(u:number)=>6-12*u;
+export function advanceSteeringProfile(
+  state:SteeringProfile,dt:number,forwardSpeedMps:number,
+  limits:SteeringLimits,
+):ProfileSteeringStep {
+  if(!state)throw new RangeError('Querfahrdynamik: fehlendes Profil');
+  valid('dt',dt,dt>0&&dt<=1);
+  valid('elapsedS',state.elapsedS,state.elapsedS>=0&&
+    state.elapsedS<=state.durationS+1e-7);
+  valid('durationS',state.durationS,state.durationS>0&&state.durationS<=60);
+  const budget=steeringAccelerationBudgetMps2(limits,forwardSpeedMps);
+  if(budget+1e-8<state.maximumAccelerationMps2)
+    throw new RangeError('Querfahrdynamik: Kurvenhaftung reicht für laufendes Manöver nicht');
+  const nextS=Math.min(state.durationS,state.elapsedS+dt);
+  const u=nextS/state.durationS;
+  const distance=state.targetM-state.startM;
+  const lateralPositionM=state.startM+distance*smooth(u);
+  const completed=nextS>=state.durationS-1e-10;
+  const lateralSpeedMps=completed?0:distance*derivative(u)/state.durationS;
+  const steeringAccelerationMps2=completed?0:
+    distance*second(u)/(state.durationS*state.durationS);
+  return {
+    state:{...state,elapsedS:nextS},
+    lateralPositionM,lateralSpeedMps,completed,
+    steeringAccelerationMps2,
+    availableSteeringAccelerationMps2:budget,
+  };
+}
