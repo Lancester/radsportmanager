@@ -98,3 +98,24 @@ test('Identischer Agentenlauf bleibt bitgenau reproduzierbar',()=>{
  assert.deepEqual(simulateGroup(createEightRiderAutoPassExample()),
   simulateGroup(createEightRiderAutoPassExample()));
 });
+
+test('Leere Wprime-Reserve begrenzt die Attacke tatsächlich',()=>{
+ const rich=createEightRiderAutoPassExample();
+ const limited=createEightRiderAutoPassExample();
+ limited.physiology[0].initialWPrimeJ=0;
+ limited.physiology[0].recoveryEfficiency=0;
+ const fullResult=simulateGroup(rich);
+ const limitedResult=simulateGroup(limited);
+ assert.equal(limitedResult.riders[7].wPrimeRemainingJ,0);
+ assert.ok(limitedResult.riders[7].cpLimitedSeconds>0);
+ assert.ok(limitedResult.riders[7].positionM<fullResult.riders[7].positionM,
+   'Leere Wprime darf nicht dieselbe Angriffsdynamik wie volle Reserve liefern');
+});
+test('Fehlerhafte autonome Spurwahl kann nicht als gemessener Erfolg durchgehen',()=>{
+ const x=createEightRiderAutoPassExample();
+ x.overtakeAgents[0].candidateLanesM=[4];
+ const result=simulateGroup(x);
+ assert.ok(result.events.every(e=>e.type!=='agent-lane-choice'),
+   'Außerhalb der Straße darf keine Spur zugewiesen werden');
+ assert.equal(result.riders[7].autonomousOvertakes,0);
+});
