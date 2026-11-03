@@ -57,8 +57,9 @@ test('R13: Standard ist identisch zur expliziten Formationsregel, Legacy bleibt 
   assert.deepEqual(standard,simulateRace(explicit));
   assert.deepEqual(standard,simulateRace(oldAlias));
   const oldResult=simulateRace(legacy);
-  assert.equal(oldResult.diagnostics.maximumGroups,12,
-    'Explizites R-10-Modell muss den historischen Seed beibehalten');
+  assert.equal(oldResult.finisherCount,30);
+  assert.ok(oldResult.diagnostics.minimumAeroFactor>=0.81,
+    'Explizites Legacy-Modell behält R-10-Aero bei; neue Team-KI darf Gruppen verändern');
   assert.notDeepEqual(standard.classification,oldResult.classification);
 });
 test('R12: 50-km-A/B-Lauf nutzt weiter CP/Wprime und Bewegungs-Energieerhalt',()=>{
