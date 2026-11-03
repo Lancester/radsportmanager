@@ -15,6 +15,8 @@ export interface FollowingObservation {
   ownSpeedMps: number;
   leaderSpeedMps: number;
   massKg: number;
+  /** Optionaler physikalischer Hinweis: angekündigte Verzögerung des Vordermanns. */
+  leaderDecelerationMps2?: number;
 }
 export interface FollowingDecision {
   powerAllowed: boolean;
@@ -51,13 +53,18 @@ export function decideFollowingSafety(
 ):FollowingDecision {
   validateFollowingSafety(options);
   const {centerGapM,ownSpeedMps,leaderSpeedMps,massKg}=obs;
+  const leaderDeceleration=obs.leaderDecelerationMps2??options.maximumDecelerationMps2;
+  finite('leaderDecelerationMps2',leaderDeceleration,leaderDeceleration>0&&leaderDeceleration<=12);
   finite('centerGapM',centerGapM,centerGapM>0);
   finite('ownSpeedMps',ownSpeedMps,ownSpeedMps>=0&&ownSpeedMps<100);
   finite('leaderSpeedMps',leaderSpeedMps,leaderSpeedMps>=0&&leaderSpeedMps<100);
   finite('massKg',massKg,massKg>0);
   const closing=Math.max(0,ownSpeedMps-leaderSpeedMps);
-  const brakingDistance=Math.max(0,ownSpeedMps**2-leaderSpeedMps**2)/
-    (2*options.maximumDecelerationMps2);
+  // Vergleicht Anhaltewege BEIDER Fahrer statt nur ihre momentane
+  // Relativgeschwindigkeit. Der Vordermann darf stärker bremsen.
+  const brakingDistance=Math.max(0,
+    ownSpeedMps**2/(2*options.maximumDecelerationMps2)-
+    leaderSpeedMps**2/(2*leaderDeceleration));
   const required=options.minimumCenterGapM + closing*options.reactionSeconds+
     brakingDistance;
   const remaining=centerGapM-options.minimumCenterGapM;
