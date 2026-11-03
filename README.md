@@ -58,3 +58,11 @@ Die bisherigen dynamischen Physikprototypen sind jetzt in `src/engine/physics/mo
 ## R-03: erste gekoppelte Zweierfahrt mit Windschatten
 
 Jetzt erstmals **zwei** Fahrer mit gemeinsamer Simulationsuhr, dynamisch veränderter Lücke und physikalischer Windschattenreduktion: [R-03 verständlich erklärt](docs/physik/R03_WINDSCHATTEN_ZWEI_FAHRER.md). Der neue Code liegt in `src/engine/physics/drafting-pair.ts`. **64/64 lokale Tests bestanden**, davon 15 neu. Noch **kein echtes Peloton, keine Renn-KI, keine Android-Version**. Testen mit `npm test`, manuelle Node-Kurzmessung mit `npm run bench:r03`.
+
+## Erster Smartphone-Benchmark (GitHub Pages)
+
+Die erste mobilfreundliche Testwebseite unter `docs/index.html` soll den echten R-03-TypeScript-Rechenkern **im Android-Browser-Web-Worker** ausführen. Ein kleiner GitHub-Pages-Workflow kompiliert den Kern und prüft vor der Veröffentlichung alle 64 bisherigen Tests.
+
+**Einmalige Admin-Einstellung notwendig:** Repository → Settings → Pages → Source **GitHub Actions**. Erst nach erfolgreicher Veröffentlichung ist die übliche Projekt-Pages-Adresse erreichbar. Das ist noch **keine veröffentlichte und auf Android getestete App**.
+
+[Deutsche Schritt-für-Schritt-Anleitung mit Testgrößen und Grenzen](docs/ANDROID_BENCHMARK.md).
