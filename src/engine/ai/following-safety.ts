@@ -71,15 +71,33 @@ export function decideFollowingSafety(
   const tooLate=closing>0 && required>centerGapM+1e-7;
   const desired=options.minimumCenterGapM+options.desiredExtraGapM;
   const predictedGap=centerGapM-closing*options.approachTimeS;
+  // Ein vom Simulationskommando angekündigtes Bremsen des Führenden
+  // im Vorschauhorizont berücksichtigen, bevor seine Geschwindigkeit sinkt.
+  const projectedLeadSpeed=obs.leaderDecelerationMps2===undefined
+    ? leaderSpeedMps : Math.max(0,leaderSpeedMps-
+        leaderDeceleration*options.approachTimeS);
+  const forecastSafeDistance=options.minimumCenterGapM+
+    Math.max(0,ownSpeedMps-projectedLeadSpeed)*options.reactionSeconds+
+    Math.max(0,ownSpeedMps**2/(2*options.maximumDecelerationMps2)-
+      projectedLeadSpeed**2/(2*leaderDeceleration));
   // Wer sich dem Vordermann nähert, darf nicht weiter beschleunigen.
-  const control=closing>0.005 && (
+  const control=(closing>0.005 || obs.leaderDecelerationMps2!==undefined) && (
     predictedGap < desired+closing*options.reactionSeconds+1.0 ||
-    required+options.desiredExtraGapM+1.0 >= centerGapM);
+    required+options.desiredExtraGapM+1.0 >= centerGapM ||
+    forecastSafeDistance+options.desiredExtraGapM >= centerGapM);
   // Bei echter Gefahr proaktiv bis zur physikalischen Deceleration-Grenze bremsen.
-  const danger=closing>0.005 && (predictedGap<desired || required+options.desiredExtraGapM>=centerGapM);
-  const brakeA=danger ? Math.min(options.maximumDecelerationMps2,
-    Math.max(0.05, (ownSpeedMps**2-leaderSpeedMps**2)/
-      (2*Math.max(0.15,remaining-options.desiredExtraGapM)))) : 0;
+  const danger=(closing>0.005 && (predictedGap<desired ||
+    required+options.desiredExtraGapM>=centerGapM)) ||
+    (obs.leaderDecelerationMps2!==undefined &&
+      forecastSafeDistance+options.desiredExtraGapM>=centerGapM);
+  const brakeA=danger ? (
+    (obs.leaderDecelerationMps2!==undefined &&
+     forecastSafeDistance+options.desiredExtraGapM>=centerGapM)
+      ? options.maximumDecelerationMps2
+      : Math.min(options.maximumDecelerationMps2,
+        Math.max(0.05,(ownSpeedMps**2-leaderSpeedMps**2)/
+          (2*Math.max(0.15,remaining-options.desiredExtraGapM))))
+    ) : 0;
   const brakeForceN=brakeA*massKg;
   return {
     powerAllowed: !control && brakeForceN===0,
