@@ -44,6 +44,15 @@ test('R15: aus fünf Helfern können vier oder fünf gemeinsam jagen',()=>{
   assert.ok(chasing.filter(o=>o.duty==='fuehrung').length<=2,
     'Pro Team höchstens ein tatsächlich frontnaher Führungseinsatz');
 });
+test('R15: bei dringlicher Flucht können alle fünf Helfer eines Teams helfen',()=>{
+  const urgent=plan([...breakaway,...pack],.60,900,4000);
+  assert.equal(urgent.situation.chaseViable,true);
+  const spr=[...urgent.orders.values()].filter(o=>
+    o.riderId.startsWith('SPR-H')&&o.mission==='jagd');
+  assert.equal(spr.length,5);
+  assert.equal(spr.filter(o=>o.duty==='fuehrung').length,1);
+  assert.equal(spr.filter(o=>o.duty==='unterstuetzung').length,4);
+});
 test('R15: Sprintzug mit mehreren Helfern und geschütztem Sprinter',()=>{
   const p=plan(pack,.90,1200,5000);
   const assigned=[...p.orders.values()].filter(o=>o.mission==='sprintzug');
