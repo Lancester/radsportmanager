@@ -163,3 +163,15 @@ Ausführliche Erklärung und Quellen: [physik/R05_ABSTAND_CP_WPRIME.md](physik/R
 | D-065 | **Beschlossen – Diagnose statt Ermüdungsbehauptung** | Tatsächlich erreichte Kurbelwatt relativ zur separat gespeicherten FTP aggregieren: Mittelwert, Zeit über FTP, Arbeit über FTP. | Keine automatische FTP→CP-Gleichsetzung, kein TSS oder erfundener Trainingseffekt. |
 
 [Technik und verbleibende Entscheidungen](physik/R06_SICHERHEIT_SPUR_FTP.md).
+
+
+## R-07 · Erste autonome Überholspur (03.11.2026)
+
+| Entscheidung | Status | Inhalt |
+| --- | --- | --- |
+| D-066 | **Umsetzung des Nutzerauftrags – technischer Prototyp** | Statt externer Spurkommandos wählt F8 bei naher Führung erstmals selbstständig unter zwei vorgeschlagenen Spuren. Er verweigert ein Manöver, wenn beide Prognosen einen Konflikt anzeigen. |
+| D-067 | **Technikregel, nicht kalibriert** | Kandidaten ±2 m, Querbewegung 0,8 m/s, Prognose in 0,1-s-Schritten mit konstanter aktueller Geschwindigkeit, maximal 5 s. Keine unbedingte Sicherheitsgarantie. |
+| D-068 | **Physikalische Integrität** | Erst nach komplettem Seitenwechsel Angriffswatt, dann CP/W′-Deckel und Abstandsregel vor `advanceMotionStep`. Kein Positions-/Tempobonus, kein externer KI-Dienst. |
+| D-069 | **Offen** | Zeitpunkt des Überholens mit Taktik/Teamrolle, Wiedereinscheren, Fahrtechnik/Risiko, dynamische Kurven-/Haftungsphysik und intelligente Feldpositionswahl. |
+
+[Technische Beschreibung R-07](ai/R07_UEBERHOLAGENT.md).
