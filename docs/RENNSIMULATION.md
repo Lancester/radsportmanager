@@ -117,3 +117,9 @@ Das gemeinsame stationäre Physikmodul `src/engine/physics/steady-state.ts` bere
 Die Bergreferenzen und 16 lokal erfolgreichen Tests werden unter [physik/R02_BERG.md](physik/R02_BERG.md) nachvollziehbar erklärt. **Noch nicht implementiert:** Abfahrten, Beschleunigung/Bremsen, Wind, Körperhaltungswechsel, Gruppen, Physiologie und Agenten-KI.
 
 Bei einer späteren Team-Ausrüstungsverwaltung soll besseres Material ausschließlich über reale physikalische Modellgrößen wirken; Preise/Produktdaten sind noch nicht definiert.
+
+## Dynamische Einzelfahrersimulation: Abschnitte, Beschleunigen, Bremsen, Abfahrt
+
+Der eigenständige Testkern src/engine/physics/dynamic-route.ts ergänzt die stationären R-01/R-02-Module ohne Änderungen daran. Die Geschwindigkeit wird mit **Newtons Kräftebilanz** zeitlich integriert; Straßenübergänge treffen die tatsächliche Distanz, ohne das Tempo sprunghaft zu setzen. Negative Steigung treibt bergab an; Bremskraft wird als vorgegebener Testbefehl von der Fahrkraft abgezogen.
+
+Das Beispiel aus Ebene, +7 %, −7 %, Bremsen und Wiederbeschleunigen über 4 km dauert im Modell **470,87 s**. Die 15 neuen Tests prüfen u. a. Energieerhaltung, Übergänge, Stillstand und numerische Schrittweite. Das ist noch **keine** Kurven-/Peloton-/KI- oder Fahrermüdungssimulation. Vollständige Fachdetails: [physik/DYNAMISCHE_STRECKE.md](physik/DYNAMISCHE_STRECKE.md).

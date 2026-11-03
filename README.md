@@ -42,3 +42,7 @@ Der Test **R-01 – Ebene, 20 km, 250/300 Watt** ist als erstes isoliertes, dete
 ## Zweiter Physiktest: R-02 am Berg
 
 Neu: [R-02 – stationärer Anstieg](docs/physik/R02_BERG.md) mit Schwerkraft, geometrisch korrekter Steigung und vereinfachten Vergleichen zwischen Fahrer- und Materialgewicht sowie CdA. **16 lokale Tests** prüfen R-01 und R-02 gemeinsam; `npm test`. Die spätere Ausrüstung soll eine budgetabhängige strategische Entscheidung sein; der Karriere- und Kaufteil ist noch nicht implementiert.
+
+## Dynamischer Streckenprototyp
+
+Nun kann **ein einzelner Fahrer** über mehrere Abschnitte ohne Geschwindigkeitssprünge fahren, bergauf langsamer werden, bergab rollen und durch eine vorgegebene Bremskraft verzögern. [Dokumentation, Formeln und 4-km-Demo](docs/physik/DYNAMISCHE_STRECKE.md). Neuer Testaufruf: npm run test:route. **15 neue lokale Tests** bestanden. Weiterhin kein Peloton, keine Renn-KI und kein installierbares Smartphone-Spiel.

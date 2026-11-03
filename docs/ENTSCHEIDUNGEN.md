@@ -71,3 +71,14 @@ Die Rechnung und die übrigen offenen Fragen stehen unter [physik/R01_EBENE.md](
 | D-034 | **Zu prüfen** | Produktgruppen, konkrete Werte, Preise, Reglement, Haltbarkeit und Wechselwirkungen (z. B. Aero-Position vs. abrufbare Leistung). | Recherche und Balancing fehlen. |
 
 **Umsetzung bisher:** R-02 besitzt konfigurierbare Materialmasse und CdA und berechnet deren physikalische Wirkung. Noch **kein Shop, kein Team-Budget und keine dynamischen Haltungswechsel**. Fachliche Herleitung: [physik/R02_BERG.md](physik/R02_BERG.md).
+
+## Dynamische Streckenabschnitte (03.11.2026)
+
+| ID | Status | Festlegung | Begründung |
+| --- | --- | --- | --- |
+| D-035 | **Beschlossen** | Nach R-02 werden kontinuierliche Geschwindigkeit und Position auf wechselnden Streckenabschnitten, **Beschleunigung, Verzögerung, Abfahrten und Bremsen** umgesetzt. | Expliziter Nutzerauftrag, physikalische Kontinuität vor Pelotonmodell. |
+| D-036 | **Technische Testannahme – zu kalibrieren** | 0,25-s-Schritt, impliziter Mittelpunktschritt, 180-N-Anfahrkraftlimit und vorgegebene Test-Bremskraft. | Mathematisch stabiler kleiner Prototyp; nicht als reale Fahrertechnik oder finaler Simulationsstandard bewiesen. |
+| D-037 | **Favorit – offen** | Kurven-/Engstellen-Bremsentscheidungen später vorausschauend und fahrerabhängig mit physikalischen Grenzen berechnen. | Taktische und fahrtechnische Qualität wird relevant. |
+| D-038 | **Zu prüfen** | Rotierende Laufradträgheit, Profilglättung, Haft-/Kurvenlimits, physische Leistungsdauer und Smartphone-Rechenleistung ergänzen. | Relevante Lücken zum realitätsnahen Rennbetrieb. |
+
+Ausführliche Herleitung, 4-km-Demo, 15 Tests und **alle offenen Punkte**: [physik/DYNAMISCHE_STRECKE.md](physik/DYNAMISCHE_STRECKE.md). Die offenen Fragen müssen gemäß [START_HIER.md](START_HIER.md) auch mit dem Nutzer im Chat besprochen werden.
