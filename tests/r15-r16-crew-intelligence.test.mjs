@@ -83,6 +83,23 @@ test('R16: unsinnige Jagd unterbleibt bei extremer Lücke und kleiner Restdistan
   const q=plan([...breakaway,...pack],.95,800,800);
   assert.equal(q.situation.chaseViable,false);
 });
+test('R16: ausgewogenes Team kann Sprintmannschaft zunächst jagen lassen',()=>{
+  const extraTeam={id:'BAL',strategy:'ausgewogen'};
+  const bal=[
+    rider('BAL-C','BAL','kapitaen',988),
+    rider('BAL-H0','BAL','helfer',990),
+    rider('BAL-H1','BAL','helfer',986),
+  ];
+  const data={timeS:900,progress:.55,remainingM:18000,
+    teams:[...teams,extraTeam],riders:[...breakaway,...pack,...bal]};
+  const moderate=decideIntelligentCrew(data);
+  assert.equal(moderate.situation.chaseViable,true);
+  assert.equal(moderate.missionByTeam.get('SPR'),'jagd');
+  assert.notEqual(moderate.missionByTeam.get('BAL'),'jagd');
+  const urgent=decideIntelligentCrew({...data,remainingM:4000});
+  assert.equal(urgent.situation.chaseViable,true);
+  assert.equal(urgent.missionByTeam.get('BAL'),'jagd');
+});
 test('R15/R16: Entscheidung unabhängig von Team- und Fahrerreihenfolge',()=>{
   const riders=[...breakaway,...pack];
   const a=plan(riders,.55,900,18000);
