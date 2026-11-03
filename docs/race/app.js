@@ -46,7 +46,7 @@ function showRace(result,runtime){
   $('winnerTime').textContent=time(champion.finishTimeS);
   $('finishers').textContent=`${result.diagnostics.teams} / ${result.finisherCount}`;
   $('runtime').textContent=`${decimal(runtime)} ms`;
-  $('stats').textContent=`Attacken: ${result.diagnostics.attacks} · Verfolgungsstarts: ${result.diagnostics.chases} · Zielsprints: ${result.diagnostics.sprints} · ${result.diagnostics.breakaways??0} bestätigte Fluchtgruppen · ${result.diagnostics.caughtBreakaways??0} eingeholt · ${result.diagnostics.groupSplits} relevante Feldaufteilungen · Seed ${result.seed}`;
+  $('stats').textContent=`Attacken: ${result.diagnostics.attacks} · Teamtempo-Einsätze: ${result.diagnostics.teamPaceStarts??0} · koordinierte Verfolgungen: ${result.diagnostics.teamChaseStarts??0} · Zielsprints: ${result.diagnostics.sprints} · ${result.diagnostics.breakaways??0} bestätigte Fluchtgruppen · ${result.diagnostics.caughtBreakaways??0} eingeholt · ${result.diagnostics.groupSplits} relevante Feldaufteilungen · Seed ${result.seed}`;
   const table=$('classification');
   for(const rider of result.classification){
     const row=document.createElement('tr');
@@ -61,8 +61,13 @@ function showRace(result,runtime){
     table.append(row);
   }
   const interesting=result.events.filter(e=>
-    ['attack','chase','sprint','segment','group-split','breakaway','breakaway-caught'].includes(e.type));
-  const limited=interesting.slice(0,30);
+    ['attack','chase','team-chase','sprint','segment','group-split',
+      'breakaway','breakaway-caught'].includes(e.type));
+  // Häufige Helferwechsel nur exemplarisch zeigen, damit Attacken,
+  // Einholungen und andere wichtigere Rennereignisse lesbar bleiben.
+  const helperSample=result.events.filter(e=>e.type==='team-pace').slice(0,8);
+  const limited=[...interesting,...helperSample]
+    .sort((a,b)=>a.timeS-b.timeS).slice(0,35);
   if(!limited.length){
     const li=document.createElement('li');
     li.textContent='Keine besonderen Ereignisse protokolliert.';
