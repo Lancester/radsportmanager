@@ -127,3 +127,16 @@ test('R05: echte Vordermanngefahr wird nicht mit KI-Temposprung gelöst',()=>{
  x.riders[7].speedMps=18; // zu schnell bei nur 3,4 m Abstand
  assert.throws(()=>simulateGroup(x),/Bremsweg unzureichend/);
 });
+
+test('R05: tatsächliches Gruppenbremsen, keine künstliche Positionsänderung',()=>{
+ const x=createEightRiderExample();
+ x.riders=x.riders.slice(0,3);x.commands=[];x.durationS=8;
+ x.riders[2].positionM=x.riders[1].positionM-4.7;
+ x.riders[2].speedMps=11.5;
+ x.followingSafety={...R05_SAFETY};
+ const r=simulateGroup(x);
+ assert.ok(r.riders.some(y=>y.safetyBrakeSeconds>0),'keine tatsächliche Bremsung');
+ assert.ok(r.riders.some(y=>y.brakeLossJ>0),'keine Bremsverlustarbeit');
+ assert.ok(r.events.some(y=>y.type==='safety'),'kein Sicherheitsereignis');
+ assert.ok(r.riders.every(y=>Math.abs(y.energyResidualJ)<.05));
+});
