@@ -38,3 +38,15 @@
 5. **Keine versteckten Faktenbehauptungen:** Parameter erst nach Messung, Fachrecherche und Kalibrierung festschreiben.
 
 Neue Beschlüsse mit Datum, Begründung und gegebenenfalls Bezug auf Issue/PR hier ergänzen.
+
+
+## Ergänzung zur Feldpositionierung (03.11.2026)
+
+| ID | Status | Entscheidung | Grund |
+| --- | --- | --- | --- |
+| D-025 | **Beschlossen** | Fahren und Positionieren im Peloton ist eine eigenständige Fahrerfähigkeit, die Einfluss auf reale Position, Bewegungsaufwand, Energieverbrauch und Risiko von Gruppenrissen hat. | Sportlich plausibel und wichtig für Klassiker und Schlüsselstellen. |
+| D-026 | **Beschlossen** | Vor Kurven, Verengungen, Anstiegen und Windkanten wird um Positionen gekämpft; Teamhilfe, Fahrerfähigkeit und begrenzte Straßenbreite beeinflussen, wer rechtzeitig vorne ist. | Keine beliebige oder kostenlose Positionsänderung. |
+| D-027 | **Favorit** | Kombination aus physikalischer Bewegung/Leistung, Physiologie und regelbasierter agentenbasierter Entscheidungs-KI. | Taktik entscheidet das Gewollte; physikalische und physiologische Grenzen das Erreichte. |
+| D-028 | **Zu prüfen** | Peloton als approximiertes 2D-/Reihenmodell mit kontinuierlichem Streckenfortschritt und dynamischen Nachbarschaften. | Detailgenauigkeit muss gegen Plausibilität und Android-Rechenzeit abgewogen werden. |
+
+Verbindliche fachliche Anforderung und vorgeschlagene Umsetzung: [PELOTON_POSITIONIERUNG.md](PELOTON_POSITIONIERUNG.md). **Wichtig:** Noch keine numerischen Skillboni, Aero-Koeffizienten oder Positionsregeln als validiert betrachten.
