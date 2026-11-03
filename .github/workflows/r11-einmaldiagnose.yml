@@ -1,0 +1,31 @@
+name: R-11 – einmalige manuelle Sieben-Rennen-Diagnose
+
+on:
+  push:
+    branches:
+      - experiment/r11-einmaldiagnose-20261103
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    name: Sieben kurze Vollrennen
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+      - name: Node.js 22 einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: R-11 Diagnose wirklich ausführen und Messwerte protokollieren
+        run: |
+          node --experimental-strip-types scripts/r11-balance-diagnostics.mjs | tee r11-diagnose.txt
+      - name: Diagnose als Textdatei sichern
+        uses: actions/upload-artifact@v4
+        with:
+          name: r11-einmaldiagnose
+          path: r11-diagnose.txt
+          retention-days: 7
