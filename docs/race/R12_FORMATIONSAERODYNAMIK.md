@@ -190,3 +190,21 @@ war **erfolgreich**: TypeScript-Kompilierung und vollständiger
 30-Fahrer-ESM-Lauf mit aktivierter Aero-Variante. Der temporäre
 Workflow ist danach entfernt worden. GitHub-Runner-Laufzeiten
 sind weiterhin **keine Android-Laufzeiten**.
+
+
+## Nachfolgende verbindliche Nutzerentscheidung: R-13 (03.11.2026)
+
+Die vorstehenden Abschnitte dokumentieren ausdrücklich die **historische
+R-12-Test- und Bewertungsphase**. Der Nutzer hat anschließend die größere
+Zielzeitspreizung zwischen einem stark geschützten Peloton und abgehängten
+Einzelfahrern als **plausibel** bewertet und ausdrücklich beschlossen,
+die mehrfahrerabhängige Aerodynamik **direkt als Rennstandard** zu
+übernehmen, statt eine vollständige wissenschaftliche Kalibrierung
+abzuwarten. Die historische Warnung vor automatisch als
+Fehler bewerteten großen Rückständen ist dadurch fachlich eingeordnet.
+
+`legacy` bleibt als explizite Vergleichsoption. Die neue Spielentscheidung
+und die Gleichauf-/Abgehängtenkorrekturen sind in
+[R-13: Formationswindschatten als Standard](R13_FORMATIONSWINDSCHATTEN_STANDARD.md)
+dokumentiert. **Keine 1D-Physikheuristik als vollständig empirisch
+bestätigte Windkanalabbildung bezeichnen.**

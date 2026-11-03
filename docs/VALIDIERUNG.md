@@ -581,3 +581,27 @@ Alle Fälle und W′-/Wattwerte: [R-12-Fachdokument](race/R12_FORMATIONSAERODYNA
 Mindestabstand, tatsächlicher Team-Führungswechsel,
 Feld-Verfolgungslogik, abgehängte Fahrer und unabhängige
 Realrenndaten. Kein Android-50-km-Vergleich.
+
+
+## R-13: Vorgesehene Prüfung der Freigabe des Formationswindschattens (03.11.2026)
+
+Neue Testentscheidung: reguläres Rennen verwendet ohne
+`aeroModel` das bisherige R-12-Formationsmodell; `legacy`
+ist nur noch die explizite A/B-Referenz. Große Rückstände von
+ohne direkten Schutz abgehängten Fahrern sind kein
+automatisches Abnahmedefizit.
+
+Zu prüfen: sieben vollständige 30-Fahrer-/50-km-Rennen mit dem
+neuen Standard unter den sieben R-11-Eingaben; CP-/W′- und
+Energiebilanz; bestätigte Flucht- und Einholabstände; Original
+`legacy`-Referenz; deterministische gleichauf stehende
+Fahrer und isolierte Nachzügler; unveränderte Browser-ESM-
+Übersetzung und GitHub-Pages-Lauf. Ergebnisse nur nach realer
+CI-Ausführung dokumentieren. Siehe
+[R-13-Fachdokument](race/R13_FORMATIONSWINDSCHATTEN_STANDARD.md).
+
+Grenze: technische Korrektheit und plausible Wirkungsrichtung
+sind prüfbar; die konkrete Formel ist eine für das Spiel
+gewählte Abstraktion, keine bestätigte Messkurve eines
+30er-Profi-Pelotons. Kein erfundener positiver Einholbonus,
+keine direkte Speed-/Zielzeitkorrektur.

@@ -46,16 +46,26 @@ test('R12: sortier-, eingabe- und duplikatsicher, keine Statusmutation',()=>{
     {id:'A',positionM:1}]),RangeError);
   assert.throws(()=>formationAeroFactors([{id:'B',positionM:NaN}]),RangeError);
 });
-test('R12: Standard und explizites Legacy-Modell sind bitgenau identisch',()=>{
-  const baseline=simulateRace(createRaceExample({seed:2026,profile:'flach'}));
-  const explicit=createRaceExample({seed:2026,profile:'flach'});
-  explicit.aeroModel='legacy';
-  assert.deepEqual(simulateRace(explicit),baseline);
+test('R13: Standard ist identisch zur expliziten Formationsregel, Legacy bleibt separat',()=>{
+  const standard=simulateRace(createRaceExample({seed:2026,profile:'flach',homeStrategy:'sprint'}));
+  const explicit=createRaceExample({seed:2026,profile:'flach',homeStrategy:'sprint'});
+  explicit.aeroModel='formation';
+  const oldAlias=createRaceExample({seed:2026,profile:'flach',homeStrategy:'sprint'});
+  oldAlias.aeroModel='formation-experiment';
+  const legacy=createRaceExample({seed:2026,profile:'flach',homeStrategy:'sprint'});
+  legacy.aeroModel='legacy';
+  assert.deepEqual(standard,simulateRace(explicit));
+  assert.deepEqual(standard,simulateRace(oldAlias));
+  const oldResult=simulateRace(legacy);
+  assert.equal(oldResult.diagnostics.maximumGroups,12,
+    'Explizites R-10-Modell muss den historischen Seed beibehalten');
+  assert.notDeepEqual(standard.classification,oldResult.classification);
 });
 test('R12: 50-km-A/B-Lauf nutzt weiter CP/Wprime und Bewegungs-Energieerhalt',()=>{
   const original=createRaceExample({seed:2026,profile:'wellig'});
+  original.aeroModel='legacy';
   const modified=createRaceExample({seed:2026,profile:'wellig'});
-  modified.aeroModel='formation-experiment';
+  modified.aeroModel='formation';
   const base=simulateRace(original);
   const change=simulateRace(modified);
   assert.equal(auditRace(change).finishers,30);
@@ -75,4 +85,41 @@ test('R12: unbekanntes Aero-Modell wird zurückgewiesen',()=>{
   const x=createRaceExample();
   x.aeroModel='ausgedacht';
   assert.throws(()=>validateRace(x),RangeError);
+});
+
+test('R13: Gleiche Längskoordinate erzeugt ohne Querlage keinen erfundenen Führenden',()=>{
+  const level=Array.from({length:30},(_,i)=>({
+    id:'A'+String(i).padStart(2,'0'),positionM:1000,
+  }));
+  const factors=formationAeroFactors(level);
+  assert.equal(factors.size,30);
+  assert.ok([...factors.values()].every(x=>x===1));
+  const oneAhead=[...level,{id:'Z',positionM:1002}];
+  const result=formationAeroFactors(oneAhead);
+  assert.equal(result.get('Z'),1);
+  // Die 30 Fahrer hinter Z liegen auf gleicher Höhe; kein ID-basiertes
+  // künstliches Sortieren der 29 Gleichauf-Fahrer als Vordermänner.
+  const back=[...level.map(r=>result.get(r.id))];
+  assert.ok(back.every(x=>x<1&&x>=R12_AERO_EXPERIMENT.minimumAeroFactor));
+});
+
+test('R13: ein vollständig abgehängter Einzelner erhält keinerlei großen Pelotonbonus',()=>{
+  const pack=Array.from({length:20},(_,i)=>({
+    id:'P'+i,positionM:1000-i*1.5,
+  }));
+  const alone={id:'ABGEHAENGT',positionM:800};
+  const aero=formationAeroFactors([...pack,alone]);
+  assert.equal(aero.get('ABGEHAENGT'),1);
+  assert.ok(aero.get('P19')<aero.get('P1'));
+  assert.ok(aero.get('P19')>=R12_AERO_EXPERIMENT.minimumAeroFactor);
+});
+
+test('R13: fehlende Modellangabe ist Formationsstandard und unbekannte Modelle bleiben ungültig',()=>{
+  const standard=createRaceExample();
+  assert.equal(standard.aeroModel,undefined);
+  validateRace(standard);
+  standard.aeroModel='formation';
+  validateRace(standard);
+  standard.aeroModel='legacy';
+  validateRace(standard);
 });

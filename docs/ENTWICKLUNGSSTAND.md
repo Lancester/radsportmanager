@@ -754,3 +754,41 @@ der aktive Standard**; `legacy` gilt weiterhin ohne explizite
 Anforderung. Offener nächster Schritt wie oben: Gruppen-/Positions-
 Repräsentation mit Fahrerrollen und Abgehängtenlogik verbessern,
 bevor eine Aero-Parameterfreigabe beschlossen wird.
+
+
+## R-13: Formationswindschatten direkt als Rennstandard übernommen (03.11.2026)
+
+**Nutzerentscheidung nach 14 R-12-Vergleichsrennen:** Der mögliche
+deutlich höhere Rückstand eines einzelnen, vom geschützten Hauptfeld
+abgehängten Fahrers ist **sportlich plausibel** und darf nicht
+pauschal als Balancingfehler behandelt werden. Der Windschatten soll
+deshalb **ohne weitere Kalibrierungsfreigabe als Spielregel** verwendet
+werden. Ausdrücklich kein künstliches Zusammenhalten, kein
+Zeitbonus und keine "magische" Aufholgeschwindigkeit.
+
+**Umsetzung in PR #50:** Standard ohne `aeroModel` ist jetzt das
+lokal mehrfahrerabhängige Formations-Aeromodell;
+`'formation'` und historisches `'formation-experiment'` sind
+explizite Synonyme, `'legacy'` lässt R-10-/R-11-Vergleiche
+reproduzieren. Die gleichauf startenden Fahrer erhalten nicht
+aufgrund der ID-Reihenfolge fiktiven Windschutz; sie zählen auch
+nicht auf das Limit von zehn echten Vorderleuten. Isolierte
+Fahrer ohne nahen Vordermann erhalten `aeroFactor=1`.
+Im regulären Rennen wirkt die neue Formel *ausschließlich* über
+Luftwiderstand in `advanceMotionStep`; CP/W′ und der Rest der
+Fahrer-/Streckensimulation bleiben unverändert.
+
+**Reproduzierbare neue Regression:** Sieben vollständige 30-Fahrer-/
+50-km-Standardrennen über zwei Seeds, flach/hügelig und mit
+verändertem Helfer F03, plus gezielte Gleichauf-, Alleinfahrer-
+und Legacy-Vergleichstests. Alle echten Prüfergebnisse und
+Grenzen in [R13_FORMATIONSWINDSCHATTEN_STANDARD.md](race/R13_FORMATIONSWINDSCHATTEN_STANDARD.md).
+
+**R-12-Berichte bleiben historische A/B-Messungen, kein
+Widerspruch zur neuen Entscheidung.** Der neue Default ist
+eine bewusste Spielentwicklungsentscheidung, kein Nachweis,
+dass 24 m oder Aero-0,40 für reale 30er-Pelotons exakt
+wissenschaftlich kalibriert wären. **Offener nächster Schritt:**
+Führung, Helfer-/Kapitänszusammenarbeit und Verfolgung als
+eigenständige Spielmechaniken verbessern, ohne große natürliche
+Zeitabstände künstlich zu vermeiden. Issue #42 bleibt offen.

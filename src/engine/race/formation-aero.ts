@@ -1,8 +1,8 @@
 /**
- * R-12: SCHALTBARER Forschungsprototyp für Windschatten in Formationen.
+ * R-13: Formationswindschatten als Rennstandard (aus R-12-Versuch).
  * Kein 2D-Fahrzeugmodell, keine seitliche Position, keine CFD-Kalibrierung.
  *
- * Die Rechenfunktion interpretiert mehrere Vordermänner innerhalb von 24 m
+ * Die Rechenfunktion interpretiert mehrere tatsächlich vorausliegende Fahrer innerhalb von 24 m
  * als lokale Abschirmungs-Proxy. Die Zahl ist eine ausdrücklich vorläufige
  * Testannahme und NICHT die 42-m-Diagnosegrenze für Renn-Abstandsgruppen.
  * Der Kopf einer Gruppe bleibt bei Faktor 1: keine rückwärtige Aero-Kopplung.
@@ -49,10 +49,17 @@ export function formationAeroFactors(
   const c=R12_AERO_EXPERIMENT;
   for(let i=0;i<sorted.length;i++){
     let weightedFront=0;
-    for(let j=i-1;j>=0&&i-j<=c.maximumFrontNeighbors;j--){
+    let frontNeighbors=0;
+    for(let j=i-1;j>=0&&frontNeighbors<c.maximumFrontNeighbors;j--){
       const distanceM=sorted[j].positionM-sorted[i].positionM;
       if(distanceM>=c.lookAheadM)break;
+      // Gleichauf-Fahrer sind keine vorausfahrenden Nachbarn.
+      // Sie dürfen auch NICHT das Limit für echte Vordermänner verbrauchen:
+      // alle Fahrer mit derselben Längskoordinate müssen dadurch denselben
+      // Schutz durch weiter vorn liegende Fahrer erhalten (Massenstart).
+      if(distanceM<=1e-9)continue;
       weightedFront+=Math.max(0,1-distanceM/c.lookAheadM);
+      frontNeighbors++;
     }
     const protection=weightedFront<=1?
       c.firstNeighborReduction*weightedFront:
