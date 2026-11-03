@@ -152,3 +152,14 @@ Details: [ai/LUECKENAGENT.md](ai/LUECKENAGENT.md). Keine neuronale KI oder exter
 | D-062 | **Offen** | Physiologische W′-Erholung/CP nach langem Rennen, FTP-Testprotokoll/Trainingszonen, sichere Kurven-/Gefällebremsung, 2D-Positionen und 160 Fahrer. | Vor realistischer Vollrenn- und Trainingssimulation weiterentwickeln. |
 
 Ausführliche Erklärung und Quellen: [physik/R05_ABSTAND_CP_WPRIME.md](physik/R05_ABSTAND_CP_WPRIME.md).
+
+
+## R-06: gebündelte Schritte – Führungsbremsung, seitliches Überholen, FTP-Diagnostik (03.11.2026)
+
+| ID | Status | Inhalt | Grenzen |
+| --- | --- | --- | --- |
+| D-063 | **Beschlossen – kleiner Physikprototyp** | Bekannten externen Bremsbefehl eines Vordermanns in die vorausschauende Längsabstandsberechnung einbeziehen. | Keine Vorhersage unbekannter Bremsmanöver und keine Kollisionsfreiheit garantiert. |
+| D-064 | **Beschlossen – vorgegebenes Überhol-Testmanöver** | Querverschiebung mit Maximalgeschwindigkeit und Straßenbegrenzung, zweiachsige kontinuierliche Kollisionsprüfung, Überholereignis. | Vorgabe ist extern; noch keine automatische Spurwahl, Lenkwinkel, Kurven-/Haftungsmodell. |
+| D-065 | **Beschlossen – Diagnose statt Ermüdungsbehauptung** | Tatsächlich erreichte Kurbelwatt relativ zur separat gespeicherten FTP aggregieren: Mittelwert, Zeit über FTP, Arbeit über FTP. | Keine automatische FTP→CP-Gleichsetzung, kein TSS oder erfundener Trainingseffekt. |
+
+[Technik und verbleibende Entscheidungen](physik/R06_SICHERHEIT_SPUR_FTP.md).
