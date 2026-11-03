@@ -216,3 +216,21 @@ wegkalibrieren, sondern glaubwürdige autonome Führung, gezielte
 Teamtempoarbeit, Verfolgung und Wechsel zwischen Fluchtgruppe und
 geschütztem Peloton verbessern. Keine neue Detail-Lenkphysik
 vor funktionierendem Rennmanagement. Issue #42 bleibt hierfür offen.
+
+
+### R-13 abschließend in main verifiziert (03.11.2026)
+
+[PR #50](https://github.com/Lancester/radsportmanager/pull/50)
+ist übernommen. [GitHub-Actions #41734418472](https://github.com/Lancester/radsportmanager/actions/runs/41734418472)
+ist **erfolgreich abgeschlossen: 213/213 Tests, drei
+50-km-Standardrennen, TypeScript-ESM-Build und GitHub Pages**.
+Der neue Formationswindschatten ist **jetzt regulärer Default** –
+auch auf der Browser-Rennseite. Einzeln abgehängte Fahrer
+können gegenüber einem windgeschützten Feld großen Rückstand
+erleiden. **Kein künstlicher Aufholbonus und keine
+Freigabesperre wegen fehlender empirischer Vollkalibrierung**.
+Der alte `legacy`-Modus bleibt explizit wählbar.
+Alle sieben aktuellen Standardrennen und die gleichauf-
+Sortierkorrektur: [R-13](race/R13_FORMATIONSWINDSCHATTEN_STANDARD.md).
+Nächster Arbeitsschritt: autonome Teamführung und gezielte
+Verfolgung, Issue #42.
