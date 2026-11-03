@@ -247,3 +247,14 @@ Die stationären Szenarien R-01/R-02 wurden um einen **ersten dynamischen Einzel
 - Umsetzung: [PR #15](https://github.com/Lancester/radsportmanager/pull/15), [Issue #14](https://github.com/Lancester/radsportmanager/issues/14) abgeschlossen.
 
 Die bereits gelisteten elf Szenarien R-01 bis R-11 bleiben unverändert. R-12 ist ein **numerisch getestetes Physikbeispiel**, **keine** validierte realistische Rennsimulation.
+
+## R-03 – erste tatsächliche Windschatten-Implementierung (03.11.2026)
+
+Der vorher spezifizierte R-03-Test wurde als **einfaches Zweier-Szenario** mit 2 eigenständig bewegten, aber gemeinsam berechneten Fahrern begonnen.
+
+- **Statischer Wattvergleich:** 11 m/s (39,6 km/h), ein fiktiver Fahrer mit 72+8 kg, CdA 0,30; 281,14 W im Wind versus 216,00 W dicht im Windschatten bei 0,5 m angenommenem Radabstand. Der Rollenanteil bleibt gleich.
+- **Abstandskontrolle:** Windschatten nimmt mit wachsender Längslücke und seitlichem Versatz ab.
+- **Dynamische Kontrolle:** beide Fahrer werden simultan aktualisiert, wachsende Lücke verändert die Abschirmung; natürliches Überholen auf seitlicher Spur erzeugt ein Ereignis; Überlappung in derselben Spur wird als Fehler gemeldet.
+- **Getestet:** 15 neue lokale Tests plus 49 bisherige = 64 bestanden. Keine Renndaten-Kalibrierung, kein Android/Web-Worker-Benchmark, kein gesamtes Peloton.
+- Die konkrete Reduktionskurve ist eine **parametrisierte Modellannahme**, noch kein aus Windkanal-Messdaten fit.
+- Details in [physik/R03_WINDSCHATTEN_ZWEI_FAHRER.md](physik/R03_WINDSCHATTEN_ZWEI_FAHRER.md).

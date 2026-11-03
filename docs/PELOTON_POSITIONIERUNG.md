@@ -131,3 +131,9 @@ Sportliche Leiter können über Rennziele, Antizipation und Helferkoordination b
 6. Erst danach größere Rennen und Monte-Carlo-Kalibrierung.
 
 **Status:** Anforderung zur eigenständigen Fahrerfähigkeit beschlossen; Positionsauflösung, Parameter und Algorithmen zunächst fachlicher Vorschlag, nicht validiert.
+
+## Zwischenstand R-03 (03.11.2026)
+
+Der erste gekoppelte Zweierprototyp besitzt tatsächlich **longitudinale und laterale Positionen**, einen abhängigen Luftwiderstand und kann eine Lücke wachsen lassen oder einen auf separater Spur erfolgenden Führungswechsel protokollieren. Das ist die erste reale technische Kopplung, nicht schon eine realistische Pelotonbewegung.
+
+**Noch nicht vorhanden:** automatische seitliche Positionswahl, fahrerisches Können, eigenständiges Gruppensplitting, Helferformationen, Querwind/Windkanten, mehr als zwei Fahrer und vollständige Kollisions-/Risiko-KI. [Die Windschatten-Physik ist ausführlich erklärt](physik/R03_WINDSCHATTEN_ZWEI_FAHRER.md).

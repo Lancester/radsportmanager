@@ -85,10 +85,10 @@ function validate(x: CornerRouteInput): void {
   });
 }
 interface Forces { drive: number; aero: number; roll: number; gravity: number; brake: number; net: number }
-function computeForces(v: number, s: CornerSection, r: CornerRider, driveW: number, brakeN: number, driveLimitN: number): Forces {
+function computeForces(v: number, s: CornerSection, r: CornerRider, driveW: number, brakeN: number, driveLimitN: number, aeroFactor = 1): Forces {
   const { sin, cos } = angle(s.gradeFraction);
   const mass = r.riderMassKg + r.equipmentMassKg;
-  const aero = 0.5 * r.airDensityKgM3 * r.dragAreaM2 * v * v;
+  const aero = 0.5 * r.airDensityKgM3 * r.dragAreaM2 * aeroFactor * v * v;
   const roll = r.rollingCoefficient * mass * G * cos;
   const gravity = mass * G * sin;
   const drive = Math.min(driveLimitN, driveW * r.drivetrainEfficiency / Math.max(v, 0.001));
@@ -96,9 +96,9 @@ function computeForces(v: number, s: CornerSection, r: CornerRider, driveW: numb
     net: drive - aero - roll - gravity - brakeN };
 }
 function integrate(v0: number, dt: number, section: CornerSection, rider: CornerRider,
-  massEff: number, power: number, brakeN: number, maxDriveN: number) {
+  massEff: number, power: number, brakeN: number, maxDriveN: number, aeroFactor = 1) {
   const residual = (endV: number) => endV - v0 - dt *
-    computeForces((v0 + endV) / 2, section, rider, power, brakeN, maxDriveN).net / massEff;
+    computeForces((v0 + endV) / 2, section, rider, power, brakeN, maxDriveN, aeroFactor).net / massEff;
   let endV = 0;
   if (residual(0) < 0) {
     let lo = 0, hi = Math.max(1, v0 + 1);
@@ -114,7 +114,52 @@ function integrate(v0: number, dt: number, section: CornerSection, rider: Corner
   }
   const vMid = (v0 + endV) / 2;
   return { endV, distanceM: vMid * dt,
-    forces: computeForces(vMid, section, rider, power, brakeN, maxDriveN) };
+    forces: computeForces(vMid, section, rider, power, brakeN, maxDriveN, aeroFactor) };
+}
+/** Ein gemeinsamer Integrationsschritt für unabhängig oder gekoppelt simulierte Fahrer.
+ * aeroFactor wirkt AUSSCHLIESSLICH auf den aerodynamischen Widerstand.
+ * Die bereits vorhandene Kurven-/Streckensimulation benutzt diesen Solver weiterhin mit Faktor 1.
+ */
+export interface ExternalMotionStep {
+  endSpeedMps: number;
+  distanceM: number;
+  driveWorkJ: number;
+  aeroLossJ: number;
+  rollingLossJ: number;
+  gravityWorkJ: number;
+  kineticEnergyChangeJ: number;
+  energyResidualJ: number;
+}
+export function advanceMotionStep(input: {
+  speedMps: number;
+  stepSeconds: number;
+  crankPowerW: number;
+  rider: CornerRider;
+  gradeFraction?: number;
+  aeroFactor?: number;
+  maxDriveForceN?: number;
+}): ExternalMotionStep {
+  const { speedMps, stepSeconds, crankPowerW, rider } = input;
+  const aeroFactor = input.aeroFactor ?? 1;
+  const gradeFraction = input.gradeFraction ?? 0;
+  check('speedMps', speedMps, speedMps >= 0 && speedMps < 100);
+  check('stepSeconds', stepSeconds, stepSeconds > 0 && stepSeconds <= 1);
+  check('crankPowerW', crankPowerW, crankPowerW >= 0);
+  check('aeroFactor', aeroFactor, aeroFactor > 0 && aeroFactor <= 1);
+  check('gradeFraction', gradeFraction, Math.abs(gradeFraction) <= 0.35);
+  const massEff = effectiveAccelerationMassKg(rider);
+  const step = integrate(speedMps, stepSeconds,
+    {lengthM: 1, gradeFraction, crankPowerW},
+    rider, massEff, crankPowerW, 0, input.maxDriveForceN ?? 180, aeroFactor);
+  const ds = step.distanceM;
+  const driveWorkJ = step.forces.drive * ds;
+  const aeroLossJ = step.forces.aero * ds;
+  const rollingLossJ = step.forces.roll * ds;
+  const gravityWorkJ = step.forces.gravity * ds;
+  const kineticEnergyChangeJ = 0.5 * massEff * (step.endV**2 - speedMps**2);
+  return {endSpeedMps: step.endV, distanceM: ds, driveWorkJ,
+    aeroLossJ, rollingLossJ, gravityWorkJ, kineticEnergyChangeJ,
+    energyResidualJ: driveWorkJ - aeroLossJ - rollingLossJ - gravityWorkJ - kineticEnergyChangeJ};
 }
 export function simulateMotionRoute(x: CornerRouteInput): CornerRouteResult {
   validate(x);

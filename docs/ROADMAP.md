@@ -75,3 +75,9 @@ Ein separater Technikprototyp kann vor einer als Geschwindigkeitskontrollpunkt m
 **Nächster fachlicher Schritt:** R-03 zuerst **zwei Fahrer** bei gleicher Geschwindigkeit und unterschiedlicher Position im Windschatten; anschließend Positionswechsel und kleine Gruppen mit physikalischen Energieunterschieden. Smartphone-/Web-Worker-Rechenleistung erst an einer frühen Gruppensimulation bewerten. Später: Fahrtechnik, Risikoprofil, fahrerisches Talent und Training (Issue #19) im Karrieremodus.
 
 Die Performance-Messung mit 160 voneinander unabhängigen 4-km-Fahrten auf Node.js ist **kein** vollständiges 160-Fahrer-Rennen.
+
+## R-03 – Windschatten mit zwei Fahrern (03.11.2026)
+
+Erster gekoppelter Zweier-Prototyp: Positions-/Abstandsdaten steuern eine parametrisierte **Aero-Reduktion** und beide Fahrer werden in gemeinsamen Zeitschritten berechnet. 64/64 lokale Tests bestanden. Mehr als zwei Fahrer, Wind, taktische KI und echte relative seitliche Bewegungen fehlen.
+
+**Nächster technischer Meilenstein:** einen simplen Browser-/Web-Worker-Test der R-03-Engine auf **Android** ausführbar machen; dann positionsabhängiger Windschatten in einer **3–8-Fahrer-Gruppe** und langfristig adaptiv effizientere Simulation statt unnötig aufwändiger 0,2-s-Berechnung für alle 160 Fahrer. [R-03-Dokumentation](physik/R03_WINDSCHATTEN_ZWEI_FAHRER.md).

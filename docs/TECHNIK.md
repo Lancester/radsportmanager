@@ -67,3 +67,9 @@ Das ist noch keine dynamische mehrstündige Simulation. Die Engine besitzt bewus
 **49 Tests in einem lokalen Node.js-22.16-Lauf bestanden;** TypeScript 5.8.3 ohne Typfehler. Lokal benchmarkbar mit `node --experimental-strip-types benchmarks/isolated-riders.mjs`; nur **1/20/160 voneinander unabhängige Fahrer über je 4 km**, kein Peloton oder echter Android/Web-Worker-Lauf.
 
 Details: [physik/GEMEINSAMER_KERN.md](physik/GEMEINSAMER_KERN.md). Nächster Schritt R-03 (zunächst Zweier-Windschatten), danach ein realer Android-Worker-Performancecheck.
+
+## R-03-Architektur und Smartphone-Testbedarf (03.11.2026)
+
+`src/engine/physics/motion-core.ts` stellt nun den **wiederverwendbaren Integrationsschritt** `advanceMotionStep` bereit, bei dem nur die aerodynamische Kraft mit einem von außen errechneten Schutzfaktor skaliert wird. `drafting-pair.ts` verwendet diese Funktion für **zwei Fahrer auf gemeinsamer Simulationsuhr**, statt eine zweite Physikengine aufzubauen.
+
+Node.js: 64/64 Tests lokal bestanden und keine Typfehler. Noch **kein Android-Browser/Web Worker** verfügbar. Die Node-Kurzmessung wiederholter 12-s-Zweierfahrten ist nicht mit einem 160-Fahrer-Rennen vergleichbar. [Fachmodell](physik/R03_WINDSCHATTEN_ZWEI_FAHRER.md).

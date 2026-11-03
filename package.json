@@ -9,7 +9,9 @@
     "test:route": "node --experimental-strip-types --test tests/dynamic-route.test.mjs",
     "test:corners": "node --experimental-strip-types --test tests/corner-route.test.mjs",
     "test:unified": "node --experimental-strip-types --test tests/unified-motion.test.mjs",
-    "bench:isolated": "node --experimental-strip-types benchmarks/isolated-riders.mjs"
+    "bench:isolated": "node --experimental-strip-types benchmarks/isolated-riders.mjs",
+    "test:r03": "node --experimental-strip-types --test tests/drafting-pair.test.mjs",
+    "bench:r03": "node --experimental-strip-types benchmarks/r03-pair.mjs"
   },
   "engines": {
     "node": ">=22.6.0"

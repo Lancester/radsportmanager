@@ -106,3 +106,14 @@ Der erste **getrennte Prototyp** und die offene Fragenliste liegen unter [physik
 Im aktuellen Code ist davon **noch keine Fahrer-KI oder ein Trainingssystem** implementiert. Die Risiken werden erst anhand überprüfbarer Situations- und Wahrscheinlichkeitsmodelle ausgearbeitet, siehe [Issue #19](https://github.com/Lancester/radsportmanager/issues/19).
 
 Die einheitliche dynamische Architektur, Testausführung und ehrliche Messgrenzen stehen in [physik/GEMEINSAMER_KERN.md](physik/GEMEINSAMER_KERN.md).
+
+## R-03: erste gekoppelte Zweierfahrt (03.11.2026)
+
+| ID | Status | Inhalt | Begründung |
+| --- | --- | --- | --- |
+| D-047 | **Beschlossen: Umsetzungsschritt** | Zunächst 2 Fahrer gemeinsam auf derselben Simulationsuhr mit Abstand und Position; danach schrittweise auf kleine Gruppen erweitern. | Kontrollierbarer Einstieg in die Pelotondynamik. |
+| D-048 | **Technische Testannahme – nicht kalibriert** | Windschatten als **multiplikativer Faktor nur auf den Luftwiderstand**, anfängliche Maximalreduktion 35 % und exponentielle Abnahme mit Längs-/Seitenabstand. | Isolierbarer, physikalisch richtiger Wirkmechanismus; konkrete Reduktionskurve ist eine vorläufige Heuristik. |
+| D-049 | **Technische Abgrenzung** | Fahrer können in diesem ersten Zweierprototyp **nicht** selbstständig Spur und Taktik wählen. Kollisionen in gleicher Spur werden als Fehler gemeldet, Überholen auf versetzter Spur funktioniert als Test. | Keine versteckte „Magie“ oder erfundene KI. |
+| D-050 | **Offen** | Aero-Kurven durch Messdaten kalibrieren, Hintermann-Effekt auf Führenden, Querwind, echte Lateralbewegung, mehrgliedrige Gruppen und Smartphone-Benchmark. | Wesentliche Voraussetzungen für eine glaubwürdige vollständige Rennsimulation fehlen. |
+
+Fachliche Erklärung und **alle noch offenen Fragen**: [physik/R03_WINDSCHATTEN_ZWEI_FAHRER.md](physik/R03_WINDSCHATTEN_ZWEI_FAHRER.md). Die spätere individuelle Positionierungsfähigkeit ist bereits als Spielanforderung beschlossen, aber **noch nicht im Code**.

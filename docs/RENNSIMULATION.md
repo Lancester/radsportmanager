@@ -129,3 +129,9 @@ Das Beispiel aus Ebene, +7 %, −7 %, Bremsen und Wiederbeschleunigen über 4 km
 Der neue Prototyp `src/engine/physics/corner-route.ts` bestimmt aus Radius, Reifenhaftung und Sicherheitsfaktor ein Einfahrtstempo, blickt auf den Kurvenpunkt voraus und bremst bei ausreichender Wegreserve. Bei zu kurzer Bremsstrecke wird **nicht teleportiert**, sondern ein zu hohes Einfahrtstempo gemeldet. Rotierende Trägheit wird über `m_eff = m + I/r²` nur auf Beschleunigung und kinetische Energie angewandt.
 
 **14/14 neue lokale Tests bestanden**, siehe [physik/KURVEN_UND_ROTATION.md](physik/KURVEN_UND_ROTATION.md). Das ist noch kein kurvenreicher Peloton-/Agenten-Rennsimulator; die bestehenden Teilmodelle müssen vor R-03 vereinheitlicht werden.
+
+## R-03: erstmals zwei Fahrer dynamisch gekoppelt (03.11.2026)
+
+Die neue Datei `src/engine/physics/drafting-pair.ts` simuliert **zwei** Fahrer mit gleicher Uhr, eigenen Positionen/Leistungen und abstands-/seitenversatzabhängigem Windschatten. Sie verwendet **denselben** existierenden Bewegungsintegrator `advanceMotionStep` aus `motion-core.ts`: Nur die aerodynamische Widerstandskraft wird durch einen variablen Faktor reduziert. Kein direkter Watt- oder Siegerbonus.
+
+Statische Referenz: bei 39,6 km/h benötigt der fiktive Fahrer im Wind 281,14 Pedal-Watt, dicht hinter einem Vordermann 216,00 Pedal-Watt; *die zugehörige Kurve ist noch nicht empirisch kalibriert*. 15 neue lokale Tests bestanden, zusammen **64/64**. Grenzen, Formeln, Quellen und neue Fragen: [physik/R03_WINDSCHATTEN_ZWEI_FAHRER.md](physik/R03_WINDSCHATTEN_ZWEI_FAHRER.md).
