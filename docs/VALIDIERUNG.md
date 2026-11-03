@@ -144,3 +144,18 @@ Ein kleiner GitHub-Pages-Workflow soll bei relevantem Commit genau dieselben 64 
 **Nicht daraus ableiten:** Keine Zusage für 20 oder 160 Fahrer in realen Gruppen, keine Aussage über 200 km, Akku-/Temperatur-/Speicherkosten und keine Web-Worker-Verhaltensprüfung bei Sperrbildschirm oder langer Laufzeit. Der Test mit 160 Fahrern auf der Webseite besteht vorerst aus **80 unabhängigen Zweiergruppen**.
 
 **Nächste Messung:** Auf derselben Webseite den **mittleren Test (10 Paare, jeweils 120 virtuelle Sekunden)** und dann den **großen Test (80 Paare, jeweils 120 virtuelle Sekunden)** ausführen, jeweils Berichte im Chat teilen. Die Zeiten über verschiedene Größen sind interessanter als eine lineare Hochrechnung aus dem kleinen Test.
+
+
+## Android-Web-Worker-Messreihe vollständig (03.11.2026)
+
+**Echte, vom Nutzer auf Android/Chrome 156 ausgeführte Messungen** mit R-03-Browserversion `dffcf78`. Je Test drei Läufe, der Median wird angezeigt.
+
+| Unabhängige Paare / Fahrer | Virtuelle Zeit je Paar | Paar-Zeitschritte | Rohzeiten (ms) | Median (ms) | Prüfsumme |
+| --- | ---: | ---: | --- | ---: | ---: |
+| 1 / 2 | 12 s | 60 | 18,8 / 7,1 / 4,6 | **7,1** | 276,626283 |
+| 10 / 20 | 120 s | 6.000 | 75 / 35,5 / 26,2 | **35,5** | 24.318,863289 |
+| 80 / 160 | 120 s | 48.000 | 257,7 / 191,8 / 166,5 | **191,8** | 194.550,906309 |
+
+Die Prüfsummen der beiden 120-s-Tests stimmen bis auf 0,000003 mit einer achtfachen Skalierung überein. Die Resultate sind vom Browser-internen Reproduzierbarkeitscheck bestätigt; ein separat ausgeführter Node-Referenzvergleich **derselben Version** fehlt noch. Zwischen 10 und 80 Paaren: 8-fache Rechenarbeit bei ca. 5,40-facher Medianzeit. Die höhere Leistung pro Schritt kann u. a. durch JIT-/Warm-up und andere Laufzeiteffekte entstehen; Ursache nicht unabhängig untersucht.
+
+**Abgrenzung:** Test mit 160 Fahrern bedeutet 80 **unabhängige Zweiergruppen**, nicht ein gekoppeltes Peloton. Keine Validierung einer 200-km-Etappe, komplexer Feldpositionierung, Querwind, KI, Batterieverbrauch oder thermischer Drosselung. Der echte Android-Web-Worker-Funktionstest ist damit bestanden; die realistische Gruppen-/Langzeitprüfung steht aus. Vollständiger Messbericht: [ANDROID_BENCHMARK.md](ANDROID_BENCHMARK.md).
