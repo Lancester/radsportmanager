@@ -628,3 +628,43 @@ Profi-Rennen. Die Nutzerentscheidung ist dennoch **verbindlich
 umgesetzt** – dieses empirische Restthema blockiert den
 Rennbetrieb nicht. Großer Abstand eines tatsächlich isolierten
 Fahrers zum Feld ist **kein** pauschaler Mangel.
+
+
+## R-14 – echte Teamtempo-/Verfolgungsereignisse und Vollrennen (04.11.2026)
+
+**Gültige Tests auf dem Feature-Branch:**
+[GitHub PR-Actions #41737911881](https://github.com/Lancester/radsportmanager/actions/runs/41737911881)
+**221/221 Tests, null Fehler**. Acht neue Tests prüfen
+Helferrotation (maximal ein Teamarbeiter), Unabhängigkeit
+von Eingabereihenfolge, räumliche Nähe zum Kapitän/Sprinter,
+Energiegrenzen, belegte Ausreißerjagd, keine Verfolgung
+eigener Flucht oder weit abgehängter Einzelfahrer,
+ungültige Eingaben und zwei vollständige 50-km-Rennen
+mit überprüfter Ereignis- und Energiebilanz.
+
+**Zusätzliche Ausführung:**
+[Actions #41738013741](https://github.com/Lancester/radsportmanager/actions/runs/41738013741)
+hat sieben vollständige Rennvarianten mit je 30 Fahrern
+durchgerechnet, die sieben `R14-RENNDIAGNOSE`-Datensätze
+sowie eine Abschlusszeile ausdrücklich nachgezählt
+und einen TypeScript-Browser-Build samt ESM-30-Fahrer-Rennen
+erfolgreich bestätigt. Kein Android-50-km-Benchmark.
+Das einmalige Build-Workflow-Skript wurde nach
+dem Erfolg aus dem Feature-Branch wieder entfernt.
+
+**Messgrenzen:** Die Ereigniszähler sind ausgewählte
+*Auftragsanfänge*, nicht ein verifizierter tatsächlicher
+Spur-/Führungswechsel. Die 42-m-Taktikklassen sagen nichts
+über Seitenposition aus und sind ausdrücklich keine
+Aero-Abschattung. Der Mehrfahrerwindschatten,
+`advanceMotionStep` und CP/W′-Energiefluss
+bleiben wie in R-13. Alle neuen Fahrzeiten und
+Gruppenwerte sind fiktive Modellberechnungen
+ohne externe Profi-Rennvalidierung. Die Jagd
+muss nicht erfolgreich sein. Sehr große
+Rückstände tatsächlicher Nachzügler sind
+**kein** automatischer Fehler.
+
+Detailtabelle aller sieben Situationen und
+offene Arbeiten im
+[R-14-Fachdokument](race/R14_TEAM_FUEHRUNG_VERFOLGUNG.md).
