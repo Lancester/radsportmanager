@@ -46,3 +46,7 @@ Neu: [R-02 – stationärer Anstieg](docs/physik/R02_BERG.md) mit Schwerkraft, g
 ## Dynamischer Streckenprototyp
 
 Nun kann **ein einzelner Fahrer** über mehrere Abschnitte ohne Geschwindigkeitssprünge fahren, bergauf langsamer werden, bergab rollen und durch eine vorgegebene Bremskraft verzögern. [Dokumentation, Formeln und 4-km-Demo](docs/physik/DYNAMISCHE_STRECKE.md). Neuer Testaufruf: npm run test:route. **15 neue lokale Tests** bestanden. Weiterhin kein Peloton, keine Renn-KI und kein installierbares Smartphone-Spiel.
+
+## Kurvenvorschau und Laufradträgheit
+
+Neuer, getrennt getesteter Prototyp: [Kurven und Radrotation erklärt](docs/physik/KURVEN_UND_ROTATION.md). Bisher kann der Testfahrer vor einer Kurve aufgrund von Radius und Reifenhaftung bremsen; eine rotierende Laufradträgheit beeinflusst Beschleunigung und Energie. **14 lokale Tests bestanden**, Aufruf `npm run test:corners`. Das ist noch **keine fahrbare App oder Peloton-Rennengine**.
