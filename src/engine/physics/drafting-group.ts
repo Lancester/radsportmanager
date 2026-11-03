@@ -3,6 +3,8 @@
  * Windschatten-Kombination ist vorläufige Heuristik, nicht empirisch kalibriert.
  */
 import { advanceMotionStep } from './motion-core.ts';
+import {decideGapPower, initialGapState, validateGapConfig} from '../ai/gap-controller.ts';
+import type {GapAgentConfig, GapAgentState} from '../ai/gap-controller.ts';
 import type { CornerRider } from './motion-core.ts';
 import { R03_DRAFT, requiredCrankPowerAtSpeedW } from './drafting-pair.ts';
 import type { DraftingParameters, PairedRiderInput } from './drafting-pair.ts';
@@ -13,11 +15,18 @@ export interface GroupInput {
   riders: GroupRiderInput[]; durationS: number; stepSeconds?: number;
   sampleEveryS?: number; parameters?: DraftingParameters;
   gapEventThresholdM?: number; commands?: GroupCommand[];
+  /** Regelbasierte Agenten (optional); ohne dieses Feld bleibt R-03G unverändert. */
+  gapAgents?: GapAgentConfig[];
+  agentDecisionEveryS?: number;
 }
 export interface GroupRiderSummary {
   id: string; positionM: number; speedMps: number; lateralPositionM: number;
   crankPowerW: number; aeroLossJ: number; rollingLossJ: number; driveWorkJ: number;
   kineticEnergyChangeJ: number; energyResidualJ: number; shelteredTimeS: number;
+  /** Tatsächlich zuletzt vom Agenten gewählte Kurbelwatt, nicht der Basistestbefehl. */
+  lastAppliedPowerW: number;
+  agentPursuitSeconds: number;
+  agentExtraDriveWorkJ: number;
 }
 export interface GroupSnapshot {
   timeS: number;
@@ -26,8 +35,9 @@ export interface GroupSnapshot {
   openGaps: number;
 }
 export interface GroupEvent {
-  timeS: number; type: 'gap-opened' | 'command'; riderId: string;
+  timeS: number; type: 'gap-opened' | 'command' | 'agent-decision'; riderId: string;
   leaderId?: string; gapM?: number;
+  agentMode?: string; powerW?: number; reason?: string;
 }
 export interface GroupResult {
   elapsedS: number; steps: number; riders: GroupRiderSummary[];
@@ -133,6 +143,20 @@ export function simulateGroup(input:GroupInput):GroupResult {
   const ids=new Set<string>(),riders=input.riders.map(r=>structuredClone(r));
   riders.forEach(r=>checkRider(r,ids));
   const commands=[...(input.commands??[])].sort((a,b)=>a.timeS-b.timeS);
+  const agentEveryS=input.agentDecisionEveryS??1;
+  finite('agentDecisionEveryS',agentEveryS,agentEveryS>=0.2&&agentEveryS<=10);
+  const agentConfigs=input.gapAgents??[];
+  if(!Array.isArray(agentConfigs))throw new RangeError('gapAgents muss eine Liste sein');
+  const controllers=new Map<string,{config:GapAgentConfig;state:GapAgentState;powerW:number}>();
+  for(const config of agentConfigs){
+    validateGapConfig(config);
+    if(!ids.has(config.riderId)||controllers.has(config.riderId))
+      throw new RangeError('Unbekannter oder doppelter Fahrer-Agent');
+    const rider=riders.find(r=>r.id===config.riderId)!;
+    if(config.maxPursuitPowerW<rider.crankPowerW)
+      throw new RangeError('Agenten-Höchstleistung unter der aktuellen Basisleistung');
+    controllers.set(config.riderId,{config,state:initialGapState(),powerW:rider.crankPowerW});
+  }
   for(const c of commands){
     if(!ids.has(c.riderId))throw new RangeError('Unbekannte Fahrer-ID im Befehl');
     finite('command.timeS',c.timeS,c.timeS>=0&&c.timeS<=input.durationS);
@@ -143,20 +167,45 @@ export function simulateGroup(input:GroupInput):GroupResult {
     id:r.id,positionM:r.positionM,speedMps:r.speedMps,
     lateralPositionM:r.lateralPositionM,crankPowerW:r.crankPowerW,
     driveWorkJ:0,aeroLossJ:0,rollingLossJ:0,kineticEnergyChangeJ:0,
-    energyResidualJ:0,shelteredTimeS:0,
+    energyResidualJ:0,shelteredTimeS:0,lastAppliedPowerW:r.crankPowerW,
+    agentPursuitSeconds:0,agentExtraDriveWorkJ:0,
   }));
   const events:GroupEvent[]=[],snapshots:GroupSnapshot[]=[];
   let t=0,steps=0,nextSample=sampleEveryS,cmdIndex=0;
+  let nextAgentDecision=controllers.size?0:Infinity;
   while(t<input.durationS-1e-10){
     while(cmdIndex<commands.length&&commands[cmdIndex].timeS<=t+1e-10){
       const cmd=commands[cmdIndex++],index=riders.findIndex(r=>r.id===cmd.riderId);
       riders[index].crankPowerW=cmd.crankPowerW;
       events.push({timeS:t,type:'command',riderId:cmd.riderId});
     }
+    if(controllers.size && nextAgentDecision<=t+1e-9){
+      const gaps=adjacentGaps(riders);
+      const byId=new Map(riders.map(r=>[r.id,r]));
+      for(const r of riders){
+        const controller=controllers.get(r.id);
+        if(!controller)continue;
+        const nearest=gaps.get(r.id);
+        const leader=nearest?byId.get(nearest.leaderId):undefined;
+        const decision=decideGapPower(controller.config,{
+          timeS:t, gapM:nearest?.gapM??null,
+          leaderSpeedMps:leader?.speedMps??null,
+          ownSpeedMps:r.speedMps,basePowerW:r.crankPowerW,
+        },controller.state);
+        controller.state=decision.state;
+        controller.powerW=decision.powerW;
+        if(decision.stateChanged)events.push({timeS:t,type:'agent-decision',riderId:r.id,
+          leaderId:leader?.id,gapM:nearest?.gapM,
+          agentMode:decision.state.mode,powerW:decision.powerW,reason:decision.reason});
+      }
+      // Kein zweiter, vom Bewegungsintegrator unabhängiger Zeitschritt.
+      nextAgentDecision+=agentEveryS;
+    }
     const factors=aeroFactorsForGroup(riders,params);
     if(steps===0)snapshots.push(snapshot(t,riders,factors,threshold));
     const nextCommand=commands[cmdIndex]?.timeS??Infinity;
-    const dt=Math.min(stepSeconds,input.durationS-t,nextCommand-t,nextSample-t);
+    const dt=Math.min(stepSeconds,input.durationS-t,nextCommand-t,nextSample-t,
+      nextAgentDecision-t);
     if(!(dt>1e-11)){
       if(nextSample<=t+1e-10){nextSample+=sampleEveryS;continue;}
       throw new RangeError('Zeitschritt unter numerischer Grenze');
@@ -164,7 +213,8 @@ export function simulateGroup(input:GroupInput):GroupResult {
     const previous=adjacentGaps(riders);
     // Alle acht Fahrer aus demselben Zustand berechnen, DANN gleichzeitig übernehmen.
     const changes=riders.map((r,i)=>advanceMotionStep({
-      speedMps:r.speedMps,stepSeconds:dt,crankPowerW:r.crankPowerW,
+      speedMps:r.speedMps,stepSeconds:dt,
+      crankPowerW:controllers.get(r.id)?.powerW??r.crankPowerW,
       rider:r.physical,gradeFraction:0,aeroFactor:factors[i],
     }));
     const oldPositions=riders.map(r=>r.positionM);
@@ -179,6 +229,18 @@ export function simulateGroup(input:GroupInput):GroupResult {
       s.rollingLossJ+=u.rollingLossJ;s.kineticEnergyChangeJ+=u.kineticEnergyChangeJ;
       s.energyResidualJ+=u.energyResidualJ;
       if(factors[i]<1-1e-6)s.shelteredTimeS+=dt;
+      const controller=controllers.get(r.id);
+      if(controller){
+        s.lastAppliedPowerW=controller.powerW;
+        if(controller.state.mode==='nachsetzen'){
+          controller.state.pursuitSeconds+=dt;
+          s.agentPursuitSeconds+=dt;
+          // Überschussarbeit am Antrieb nur als Näherungsdiagnose:
+          // genaue Differenz zum Baseline-Rennen ist separat zu vergleichen.
+          const extra=Math.max(0,controller.powerW-r.crankPowerW);
+          s.agentExtraDriveWorkJ+=extra*r.physical.drivetrainEfficiency*dt;
+        }
+      } else s.lastAppliedPowerW=r.crankPowerW;
     }
     t+=dt;steps++;
     const nextGaps=adjacentGaps(riders);
