@@ -1,0 +1,43 @@
+name: R-15-R-16 – einmalige Rennengine-Abnahme
+on:
+  push:
+    branches: [feature/r15-r16-multihelfer-rennintelligenz]
+permissions:
+  contents: read
+jobs:
+  r15-r16-comparison:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sieben R-14-gegen-R-15-R-16 Vollrennen vergleichen
+        run: |
+          node --experimental-strip-types scripts/r15-r16-comparison.mjs | tee r15-r16-results.txt
+          test "$(grep -c '^R15-R16-VERGLEICH ' r15-r16-results.txt)" -eq 7
+          test "$(grep -c '^R15-R16-GESAMT ' r15-r16-results.txt)" -eq 1
+      - name: TypeScript Browser und tatsächlich ausgeführte 30 Fahrer prüfen
+        run: |
+          npm install --no-save --ignore-scripts --no-audit --no-fund typescript@5.8.3
+          npm run build:benchmark
+          node --input-type=module <<'NODE'
+          import {createRaceExample,simulateRace} from './docs/benchmark/generated/race/race-simulator.js';
+          const r=simulateRace(createRaceExample({seed:2026,profile:'flach',homeStrategy:'sprint'}));
+          if(r.finisherCount!==30||r.diagnostics.multiHelperAssignments<2||
+            r.diagnostics.maxSimultaneousTeamHelpers<2||
+            r.classification.some(x=>Math.abs(x.energyResidualJ)>0.05))
+            throw Error('R15/R16 Browser-ESM-Regression');
+          console.log('R15-R16-BROWSER',JSON.stringify({
+            finishers:r.finisherCount,
+            maxTeamHelpers:r.diagnostics.maxSimultaneousTeamHelpers,
+            frontWorkSteps:r.diagnostics.actualFrontWorkSteps,
+            sprintTrainAssignments:r.diagnostics.sprintTrainAssignments
+          }));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: r15-r16-vergleich
+          path: r15-r16-results.txt
+          retention-days: 14
