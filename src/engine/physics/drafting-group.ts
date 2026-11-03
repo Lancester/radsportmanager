@@ -322,9 +322,10 @@ export function simulateGroup(input:GroupInput):GroupResult {
             centerGapM:ahead.gapM,ownSpeedMps:r.speedMps,
             leaderSpeedMps:leader.speedMps,
             massKg:r.physical.riderMassKg+r.physical.equipmentMassKg,
-            leaderDecelerationMps2:Math.max(input.followingSafety.maximumDecelerationMps2,
-              (externalBrakes.get(leader.id)??0)/
-              (leader.physical.riderMassKg+leader.physical.equipmentMassKg)),
+            ...((externalBrakes.get(leader.id)??0)>0?{
+              leaderDecelerationMps2:(externalBrakes.get(leader.id)??0)/
+                (leader.physical.riderMassKg+leader.physical.equipmentMassKg)
+            }:{}),
           },input.followingSafety);
           if(decision.tooLateToGuarantee)
             throw new RangeError('Bremsweg unzureichend: '+r.id+' folgt '+leader.id);
