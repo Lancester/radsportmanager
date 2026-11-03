@@ -49,7 +49,7 @@ export interface RaceInput {
   maxRaceTimeS?:number;
 }
 export type RaceEventType =
-  'start'|'attack'|'chase'|'sprint'|'recovery'|'segment'|'group-split'|'breakaway'|'breakaway-caught'|'finish'|'team-pace'|'team-chase';
+  'start'|'attack'|'chase'|'sprint'|'recovery'|'segment'|'group-split'|'breakaway'|'breakaway-caught'|'finish'|'team-pace'|'team-chase'|'sprint-train';
 export interface RaceEvent {
   timeS:number;km:number;type:RaceEventType;
   riderId?:string;teamId?:string;description:string;
@@ -343,7 +343,14 @@ export function simulateRace(x:RaceInput):RaceResult {
         const newDuty=eligible&&crew?crew.duty:null;
         if(newMission!==s.crewMission||newDuty!==s.crewDuty){
           if(newMission)counters.multiHelperAssignments++;
-          if(newMission==='sprintzug')counters.sprintTrainAssignments++;
+          if(newMission==='sprintzug'){
+            counters.sprintTrainAssignments++;
+            if(events.length<1000&&s.crewMission!=='sprintzug')events.push({
+              timeS:t,km:s.positionM/1000,type:'sprint-train',
+              riderId:s.rider.id,teamId:s.rider.teamId,
+              description:`${s.rider.name}: Sprintzug-Einsatz für den Sprinter`,
+            });
+          }
           s.crewMission=newMission;s.crewDuty=newDuty;
         }
         if(acceptedKind!==s.teamPaceKind){
