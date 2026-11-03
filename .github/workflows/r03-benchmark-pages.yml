@@ -60,6 +60,14 @@ jobs:
             throw new Error('Browsermodul liefert keine gueltigen physikalischen Ergebnisse');
           }
           console.log('Browsermodul importierbar und Simulation plausibel');
+          const group = await import('./docs/benchmark/generated/drafting-group.js');
+          const eight = group.simulateGroup(group.createEightRiderExample(120));
+          if (!Number.isFinite(eight.elapsedS) || Math.abs(eight.elapsedS-120)>1e-9 ||
+              eight.riders.length !== 8 || eight.events.every(e=>e.type!=='gap-opened') ||
+              eight.riders.some(r=>!Number.isFinite(r.energyResidualJ))) {
+            throw new Error('Achtfahrer-Gruppe liefert keine plausiblen Browserergebnisse');
+          }
+          console.log('Achtfahrer-Gruppenmodul erfolgreich, Schritte:',eight.steps);
           NODE
       - name: Git-Commit des Teststands für Bericht notieren
         run: git rev-parse --short HEAD > docs/benchmark/version.txt
