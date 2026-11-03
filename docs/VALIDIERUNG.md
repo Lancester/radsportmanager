@@ -211,3 +211,12 @@ Die Prüfsummen der beiden 120-s-Tests stimmen bis auf 0,000003 mit einer achtfa
 **Grenzen:** Die drei Laufzeiten streuen erheblich; beispielsweise können JIT-Warm-up und Hintergrundlast dazu beitragen, die Ursache ist aber nicht diagnostiziert. Der 160-Fahrer-Vergleichstest mit 191,8 ms berechnete **80 getrennte Zweiergruppen** und ist **kein direkter Skalierungsvergleich**. Gruppen-Aerodynamik bleibt heuristisch (max. 35 % Luftwiderstandsreduktion), keine selbständige Fahrtechnik, taktische KI, Spurwechsel- oder Kollisionsvermeidung, kein Querwind, keine Ermüdung, keine 200-km-Etappe, keine Akku-/Temperatur- oder Sperrbildschirm-Messung. **Daher keine belastbare Prognose für 160 miteinander interagierende Fahrer.**
 
 **Nächste fachliche Entwicklungsentscheidung:** Vor größerem Peloton zuerst eine begrenzte **regelbasierte Reaktion** auf sich öffnende Lücken (z. B. mehr Leistung aufbringen oder zurückfallen), danach sichere seitliche Positionsbewegung und die schon beschlossenen individuellen Fähigkeiten (Fahrtechnik, Positionierung, Risiko). **Das ist ein Vorschlag, keine bisher implementierte oder vom Nutzer beschlossene KI.** Der Physikkern bleibt für tatsächlich gefahrene Geschwindigkeiten maßgeblich.
+
+
+## R-04: erste Agenten-/Gruppenintegration in Prüfung (03.11.2026)
+
+**Vorheriger bestätigter Stand:** 80/80 Github-Actions-Tests; Achtfahrer-Gruppenlauf auf Android 26,8 ms Median ohne KI.
+
+**Neu im Branch:** `tests/gap-controller.test.mjs` mit **15 zusätzlichen Tests**, unter anderem Wahrnehmung einer wachsenden Lücke, maximale Watt-/Zeitgrenze, Rücknahme des Nachsetzens, Erholungsfenster, Eingabevalidierung, Determinismus, echte F8-Lückenreaktion und Energiegleichgewicht mit dem gemeinsamen Physikkern. Ein vollständig erfolgreicher Build würde **95/95** bedeuten. **Noch keine Erfolgsmeldung, bis GitHub Actions alle 95 Tests tatsächlich ausführt.** Ebenfalls neu: ESM-Smoke-Test, der zwei ansonsten identische Achtfahrer-Gruppen mit/ohne Agent vergleicht. Android-Ergebnisse müssen neu erhoben werden, vor allem Endlücke/Agentenereignisse/Rechenzeit.
+
+[Formeln, Grenzen und Softwarearchitektur](ai/LUECKENAGENT.md).

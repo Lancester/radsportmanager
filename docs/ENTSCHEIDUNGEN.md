@@ -128,3 +128,15 @@ Fachliche Erklärung und **alle noch offenen Fragen**: [physik/R03_WINDSCHATTEN_
 | D-054 | **Favorit – mit Nutzer noch zu entscheiden** | Später regelbasierte, nachvollziehbare **Fahreragenten** zur Positionswahl, Risikoabwägung, Teamtaktik und Reaktion auf Lücken nutzen, ohne die mechanische Rennphysik zu ersetzen. | Erklärbares Rennverhalten und Leistung auf Android; noch keine autonome KI programmiert. |
 
 Details, Formel, aktuelle Ergebnisse und **alle offenen Fragen**: [physik/R03G_ACHTFAHRER.md](physik/R03G_ACHTFAHRER.md). Die schon beschlossenen Spielerattribute Fahrtechnik, Risikobereitschaft und trainierbares Talent bleiben separate spätere Entwicklungsaufgaben.
+
+
+## R-04: erste regelbasierte Fahrerentscheidungen (03.11.2026)
+
+| ID | Status | Inhalt | Begründung |
+| --- | --- | --- | --- |
+| D-055 | **Beschlossen für diesen Prototyp** | Erste **erklärbare TypeScript-Zustandsmaschine**, die eine wachsende Lücke wahrnimmt, eine zeitlich begrenzte höhere Pedalleistung anfordert und danach wieder in einen Erholungszustand wechselt. | Expliziter Auftrag des Nutzers; einfache KI ohne Cloud und ohne schweres ML-Framework. |
+| D-056 | **Technische Trennung** | Regelagent gibt **nur Wattwünsche** zurück, die bestehende dynamische Physik berechnet **unverändert** die tatsächlichen Kräfte, Geschwindigkeit und Abstände. | Keine Geschwindigkeitsteleportation und nachvollziehbare Ergebnisse. |
+| D-057 | **Testwerte, nicht kalibriert** | In der ersten F8-Demo: Triggerlücke 5 m, Rücknahmeschwelle 4,2 m, höchstens 255 W, maximal 30 s Nachsetzen am Stück und 20 s Erholungsfenster. | Vorläufige Regelparameter; kein CP/W′- oder echtes Ermüdungsmodell. |
+| D-058 | **Offen** | Sichere Brems-/Spur- und Kollisionsvermeidung, individuelle Reaktionszeiten, physiologische Reserven, Fähigkeiten, taktisches Bewerten („Mitgehen oder nicht?“), Team-KI/Behavior Trees. | Erst nach isoliertem Test entscheiden, was der vollständige Manager braucht. |
+
+Details: [ai/LUECKENAGENT.md](ai/LUECKENAGENT.md). Keine neuronale KI oder externe KI-Bibliothek verwendet.

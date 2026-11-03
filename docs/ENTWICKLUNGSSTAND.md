@@ -328,3 +328,18 @@ Die zwei 120-s-Prüfsummen skalieren achtfach (Abweichung 0,000003 infolge Endru
 **Issue #23 nach echtem Android-Gruppenbenchmark als abgeschlossen markiert.** 8 physikalisch gekoppelte Fahrer über 120 s wurden auf Android mit **26,8 ms Median** gemessen (3 Läufe 52,9/26,8/19,7 ms); Prüfsumme 10560,145488, F8-Endlücke 100,414498 m, erstes Lückenereignis bei 44 s. Der GitHub-Pages-Build der Gruppenengine hatte zuvor **80/80 Tests erfolgreich**. Alle Details stehen in [ANDROID_BENCHMARK.md](ANDROID_BENCHMARK.md).
 
 **Nächste fachliche Option (nicht automatisch beschlossen):** [Issue #27 – einfache regelbasierte Fahrerreaktion auf eine aufreißende Lücke](https://github.com/Lancester/radsportmanager/issues/27). Dafür zuerst Reaktionsschwellen, Watt-/Physiologiegrenzen und spätere sichere Positionsbewegungen diskutieren. Die reine Physik bleibt bestehen. Noch keine autonome KI oder echtes 160-Fahrer-Peloton.
+
+
+## Neu: R-04 – erste begrenzte Fahrer-KI für Lückenreaktion (03.11.2026)
+
+**Auftrag:** Erklären, wie wir Fahrer-KI programmieren, sie im Achtfahrer-Modell erstmals implementieren und die Reife des gesamten Rennsimulators einordnen.
+
+**Implementiert in diesem Entwicklungsbranch:** `src/engine/ai/gap-controller.ts` als **eigene, reine regelbasierte TypeScript-Zustandsmaschine**, **ohne ML- oder KI-Bibliothek**. F8 kann eine wachsende Lücke erkennen, für eine begrenzte Zeit mehr Kurbelwatt anfordern und nach einem festen Limit in einen Erholungsmodus wechseln. Der Agent schreibt **keine** Geschwindigkeit/Position direkt um. `src/engine/physics/drafting-group.ts` unterstützt optionale Agenten; ohne Agent ist der frühere Gruppenlauf weiterhin unverändert. **15 neue Tests** für Regeln und reale Gruppenintegration werden zur bisherigen Suite mit **80 Prüfungen** ergänzt.
+
+**Android:** Die GitHub-Pages-Webseite enthält zwei vergleichbare Achtfahrer-Presets **„ohne KI“ / „mit Regel-KI“**. Web Worker verwendet die aus demselben TypeScript-Kern generierten Module. Neues Ergebnis umfasst die Anzahl der Agentenentscheidungen, Nachsetzzeit, zusätzlichen Antriebsaufwand und Endlücke. **Echte Android-Laufzeit dieser neuen KI-Version noch nicht gemessen.**
+
+**Wichtig:** Gesamttest `95/95`, Browser-Smoke-Test und Deployment sind **erst nach GitHub-Actions-Ausführung zu verifizieren**. Der frühere Stand `80/80` und **26,8 ms für acht gekoppelte Fahrer ohne KI** bleiben bestätigt; diese früheren Messwerte niemals als aktuelle KI-Benchmarks ausgeben.
+
+**Reife:** Die Einzel-Fahrphysik (Ebene, Berg, Abfahrt, Bremsen, Kurvenkontrollpunkte, Rotation) und **erste Mehrfahrerphysik** (Windschatten, 8 Fahrer, Android) sind technische Prototypen, aber noch nicht zu einer durchgehend realistischen Rennengine verbunden. **Noch keine 160-Fahrer-Rennsimulationsversion oder spielbare Managerkarriere**. Kritische Lücken: 2D-Feldpositionen und sicheres Ausweichen/Bremsen, echte Gruppen-Kurvenphysik, Querwind, CP/W′/Ermüdung, vielfältige taktische Fahrer- und Teamentscheidungen, vollständige 200-km-Etappen und Spieleoberfläche.
+
+**Ausführliche Erklärung, offener Entscheidungsbedarf und Abgrenzungen:** [ai/LUECKENAGENT.md](ai/LUECKENAGENT.md). **Folge:** zunächst Tests und tatsächlichen Android-KI-Benchmark verifizieren, dann sichere Positionierung/Abstände und ein echtes Leistungsdauer-Modell diskutieren.
