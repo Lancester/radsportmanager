@@ -273,3 +273,22 @@ Führungswechsel, genauere situations- und kraftabhängige
 Mehrteamstrategie. Noch keine selbstständigen Sportdirektoren
 oder vollständige Karriere und keine Lenkmikrophysik.
 Issue #42 bleibt offen.
+
+
+### R-14 auf main endgültig verifiziert (04.11.2026)
+
+[PR #51](https://github.com/Lancester/radsportmanager/pull/51) ist
+mit Commit `83d3e912a118903dc8cf523e6c724aef4e7d5e2f`
+in `main`. [GitHub Actions #41738747990](https://github.com/Lancester/radsportmanager/actions/runs/41738747990)
+ist **vollständig erfolgreich**: **221/221 Tests**, die
+drei vollständigen Standard-Rennläufe mit der neuen Team-KI,
+TypeScript-ESM-Browser-Build, Smoke-Test und erfolgreiche
+GitHub-Pages-Veröffentlichung. Der zusätzliche
+[Sieben-Rennen-Test #41738013741](https://github.com/Lancester/radsportmanager/actions/runs/41738013741)
+bestätigte zuvor 210 modellierte Zielankünfte.
+**Aktueller Spielstand:** automatische, begrenzte
+Teamtempoarbeit, Helferrotation und situative
+Fluchtverfolgung. Keine automatische Aufholhilfe;
+keine neuen Reifen-/Lenkdetails. Nächste offene Aufgabe:
+tatsächliche Führungspositionen und anspruchsvollere
+autonome Sportdirektor-/Teamtaktik, Issue #42.
