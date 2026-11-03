@@ -60,7 +60,8 @@ test('R14: echte Fluchtgruppe löst gezielte Teamverfolgung aus',()=>{
   assert.ok(chase.every(o=>o.desiredPowerW>310));
   assert.ok(chase.every(o=>o.riderId.startsWith('A-H')||
     o.riderId.startsWith('B-H')));
-  assert.ok(!out.has('C-H'),'Fluchtteam darf nicht die eigene Spitze verfolgen');
+  assert.notEqual(out.get('C-H')?.kind,'verfolgung',
+    'Fluchtteam darf die eigene Spitze nicht verfolgen; Führungsarbeit ist erlaubt');
 });
 test('R14: kein künstliches Nachsetzen gegen abgehängten Solo-Fahrer',()=>{
   const dropped=[...squad,rider('C-H','C','helfer',700)];
