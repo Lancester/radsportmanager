@@ -321,3 +321,10 @@ Die zwei 120-s-Prüfsummen skalieren achtfach (Abweichung 0,000003 infolge Endru
 **Grenzen:** Die drei Laufzeiten streuen erheblich; beispielsweise können JIT-Warm-up und Hintergrundlast dazu beitragen, die Ursache ist aber nicht diagnostiziert. Der 160-Fahrer-Vergleichstest mit 191,8 ms berechnete **80 getrennte Zweiergruppen** und ist **kein direkter Skalierungsvergleich**. Gruppen-Aerodynamik bleibt heuristisch (max. 35 % Luftwiderstandsreduktion), keine selbständige Fahrtechnik, taktische KI, Spurwechsel- oder Kollisionsvermeidung, kein Querwind, keine Ermüdung, keine 200-km-Etappe, keine Akku-/Temperatur- oder Sperrbildschirm-Messung. **Daher keine belastbare Prognose für 160 miteinander interagierende Fahrer.**
 
 **Nächste fachliche Entwicklungsentscheidung:** Vor größerem Peloton zuerst eine begrenzte **regelbasierte Reaktion** auf sich öffnende Lücken (z. B. mehr Leistung aufbringen oder zurückfallen), danach sichere seitliche Positionsbewegung und die schon beschlossenen individuellen Fähigkeiten (Fahrtechnik, Positionierung, Risiko). **Das ist ein Vorschlag, keine bisher implementierte oder vom Nutzer beschlossene KI.** Der Physikkern bleibt für tatsächlich gefahrene Geschwindigkeiten maßgeblich.
+
+
+## Abschluss des Achtfahrer-/Android-Meilensteins (03.11.2026)
+
+**Issue #23 nach echtem Android-Gruppenbenchmark als abgeschlossen markiert.** 8 physikalisch gekoppelte Fahrer über 120 s wurden auf Android mit **26,8 ms Median** gemessen (3 Läufe 52,9/26,8/19,7 ms); Prüfsumme 10560,145488, F8-Endlücke 100,414498 m, erstes Lückenereignis bei 44 s. Der GitHub-Pages-Build der Gruppenengine hatte zuvor **80/80 Tests erfolgreich**. Alle Details stehen in [ANDROID_BENCHMARK.md](ANDROID_BENCHMARK.md).
+
+**Nächste fachliche Option (nicht automatisch beschlossen):** [Issue #27 – einfache regelbasierte Fahrerreaktion auf eine aufreißende Lücke](https://github.com/Lancester/radsportmanager/issues/27). Dafür zuerst Reaktionsschwellen, Watt-/Physiologiegrenzen und spätere sichere Positionsbewegungen diskutieren. Die reine Physik bleibt bestehen. Noch keine autonome KI oder echtes 160-Fahrer-Peloton.
