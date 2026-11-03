@@ -46,7 +46,7 @@ function showRace(result,runtime){
   $('winnerTime').textContent=time(champion.finishTimeS);
   $('finishers').textContent=`${result.diagnostics.teams} / ${result.finisherCount}`;
   $('runtime').textContent=`${decimal(runtime)} ms`;
-  $('stats').textContent=`Attacken: ${result.diagnostics.attacks} · Verfolgungsentscheidungen: ${result.diagnostics.chases} · Zielsprints: ${result.diagnostics.sprints} · ${result.diagnostics.groupSplits} protokollierte Feldaufteilungen · Seed ${result.seed}`;
+  $('stats').textContent=`Attacken: ${result.diagnostics.attacks} · Verfolgungsstarts: ${result.diagnostics.chases} · Zielsprints: ${result.diagnostics.sprints} · ${result.diagnostics.breakaways??0} bestätigte Fluchtgruppen · ${result.diagnostics.caughtBreakaways??0} eingeholt · ${result.diagnostics.groupSplits} relevante Feldaufteilungen · Seed ${result.seed}`;
   const table=$('classification');
   for(const rider of result.classification){
     const row=document.createElement('tr');
@@ -61,7 +61,7 @@ function showRace(result,runtime){
     table.append(row);
   }
   const interesting=result.events.filter(e=>
-    ['attack','chase','sprint','segment','group-split'].includes(e.type));
+    ['attack','chase','sprint','segment','group-split','breakaway','breakaway-caught'].includes(e.type));
   const limited=interesting.slice(0,30);
   if(!limited.length){
     const li=document.createElement('li');
