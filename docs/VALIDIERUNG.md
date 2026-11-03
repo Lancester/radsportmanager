@@ -71,3 +71,11 @@ Siehe **[REFERENZSZENARIEN.md](REFERENZSZENARIEN.md)**, Abschnitte 3 bis 5, für
 In [physik/R01_EBENE.md](physik/R01_EBENE.md) ist die stationäre 20-km-Ebenenrechnung beschrieben. Die kleinen TypeScript-Tests in `tests/r01-flat.test.mjs` wurden **lokal unter Node.js 22.16 ausgeführt: 7 von 7 bestanden**. Die numerischen Erwartungswerte stammen aus einer unabhängig ausgeführten Python/SciPy-Brent-Lösung. Die Prüfung umfasst 250/300 W, Luft-/Rollleistung, Wirkungsgrad, CdA- und Massengegenproben, Determinismus und ungültige Eingaben.
 
 **Nicht behauptet:** Validierung gegen reale Rennleistungsdaten; tatsächliche Leistungsmessung; Android-Benchmark; Gruppen-, Ermüdungs- oder Monte-Carlo-Prüfung. Keine Actions-Minuten benötigt.
+
+## R-02 – stationäre Bergreferenzen und Regressionstests (03.11.2026)
+
+Die gemeinsame Physikfunktion wurde mit **16 lokalen Node.js-Tests** geprüft: **7 R-01** + **9 R-02**, alle bestanden. Referenzwerte für R-02 wurden mit Python/SciPy-Brent unabhängig vom TypeScript-Solver berechnet.
+
+Neue Prüfpunkte: 60/80-kg-Vergleich bei gleichen 300 Pedal-W, 7-%-Geometrie und Höhenenergie, Einzelleistungsbilanz (Luft + Rollen + Schwerkraft = Hinterrad), monotone Steigungen, Abgleich bei 0 % mit R-01, getrennte Ausrüstungsparameter CdA/Masse, Reproduzierbarkeit und ungültige Eingaben.
+
+Ausführliche Werte: [physik/R02_BERG.md](physik/R02_BERG.md). Es wurden weder ein realer Profi-Radfahrer noch Wind, Beschleunigung, Peloton oder eine Monte-Carlo-Simulation kalibriert. Testzeit lokal unter 1 s; **keine** Actions-Läufe erforderlich.
