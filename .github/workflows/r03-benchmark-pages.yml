@@ -44,6 +44,8 @@ jobs:
         run: npm test
       - name: Exakt vorhandene R-03-Engine für Browser übersetzen
         run: npm run build:benchmark
+      - name: Erzeugtes Browsermodul mit Node ESM smoke-testen
+        run: node --input-type=module -e "const m = await import('./docs/benchmark/generated/drafting-pair.js'); const r=m.simulateTwoRiders(m.R03_PAIR_EXAMPLE); if (!Number.isFinite(r.elapsedS) || r.elapsedS !== 12) process.exit(1); console.log('Browsermodul importierbar');"
       - name: Git-Commit des Teststands für Bericht notieren
         run: git rev-parse --short HEAD > docs/benchmark/version.txt
       - name: GitHub Pages vorbereiten
