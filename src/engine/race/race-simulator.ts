@@ -18,7 +18,7 @@ import {decidePackInstruction,pelotonGroups} from './peloton.ts';
 import {formationAeroFactors} from './formation-aero.ts';
 import {decideTeamPace} from './team-pacing.ts';
 import {decideIntelligentCrew} from './race-team-ai.ts';
-import type {CrewMission,CrewDuty,CrewOrder} from './race-team-ai.ts';
+import type {CrewMission,CrewDuty} from './race-team-ai.ts';
 import type {TeamPaceKind} from './team-pacing.ts';
 import type {RaceRole,RaceStrategy,RaceIntent,TacticDecision} from './race-tactics.ts';
 
@@ -351,10 +351,6 @@ export function simulateRace(x:RaceInput):RaceResult {
             description:`${s.rider.name}: ${proposal.reason}`,
           });
         }
-        if(coordinated&&newMission==='sprintzug'&&
-          (newMission!==s.crewMission||newDuty!==s.crewDuty)){
-          // Die Zuordnung wird oben festgehalten; keine fiktive Position.
-        }
         const before=s.intent;
         if(before!==decision.intent){
           if(before==='verfolgung')s.lastChaseEndS=t;
@@ -382,6 +378,14 @@ export function simulateRace(x:RaceInput):RaceResult {
     }
     const next=new Map<string,ReturnType<typeof advanceMotionStep>>();
     const powers=new Map<string,number>();
+    // Gruppe nur einmal für alle Fahrer dieser Sekunde ermitteln.
+    const actualGroupFront=new Map<string,number>();
+    for(const group of pelotonGroups(ordered.map(s=>({
+      id:s.rider.id,positionM:s.positionM,
+    })))){
+      for(const member of group)
+        actualGroupFront.set(member.id,group[0].positionM);
+    }
     for(const s of active){
       const index=segmentFor(s,boundaries);
       const segment=x.segments[index];
@@ -394,13 +398,10 @@ export function simulateRace(x:RaceInput):RaceResult {
         tacticalIntent:s.intent,
         reserveFraction:s.physiology.remainingWPrimeJ/s.profile.wPrimeCapacityJ,
       });
-      if(s.crewDuty==='fuehrung'&&s.teamPaceKind!==null){
-        const group=pelotonGroups(ordered.map(r=>({
-          id:r.rider.id,positionM:r.positionM,
-        }))).find(g=>g.some(r=>r.id===s.rider.id));
-        if(group&&group[0].positionM-s.positionM<=18)
-          counters.actualFrontWorkSteps++;
-      }
+      if(s.crewDuty==='fuehrung'&&s.teamPaceKind!==null&&
+        actualGroupFront.has(s.rider.id)&&
+        actualGroupFront.get(s.rider.id)!-s.positionM<=18)
+        counters.actualFrontWorkSteps++;
       const aeroFactor=formationFactors?
         Math.min(pack.aeroFactor,formationFactors.get(s.rider.id)!):
         pack.aeroFactor;
