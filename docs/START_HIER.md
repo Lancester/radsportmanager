@@ -292,3 +292,53 @@ Fluchtverfolgung. Keine automatische Aufholhilfe;
 keine neuen Reifen-/Lenkdetails. Nächste offene Aufgabe:
 tatsächliche Führungspositionen und anspruchsvollere
 autonome Sportdirektor-/Teamtaktik, Issue #42.
+
+
+## R-15 und R-16: Mehrhelfer und situative Renn-KI (04.11.2026)
+
+**Eindeutige neue Projektgrenze vom Nutzer:** R-15 und R-16
+gehören **ausschließlich in die Rennengine**. Keine Rundfahrten,
+Karrieremodus-, Vertrags-, Personal-, Transfer- oder
+Sportdirektorenverwaltung in diesen Arbeitsschritten.
+
+**R-15:** Ein einzelnes Team kann bis zu fünf geeignete Helfer
+gleichzeitig für eine gemeinsame Jagd, Sprintvorbereitung oder
+Schutzaufgabe einteilen. Der tatsächlich vorne arbeitende
+Fahrer muss die echte Vorderposition in seiner
+Abstandsgruppe haben; Unterstützer erhalten andere
+Wattanforderungen und keine künstliche Spur-/Positionsgutschrift.
+Erschöpfung und Abstände begrenzen die Beteiligung.
+Die Aufträge unterscheiden sich von nachgewiesener
+Führungszeit in den Diagnosen.
+
+**R-16:** Situative Entscheidung aus echter Fluchtgruppengröße,
+gemessener Distanz, relativer Gruppengeschwindigkeit,
+Reststrecke, eigenen Fahrerpositionen, Teamstrategie
+und W′. Ausgewogene Mannschaften dürfen bei moderater
+Gefahr eine Sprintmannschaft arbeiten lassen.
+Angriffe der offensiven Kapitäne sind an Position,
+Kräfte und Erholung gebunden, nicht an zwei
+fest vorgegebene Rennkilometerfenster.
+
+**Wichtig:** `RaceInput.tacticModel` ohne Angabe verwendet
+R-15/R-16. `'r14'` ist bewusst reproduzierbarer
+Vergleich. `aeroModel` und R-13-Formationswindschatten
+bleiben völlig unabhängig davon. `advanceMotionStep`,
+CP/W′, sämtliche Detail-Physikbausteine und die
+Ergebnisbildung wurden nicht durch Boni verändert.
+Alle Aufgaben sind Wattentscheidungen innerhalb
+eines einzelnen vollständigen Rennens. Vier grobe
+Rennleitlinien reichen als Testoberfläche vorerst.
+
+**Code:** `src/engine/race/race-team-ai.ts` und
+Integration in `race-simulator.ts`.
+Ausführliche Methodik, reale 14-Rennen-A/B-Prüfungen
+und Einschränkungen in
+[R15_R16_MEHRHELFER_RENNINTELLIGENZ.md](race/R15_R16_MEHRHELFER_RENNINTELLIGENZ.md).
+
+**Noch offen innerhalb der Rennengine:** präzisere
+tatsächliche Übernahme der Frontposition und Relaisablöse
+(ohne 2D-Lenk-Mikrophysik), bessere taktische
+Gegnerreaktionen und stabile unterschiedliche
+Rennverläufe. Separate, spätere Spielsysteme
+nicht hier beginnen.
