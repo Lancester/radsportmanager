@@ -149,7 +149,7 @@ function buildStates(x:RaceInput):State[] {
       peakMps:10,finishTimeS:null,segmentIndex:0,
       decision:{desiredPowerW:dayCpW,intent:'grundtempo',reason:'Rennstart'},
       intent:'grundtempo',driveWorkJ:0,brakeLossJ:0,energyResidualJ:0,
-      crankWorkJ:0,intentSinceS:0,lastChaseEndS:-Infinity};
+      crankWorkJ:0,intentSinceS:0,lastChaseEndS:-1e9};
   });
 }
 function splitGroups(active:State[]):State[][] {
@@ -360,7 +360,7 @@ export function simulateRace(x:RaceInput):RaceResult {
       if(best.positionM>=nextSnapshotM){
         snapshots.push({timeS:t,km:best.positionM/1000,leaderId:best.rider.id,
           activeRiders:inRace.length,
-          groupSizes:groups.slice(0,8).map(g=>g.length),
+          groupSizes:groups.map(g=>g.length),
           leadingGapM:groups.length>1?
             groups[0].at(-1)!.positionM-groups[1][0].positionM:0});
         nextSnapshotM+=5000;
