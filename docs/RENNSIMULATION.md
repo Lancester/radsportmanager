@@ -123,3 +123,9 @@ Bei einer späteren Team-Ausrüstungsverwaltung soll besseres Material ausschlie
 Der eigenständige Testkern src/engine/physics/dynamic-route.ts ergänzt die stationären R-01/R-02-Module ohne Änderungen daran. Die Geschwindigkeit wird mit **Newtons Kräftebilanz** zeitlich integriert; Straßenübergänge treffen die tatsächliche Distanz, ohne das Tempo sprunghaft zu setzen. Negative Steigung treibt bergab an; Bremskraft wird als vorgegebener Testbefehl von der Fahrkraft abgezogen.
 
 Das Beispiel aus Ebene, +7 %, −7 %, Bremsen und Wiederbeschleunigen über 4 km dauert im Modell **470,87 s**. Die 15 neuen Tests prüfen u. a. Energieerhaltung, Übergänge, Stillstand und numerische Schrittweite. Das ist noch **keine** Kurven-/Peloton-/KI- oder Fahrermüdungssimulation. Vollständige Fachdetails: [physik/DYNAMISCHE_STRECKE.md](physik/DYNAMISCHE_STRECKE.md).
+
+## Kurvenvorschau und Laufradträgheit – separater Physikbaustein (03.11.2026)
+
+Der neue Prototyp `src/engine/physics/corner-route.ts` bestimmt aus Radius, Reifenhaftung und Sicherheitsfaktor ein Einfahrtstempo, blickt auf den Kurvenpunkt voraus und bremst bei ausreichender Wegreserve. Bei zu kurzer Bremsstrecke wird **nicht teleportiert**, sondern ein zu hohes Einfahrtstempo gemeldet. Rotierende Trägheit wird über `m_eff = m + I/r²` nur auf Beschleunigung und kinetische Energie angewandt.
+
+**14/14 neue lokale Tests bestanden**, siehe [physik/KURVEN_UND_ROTATION.md](physik/KURVEN_UND_ROTATION.md). Das ist noch kein kurvenreicher Peloton-/Agenten-Rennsimulator; die bestehenden Teilmodelle müssen vor R-03 vereinheitlicht werden.
