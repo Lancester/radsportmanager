@@ -509,3 +509,35 @@ Rennrealistik. Die ergänzte manuelle Sieben-Läufe-Diagnose ist noch
 nicht ausgeführt oder in Zahlen ausgewertet. Die Hauptkritik am R-10-
 Peloton bleibt unverändert; der nächste Balancing-Schritt folgt erst
 auf eine nachvollziehbare Mehr-Seed-Auswertung.
+
+
+## R-11: bestätigte Diagnoseausführung und Einordnung (03.11.2026)
+
+Die in den vorherigen R-11-Abschnitten ausdrücklich **damals noch
+ausstehende** Sieben-Rennen-Diagnose wurde inzwischen ausgeführt:
+[Actions #41728617720](https://github.com/Lancester/radsportmanager/actions/runs/41728617720)
+ist **erfolgreich**. Der Lauf hat alle **sieben** `R11-LAUF`-Datensätze
+und die zwei Taktik-/einen Profilvergleich tatsächlich erzeugt und
+deren Anzahl geprüft. Jede Simulation umfasst 30 Fahrer über 50 km
+mit kompletter Klassifikation. Ein anfänglicher doppelter Referenzlauf
+in [#41728273878](https://github.com/Lancester/radsportmanager/actions/runs/41728273878)
+wurde aus dem Skript entfernt. Keine veränderte Renn-Physik.
+
+Die sieben Ergebnisse zeigen **maximal 20–24 Abstandsgruppen**
+bei hügeligen Rennen und **12 Gruppen** bei flachen Rennen.
+Im fiktiven Profilkontrast mit −12 % CP/FTP/W′ für F03 ändern sich
+seine Zielzeit um +330,095 s, das Gruppenmaximum 20→23 und der
+beobachtete Singleton-Anteil 14,8 %→20,0 %. Seed-spezifisch
+ändert die offensive Strategie F01s Zeit um 3,783 s beziehungsweise
+30,491 s. Alle Detailwerte: [R-11-Fachdokument](race/R11_MEHRSEED_BALANCING.md).
+
+**Validierungsgrenze:** Diese Messungen sind echte *Modellberechnungen*,
+aber **keine Validierung** gegenüber externen Rennen, kein statistisches
+Populationsergebnis und keine Android-Performance. Ein fehlender
+Gruppen-/Positions-Effekt im 30er-Aeromodell ist durch Codeprüfung
+belegt, aber ein Beitrag der Aero-Abstraktion zur beobachteten
+Fragmentierung ist ohne kontrollierten Variantenvergleich **nicht
+quantifiziert**. Die nächste Abnahme sollte deshalb ein sauberer
+A/B-Vergleich für 2–3er-Flucht und dichtes 30er-Feld bei gleicher
+Motorik/CP/W′ und denselben R-11-Seeds sein. Die 42-m-Diagnosegrenze
+ist kein aerodynamischer Einflussradius.
