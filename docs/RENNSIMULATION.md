@@ -109,3 +109,11 @@ Details, wissenschaftliche Quellen und Referenzszenarien **R-09 bis R-11**: [PEL
 ## Erste ausführbare Teilkomponente: R-01 (03.11.2026)
 
 Der stationäre Einzelfahrer-Test auf ebener windstiller Strecke ist als isolierte TypeScript-Funktion mit lokalen Tests implementiert. Fachliche Herleitung, Leistungsbilanz und vorläufige Antriebswirkungsgrad-Annahme: [physik/R01_EBENE.md](physik/R01_EBENE.md). **Noch kein dynamisches Rennmodell, keine Beschleunigung, kein Peloton und keine KI.**
+
+## Erweiterung R-02: Schwerkraft und Materialeffekte (03.11.2026)
+
+Das gemeinsame stationäre Physikmodul `src/engine/physics/steady-state.ts` berechnet Luftwiderstand, Rollwiderstand und jetzt auch den Schwerkraftanteil bei **positiver Steigung**. Die Straßensteigung ist `tan(alpha) = gradeFraction`; `sin(alpha)` und `cos(alpha)` werden korrekt verwendet. R-01 nutzt dieselbe Engine mit Steigung 0. Die Parameter für Materialmasse, CdA, Crr und Wirkungsgrad sind **konfigurierbar**, aber noch nicht während einer Fahrt dynamisch verändert.
+
+Die Bergreferenzen und 16 lokal erfolgreichen Tests werden unter [physik/R02_BERG.md](physik/R02_BERG.md) nachvollziehbar erklärt. **Noch nicht implementiert:** Abfahrten, Beschleunigung/Bremsen, Wind, Körperhaltungswechsel, Gruppen, Physiologie und Agenten-KI.
+
+Bei einer späteren Team-Ausrüstungsverwaltung soll besseres Material ausschließlich über reale physikalische Modellgrößen wirken; Preise/Produktdaten sind noch nicht definiert.
