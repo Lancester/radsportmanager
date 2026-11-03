@@ -135,3 +135,16 @@ Da die Testseite öffentlich ist, darf sie **keine privaten echten Fahrerdaten, 
 **Was nicht belegt ist:** Die 160 Fahrer fahren **nicht miteinander** im selben Feld, sondern in **80 unabhängig berechneten Paaren**. Kein gemeinsames Peloton, keine Mehrfach-Windschattennachbarschaft, keine taktische/Positions-KI, kein Querwind, keine Ausdauer-/Ermüdungsrechnung, keine 200-km-Strecke und keine Langzeitmessung bezüglich Akku, Wärme und Sperrbildschirm. Die reale Laufzeit könnte bei diesen Wechselwirkungen deutlich ansteigen. **Keine Extrapolation auf ein vollständiges Rennen.**
 
 **Folge:** Der erste Android-Benchmark ist als Messmeilenstein **erledigt**. [Issue #23](https://github.com/Lancester/radsportmanager/issues/23) bleibt **offen**, weil seine nächste Entwicklungsstufe – eine echte gemeinsame 3–8-Fahrer-Gruppe mit Nachbarschaftsinteraktionen und darauf folgendem Android-Test – noch nicht umgesetzt ist. Für diesen Schritt zuerst ein kleines deterministisches 3-/8-Fahrer-Modell, danach Browser- und Android-Messungen auf identischem Szenario-Commit. **Keine weiteren Nutzerfragen für die bereits übermittelten Messwerte erforderlich.**
+
+
+## Neuer Gruppen-Benchmark: Acht tatsächlich gekoppelte Fahrer (03.11.2026)
+
+Der neue GitHub-Pages-Workflow [#41683075141](https://github.com/Lancester/radsportmanager/actions/runs/41683075141) ist erfolgreich durchgelaufen und hat **80/80 Tests**, beide kompilierten Browsermodule und die funktionierende Achtfahrer-Smokeprüfung bestätigt. Die aktualisierte Testseite ist auf https://lancester.github.io/radsportmanager/ veröffentlicht.
+
+**Anleitung:** Auf Android in Chrome dieselbe Testseite öffnen. Den **vierten Knopf „NEU · 8 Fahrer gemeinsam · 120 s“** betätigen, dann auf **Ergebnis kopieren** tippen und den JSON-Bericht in den Chat einfügen. Keine erneute GitHub-Pages-Einstellung erforderlich.
+
+Im Gegensatz zum bisherigen 160-Fahrer-Test aus 80 unabhängigen Paaren fährt die neue Achtfahrergruppe **auf einer einzigen Simulationsuhr**. Jeder Fahrer berücksichtigt die Windschattenwirkung sämtlicher Vorderleute über den provisorischen, gedeckelten Mehrfahrer-Aerofaktor. Bei Sekunde 30 reduziert F8 auf externe Vorgabe seine Pedalwatt um 45 W, und die entstehende Lücke wird vom Physikkern erkannt. Der neue Bericht enthält `mode=achtfahrer-gruppe`, die Laufzeiten aller drei Wiederholungen, `stepsPerRepeat=600`, `checksum`, `finalGapM`, `gapEvents` und `firstGapTimeS`.
+
+**Status:** Die Browsermodule und GitHub-Pages-Bereitstellung wurden auf GitHub erfolgreich geprüft, aber ein **tatsächlich auf dem Android-Smartphone durchgeführter Achtfahrer-Benchmark liegt noch nicht vor**. Der Vergleich mit der 191,8-ms-Messung für 80 unabhängige Zweiergruppen darf deshalb nicht als direkte Hochrechnung verstanden werden.
+
+**KI-Abgrenzung:** Noch keine autonome Renn-/Positions-KI. Die Wattvorgaben sind extern und die Spur ist fest; die körperliche Reaktion, Energie und Lücke folgen aus mechanischen Rechnungen.
