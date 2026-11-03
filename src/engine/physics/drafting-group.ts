@@ -3,6 +3,10 @@
  * Windschatten-Kombination ist vorläufige Heuristik, nicht empirisch kalibriert.
  */
 import { advanceMotionStep } from './motion-core.ts';
+import {sweptRectCollision,lateralAdvance,detectPasses,R06_LANE_LIMITS} from './lateral-motion.ts';
+import type {LaneCommand} from './lateral-motion.ts';
+import {emptyFtpWork,accumulateFtpWork,meanCrankPowerW} from '../physiology/ftp-work.ts';
+import type {FtpWorkState} from '../physiology/ftp-work.ts';
 import {decideGapPower, initialGapState, validateGapConfig, F8_GAP_AGENT} from '../ai/gap-controller.ts';
 import type {GapAgentConfig, GapAgentState} from '../ai/gap-controller.ts';
 import {decideFollowingSafety,validateFollowingSafety} from '../ai/following-safety.ts';
@@ -14,7 +18,11 @@ import { R03_DRAFT, requiredCrankPowerAtSpeedW } from './drafting-pair.ts';
 import type { DraftingParameters, PairedRiderInput } from './drafting-pair.ts';
 
 export type GroupRiderInput = PairedRiderInput;
-export interface GroupCommand { timeS: number; riderId: string; crankPowerW: number }
+export interface GroupCommand {
+  timeS:number; riderId:string; crankPowerW:number;
+  /** Explizites Test-Bremskommando, KEIN KI-Spurwechsel. */
+  brakeForceN?:number;
+}
 export interface GroupInput {
   riders: GroupRiderInput[]; durationS: number; stepSeconds?: number;
   sampleEveryS?: number; parameters?: DraftingParameters;
@@ -26,6 +34,9 @@ export interface GroupInput {
   followingSafety?: FollowingSafetyOptions;
   /** Nicht angegebene Fahrer behalten das bisherige unbegrenzte Watt-Testmodell. */
   physiology?: CpWprimeProfile[];
+  /** Zeitlich vorgegebene Seitenbewegung mit begrenzter Quer-Geschwindigkeit. */
+  laneCommands?:LaneCommand[];
+  roadHalfWidthM?:number;
 }
 export interface GroupRiderSummary {
   id: string; positionM: number; speedMps: number; lateralPositionM: number;
@@ -41,6 +52,9 @@ export interface GroupRiderSummary {
   wPrimeRemainingJ?: number;
   wPrimeSpentJ?: number;
   wPrimeRecoveredJ?: number;
+  averageCrankPowerW?:number;
+  timeAboveFtpS?:number;
+  workAboveFtpJ?:number;
 }
 export interface GroupSnapshot {
   timeS: number;
@@ -49,9 +63,10 @@ export interface GroupSnapshot {
   openGaps: number;
 }
 export interface GroupEvent {
-  timeS: number; type: 'gap-opened' | 'command' | 'agent-decision' | 'safety' | 'cp-limit'; riderId: string;
+  timeS: number; type: 'gap-opened' | 'command' | 'agent-decision' | 'safety' | 'cp-limit' | 'lane-command' | 'lane-complete' | 'overtake'; riderId: string;
   leaderId?: string; gapM?: number;
   agentMode?: string; powerW?: number; reason?: string; brakeForceN?: number;
+  passedRiderId?:string; lateralPositionM?:number;
 }
 export interface GroupResult {
   elapsedS: number; steps: number; riders: GroupRiderSummary[];
@@ -134,6 +149,23 @@ function adjacentGaps(riders:GroupRiderInput[]):Map<string,{leaderId:string;gapM
     leaderId:sorted[i-1].id,gapM:sorted[i-1].positionM-sorted[i].positionM});
   return gaps;
 }
+/** Nächster Vordermann derselben (vereinfachten) Spur für Agent/Sicherheit.
+ * Fahrer auf klar getrennter Spur werden nicht als Hindernis behandelt.
+ */
+function nearestSameLane(riders:GroupRiderInput[],p:DraftingParameters):
+  Map<string,{leaderId:string;gapM:number}> {
+  const result=new Map<string,{leaderId:string;gapM:number}>();
+  for(const r of riders){
+    let best:GroupRiderInput|undefined;
+    for(const other of riders){
+      if(other.id===r.id||other.positionM<=r.positionM)continue;
+      if(Math.abs(other.lateralPositionM-r.lateralPositionM)>=p.overtakingLaneSeparationM)continue;
+      if(!best||other.positionM<best.positionM)best=other;
+    }
+    if(best)result.set(r.id,{leaderId:best.id,gapM:best.positionM-r.positionM});
+  }
+  return result;
+}
 function snapshot(t:number,riders:GroupRiderInput[],factors:number[],threshold:number):GroupSnapshot {
   const sorted=[...riders].sort((a,b)=>b.positionM-a.positionM);
   let openGaps=0;
@@ -157,6 +189,23 @@ export function simulateGroup(input:GroupInput):GroupResult {
   const ids=new Set<string>(),riders=input.riders.map(r=>structuredClone(r));
   riders.forEach(r=>checkRider(r,ids));
   const commands=[...(input.commands??[])].sort((a,b)=>a.timeS-b.timeS);
+  const roadHalfWidthM=input.roadHalfWidthM??R06_LANE_LIMITS.roadHalfWidthM;
+  finite('roadHalfWidthM',roadHalfWidthM,roadHalfWidthM>=1&&roadHalfWidthM<=10);
+  const laneCommands=[...(input.laneCommands??[])].sort((a,b)=>a.timeS-b.timeS);
+  const laneTargets=new Map<string,{target:number;rate:number}>();
+  for(const lane of laneCommands){
+    if(!ids.has(lane.riderId))throw new RangeError('Unbekannter Spurfahrauftrag');
+    finite('lane.timeS',lane.timeS,lane.timeS>=0&&lane.timeS<=input.durationS);
+    finite('lane.target',lane.targetLateralPositionM,
+      Math.abs(lane.targetLateralPositionM)<=roadHalfWidthM);
+    const rate=lane.maxLateralSpeedMps??R06_LANE_LIMITS.defaultLateralSpeedMps;
+    finite('lane.maxLateralSpeedMps',rate,rate>0&&rate<=2.5);
+  }
+  if(input.laneCommands){
+    for(const r of riders)finite('Anfangsposition ausserhalb Straße',
+      r.lateralPositionM,Math.abs(r.lateralPositionM)<=roadHalfWidthM);
+  }
+  const externalBrakes=new Map<string,number>();
   const agentEveryS=input.agentDecisionEveryS??1;
   finite('agentDecisionEveryS',agentEveryS,agentEveryS>=0.2&&agentEveryS<=10);
   const agentConfigs=input.gapAgents??[];
@@ -180,10 +229,15 @@ export function simulateGroup(input:GroupInput):GroupResult {
     physiology.set(profile.riderId,{profile,state:initialCpState(profile),limited:false});
   }
   const safetyState=new Map<string,boolean>();
+  const ftpStats=new Map<string,FtpWorkState>();
+  for(const [id,p] of physiology)if(p.profile.ftpW!==undefined)
+    ftpStats.set(id,emptyFtpWork());
   for(const c of commands){
     if(!ids.has(c.riderId))throw new RangeError('Unbekannte Fahrer-ID im Befehl');
     finite('command.timeS',c.timeS,c.timeS>=0&&c.timeS<=input.durationS);
     finite('command.crankPowerW',c.crankPowerW,c.crankPowerW>=0);
+    if(c.brakeForceN!==undefined)
+      finite('command.brakeForceN',c.brakeForceN,c.brakeForceN>=0&&c.brakeForceN<=1500);
   }
   aeroFactorsForGroup(riders,params);
   const summaries:GroupRiderSummary[]=riders.map(r=>({
@@ -196,18 +250,27 @@ export function simulateGroup(input:GroupInput):GroupResult {
     ...(physiology.has(r.id)?{
       wPrimeRemainingJ:physiology.get(r.id)!.state.remainingWPrimeJ,
       wPrimeSpentJ:0,wPrimeRecoveredJ:0}:{}),
+    ...(ftpStats.has(r.id)?{averageCrankPowerW:0,timeAboveFtpS:0,workAboveFtpJ:0}:{}),
   }));
   const events:GroupEvent[]=[],snapshots:GroupSnapshot[]=[];
-  let t=0,steps=0,nextSample=sampleEveryS,cmdIndex=0;
+  let t=0,steps=0,nextSample=sampleEveryS,cmdIndex=0,laneCmdIndex=0;
   let nextAgentDecision=controllers.size?0:Infinity;
   while(t<input.durationS-1e-10){
     while(cmdIndex<commands.length&&commands[cmdIndex].timeS<=t+1e-10){
       const cmd=commands[cmdIndex++],index=riders.findIndex(r=>r.id===cmd.riderId);
       riders[index].crankPowerW=cmd.crankPowerW;
+      if(cmd.brakeForceN!==undefined)externalBrakes.set(cmd.riderId,cmd.brakeForceN);
       events.push({timeS:t,type:'command',riderId:cmd.riderId});
     }
+    while(laneCmdIndex<laneCommands.length&&laneCommands[laneCmdIndex].timeS<=t+1e-9){
+      const cmd=laneCommands[laneCmdIndex++];
+      laneTargets.set(cmd.riderId,{target:cmd.targetLateralPositionM,
+        rate:cmd.maxLateralSpeedMps??R06_LANE_LIMITS.defaultLateralSpeedMps});
+      events.push({timeS:t,type:'lane-command',riderId:cmd.riderId,
+        lateralPositionM:cmd.targetLateralPositionM});
+    }
     if(controllers.size && nextAgentDecision<=t+1e-9){
-      const gaps=adjacentGaps(riders);
+      const gaps=nearestSameLane(riders,params);
       const byId=new Map(riders.map(r=>[r.id,r]));
       for(const r of riders){
         const controller=controllers.get(r.id);
@@ -231,13 +294,15 @@ export function simulateGroup(input:GroupInput):GroupResult {
     const factors=aeroFactorsForGroup(riders,params);
     if(steps===0)snapshots.push(snapshot(t,riders,factors,threshold));
     const nextCommand=commands[cmdIndex]?.timeS??Infinity;
-    const dt=Math.min(stepSeconds,input.durationS-t,nextCommand-t,nextSample-t,
-      nextAgentDecision-t);
+    const nextLane=laneCommands[laneCmdIndex]?.timeS??Infinity;
+    const dt=Math.min(stepSeconds,input.durationS-t,nextCommand-t,nextLane-t,
+      nextSample-t,nextAgentDecision-t);
     if(!(dt>1e-11)){
       if(nextSample<=t+1e-10){nextSample+=sampleEveryS;continue;}
       throw new RangeError('Zeitschritt unter numerischer Grenze');
     }
     const previous=adjacentGaps(riders);
+    const sameLaneBefore=nearestSameLane(riders,params);
     // ZUERST entscheiden alle Fahrer aus demselben alten Zustand.
     // Sicherheitsbefehle übersteuern den Agenten, CP/W′ limitiert danach.
     const currentById=new Map(riders.map(r=>[r.id,r]));
@@ -245,9 +310,10 @@ export function simulateGroup(input:GroupInput):GroupResult {
     const appliedBrakes:number[]=[];
     for(const r of riders){
       let requestedPowerW=controllers.get(r.id)?.powerW??r.crankPowerW;
-      let brakeForceN=0;
+      let brakeForceN=externalBrakes.get(r.id)??0;
+      if(brakeForceN>0)requestedPowerW=0;
       if(input.followingSafety){
-        const ahead=previous.get(r.id);
+        const ahead=sameLaneBefore.get(r.id);
         const leader=ahead?currentById.get(ahead.leaderId):undefined;
         if(ahead&&leader&&
            Math.abs(leader.lateralPositionM-r.lateralPositionM)<
@@ -256,11 +322,15 @@ export function simulateGroup(input:GroupInput):GroupResult {
             centerGapM:ahead.gapM,ownSpeedMps:r.speedMps,
             leaderSpeedMps:leader.speedMps,
             massKg:r.physical.riderMassKg+r.physical.equipmentMassKg,
+            ...((externalBrakes.get(leader.id)??0)>0?{
+              leaderDecelerationMps2:(externalBrakes.get(leader.id)??0)/
+                (leader.physical.riderMassKg+leader.physical.equipmentMassKg)
+            }:{}),
           },input.followingSafety);
           if(decision.tooLateToGuarantee)
             throw new RangeError('Bremsweg unzureichend: '+r.id+' folgt '+leader.id);
           if(!decision.powerAllowed)requestedPowerW=0;
-          brakeForceN=decision.brakeForceN;
+          brakeForceN=Math.max(brakeForceN,decision.brakeForceN);
           const engaged=!decision.powerAllowed||brakeForceN>0;
           if(engaged!==Boolean(safetyState.get(r.id))){
             events.push({timeS:t,type:'safety',riderId:r.id,
@@ -292,11 +362,28 @@ export function simulateGroup(input:GroupInput):GroupResult {
     const oldPositions=riders.map(r=>r.positionM);
     const laterals=riders.map(r=>r.lateralPositionM);
     const newPositions=riders.map((r,i)=>r.positionM+changes[i].distanceM);
-    if(collisionOrOvertake(oldPositions,newPositions,laterals,params))
-      throw new RangeError('Kollision: kein automatisches Überholen in gleicher Spur');
+    const newLaterals=riders.map(r=>{
+      const lane=laneTargets.get(r.id);
+      return lane ? lateralAdvance(r.lateralPositionM,lane.target,
+        lane.rate,dt,roadHalfWidthM) : r.lateralPositionM;
+    });
+    if(sweptRectCollision(oldPositions,newPositions,laterals,newLaterals,
+      params.minimumCenterDistanceM,params.overtakingLaneSeparationM))
+      throw new RangeError('Kollision bei dynamischer Quer- oder Längsbewegung');
+    const passes=detectPasses(riders.map(r=>r.id),oldPositions,newPositions,
+      laterals,newLaterals,params.overtakingLaneSeparationM);
     for(let i=0;i<riders.length;i++){
       const r=riders[i],u=changes[i],s=summaries[i];
       r.positionM=newPositions[i];r.speedMps=u.endSpeedMps;
+      const lane=laneTargets.get(r.id);
+      if(lane&&Math.abs(newLaterals[i]-lane.target)<1e-9&&
+         Math.abs(r.lateralPositionM-lane.target)>1e-9){
+        events.push({timeS:t+dt,type:'lane-complete',riderId:r.id,
+          lateralPositionM:lane.target});
+        laneTargets.delete(r.id);
+      }
+      r.lateralPositionM=newLaterals[i];
+      s.lateralPositionM=r.lateralPositionM;
       s.driveWorkJ+=u.driveWorkJ;s.aeroLossJ+=u.aeroLossJ;
       s.brakeLossJ+=u.brakeLossJ;
       if(appliedBrakes[i]>0)s.safetyBrakeSeconds+=dt;
@@ -306,6 +393,14 @@ export function simulateGroup(input:GroupInput):GroupResult {
         s.wPrimeRemainingJ=cp.state.remainingWPrimeJ;
         s.wPrimeSpentJ=cp.state.spentAboveCpJ;
         s.wPrimeRecoveredJ=cp.state.recoveredJ;
+      }
+      const ftp=ftpStats.get(r.id);
+      if(ftp&&cp?.profile.ftpW!==undefined){
+        const next=accumulateFtpWork(ftp,actualPowers[i],cp.profile.ftpW,dt);
+        ftpStats.set(r.id,next);
+        s.averageCrankPowerW=meanCrankPowerW(next);
+        s.timeAboveFtpS=next.secondsAboveFtp;
+        s.workAboveFtpJ=next.workAboveFtpJ;
       }
       s.rollingLossJ+=u.rollingLossJ;s.kineticEnergyChangeJ+=u.kineticEnergyChangeJ;
       s.energyResidualJ+=u.energyResidualJ;
@@ -324,6 +419,8 @@ export function simulateGroup(input:GroupInput):GroupResult {
       } else s.lastAppliedPowerW=actualPowers[i];
     }
     t+=dt;steps++;
+    for(const pass of passes)events.push({timeS:t,type:'overtake',
+      riderId:pass.riderId,passedRiderId:pass.passedRiderId});
     const nextGaps=adjacentGaps(riders);
     for(const [id,gap] of nextGaps){
       const was=previous.get(id);
@@ -381,4 +478,15 @@ export function createEightRiderR05Example(durationS=120):GroupInput {
     minimumCenterGapM:1.8,desiredExtraGapM:0.7,reactionSeconds:0.25,
     maximumDecelerationMps2:3,approachTimeS:1,
   },physiology:[{...R05_F8_PROFILE}]};
+}
+
+/** Demonstration einer physisch stetigen, von außen vorgegebenen Überholspur.
+ * F8 wechselt zunächst auf die freie, rechte Spur und erhöht erst danach
+ * seine Watt. Weder ein Spur-Agent noch eine 2D-Kurvenphysik sind enthalten.
+ */
+export function createEightRiderPassExample(durationS=65):GroupInput {
+  const example=createEightRiderExample(durationS);
+  return {...example,commands:[{timeS:10,riderId:'F8',crankPowerW:500}],
+    laneCommands:[{timeS:3,riderId:'F8',targetLateralPositionM:2,
+      maxLateralSpeedMps:0.8}],roadHalfWidthM:3};
 }

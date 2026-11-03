@@ -111,3 +111,10 @@ Ein kleines TypeScript-Zustandsmodell (ohne KI-Bibliotheken) beobachtet eine Lü
 Im nächsten Prototyp kann ein Agent eine Lücke schließen wollen, bekommt aber **zuerst** von einer Sicherheitsinstanz gegebenenfalls Wattreduzierung/physikalische Bremskraft und wird **danach** durch individuelle CP/W′-Reserve auf tatsächlich leistbare Watt begrenzt. **FTP** ist als separater Trainings-/Fahrerwert angelegt; das echte langfristige FTP-Trainingssystem fehlt noch.
 
 **Nächste Nachweise:** Vollständigen GitHub-Testsatz samt Android-Browsermodul bestehen, dann den neuen R-05-Preset auf echtem Android-Gerät testen. **Danach** Seitenbewegung, Brems-/Kurvenhaftung, kalibrierte W′-Erholung und Ermüdung über Stunden. [Dokumentation](physik/R05_ABSTAND_CP_WPRIME.md).
+
+
+## R-06: nächste Etappe gebündelt – Bremsende Gruppe, Seitenbewegung, FTP-Daten
+
+Erster Radsportgruppenprototyp mit vorausschauender Sicherheitsreaktion auf **extern bekannte** Führungsbremsung, zeitlich stetiger **vorgegebener** seitlicher Bewegung und protokolliertem Überholen. Die tatsächliche Pedalleistung lässt sich für späteres Training als Zeit/Arbeit über dem **eigenständigen FTP-Wert** auswerten.
+
+**Danach:** automatisierte Spurwahl als eigenständiges, testbares Modul; Fahrtechnik- und Reibkreis-/Kurven-Kopplung; realistische CP/W′-Erholung und Belastung unter CP; größere Fahrerfelder erst nach abgeschlossener Sicherheit/Performanceprüfung. [R-06](physik/R06_SICHERHEIT_SPUR_FTP.md).

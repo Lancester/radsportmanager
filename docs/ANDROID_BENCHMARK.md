@@ -293,3 +293,10 @@ In R-05 hat F8 im **frei erfundenen** Profil `CP=220 W`, `FTP=210 W` und anfäng
 **Sicherheit:** Keine Bremsung in diesem **Abreißszenario**, weil F8 langsamer wird. Der separate bestandene Drei-Fahrer-Bremstest und 116/116 erfolgreich geprüfte GitHub-Tests belegen nur den vorhandenen begrenzten Längsabstandsschutz. **Keine Garantie kollisionsfreier Rennen**, kein automatischer 2D-Spurwechsel, kein Mehrfahrer-Kurven-/Reibkreis-Modell.
 
 **Messmeilenstein erfüllt:** R-05-Worker mit CP/W′ und aktiver Abstandsregelung ist tatsächlich auf Android lauffähig. **Nicht** mit einem validierten physiologischen W′bal-Modell oder mehrstündiger 160-Fahrer-Rennsimulation verwechseln. Die gemessene W′-Regeneration beruht weiterhin auf einer frei gewählten Testheuristik; `ftpW` ist bewusst separat von `criticalPowerW`. Offene technische Nachfolgeaufgaben siehe Issues [#30](https://github.com/Lancester/radsportmanager/issues/30) und [#32](https://github.com/Lancester/radsportmanager/issues/32).
+
+
+## Neu vorgesehen: R-06-Überholmanöver im Browser
+
+Zusätzlicher Android-Test `achtfahrer-ueberholen` über 65 virtuelle Sekunden: F8 erhält **zuerst eine zeitlich begrenzte Querverschiebung**, danach einen separaten Watt-Befehl und kann auf ausreichend getrennter Spur tatsächlich überholen; Überholereignisse und Spurwechsel werden ausgegeben. **Noch keine autonome Spur-KI**. Das bestehende R-05-Preset meldet künftig zusätzlich durchschnittliche **tatsächlich gefahrene Kurbelwatt**, Zeit über FTP und entsprechende Arbeitsmenge. Dies sind reine Diagnosegrößen, keine vollständige Trainingssteuerung.
+
+**Wichtig:** Die neue Browser-Version und die wirkliche Android-Zeit erst nach erfolgreichem GitHub-Pages-Deploy bzw. Nutzerlauf als bestätigt markieren; die früheren Benchmarks bleiben korrekt. [Technik](physik/R06_SICHERHEIT_SPUR_FTP.md).

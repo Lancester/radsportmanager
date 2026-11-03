@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'src/engine/physics/**'
+      - 'src/engine/ai/**'
+      - 'src/engine/physiology/**'
       - 'tests/**'
       - 'docs/index.html'
       - 'docs/benchmark/**'
@@ -88,6 +90,17 @@ jobs:
             !safe.events.some(e=>e.type==='agent-decision') ||
             safe.riders.some(r=>!Number.isFinite(r.energyResidualJ))) {
             throw new Error('R05 CP/Wprime + Sicherheitskontrolle fehlerhaft');
+          }
+          const passing=group.simulateGroup(group.createEightRiderPassExample(65));
+          const passingEvents=passing.events.filter(e=>e.type==='overtake');
+          console.log('R06 physische Überholvorgänge:',passingEvents.length,
+            'F8 Spur:',passing.riders[7].lateralPositionM,
+            'F8 FTP-Zeit im R05-Modus:',last.timeAboveFtpS);
+          if(Math.abs(passing.elapsedS-65)>1e-9 ||
+            !passingEvents.some(e=>e.riderId==='F8'&&e.passedRiderId==='F7') ||
+            Math.abs(passing.riders[7].lateralPositionM-2)>1e-8 ||
+            !Number.isFinite(last.timeAboveFtpS)||last.timeAboveFtpS<=0){
+            throw new Error('R06 Spurdynamik oder FTP-Statistik ungültig');
           }
           NODE
       - name: Git-Commit des Teststands für Bericht notieren

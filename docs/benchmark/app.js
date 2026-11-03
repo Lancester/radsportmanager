@@ -16,6 +16,7 @@ const presets = {
   gruppe: {group: true, durationS: 120, repeats: 3},
   agent: {group: true, agent: true, durationS: 120, repeats: 3},
   r05: {group: true, agent: true, r05: true, durationS: 120, repeats: 3},
+  passing: {group: true, passing: true, durationS: 65, repeats: 3},
 };
 let commit = 'unbekannt';
 fetch('./benchmark/version.txt', {cache: 'no-store'})
@@ -53,9 +54,13 @@ function run(presetName) {
         status.textContent = `Berechnung ${msg.current} von ${msg.total} abgeschlossen …`;
       } else if (msg.type === 'result') {
         const result = msg.result;
-        lastReport = {commit, benchmarkVersion: 'r05-android-v4', ...result};
+        lastReport = {commit, benchmarkVersion: 'r06-android-v5', ...result};
         runtime.textContent = result.medianMs.toLocaleString('de-DE', {maximumFractionDigits: 1});
-        detail.textContent = result.mode === 'achtfahrer-sicher-cp'
+        detail.textContent = result.mode === 'achtfahrer-ueberholen'
+          ? `8 Fahrer, F8 wechselt kontinuierlich auf eine freie Spur und überholt. ` +
+            `Erkannte Überholvorgänge: ${result.overtakes}; abgeschlossene Spurwechsel: ${result.laneChanges}. ` +
+            `Keine automatische Spur-KI – das Manöver wurde vorgegeben.`
+          : result.mode === 'achtfahrer-sicher-cp'
           ? `8 Fahrer mit aktiver Abstandsregelung und CP/W′-Limit. ` +
             `F8: ${result.finalGapM.toLocaleString('de-DE')} m Endlücke, ` +
             `${result.wPrimeRemainingJ.toLocaleString('de-DE')} J Rest-W′, ` +

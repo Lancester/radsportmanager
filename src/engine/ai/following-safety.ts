@@ -15,6 +15,8 @@ export interface FollowingObservation {
   ownSpeedMps: number;
   leaderSpeedMps: number;
   massKg: number;
+  /** Optionaler physikalischer Hinweis: angekündigte Verzögerung des Vordermanns. */
+  leaderDecelerationMps2?: number;
 }
 export interface FollowingDecision {
   powerAllowed: boolean;
@@ -51,28 +53,51 @@ export function decideFollowingSafety(
 ):FollowingDecision {
   validateFollowingSafety(options);
   const {centerGapM,ownSpeedMps,leaderSpeedMps,massKg}=obs;
+  const leaderDeceleration=obs.leaderDecelerationMps2??options.maximumDecelerationMps2;
+  finite('leaderDecelerationMps2',leaderDeceleration,leaderDeceleration>0&&leaderDeceleration<=12);
   finite('centerGapM',centerGapM,centerGapM>0);
   finite('ownSpeedMps',ownSpeedMps,ownSpeedMps>=0&&ownSpeedMps<100);
   finite('leaderSpeedMps',leaderSpeedMps,leaderSpeedMps>=0&&leaderSpeedMps<100);
   finite('massKg',massKg,massKg>0);
   const closing=Math.max(0,ownSpeedMps-leaderSpeedMps);
-  const brakingDistance=Math.max(0,ownSpeedMps**2-leaderSpeedMps**2)/
-    (2*options.maximumDecelerationMps2);
+  // Vergleicht Anhaltewege BEIDER Fahrer statt nur ihre momentane
+  // Relativgeschwindigkeit. Der Vordermann darf stärker bremsen.
+  const brakingDistance=Math.max(0,
+    ownSpeedMps**2/(2*options.maximumDecelerationMps2)-
+    leaderSpeedMps**2/(2*leaderDeceleration));
   const required=options.minimumCenterGapM + closing*options.reactionSeconds+
     brakingDistance;
   const remaining=centerGapM-options.minimumCenterGapM;
   const tooLate=closing>0 && required>centerGapM+1e-7;
   const desired=options.minimumCenterGapM+options.desiredExtraGapM;
   const predictedGap=centerGapM-closing*options.approachTimeS;
+  // Ein vom Simulationskommando angekündigtes Bremsen des Führenden
+  // im Vorschauhorizont berücksichtigen, bevor seine Geschwindigkeit sinkt.
+  const projectedLeadSpeed=obs.leaderDecelerationMps2===undefined
+    ? leaderSpeedMps : Math.max(0,leaderSpeedMps-
+        leaderDeceleration*options.approachTimeS);
+  const forecastSafeDistance=options.minimumCenterGapM+
+    Math.max(0,ownSpeedMps-projectedLeadSpeed)*options.reactionSeconds+
+    Math.max(0,ownSpeedMps**2/(2*options.maximumDecelerationMps2)-
+      projectedLeadSpeed**2/(2*leaderDeceleration));
   // Wer sich dem Vordermann nähert, darf nicht weiter beschleunigen.
-  const control=closing>0.005 && (
+  const control=(closing>0.005 || obs.leaderDecelerationMps2!==undefined) && (
     predictedGap < desired+closing*options.reactionSeconds+1.0 ||
-    required+options.desiredExtraGapM+1.0 >= centerGapM);
+    required+options.desiredExtraGapM+1.0 >= centerGapM ||
+    forecastSafeDistance+options.desiredExtraGapM >= centerGapM);
   // Bei echter Gefahr proaktiv bis zur physikalischen Deceleration-Grenze bremsen.
-  const danger=closing>0.005 && (predictedGap<desired || required+options.desiredExtraGapM>=centerGapM);
-  const brakeA=danger ? Math.min(options.maximumDecelerationMps2,
-    Math.max(0.05, (ownSpeedMps**2-leaderSpeedMps**2)/
-      (2*Math.max(0.15,remaining-options.desiredExtraGapM)))) : 0;
+  const danger=(closing>0.005 && (predictedGap<desired ||
+    required+options.desiredExtraGapM>=centerGapM)) ||
+    (obs.leaderDecelerationMps2!==undefined &&
+      forecastSafeDistance+options.desiredExtraGapM>=centerGapM);
+  const brakeA=danger ? (
+    (obs.leaderDecelerationMps2!==undefined &&
+     forecastSafeDistance+options.desiredExtraGapM>=centerGapM)
+      ? options.maximumDecelerationMps2
+      : Math.min(options.maximumDecelerationMps2,
+        Math.max(0.05,(ownSpeedMps**2-leaderSpeedMps**2)/
+          (2*Math.max(0.15,remaining-options.desiredExtraGapM))))
+    ) : 0;
   const brakeForceN=brakeA*massKg;
   return {
     powerAllowed: !control && brakeForceN===0,

@@ -105,3 +105,8 @@ In R-05 hat F8 im **frei erfundenen** Profil `CP=220 W`, `FTP=210 W` und anfäng
 **Wissenschaftliches Profil:** FTP bleibt bewusst **separat von CP** (beide korrelieren, sind aber nicht austauschbar). Die hier verwendete lineare W′-Wiederherstellung ist eine **nicht kalibrierte Testheuristik** und nicht das validierte W′bal-/Skiba-Modell. Auch CP-Leistung unterhalb der Schwelle ist **nicht garantiert unbegrenzt haltbar**; langfristige Ermüdung/Ernährung/Training stehen aus.
 
 **Nächste fachliche Entwicklungsoption:** Dynamisch sichere Bremsreaktionen auch bei abrupt verzögerndem Vordermann, danach 2D-Positionen/Reibkreis/Kurven und individuell kalibrierte CP/W′-Wiederherstellung; für den späteren Manager separate FTP-Tests, Trainingszonen und periodisierte Trainingssteuerung.
+
+
+## R-06 · Mehrere technische Schritte in einem Paket
+
+Der Achtfahrer-Prototyp erhält vorausschauende Reaktion auf bekannte Führungsbremsung, **stetige extern befohlene Querbewegung** mit Kontrolle auch *zwischen* Simulationsschritten, echte Überholereignisse und eine erste **FTP-bezogene Statistik** aus tatsächlich angewendeter Pedalleistung. Keine komplette taktische Spurwahl-KI, kein 3D- oder Kurven-Peloton und keine wissenschaftlich kalibrierte Ermüdungsrechnung. [Details](docs/physik/R06_SICHERHEIT_SPUR_FTP.md).
