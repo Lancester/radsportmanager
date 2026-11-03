@@ -95,3 +95,12 @@ Der erste deutschsprachige, statische Android-/Browser-Benchmark für **R-03-Zwe
 Ein neuer, vorläufiger Physikbaustein verbindet **3–8 Fahrer auf derselben Simulationsuhr**, mit abstands-/seitenabhängiger Windschattenwirkung **aller vorausfahrenden Nachbarn**, Energiebericht und Lückenereignissen. Die KI trifft **noch keine Entscheidungen**; für den ersten Test sind Wattzahlen und Spur vorgegeben.
 
 **Nächste Meilensteine:** (1) 80 GitHub-Tests inklusive echter Integration erfolgreich, (2) neuen Achtfahrer-Web-Worker-Test auf Android ausführen, (3) Positions-/Spurwechselkontrolle und individuelle Fahrtechnik vorbereiten, (4) später regelbasierte taktische Agenten und realistisch kalibrierte Feld-Aerodynamik ergänzen. [Dokumentation](physik/R03G_ACHTFAHRER.md).
+
+
+## R-04: erster deterministischer Fahrer-Agent (03.11.2026)
+
+Ein kleines TypeScript-Zustandsmodell (ohne KI-Bibliotheken) beobachtet eine Lücke und entscheidet befristet über zusätzliche Watt; alle Kräfte bleiben im gemeinsamen physikalischen Rechenkern. Die Achtfahrer-Testseite bekommt zwei sonst identische Versuche **ohne/mit Agenten**. Erst Github-Gesamttest und echter Android-Web-Worker-Lauf, dann Rechenleistung/Balancing bewerten.
+
+**Anschließend:** sichere Abstands-/Kollisionsregelung samt erreichbarer seitlicher Positionen; CP/W′ und Ermüdung; Fahrerübersicht, Talente, Fahrtechnik, Risikobereitschaft und Teamstrategie. Die vollständige Rennengine bleibt eine frühe Prototypenphase; 160 Fahrer/200 km sind noch nicht als gekoppelte Rennsimulation vorhanden.
+
+[Agentenentscheidung und offene Fragen](ai/LUECKENAGENT.md).
