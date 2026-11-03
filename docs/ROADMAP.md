@@ -125,3 +125,10 @@ Erster Radsportgruppenprototyp mit vorausschauender Sicherheitsreaktion auf **ex
 Erste autonome, nachvollziehbare Spursuche für F8 mit beidseitiger Konfliktprüfung, physikalisch stetigem Seitenwechsel und **erst danach** einer CP/W′-begrenzten Wattanforderung. Alternative freie Seite oder Verzicht bei zu engem Manöver. Direkter Vergleich zur identisch befohlenen externen Bewegung über 65 virtuelle Sekunden.
 
 Nächster Meilenstein nach automatischer Abnahme: sichere Rückkehr ins Feld, bewegliche Lücken mit mehreren aktiven Fahrern, fahrtechnische Seitenbeschleunigung und Kurvenkopplung. [Details](ai/R07_UEBERHOLAGENT.md).
+
+
+## R-08 – Wieder-Einscheren, koordinierte Spuragenten, Querbeschleunigung (03.11.2026)
+
+Erster regelbasierter Rückwechsel nach ausreichend Überholungen und sicherem Vorrang vor der bisherigen Reihe; mehrere Agenten mit deterministischen, vorausschauend reservierten Spuren; optionale glatte seitliche Bewegung mit begrenzter Querbeschleunigung und vereinfachtem Kurvenkraftbudget.
+
+**Folgende Stufen weiter offen:** dynamische Feldlücken/Reflexreaktionen und verlässliche Kollisionsvermeidung bei abruptem Bremsen, reale 2D-Lenk-/Kurven-/Reibkreisphysik, Taktik/Teamrollen, Ermüdung über lange Etappen, größerer gekoppelter Fahrermodus. [R-08](ai/R08_WIEDEREINSCHEREN_MULTIAGENT.md).
