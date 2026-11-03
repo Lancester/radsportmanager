@@ -140,3 +140,15 @@ Details, Formel, aktuelle Ergebnisse und **alle offenen Fragen**: [physik/R03G_A
 | D-058 | **Offen** | Sichere Brems-/Spur- und Kollisionsvermeidung, individuelle Reaktionszeiten, physiologische Reserven, Fähigkeiten, taktisches Bewerten („Mitgehen oder nicht?“), Team-KI/Behavior Trees. | Erst nach isoliertem Test entscheiden, was der vollständige Manager braucht. |
 
 Details: [ai/LUECKENAGENT.md](ai/LUECKENAGENT.md). Keine neuronale KI oder externe KI-Bibliothek verwendet.
+
+
+## R-05 · Abstandsregelung, CP/W′ und FTP (03.11.2026)
+
+| ID | Status | Inhalt | Einordnung |
+| --- | --- | --- | --- |
+| D-059 | **Beschlossen – Prototyp** | Vor autonomer Überhol-KI einen **optionalen longitudinalen Sicherheitsregler** mit Relativgeschwindigkeit, Mindestabstand, Leistungsrücknahme und physikalischer Bremskraft einbauen. | Kein Geschwindigkeits- oder Positionssprung; derzeit keine Garantie bei zu spätem Bremsen. |
+| D-060 | **Beschlossen – Datenmodell** | **FTP**, **Critical Power (CP)** und **W′** separat in Fahrerprofilen berücksichtigen. FTP darf nicht stillschweigend mit CP gleichgesetzt werden. | FTP bleibt wichtig für spätere Trainingssteuerung; CP/W′ begrenzen jetzt testweise die mögliche Rennleistung. |
+| D-061 | **Testparameter – nicht kalibriert** | R-05-Abstand: min. 1,8 m Zentrumabstand, 0,7 m Zusatz, 0,25 s Reaktionszeit, höchstens 3 m/s² Verzögerung. W′-Wiederauffüllung: einfache lineare Faktorheuristik. | Konkrete Realitäts- und Sportwissenschaftskalibrierung steht aus. |
+| D-062 | **Offen** | Physiologische W′-Erholung/CP nach langem Rennen, FTP-Testprotokoll/Trainingszonen, sichere Kurven-/Gefällebremsung, 2D-Positionen und 160 Fahrer. | Vor realistischer Vollrenn- und Trainingssimulation weiterentwickeln. |
+
+Ausführliche Erklärung und Quellen: [physik/R05_ABSTAND_CP_WPRIME.md](physik/R05_ABSTAND_CP_WPRIME.md).
