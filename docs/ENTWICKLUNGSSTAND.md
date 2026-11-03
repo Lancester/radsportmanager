@@ -176,3 +176,12 @@ Die Zusammenführung wurde über [PR #20](https://github.com/Lancester/radsportm
 **Noch nicht entwickelt:** Querwind, mehrere Nachbarn, natürliche seitliche Bewegung, automatische Positions-KI, Fahrerphysiologie, Peloton mit 160 Fahrern oder Android-Web-Worker-Test.
 
 **Nächster konkreter Schritt:** Erst die R-03-Engine auf einem echten Android-Smartphone im Browser/Web Worker messen, dann eine kleine Gruppe mit 3–8 Fahrern und nachvollziehbaren Windschatten-Nachbarschaften aufbauen. Der Teammanager- und Fahrerfähigkeits-Teil bleibt späteres Vorhaben. Fachliche Parameter und die offene Fragenliste mit dem Nutzer im Chat besprechen.
+
+
+## Abschluss R-03 und nächster technischer Schritt (03.11.2026)
+
+**[PR #22](https://github.com/Lancester/radsportmanager/pull/22)** wurde erfolgreich in `main` übernommen. Alle neuen Quelldateien, Tests und die Dokumentation wurden danach in `main` erneut per GitHub-Lesezugriff überprüft. **[Issue #21](https://github.com/Lancester/radsportmanager/issues/21)** ist als erster, abgegrenzter **Zweier-Windschattenprototyp abgeschlossen**.
+
+**64/64 lokale Node.js-Tests bestanden und TypeScript-Typprüfung erfolgreich**, darunter 15 neue Zweier-Tests. Die angenommene Aero-Reduktionsfunktion ist noch **nicht empirisch kalibriert**; Kollision in derselben Spur führt zu erklärtem Fehler, keine automatische Kollisionsvermeidung.
+
+**Nächster konkreter Auftrag:** [Issue #23 – Android-Web-Worker-Benchmark und darauf aufbauende erste 3–8-Fahrer-Gruppen](https://github.com/Lancester/radsportmanager/issues/23). Vor den ersten tatsächlichen Android-Messwerten dürfen keine Hochrechnungen zur Laufzeit einer kompletten 160-Fahrer-/200-km-Etappe als gesichert gelten. Die allgemeinen Issues #4 (Gruppen/Windschatten) und #6 (statistische Validierung/Android) bleiben offen.
