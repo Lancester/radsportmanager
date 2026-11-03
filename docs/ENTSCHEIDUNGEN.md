@@ -50,3 +50,13 @@ Neue Beschlüsse mit Datum, Begründung und gegebenenfalls Bezug auf Issue/PR hi
 | D-028 | **Zu prüfen** | Peloton als approximiertes 2D-/Reihenmodell mit kontinuierlichem Streckenfortschritt und dynamischen Nachbarschaften. | Detailgenauigkeit muss gegen Plausibilität und Android-Rechenzeit abgewogen werden. |
 
 Verbindliche fachliche Anforderung und vorgeschlagene Umsetzung: [PELOTON_POSITIONIERUNG.md](PELOTON_POSITIONIERUNG.md). **Wichtig:** Noch keine numerischen Skillboni, Aero-Koeffizienten oder Positionsregeln als validiert betrachten.
+
+
+## Offene R-01-Modellkonvention (03.11.2026)
+
+| ID | Status | Entscheidung | Grund |
+| --- | --- | --- | --- |
+| D-029 | **Favorit** | Fahrernennleistung als **Pedal-/Kurbel-Watt** interpretieren und einen separaten Antriebswirkungsgrad `η` anwenden. | Verständlicher Bezug zu Powermetern; vermeidet Verwechseln von Kurbel- und Radleistung. |
+| D-030 | **Zu prüfen** | In R-01 zunächst `η = 0,975` und konstante Fahrerhaltung/CdA verwenden; Vergleich `η = 1` als theoretischen Kontrollfall. | Reproduzierbare Referenz, noch keine kalibrierte realistische Standardannahme. |
+
+Die Rechnung und die offenen Fragen stehen unter [physik/R01_EBENE.md](physik/R01_EBENE.md). Noch keine endgültige Bestätigung der Zahlen als Standardwerte.
