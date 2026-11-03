@@ -61,7 +61,7 @@ function showRace(result,runtime){
     table.append(row);
   }
   const interesting=result.events.filter(e=>
-    ['attack','chase','team-chase','sprint','segment','group-split',
+    ['attack','chase','team-chase','sprint-train','sprint','segment','group-split',
       'breakaway','breakaway-caught'].includes(e.type));
   // Häufige Helferwechsel nur exemplarisch zeigen, damit Attacken,
   // Einholungen und andere wichtigere Rennereignisse lesbar bleiben.
