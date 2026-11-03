@@ -234,3 +234,42 @@ Alle sieben aktuellen Standardrennen und die gleichauf-
 Sortierkorrektur: [R-13](race/R13_FORMATIONSWINDSCHATTEN_STANDARD.md).
 Nächster Arbeitsschritt: autonome Teamführung und gezielte
 Verfolgung, Issue #42.
+
+
+## R-14: autonome Mannschaftsführung und Verfolgung eingebaut (04.11.2026)
+
+**Nächste Rennspielfunktion nach R-13 umgesetzt:** In der
+50-km-Rennsimulation bestimmen fünf Teams jetzt auf jeder
+10-Sekunden-Entscheidungsrunde autonom je einen geeigneten
+Helfer zur Tempoarbeit bzw. zur gezielten Verfolgung kleiner
+Fluchtgruppen. Bei mehreren Helfern wird der Dienst
+zeitbasiert rotiert (90 s); erschöpfte Helfer,
+weit entfernte Teamkollegen und die eigene Ausreißergruppe
+werden nicht zum falschen Nachsetzen verpflichtet.
+
+**Richtiger Wirkmechanismus:** Aufträge sind ausschließlich
+Wattwünsche und werden über den unveränderten
+CP/W′-Kern und `advanceMotionStep` ausgeführt.
+Keine Zielzeit-, Geschwindigkeits- oder Positionsboni.
+Der normale Formationswindschatten aus R-13 bleibt
+bestehen; Einzelne ohne Deckung dürfen weiter
+große Rückstände sammeln. 42 m ist taktische
+Abstandsklasse, **nicht** Windschattenreichweite.
+
+**Abgenommene technische Tests (Feature-Branch):**
+[GitHub PR-Tests #41737911881](https://github.com/Lancester/radsportmanager/actions/runs/41737911881)
+**221/221 Tests**, darunter acht neue R-14-Prüfungen.
+[Echte sieben 30-Fahrer-/50-km-Rennläufe #41738013741](https://github.com/Lancester/radsportmanager/actions/runs/41738013741)
+erfolgreich sowie Browser-TypeScript/ESM-Test.
+Die neue Rennseite zeigt Teamtempo-/Verfolgungszähler
+und ausgewählte, nachvollziehbare Helferereignisse.
+
+**Alle sieben Messungen, klare verbleibende Grenzen:**
+[R14_TEAM_FUEHRUNG_VERFOLGUNG.md](race/R14_TEAM_FUEHRUNG_VERFOLGUNG.md).
+
+**Nächste fachliche Priorität:** tatsächlich ausgefahrene
+Führungspositionen und Helfer vor Kapitänen, weniger schematische
+Führungswechsel, genauere situations- und kraftabhängige
+Mehrteamstrategie. Noch keine selbstständigen Sportdirektoren
+oder vollständige Karriere und keine Lenkmikrophysik.
+Issue #42 bleibt offen.
