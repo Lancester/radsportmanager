@@ -201,9 +201,30 @@ der Watt-/Energie-/Aero-/Ergebnisdynamik,
 aber keine vollständige sportwissenschaftliche
 Kalibrierung.
 
-**Erst nach separater erfolgreicher main-CI:**
-Merge-Commit und tatsächlichen Browser-Release
-hier nachtragen.
+## Finaler Main-Merge und Browser-Release (04.11.2026)
+
+[Pull Request #52](https://github.com/Lancester/radsportmanager/pull/52)
+ist mit Squash-Commit `26a195b540c0c39d1ca5911198fd058bcd6be70b`
+auf `main` übernommen. Der reguläre
+[GitHub-Actions-Lauf #41742236444](https://github.com/Lancester/radsportmanager/actions/runs/41742236444)
+wurde vollständig **erfolgreich** abgeschlossen:
+**232/232 Tests, 0 Fehler**, drei echte
+50-km-Standardrennen, TypeScript-Browser-/ESM-Build,
+Smoke-Test und GitHub-Pages-Veröffentlichung.
+Die sieben Vergleichspaare, insgesamt
+**14 vollständige Rennen mit 420 Zielankünften**,
+wurden außerdem getrennt im einmaligen,
+danach entfernten
+[Vergleichs-Workflow #41741844022](https://github.com/Lancester/radsportmanager/actions/runs/41741844022)
+erfolgreich ausgeführt.
+
+**In `main` verbindlich:** `tacticModel` ohne Angabe
+setzt R-15/R-16 ein; mit `'r14'` bleiben die
+früheren Teamentscheidungen zu Vergleichszwecken
+möglich. Die vier groben Rennstrategien,
+das R-13-Formations-Aero und der vorhandene
+CP/W′-/Bewegungskern bleiben erhalten.
+Dies ist die Rennengine, **kein Karrieremodus**.
 
 ## Nächste ausschließlich rennmechanische Baustellen
 
