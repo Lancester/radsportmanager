@@ -103,3 +103,35 @@ und prüfbare Flucht-/Einholmeldungen ab. **Die zusätzliche manuelle
 diese ausführen und anhand der Ergebnisse eine kleine taktische
 Helfer-/Kapitän-/Peloton-Verbesserung priorisieren. 20–22 Gruppen auf dem
 Hügelkurs bleiben kritisch. Kein 160-Fahrer- oder Android-Leistungsnachweis.
+
+
+## Jüngste R-11-Diagnose und verbindliche Reihenfolge für Folgeschritte (03.11.2026)
+
+**Die manuelle R-11-Renndiagnose ist jetzt tatsächlich ausgeführt und ausgewertet:**
+[GitHub Actions #41728617720](https://github.com/Lancester/radsportmanager/actions/runs/41728617720)
+ist erfolgreich und enthält **genau sieben unterschiedliche vollständige
+30-Fahrer-/50-km-Rennen**. Das frühere Diagnoseskript hatte versehentlich
+den 2026-Basisfall zweimal gerechnet; der Doppelaufruf ist korrigiert.
+Hügelrennen erreichen in den zwei Seeds bis zu **20–24 Abstandsgruppen**,
+Flachrennen maximal **12**. Schwächerer Helfer F03 (−12 % CP/FTP/W′)
+verliert **330,095 Sekunden**; Teamtaktik ändert F01 je nach Seed um
+**3,783 oder 30,491 Sekunden**. Messmethodik unter
+[docs/race/R11_MEHRSEED_BALANCING.md](race/R11_MEHRSEED_BALANCING.md).
+
+**Wichtiger Codebefund:** Der aktuelle 30er-Rennwindschatten betrachtet nur
+den **direkt davor fahrenden Fahrer** und höchstens **19 % weniger
+aerodynamischen Widerstand**, unabhängig von einer dichten 30er-Gruppe.
+Ein Mehr-Vordermann-Modell existiert nur in älteren isolierten
+Achtfahrer-Testbausteinen. Die Windschatten-Abstraktion ist daher ein
+plausibler wesentlicher Grund für unrealistische Gruppentrennungen,
+aber ihr quantitativer Einfluss ist noch **nicht kausal isoliert**.
+
+**Neue nächste Priorität innerhalb Issue #42:** Zuerst einen
+**separaten, vergleichbaren Entwurf** einer lokal dichte- und
+positionsabhängigen Aero-Abstraktion für kleine Fluchtgruppen versus
+dichtes Peloton fachlich prüfen und gegen R-10/R-11 messen.
+Nicht einfach den 42-m-Diagnoseabstand als Windschattenabstand verwenden;
+keine blind übernommenen 121er-Peloton-CFD-Extremwerte.
+Anschließend Teamtempo- und Helfertaktik verbessern.
+**Noch keine neue Grundsatzentscheidung und keine Aero-Parameterfreigabe.**
+D-074 bis D-077 bleiben gültig. Keine neue Detail-Lenkphysik.
