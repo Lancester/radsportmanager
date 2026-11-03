@@ -24,7 +24,7 @@ jobs:
           npm run build:benchmark
           node --input-type=module <<'NODE'
           import {createRaceExample,simulateRace} from './docs/benchmark/generated/race/race-simulator.js';
-          const r=simulateRace(createRaceExample({seed:2026,profile:'flach',homeStrategy:'sprint'}));
+          const r=simulateRace(createRaceExample({seed:2027,profile:'flach',homeStrategy:'sprint'}));
           if(r.finisherCount!==30||r.diagnostics.multiHelperAssignments<2||
             r.diagnostics.maxSimultaneousTeamHelpers<2||
             r.classification.some(x=>Math.abs(x.energyResidualJ)>0.05))
