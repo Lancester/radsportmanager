@@ -211,3 +211,13 @@ Der Nutzer hat das Fahren im Feld als eigenständige Fahrerfähigkeit festgelegt
 Vollständige Fachanforderung, Zustandsmodell, offene Entscheidungen und Quellen: [PELOTON_POSITIONIERUNG.md](PELOTON_POSITIONIERUNG.md).
 
 Der bisherige Abschnitt mit acht Szenarien bleibt als ursprünglicher Entwicklungsstand erhalten; **jetzt sind elf Szenarien R-01 bis R-11 konzeptionell beschrieben**. Es wurde noch keines softwareseitig validiert.
+
+
+## 10. R-01 – umgesetzter numerischer Ersttest (03.11.2026)
+
+Der fachliche Ebenenfall **R-01** wurde als ausführbarer **stationärer** Einzelfahrertest begonnen. Herleitung, Annahmen, Referenzwerte, sieben lokale TypeScript-Tests, Einschränkungen und offene Punkte sind unter [physik/R01_EBENE.md](physik/R01_EBENE.md) dokumentiert.
+
+- **250 W am Pedal** (η = 0,975): 37,938288 km/h, 31:37,82 min für 20 km.
+- **300 W am Pedal** (η = 0,975): 40,545023 km/h, 29:35,80 min.
+- Der vorläufige Antriebswirkungsgrad und andere Beispielparameter sind ausdrücklich **noch nicht final kalibriert**.
+- 7/7 lokale Tests bestanden, **kein** GitHub-Actions-Lauf und noch **keine** Gesamt-Rennsimulation.
