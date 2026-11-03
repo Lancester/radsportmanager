@@ -35,6 +35,11 @@ function describe(label,configuration){
     maxPedalPowerW:+Math.max(...c.map(x=>x.averageCrankPowerW)).toFixed(1),
     events:r.diagnostics,
     snapshotMaxGroups:Math.max(0,...r.snapshots.map(x=>x.groupSizes.length)),
+    medianSnapshotGroups:r.snapshots.length?
+      [...r.snapshots.map(x=>x.groupSizes.length)].sort((a,b)=>a-b)[Math.floor(r.snapshots.length/2)]:0,
+    maximumPelotonGroupSize:Math.max(0,...r.snapshots.flatMap(x=>x.groupSizes)),
+    confirmedBreakawayEvents:r.events.filter(e=>e.type==='breakaway').length,
+    caughtBreakawayEvents:r.events.filter(e=>e.type==='breakaway-caught').length,
     snapshots:r.snapshots.length,
     finishSpreadS:+(c.at(-1).finishTimeS-c[0].finishTimeS).toFixed(1),
     runtimeMs:+(performance.now()-start).toFixed(1),
