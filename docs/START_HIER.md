@@ -2,6 +2,14 @@
 
 **Projekt:** Radsportmanager. **Sprache:** Deutsch. **Verbindlicher Projektstand:** GitHub, nicht einzelne Chat-Unterhaltungen.
 
+## Neue verbindliche Priorität – Rennsimulation vor Detailphysik (03.11.2026)
+
+**Ausdrücklicher Nutzerbeschluss:** Keine weitere feinere Kurven-, Lenk-, Kollisions- und Überhol-Mikrophysik ohne nachgewiesenen Nutzen für das Managerspiel. Stattdessen zuerst **vollständig simulierbare Rennen mit echter Zielklassifikation**, Streckenprofilen, Teams, strategischen Leitlinien, autonomer Fahrer-KI und Berichten entwickeln. Die R-01–R-08-Physikmodule bleiben unangetastet und als isolierte Vergleichs-/Spezialbausteine verfügbar; die skalierende Rennsimulation nutzt **denselben Bewegungsintegrator und CP/W′-Kern**, jedoch eine **eigene, ausdrücklich vorläufige Gruppen-/Windschattenabstraktion**.
+
+**Arbeitsweise:** Zuerst nachvollziehbare vollständige Rennen (30 Fahrer, 50 km), dann Balancing und taktische Glaubwürdigkeit prüfen; erst danach 60/160 Fahrer und längere Rennen. Zweite und dritte Priorität: intelligente Team- und Fahrertaktik und ausreichend schnelle Android-Ausführung. Keine parallele, nicht beauftragte Ausarbeitung von Millimeter-Spuren, Lenkwinkeln oder Reifenmodellen. Neue Priorität geht älteren R-08-/Issue-#39-Vorschlägen vor.
+
+Die erste Rennoberfläche ist unter `docs/rennen.html` geplant; Code unter `src/engine/race/`. **Vor GitHub-Actions-Erfolg keine fertige Rennsimulation behaupten.**
+
 ## Reihenfolge beim Einstieg
 
 1. Diese Datei und docs/ENTWICKLUNGSSTAND.md lesen.
