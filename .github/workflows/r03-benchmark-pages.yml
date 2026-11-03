@@ -102,6 +102,21 @@ jobs:
             !Number.isFinite(last.timeAboveFtpS)||last.timeAboveFtpS<=0){
             throw new Error('R06 Spurdynamik oder FTP-Statistik ungültig');
           }
+          const auto=group.simulateGroup(group.createEightRiderAutoPassExample(65));
+          const timed=group.simulateGroup(group.createEightRiderTimedPassWithCpExample(65));
+          const laneEvents=auto.events.filter(e=>e.type==='agent-lane-choice');
+          const autoPasses=auto.events.filter(e=>e.type==='overtake'&&e.riderId==='F8');
+          const deltaM=Math.abs(auto.riders[7].positionM-timed.riders[7].positionM);
+          console.log('R07 autonom: Spurentscheidungen',laneEvents.length,
+            'Überholungen',autoPasses.length,'Wprime Rest',auto.riders[7].wPrimeRemainingJ,
+            'Abweichung zum manuell identischen Physiklauf:',deltaM);
+          if(Math.abs(auto.elapsedS-65)>1e-9||laneEvents.length!==1||
+            autoPasses.length<1||deltaM>1e-5||
+            Math.abs(auto.riders[7].lateralPositionM-2)>1e-8||
+            auto.riders[7].wPrimeRemainingJ<0||
+            auto.riders.some(r=>!Number.isFinite(r.energyResidualJ))) {
+            throw new Error('R07 autonome Spurwahl, CP-Reserve oder Physikvergleich ungültig');
+          }
           NODE
       - name: Git-Commit des Teststands für Bericht notieren
         run: git rev-parse --short HEAD > docs/benchmark/version.txt
