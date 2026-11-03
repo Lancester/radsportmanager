@@ -117,3 +117,14 @@ Die einheitliche dynamische Architektur, Testausführung und ehrliche Messgrenze
 | D-050 | **Offen** | Aero-Kurven durch Messdaten kalibrieren, Hintermann-Effekt auf Führenden, Querwind, echte Lateralbewegung, mehrgliedrige Gruppen und Smartphone-Benchmark. | Wesentliche Voraussetzungen für eine glaubwürdige vollständige Rennsimulation fehlen. |
 
 Fachliche Erklärung und **alle noch offenen Fragen**: [physik/R03_WINDSCHATTEN_ZWEI_FAHRER.md](physik/R03_WINDSCHATTEN_ZWEI_FAHRER.md). Die spätere individuelle Positionierungsfähigkeit ist bereits als Spielanforderung beschlossen, aber **noch nicht im Code**.
+
+## R-03G: echte Achtfahrer-Kopplung und KI-Abgrenzung (03.11.2026)
+
+| ID | Status | Entscheidung | Erläuterung |
+| --- | --- | --- | --- |
+| D-051 | **Beschlossen: jetziger Umsetzungsschritt** | 3–8 Fahrer mit **einer gemeinsamen Uhr**, Positions-/Abstandswechselwirkungen und physikalischem Aero-Faktor statt 80 isolierter Paare simulieren. | Nutzerauftrag, kontrollierbare Grundlage für das spätere Peloton. |
+| D-052 | **Testheuristik – nicht kalibriert** | Jeder hintere Fahrer wird vorläufig von **allen vor ihm fahrenden Nachbarn** abgeschirmt; Beiträge werden mittels gedeckelter Produktformel kombiniert (max. 35 % Aero-Reduktion). | Erste stabile Mehrfahrer-Kopplung; nicht als empirisches Peloton-Windschattenmodell ausgeben. |
+| D-053 | **Technische Abgrenzung** | In der Achtfahrer-Demo sind **Spuren und Pedalwatt vorgegeben**. Der Leistungsabfall von F8 ab Sekunde 30 ist ein festes Testkommando, **keine KI-Entscheidung**. | Physik und Entscheidungslogik sauber trennen. |
+| D-054 | **Favorit – mit Nutzer noch zu entscheiden** | Später regelbasierte, nachvollziehbare **Fahreragenten** zur Positionswahl, Risikoabwägung, Teamtaktik und Reaktion auf Lücken nutzen, ohne die mechanische Rennphysik zu ersetzen. | Erklärbares Rennverhalten und Leistung auf Android; noch keine autonome KI programmiert. |
+
+Details, Formel, aktuelle Ergebnisse und **alle offenen Fragen**: [physik/R03G_ACHTFAHRER.md](physik/R03G_ACHTFAHRER.md). Die schon beschlossenen Spielerattribute Fahrtechnik, Risikobereitschaft und trainierbares Talent bleiben separate spätere Entwicklungsaufgaben.
