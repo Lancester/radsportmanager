@@ -88,7 +88,7 @@ ausgeführt. Die temporäre CI dafür wurde danach wieder entfernt.
 
 Der Flachlauf 2026 hat **keine bestätigte Ausreißergruppe**;
 eine koordinierte Verfolgung wäre also erfunden und bleibt mit
-null entsprechend aus. In vier hügeligen Fällen sind bestätigte
+null entsprechend aus. In allen fünf hügeligen Fällen sind bestätigte
 Ausreißergruppen vorhanden; die konkreten Einholungsereignisse
 treten nicht zwangsläufig auf (beispielsweise Hügel schützen
 2026: eine Flucht, keine Einholung; Hügel schützen 2027:
