@@ -1,0 +1,82 @@
+/**
+ * R-09 – erste Rennstrategie statt Mikromanöver.
+ * Die sportliche Leitung setzt VOR dem Rennen eine Teamleitlinie;
+ * Fahrer entscheiden regelbasiert über Wattwünsche. Physik und CP/W′
+ * entscheiden erst danach, welche Leistung tatsächlich möglich ist.
+ */
+export type RaceStrategy = 'ausgewogen'|'offensiv'|'sprint'|'kapitaen_schuetzen';
+export type RaceRole = 'kapitaen'|'sprinter'|'helfer';
+export type RaceIntent = 'grundtempo'|'windschatten'|'angriff'|'verfolgung'|'sprint'|'erholung'|'helferarbeit';
+
+export interface TacticObservation {
+  role:RaceRole;
+  strategy:RaceStrategy;
+  criticalPowerW:number;
+  aggression:number; // 0..1
+  sprintSkill:number; // 0..1
+  progress:number; // 0..1
+  remainingM:number;
+  frontGapM:number|null;
+  teamCaptainGapM:number|null;
+  deficitToLeaderM:number;
+  reserveFraction:number;
+}
+export interface TacticDecision {
+  desiredPowerW:number;
+  intent:RaceIntent;
+  reason:string;
+}
+const finite=(label:string,value:number,valid:boolean)=>{
+  if(!Number.isFinite(value)||!valid)throw new RangeError('Renn-KI: '+label);
+};
+/** Alle Entscheidungen sind reproduzierbare Watt-Anfragen, kein Tempo- oder Siegbonus. */
+export function chooseRacePower(o:TacticObservation):TacticDecision {
+  if(!o || !['kapitaen','sprinter','helfer'].includes(o.role) ||
+    !['ausgewogen','offensiv','sprint','kapitaen_schuetzen'].includes(o.strategy))
+    throw new RangeError('Renn-KI: unbekannte Rolle oder Taktik');
+  finite('criticalPowerW',o.criticalPowerW,o.criticalPowerW>50&&o.criticalPowerW<=1500);
+  finite('aggression',o.aggression,o.aggression>=0&&o.aggression<=1);
+  finite('sprintSkill',o.sprintSkill,o.sprintSkill>=0&&o.sprintSkill<=1);
+  finite('progress',o.progress,o.progress>=0&&o.progress<=1);
+  finite('remainingM',o.remainingM,o.remainingM>=0);
+  finite('deficitToLeaderM',o.deficitToLeaderM,o.deficitToLeaderM>=0);
+  finite('reserveFraction',o.reserveFraction,o.reserveFraction>=0&&o.reserveFraction<=1+1e-7);
+  if(o.frontGapM!==null)finite('frontGapM',o.frontGapM,o.frontGapM>=0);
+  if(o.teamCaptainGapM!==null)finite('teamCaptainGapM',o.teamCaptainGapM,o.teamCaptainGapM>=0);
+  const cp=o.criticalPowerW;
+  const protectedFromWind=o.frontGapM!==null&&o.frontGapM<16;
+  const base=cp*(protectedFromWind?0.88:0.98);
+  if(o.remainingM<=250 && (o.role==='sprinter'||o.role==='kapitaen') &&
+     o.reserveFraction>0.025){
+    return {intent:'sprint',desiredPowerW:cp+180+210*o.sprintSkill,
+      reason:'Zielsprint nur aus verfügbarer W′-Reserve'};
+  }
+  if(o.reserveFraction<0.08){
+    return {intent:'erholung',desiredPowerW:cp*0.82,
+      reason:'W′ fast verbraucht; zeitweise unter CP bleiben'};
+  }
+  // Klar definierte Ausreißfenster: keine mehrstündige harte Attacke.
+  const inWindow=(o.progress>=0.22&&o.progress<0.245) ||
+     (o.progress>=0.64&&o.progress<0.66);
+  if(o.strategy==='offensiv' && o.role==='kapitaen' && inWindow &&
+     o.reserveFraction>0.32){
+    return {intent:'angriff',desiredPowerW:cp+65+55*o.aggression,
+      reason:'Vorab gewählte offensive Leitlinie: begrenzte Attacke'};
+  }
+  // Nur bei Rückstand wird die Verfolgung teurer, nie automatisch schneller.
+  if((o.strategy==='sprint'||o.strategy==='kapitaen_schuetzen') &&
+     o.role==='helfer' && o.deficitToLeaderM>25 && o.progress<0.92 &&
+     o.reserveFraction>0.18){
+    return {intent:'verfolgung',desiredPowerW:cp+16+18*o.aggression,
+      reason:'Helfer arbeitet gegen eine abgesetzte Spitze'};
+  }
+  if(o.strategy==='kapitaen_schuetzen'&&o.role==='helfer' &&
+     o.teamCaptainGapM!==null&&o.teamCaptainGapM<30 &&
+     o.reserveFraction>0.15) {
+    return {intent:'helferarbeit',desiredPowerW:cp*1.04,
+      reason:'Helfer unterstützt den Kapitän durch Tempoarbeit'};
+  }
+  return {intent:protectedFromWind?'windschatten':'grundtempo',
+    desiredPowerW:base,
+    reason:protectedFromWind?'Geschützt im Windschatten fahren':'Grundtempo nach Fahrerleistung'};
+}
