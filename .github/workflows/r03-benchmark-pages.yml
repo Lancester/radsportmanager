@@ -45,7 +45,22 @@ jobs:
       - name: Exakt vorhandene R-03-Engine für Browser übersetzen
         run: npm run build:benchmark
       - name: Erzeugtes Browsermodul mit Node ESM smoke-testen
-        run: node --input-type=module -e "const m = await import('./docs/benchmark/generated/drafting-pair.js'); const r=m.simulateTwoRiders(m.R03_PAIR_EXAMPLE); if (!Number.isFinite(r.elapsedS) || r.elapsedS !== 12) process.exit(1); console.log('Browsermodul importierbar');"
+        run: |
+          node --input-type=module <<'NODE'
+          const m = await import('./docs/benchmark/generated/drafting-pair.js');
+          const result = m.simulateTwoRiders(m.R03_PAIR_EXAMPLE);
+          const expected = m.R03_PAIR_EXAMPLE.durationS;
+          const timeDifference = Math.abs(result.elapsedS - expected);
+          console.log('Simulationszeit:', result.elapsedS, 's, Soll:', expected, 's');
+          console.log('Schritte:', result.steps, 'Endpositionen:',
+            result.riders.map(rider => rider.positionM));
+          // Gleitkommaarithmetik darf minimale Rundungsfehler haben.
+          if (!Number.isFinite(result.elapsedS) || timeDifference > 1e-9 ||
+              result.steps < 1 || result.riders.some(rider => !Number.isFinite(rider.positionM))) {
+            throw new Error('Browsermodul liefert keine gueltigen physikalischen Ergebnisse');
+          }
+          console.log('Browsermodul importierbar und Simulation plausibel');
+          NODE
       - name: Git-Commit des Teststands für Bericht notieren
         run: git rev-parse --short HEAD > docs/benchmark/version.txt
       - name: GitHub Pages vorbereiten
