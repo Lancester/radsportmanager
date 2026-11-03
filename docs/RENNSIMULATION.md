@@ -95,3 +95,12 @@ Sie enthält:
 - erste Eingabe-/Ausgabedaten mit SI-Einheiten und die Grenzen der bisherigen Modellannahmen.
 
 **Status:** Entwurf zur fachlichen Abstimmung; keine Simulation implementiert oder validiert. Wir beginnen bewusst bei überprüfbarer Einzelfahrerphysik, bevor Gruppen und Taktik ergänzt werden.
+
+
+## Neue Anforderung: Positionsverhalten im Peloton (03.11.2026)
+
+Die Fähigkeit, sich im Feld sinnvoll zu bewegen, gehört verbindlich zum Fahrermodell. Sie soll nicht als pauschaler Watt- oder Siegbonus umgesetzt werden, sondern die **tatsächlich erreichte Position**, die **Kosten des Aufrückens/Haltens** und daraus folgende **aerodynamische und taktische Konsequenzen** beeinflussen.
+
+Bevorzugt wird eine Kopplung aus **regelbasierter Agenten-KI** (Ziele/Entscheidungen), **Physiologie** (abrufbare Leistung), **Physik** (Tempo/Widerstand) und **Gruppendynamik** (Positionen/Abstände). Die endgültige räumliche Auflösung ist noch offen.
+
+Details, wissenschaftliche Quellen und Referenzszenarien **R-09 bis R-11**: [PELOTON_POSITIONIERUNG.md](PELOTON_POSITIONIERUNG.md).
