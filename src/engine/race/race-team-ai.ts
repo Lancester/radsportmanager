@@ -128,6 +128,16 @@ export function decideIntelligentCrew(input:{
   const groups=sortGroups(input.riders);
   const main=groups.reduce((best,g)=>g.length>best.length?g:best,groups[0]);
   const rotation=Math.floor(input.timeS/R15_R16.relaySeconds);
+  // Ein ausgewogenes Team kann die Jagd einer verfügbaren Sprintmannschaft
+  // überlassen, solange der Rückstand noch moderat ist. Das ist keine
+  // Absprache/Teleportation, sondern bewusst unterlassene Mehrarbeit.
+  const sprintTeamReady=input.teams.some(team=>
+    team.strategy==='sprint'&&
+    main.some(r=>r.teamId===team.id&&r.role==='sprinter')&&
+    main.some(r=>r.teamId===team.id&&r.role==='helfer'&&
+      r.reserveFraction>=R15_R16.minimumChaseReserve));
+  const urgentChase=situation.gapFractionOfRemaining>=0.025||
+    situation.relativeSpeedMps>=0.8;
   for(const team of [...input.teams].sort((a,b)=>a.id.localeCompare(b.id))){
     const members=input.riders.filter(r=>r.teamId===team.id);
     const targetRole=team.strategy==='sprint'?'sprinter':'kapitaen';
@@ -141,7 +151,8 @@ export function decideIntelligentCrew(input:{
       input.progress>=0.82&&input.remainingM>250&&
       input.remainingM<=10000&&group.length>=3;
     const chase=situation.chaseViable&&isMain&&input.progress<0.94&&
-      !sprintTrain&&team.strategy!=='offensiv';
+      !sprintTrain&&team.strategy!=='offensiv'&&
+      (team.strategy!=='ausgewogen'||!sprintTeamReady||urgentChase);
     const mission:CrewMission=chase?'jagd':
       sprintTrain?'sprintzug':'schutz';
     if(input.progress>=0.97&&!sprintTrain)continue;
