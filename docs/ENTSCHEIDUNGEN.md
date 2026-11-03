@@ -247,3 +247,15 @@ Abgehängten-/Verfolgungsdynamik prüfen; dann Parameterentscheidung.
 | D-081 | **Beschlossen: reproduzierbare Rückfalloption** | `RaceInput.aeroModel` ohne Angabe bzw. `'formation'` nutzt neuen Standard. `'formation-experiment'` bleibt aus Kompatibilität als Alias; `'legacy'` bewahrt die alte R-10-/R-11-Referenz. Gleiche Längspositionen zählen nicht als voreinander fahrende Personen, der mechanische CP/W′-Kern bleibt gleich. | D-074 bis D-079 bleiben als historische Begründung/Testergebnisse erhalten; dies ist eine **neue**, ausdrückliche Entscheidung. Offene Führungs-/Verfolgungsmechanik bleibt Issue #42. |
 
 Ausführliche [R-13-Umsetzung und Abnahme](race/R13_FORMATIONSWINDSCHATTEN_STANDARD.md).
+
+
+## D-082 bis D-084: autonome Teamführung und situative Verfolgung (04.11.2026)
+
+| Entscheidung | Status | Umsetzung und Grenzen |
+| --- | --- | --- |
+| D-082 – Helferrotation | **Technischer Prototyp umgesetzt** | Je Team höchstens ein geeigneter Helfer zurzeit für begrenzte Führungsarbeit, geschützter Fahrer Kapitän oder bei Sprintstrategie Sprinter; körperliche Nähe und W′-Reserve erforderlich. Zeitbasierte 90-s-Rotation. Die Entscheidung fordert ausschließlich Kurbelwatt, noch kein belegter physischer Führungsspurwechsel. |
+| D-083 – koordinierte Fluchtverfolgung | **Technischer Prototyp umgesetzt** | Nur bestätigte kleine Spitzengruppe (1–6) mit 75–400 m Vorsprung vor einem substanziellen Feld und eigenem Teamziel in diesem Feld. Keine Jagd auf die eigene Flucht oder auf isoliert abgehängte Solofahrer; nur geeignete Helfer mit W′-Reserve werden eingesetzt. Physischer Erfolg ist offen, **keine** Aufholgarantie. |
+| D-084 – physikalische Integrität und nächste Priorität | **Beschlossen bzw. beibehalten** | Der R-13-Formationswindschatten bleibt Standard; Leistungsanforderungen passieren unverändert CP/W′ und `advanceMotionStep`. Keine Ergebnis-, Positions-, Speed- oder Energieboni. Nächste Ausbaustufe: überprüfbare tatsächlich gefahrene Helfer-Führungspositionen, intelligente Teamtaktik und langfristig Sportdirektoren; keine Detail-Lenk-Mikrophysik. |
+
+Methodik, reale Runner-Abnahmen und Grenzen:
+[R14_TEAM_FUEHRUNG_VERFOLGUNG.md](race/R14_TEAM_FUEHRUNG_VERFOLGUNG.md).
