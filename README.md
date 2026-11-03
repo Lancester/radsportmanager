@@ -54,3 +54,7 @@ Neuer, getrennt getesteter Prototyp: [Kurven und Radrotation erklärt](docs/phys
 ## Gemeinsamer dynamischer Physikkern
 
 Die bisherigen dynamischen Physikprototypen sind jetzt in `src/engine/physics/motion-core.ts` zusammengeführt. Die APIs für R-01, R-02, dynamische Abschnitte und Kurven bleiben bestehen. **49 Tests lokal gemeinsam bestanden**; vier neue Integrationstests verbinden Anstieg, Abfahrt, Bremsen, Kurvenvorschau und Laufradträgheit. Erklärung und Benchmarkgrenzen: [docs/physik/GEMEINSAMER_KERN.md](docs/physik/GEMEINSAMER_KERN.md). `npm test` führt alle aus. Noch kein Windschatten, keine Peloton-KI oder Smartphone-Version.
+
+## R-03: erste gekoppelte Zweierfahrt mit Windschatten
+
+Jetzt erstmals **zwei** Fahrer mit gemeinsamer Simulationsuhr, dynamisch veränderter Lücke und physikalischer Windschattenreduktion: [R-03 verständlich erklärt](docs/physik/R03_WINDSCHATTEN_ZWEI_FAHRER.md). Der neue Code liegt in `src/engine/physics/drafting-pair.ts`. **64/64 lokale Tests bestanden**, davon 15 neu. Noch **kein echtes Peloton, keine Renn-KI, keine Android-Version**. Testen mit `npm test`, manuelle Node-Kurzmessung mit `npm run bench:r03`.
