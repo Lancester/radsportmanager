@@ -37,10 +37,12 @@ function run(label,config,mutate=()=>{}){
   console.log('R11-LAUF',JSON.stringify(concise));
   return {result,audit};
 }
+const referenceBySeed=new Map();
 for(const seed of [2026,2027]){
   const protectedHilly=run('huegelig-geschuetzt-'+seed,{
     profile:'wellig',homeStrategy:'kapitaen_schuetzen',seed,
   });
+  referenceBySeed.set(seed,protectedHilly);
   const attackingHilly=run('huegelig-offensiv-'+seed,{
     profile:'wellig',homeStrategy:'offensiv',seed,
   });
@@ -55,9 +57,9 @@ for(const seed of [2026,2027]){
     sameWinner:protectedHilly.result.winnerId===attackingHilly.result.winnerId,
   }));
 }
-const base=run('profil-standard-2026',{
-  profile:'wellig',homeStrategy:'kapitaen_schuetzen',seed:2026,
-});
+// Referenzrennen 2026 aus dem Seed-Vergleich wiederverwenden: genau 7 Läufe.
+const base=referenceBySeed.get(2026);
+if(!base)throw new Error('R11: Vergleichsreferenz für Seed 2026 fehlt');
 const weaker=run('profil-helfer-F03-schwach-2026',{
   profile:'wellig',homeStrategy:'kapitaen_schuetzen',seed:2026,
 },input=>{

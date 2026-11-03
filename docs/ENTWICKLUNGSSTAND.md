@@ -656,3 +656,26 @@ Der R-10-GitHub-Runner meldete beispielsweise für den hügeligen geschützten L
 **Noch offen:** Das zusätzliche `scripts/r11-balance-diagnostics.mjs` wurde im PR auf Syntax geprüft, aber seine sieben 50-km-Vergleichsläufe wurden **noch nicht als eigener Diagnoselauf ausgeführt und ausgewertet**. Für andere Seeds/Fahrerprofile liegen damit noch keine im Entwicklungsstand dokumentierten numerischen Diagnoseergebnisse vor. Keine Android-Messung; keine 60/100/160-Fahrer-Validierung.
 
 **Nächster konkreter Schritt:** Die kurze manuelle R-11-Diagnose ausführen, Gruppen-/Einzelfahrer-/Watt- und Teamstrategie-Unterschiede **fachlich auswerten**, und danach in Issue #42 eine kleine, isolierte Verbesserung von Helfer-/Kapitän-/Verfolger-Arbeit entwickeln und gegen dieselben Seeds prüfen. Keine Änderung der D-074–D-077-Grundsatzentscheidungen.
+
+
+## R-11: sieben tatsächlich durchgerechnete Rennvarianten und Windschattenbefund (03.11.2026)
+
+**Jüngster verifizierter Diagnosestand:** [GitHub Actions #41728617720](https://github.com/Lancester/radsportmanager/actions/runs/41728617720) **erfolgreich**, sieben separate 50-km-Rennen mit je 30 Zielankünften, sechs Seed-/Strecken-/Strategiekombinationen und ein abgeschwächtes Fahrerprofil F03. Der Lauf kontrollierte ausdrücklich genau sieben `R11-LAUF`-Zeilen und zwei Taktik-/einen Profilvergleich. Ein voriger Probelauf #41728273878 führte bei gleicher Physik das 2026-Basisrennen doppelt aus (acht Durchläufe, sieben unterschiedliche Fälle); dies wurde im Diagnoseskript korrigiert. Keine Testreihe im Hintergrund; tatsächliche einmalige Ausführung auf einem GitHub-Runner, **kein Android-Benchmark**.
+
+| Rennen | Max. Abstandsgruppen | Median 5-km-Snapshot-Gruppen | Isolierte Fahrer in Snapshots | Letzter Zielrückstand |
+| --- | ---: | ---: | ---: | ---: |
+| Hügelig, geschützt, Seed 2026 | 20 | 14 | 14,8 % | 581,4 s |
+| Hügelig, offensiv, Seed 2026 | 22 | 12 | 15,9 % | 504,6 s |
+| Flach, Sprint, Seed 2026 | 12 | 10 | 11,1 % | 420,9 s |
+| Hügelig, geschützt, Seed 2027 | **24** | 13 | 14,1 % | 544,9 s |
+| Hügelig, offensiv, Seed 2027 | 20 | 11 | 12,2 % | 517,4 s |
+| Flach, Sprint, Seed 2027 | 12 | 9 | 6,3 % | 334,1 s |
+| Hügelig, geschützt, F03 schwächer, Seed 2026 | 23 | 13 | 20,0 % | 634,6 s |
+
+**Empfindlichkeit:** Die T1-Leitlinie „offensiv“ verbessert bei gleicher Hügel-Startaufstellung F01 um **3,783 s (Seed 2026)** beziehungsweise **30,491 s (Seed 2027)**; F13 bleibt Sieger. F03 mit testweise **−12 % CP/FTP/W′** verliert **330,095 s**, und die Zahl maximaler Gruppen erhöht sich von 20 auf 23. Es handelt sich um **fiktive Modellvergleiche**, keine Realweltrennstatistik.
+
+**Im tatsächlichen 30er-Rennmodus nachgelesen:** `src/engine/race/peloton.ts` berücksichtigt für den Windschatten **nur den unmittelbar davor liegenden Fahrer** und reduziert den Luftwiderstand im günstigsten Fall um **19 %** (`aeroFactor=0.81`). Die Größe der Fahrergruppe und der tiefere Schutz innerhalb des Pelotons fehlen vollständig. Das ältere R-03-/Achtfahrermodul mit mehreren Vordermännern bleibt isoliert und ist nicht in das 30-Fahrer-Rennen integriert. Forschung von Blocken et al. (2018, DOI 10.1016/j.jweia.2018.06.011) macht die große Differenz zwischen kleinen Reiheverbänden und dicht gepacktem 121er-Peloton deutlich. Deren extreme Drag-Faktoren nicht blind auf unser eindimensionales 30er-Modell kopieren.
+
+**Fazit:** Ein wichtiger struktureller Windschatten-Mangel ist **durch Codeprüfung bestätigt** und plausibler Kandidat für die zu starke Fragmentierung. **Kausal nicht nachgewiesen:** Ohne A/B-Rennen ist der relative Einfluss von Aero, Verfolger-KI, CP/W′ und Fahrerprofilen unbekannt. Nicht allein am `draftFactorAtWheel` drehen und keine künstliche Ergebnisangleichung.
+
+**Exakter nächster Entwicklungsauftrag, noch nicht beschlossen:** isolierten schaltbaren Entwurf für **lokale Dichte-/Gruppenpositions-abhängige Windschattenfaktoren** (2–3 Fahrer versus dichtes Peloton) spezifizieren; einzeln mit Ein-/Mehrfahrer-Kontrollfällen sowie sieben R-11-Referenzrennen vergleichen. Danach taktische Helfer-/Kapitän-/Verfolger-Interaktion getrennt verbessern. R-01–R-08 und unveränderte Physik-/CP/W′-Kerne behalten. Issue #42 bleibt offen. Ausführliche [Messwerte, Quellen und Abgrenzungen](race/R11_MEHRSEED_BALANCING.md).
