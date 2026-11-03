@@ -34,7 +34,11 @@ test('R08 Koordination: freie Gegenseite wird erlaubt',()=>{
   [{riderId:'F7',targetM:2,rateMps:.8}],R08_RESERVATION),false);
 });
 test('R08 Koordination: quer kreuzende Reservierungen werden erkannt',()=>{
- const o=group();o.riders[0].lateralPositionM=2;
+ const o=group();
+ o.riders[1].positionM=1;o.riders[1].lateralPositionM=2;
+ o.riders[2].lateralPositionM=-2;
+ // Anfangspositionen seitlich klar getrennt, die beiden Wege schneiden
+ // sich jedoch bei fast gleicher Längsposition während des Manövers.
  assert.equal(lanePlanConflicts(o,{riderId:'F8',targetM:2,rateMps:.8},
   [{riderId:'F7',targetM:-2,rateMps:.8}],R08_RESERVATION),true);
 });
