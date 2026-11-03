@@ -144,3 +144,16 @@ Erster regelbasierter Rückwechsel nach ausreichend Überholungen und sicherem V
 
 **Keine Priorität mehr:** Issue #39 (innenliegende Überhollücken, Details der Reifenhaftung, Querbeschleunigung) bleibt optional zurückgestellt, solange die vollständige Rennschleife noch nicht glaubwürdig ist.
 
+
+
+## Wichtige Prioritätsänderung ab R-09: Rennsimulation zuerst (03.11.2026)
+
+**Verbindlich nach Nutzerentscheidung:** Nicht immer weitere mikroskopische Lenk-, Reifen-, Überhol- und Kurvendetails entwickeln. Stattdessen schnell **vollständige, beobachtbare Rennen** mit Gruppen, Taktik, Anstiegen, Abfahrten, Zeitabständen, Zielresultaten und erkennbaren strategischen Konsequenzen ermöglichen.
+
+1. **R-09 Erster kompletter Rennen-Prototyp:** 30 fiktive Fahrer / 5 Teams / 50 km (flach und wellig), vorab gesetzte vier Teamstrategien, lokale Web-Worker-Ausführung mit Ergebnisliste. Bisherigen Bewegungsintegrator + CP/W′ tatsächlich wiederverwenden. (Im Entwicklungsbranch implementiert; CI/Pages vor Bestätigung prüfen.)
+2. **Rennplausibilität/Balancing:** Zielabstände, Gruppenbildung, Häufigkeit und Wirkung von Attacken, Topspeed/Berg/Abfahrt und Stabilität gegenüber Seed/Strategie vergleichen. Priorisierung anhand beobachteter Rennprobleme statt theoretischer Mikrophysik.
+3. **Taktik-/Fahrer-KI vertiefen:** Helferarbeit, Kapitän, Verfolgung, Attacke, Kooperation und Energiemanagement, später sportliche Leiter. Ergebnisgetriebene Regressionstests, nicht immer neue Detailphysik.
+4. **Zunächst 60, dann 100 und später bis 160 Fahrer** mit ähnlichem abstrahiertem Rennmodell und überprüfter Android-Laufzeit.
+5. **Später Managerkarriere:** Kader, Personal, Training (FTP/CP/W′), Teams/Sponsoren/Finanzen, Saison-/Rennergebnisse, Speicherung.
+
+Die R-03–R-08-Physiklabor-Module werden **behalten und weiterhin getestet**, aber Detailphysik ist kein Blocker für vollständige Rennsimulationen. Das Thema [Issue #39](https://github.com/Lancester/radsportmanager/issues/39) wird zugunsten echter Rennabläufe **vorerst zurückgestellt**. [R-09-Dokumentation](RENNPROTOTYP_R09.md).
