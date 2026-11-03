@@ -173,3 +173,11 @@ Autonom überholende Fahrer können konservativ wieder vor ihrer Ausgangsreihe e
 **Grenzen:** Ein Konflikt in der Vorhersage führt zur Zurückhaltung, aber eine unerwartete Änderung der Geschwindigkeit/Spur anderer Fahrer kann im laufenden, eigentlichen Solver weiterhin einen Sicherheitsfehler auslösen. Keine voll gekoppelte Fahrrad-Lenk-/Kurvendynamik, keine intelligenten mittigen Peloton-Lücken und noch keine vollständige Fahrerfeld-/Renn-KI mit 160 Fahrern. FTP, CP/W′ und langfristiges Training sind weiterhin nicht sportwissenschaftlich kalibriert.
 
 **Nächste Aufgaben:** Wiedereinscheren in variierende, tatsächlich sichere Lücken; bewegliche Hindernisse und gemeinsames Aushandeln geplanter Spurwechsel; tatsächliche 2D-Lenk-/Kurven-/Bremshaftungsphysik und später ein vollständiges Rennfeld. [R-08-Modell](ai/R08_WIEDEREINSCHEREN_MULTIAGENT.md).
+
+
+## Neue Entwicklungspriorität: Erst vollständige Rennen, dann gezielte Verfeinerung
+
+Der Nutzer hat ausdrücklich den Fokus von immer detaillierterer Lenk-/Überhol-Mikrophysik hin zu **ganzen Radrennen und taktischem Management** verschoben. Neu ist der R-09-Rennprototyp mit 30 fiktiven Fahrern, fünf Teams, 50 km, Teamstrategie, Gruppen, vollständiger Zielklassifikation, Leistungs-/Ermüdungsmodell und Browseroberfläche `[Erstes Rennen](https://lancester.github.io/radsportmanager/rennen.html)`. Der vorhandene Bewegungsintegrator und CP/W′ werden **direkt wiederverwendet**. Die Gruppen-/Windschattenberechnung ist im Rennmodus jedoch eine **separate vereinfachte Abstraktion**; R-03–R-08-Detailtests bleiben erhalten, aber ihre 2D-Mikrosteuerung wird nicht über sämtliche Rennkilometer ausgeführt.
+
+**Erste Ergebnisse sind vorläufig und müssen gegen plausible Renndaten balanciert werden.** Keine langfristige Teamkarriere und keine wissenschaftlich kalibrierte Ermüdung. [Entwicklungsplan](docs/race/R09_ERSTES_RENNEN.md).
+
