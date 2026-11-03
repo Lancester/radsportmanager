@@ -11,7 +11,8 @@
     "test:unified": "node --experimental-strip-types --test tests/unified-motion.test.mjs",
     "bench:isolated": "node --experimental-strip-types benchmarks/isolated-riders.mjs",
     "test:r03": "node --experimental-strip-types --test tests/drafting-pair.test.mjs",
-    "bench:r03": "node --experimental-strip-types benchmarks/r03-pair.mjs"
+    "bench:r03": "node --experimental-strip-types benchmarks/r03-pair.mjs",
+    "build:benchmark": "tsc --target ES2022 --module ES2022 --moduleResolution Bundler --rewriteRelativeImportExtensions true --skipLibCheck --outDir docs/benchmark/generated src/engine/physics/drafting-pair.ts"
   },
   "engines": {
     "node": ">=22.6.0"
