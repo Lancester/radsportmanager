@@ -12,8 +12,8 @@ import {decideOvertakeLane,validateOvertakeAgent,R07_F8_AGENT} from '../ai/overt
 import {lanePlanConflicts,R08_RESERVATION} from '../ai/lane-coordination.ts';
 import type {ReservedLaneMove} from '../ai/lane-coordination.ts';
 import {decideRejoin} from '../ai/rejoin-controller.ts';
-import {advanceSteering,validateSteeringLimits} from './steering-limits.ts';
-import type {SteeringLimits} from './steering-limits.ts';
+import {beginSteeringProfile,advanceSteeringProfile,validateSteeringLimits} from './steering-limits.ts';
+import type {SteeringLimits,SteeringProfile} from './steering-limits.ts';
 import type {OvertakeAgentConfig} from '../ai/overtake-controller.ts';
 import type {GapAgentConfig, GapAgentState} from '../ai/gap-controller.ts';
 import {decideFollowingSafety,validateFollowingSafety,R05_SAFETY} from '../ai/following-safety.ts';
@@ -208,6 +208,8 @@ export function simulateGroup(input:GroupInput):GroupResult {
   finite('roadHalfWidthM',roadHalfWidthM,roadHalfWidthM>=1&&roadHalfWidthM<=10);
   const laneCommands=[...(input.laneCommands??[])].sort((a,b)=>a.timeS-b.timeS);
   const laneTargets=new Map<string,{target:number;rate:number}>();
+  // Steering-Profile wird erst bei Aktivierung des jeweiligen Befehls
+  // erstellt, nicht beim Parsen des späteren Zeitplans.
   for(const lane of laneCommands){
     if(!ids.has(lane.riderId))throw new RangeError('Unbekannter Spurfahrauftrag');
     finite('lane.timeS',lane.timeS,lane.timeS>=0&&lane.timeS<=input.durationS);
@@ -221,7 +223,7 @@ export function simulateGroup(input:GroupInput):GroupResult {
       r.lateralPositionM,Math.abs(r.lateralPositionM)<=roadHalfWidthM);
   }
   if(input.steeringLimits)validateSteeringLimits(input.steeringLimits);
-  const lateralSpeeds=new Map<string,number>(riders.map(r=>[r.id,0]));
+  const steeringProfiles=new Map<string,SteeringProfile>();
   const externalBrakes=new Map<string,number>();
   const autoLanes=new Map<string,{
     config:OvertakeAgentConfig;
@@ -297,8 +299,14 @@ export function simulateGroup(input:GroupInput):GroupResult {
     }
     while(laneCmdIndex<laneCommands.length&&laneCommands[laneCmdIndex].timeS<=t+1e-9){
       const cmd=laneCommands[laneCmdIndex++];
-      laneTargets.set(cmd.riderId,{target:cmd.targetLateralPositionM,
-        rate:cmd.maxLateralSpeedMps??R06_LANE_LIMITS.defaultLateralSpeedMps});
+      const rate=cmd.maxLateralSpeedMps??R06_LANE_LIMITS.defaultLateralSpeedMps;
+      laneTargets.set(cmd.riderId,{target:cmd.targetLateralPositionM,rate});
+      if(input.steeringLimits){
+        const own=riders.find(r=>r.id===cmd.riderId)!;
+        steeringProfiles.set(cmd.riderId,beginSteeringProfile(
+          own.lateralPositionM,cmd.targetLateralPositionM,rate,
+          roadHalfWidthM,own.speedMps,input.steeringLimits));
+      }
       events.push({timeS:t,type:'lane-command',riderId:cmd.riderId,
         lateralPositionM:cmd.targetLateralPositionM});
     }
@@ -340,6 +348,10 @@ export function simulateGroup(input:GroupInput):GroupResult {
           if(decision.action==='move'){
             laneTargets.set(r.id,{target:decision.targetLateralPositionM,
               rate:auto.config.maxLateralSpeedMps});
+            if(input.steeringLimits)steeringProfiles.set(r.id,
+              beginSteeringProfile(r.lateralPositionM,decision.targetLateralPositionM,
+                auto.config.maxLateralSpeedMps,roadHalfWidthM,
+                r.speedMps,input.steeringLimits));
             auto.mode='returning';auto.target=decision.targetLateralPositionM;
             events.push({timeS:t,type:'agent-rejoin-choice',riderId:r.id,
               lateralPositionM:decision.targetLateralPositionM,reason:decision.reason});
@@ -359,6 +371,9 @@ export function simulateGroup(input:GroupInput):GroupResult {
           if(lanePlanConflicts(observation,proposal,plans(),R08_RESERVATION))
             continue;
           laneTargets.set(r.id,{target:proposal.targetM,rate:proposal.rateMps});
+          if(input.steeringLimits)steeringProfiles.set(r.id,
+            beginSteeringProfile(r.lateralPositionM,proposal.targetM,
+              proposal.rateMps,roadHalfWidthM,r.speedMps,input.steeringLimits));
           auto.mode='moving';auto.target=proposal.targetM;
           events.push({timeS:t,type:'agent-lane-choice',riderId:r.id,
             lateralPositionM:proposal.targetM,reason:decision.reason});
@@ -454,11 +469,9 @@ export function simulateGroup(input:GroupInput):GroupResult {
     const laterals=riders.map(r=>r.lateralPositionM);
     const newPositions=riders.map((r,i)=>r.positionM+changes[i].distanceM);
     const steeringSteps=riders.map(r=>{
-      const lane=laneTargets.get(r.id);
-      return lane&&input.steeringLimits?
-        advanceSteering(r.lateralPositionM,lateralSpeeds.get(r.id)??0,
-          lane.target,lane.rate,dt,roadHalfWidthM,
-          r.speedMps,input.steeringLimits):null;
+      const profile=steeringProfiles.get(r.id);
+      return profile&&input.steeringLimits?
+        advanceSteeringProfile(profile,dt,r.speedMps,input.steeringLimits):null;
     });
     const newLaterals=riders.map((r,i)=>{
       const lane=laneTargets.get(r.id);
@@ -477,7 +490,7 @@ export function simulateGroup(input:GroupInput):GroupResult {
       const lane=laneTargets.get(r.id);
       const steering=steeringSteps[i];
       if(steering){
-        lateralSpeeds.set(r.id,steering.lateralSpeedMps);
+        steeringProfiles.set(r.id,steering.state);
         s.maximumSteeringAccelerationMps2=Math.max(
           s.maximumSteeringAccelerationMps2??0,
           Math.abs(steering.steeringAccelerationMps2));
@@ -488,7 +501,7 @@ export function simulateGroup(input:GroupInput):GroupResult {
           events.push({timeS:t+dt,type:'lane-complete',riderId:r.id,
             lateralPositionM:lane.target});
         laneTargets.delete(r.id);
-        lateralSpeeds.set(r.id,0);
+        steeringProfiles.delete(r.id);
         const auto=autoLanes.get(r.id);
         if(auto?.mode==='moving'&&Math.abs(auto.target!-lane.target)<1e-9){
           auto.mode='passing';s.autonomousLaneM=lane.target;
