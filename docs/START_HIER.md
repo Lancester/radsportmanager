@@ -135,3 +135,38 @@ keine blind übernommenen 121er-Peloton-CFD-Extremwerte.
 Anschließend Teamtempo- und Helfertaktik verbessern.
 **Noch keine neue Grundsatzentscheidung und keine Aero-Parameterfreigabe.**
 D-074 bis D-077 bleiben gültig. Keine neue Detail-Lenkphysik.
+
+
+## R-12: schaltbarer Formationswindschatten geprüft – nicht als Standard freigegeben (03.11.2026)
+
+Die zum [Issue #42](https://github.com/Lancester/radsportmanager/issues/42)
+gewünschte **größen-/positionsabhängige Aero-Abstraktion** liegt jetzt
+als bewusst **experimentelle Option** `RaceInput.aeroModel='formation-experiment'`
+in `src/engine/race/formation-aero.ts` vor. Sie betrachtet bis zu
+zehn nahe Vordermänner innerhalb von 24 m und ist auf
+`aeroFactor >= 0.40` gedeckelt. Detaillierte
+[Umsetzung und sieben A/B-Vergleiche](race/R12_FORMATIONSAERODYNAMIK.md).
+**Standard `legacy` bleibt R-10 und bitgenau unverändert.**
+
+[GitHub-Actions-Vergleich #41730692771](https://github.com/Lancester/radsportmanager/actions/runs/41730692771)
+hat **14 komplette 50-km-Rennen (7 Paare mit 30 Fahrern)** ausgeführt.
+Ergebnis: Flach deutlich weniger Abstandsklassen (12 → 3/4) und
+mehr geschützte Fahrer; aber der letzte Zielrückstand **steigt in
+allen sieben Fällen**, teils stark (Flach 2027 334,1 → 937,5 s).
+Hügelverläufe sind gemischt. Das ist ein **Fortschritt im Verständnis
+des Models, aber keine sportliche Freigabe**.
+
+[PR-Actions #41730702259](https://github.com/Lancester/radsportmanager/actions/runs/41730702259)
+bestätigt **209/209 Regressionstests**. Der ergänzte
+[TypeScript-/Browser-Abnahmelauf #41730888302](https://github.com/Lancester/radsportmanager/actions/runs/41730888302)
+war ebenfalls erfolgreich, inklusive 30-Fahrer-ESM-Lauf.
+Der temporäre Workflow wurde wieder entfernt; es wurde
+**kein** täglich wiederholter Großtest eingerichtet.
+
+**Nächster fachlicher Schritt:** Modelle räumlich/formationell
+prüfen: Unterschied zwischen einer langen Einerreihe und einem
+breiten Feld, echte Führung-/Tempoarbeit und Reaktion Abgehängter.
+Erst durch getrennte A/B-Tests entscheiden, welche Dichteparameter
+für den realen Rennmodus taugen. Keine 121er-Peloton-Extremwerte
+ungeprüft übernehmen. R-01–R-08 und CP/W′-Kerne unverändert;
+keine Mikrolenkphysik.

@@ -684,3 +684,56 @@ Der R-10-GitHub-Runner meldete beispielsweise für den hügeligen geschützten L
 ### Letzte technische Verifikation nach R-11-Diagnose (03.11.2026)
 
 [PR #48](https://github.com/Lancester/radsportmanager/pull/48) ist in `main` integriert (Squash-Commit `59ada3e31bc9701e160f16b671f8c0fe9db7aef2`). Der zugehörige [GitHub-Actions-Lauf #41729337161](https://github.com/Lancester/radsportmanager/actions/runs/41729337161) ist **vollständig erfolgreich: 202 Tests, 202 bestanden, 0 fehlgeschlagen**, drei bestehende komplette 50-km-Referenzrennen, TypeScript-Browser-Build, ESM-Smoke-Test und Pages-Veröffentlichung. Die sieben zusätzlichen Varianten wurden **separat tatsächlich erfolgreich** in [R-11-Diagnose #41728617720](https://github.com/Lancester/radsportmanager/actions/runs/41728617720) ausgeführt und in [R11_MEHRSEED_BALANCING.md](race/R11_MEHRSEED_BALANCING.md) bewertet. **Kein neuer Windschattenfaktor beschlossen, keine Rennphysik geändert.** Fachlicher nächster Schritt: kontrollierter A/B-Prototyp unterschiedlicher gruppen- und positionsabhängiger Aerodynamik, danach Teamtaktik. Issue #42 bleibt offen.
+
+
+## R-12 – gezielter Formationswindschatten als getrennter A/B-Versuch (03.11.2026)
+
+**Implementiert (vorläufig, nur zuschaltbar):** `src/engine/race/formation-aero.ts`
+ermittelt aus mehreren Vordermännern und lokalen Abständen einen
+positionsabhängigen Luftwiderstandsfaktor. Eingabeschalter:
+`RaceInput.aeroModel='formation-experiment'`; **ohne
+Schalter gilt weiter exakt das R-10-Legacy-Modell**.
+Keine direkte Änderung von Position/Tempo, kein Ergebnisbonus.
+`advanceMotionStep` sowie `applyCpWprimeStep` sind weiterhin
+unverändert. Die alte Abstandsregelung und Team-KI bleiben vorerst
+ebenfalls unverändert. Sieben neue Tests einschließlich
+komplettem 50-km-A/B-Lauf und Bitgleichheit des Legacy-Modus.
+
+**Tatsächlich überprüft:** [PR-Regression #41730702259](https://github.com/Lancester/radsportmanager/actions/runs/41730702259)
+**209/209 Tests, null Fehler**. Die gesonderte
+[Diagnose #41730692771](https://github.com/Lancester/radsportmanager/actions/runs/41730692771)
+führte **14 vollständige Rennen (7 identische Eingabepaare)** durch.
+Der [Build-/Browsercheck #41730888302](https://github.com/Lancester/radsportmanager/actions/runs/41730888302)
+bestätigt erfolgreichen TypeScript-Build und komplettes
+30-Fahrer-ESM-Rennen in der Experimentvariante auf einem GitHub-Runner.
+**Keine echte Android-Laufzeitmessung.** Einmaliger Workflow
+danach wieder entfernt.
+
+| Referenz | Maximale 42-m-Abstandsgruppen alt → Experiment | Letzter Rückstand alt → Experiment |
+| --- | ---: | ---: |
+| Hügelig, geschützt, 2026 | 20 → 21 | 581,4 → 619,7 s |
+| Hügelig, offensiv, 2026 | 22 → 20 | 504,6 → 721,7 s |
+| Flach, Sprint, 2026 | **12 → 3** | 420,9 → 689,5 s |
+| Hügelig, geschützt, 2027 | 24 → 20 | 544,9 → 605,0 s |
+| Hügelig, offensiv, 2027 | 20 → 22 | 517,4 → 718,2 s |
+| Flach, Sprint, 2027 | **12 → 4** | 334,1 → 937,5 s |
+| Hügelig, Helfer F03 geschwächt, 2026 | 23 → 23 | 634,6 → 691,0 s |
+
+**Fachliche Bewertung:** Die Aero-Modelllücke ist **funktional
+relevant**: Ein dichtes Feld wird auf flachen Strecken deutlich
+geschlossener, mit niedrigerer durchschnittlicher Kurbelwatt und
+größerer verbleibender W′-Reserve. **Trotzdem ist das Experiment
+nicht ausreichend realistisch**, da der letzte Rückstand in allen
+sieben Szenarien steigt und Hügelläufe teils mehr Gruppen erzeugen.
+Ein Vorteil einzelner Gruppenstatistiken ist kein Beleg für
+glaubwürdige Flucht/Verfolgung. Ausführlich:
+[R12_FORMATIONSAERODYNAMIK.md](race/R12_FORMATIONSAERODYNAMIK.md).
+
+**Nächster konkreter Schritt:** Vor Festlegung neuer Windschattenwerte
+die **Gruppenformation/Reihenbildung** (1D-Reihe gegenüber dichtem
+mehrspurigen Peloton) und tatsächliche **Führung/Verfolgung/Abhängen**
+im isolierten kontrollierten Test verbessern. Vor allem prüfen, ob
+die bisherige auf R-10-Aero ausgelegte Watt-Regelung mit starkem
+Windschutz und erschöpften Fahrern sinnvoll interagiert.
+Danach mehrere feste Seed-/Strecken-/Profilvergleiche wiederholen;
+bis dahin `legacy` als Standard beibehalten. Issue #42 offen.
