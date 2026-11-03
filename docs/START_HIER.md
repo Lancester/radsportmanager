@@ -90,3 +90,16 @@ mithilfe von `src/engine/race/race-audit.ts`,
 Erst PR-Testabnahme und Auswertung der Diagnosen, danach gezieltes
 Helfer-/Kapitän-/Peloton-Balancing. R-01 bis R-08 nicht neu entwerfen;
 Issue #42 behält Priorität. Noch keine R-11-Testzahlen als verifiziert ausgeben.
+
+
+## R-11 bestätigt, weitere Rennqualität offen (03.11.2026)
+
+[PR #47](https://github.com/Lancester/radsportmanager/pull/47) ist in main.
+Der [GitHub-Actions-Lauf #41727203475](https://github.com/Lancester/radsportmanager/actions/runs/41727203475)
+bestätigt **202/202 Tests**, drei Referenzrennen, Browser-Build und Pages.
+Neue R-11-Tests decken mehrere Seeds, Strecken, ein verändertes Fahrerprofil
+und prüfbare Flucht-/Einholmeldungen ab. **Die zusätzliche manuelle
+7-Rennen-Diagnose wurde noch nicht ausgewertet.** Nächste Arbeitsaufgabe:
+diese ausführen und anhand der Ergebnisse eine kleine taktische
+Helfer-/Kapitän-/Peloton-Verbesserung priorisieren. 20–22 Gruppen auf dem
+Hügelkurs bleiben kritisch. Kein 160-Fahrer- oder Android-Leistungsnachweis.
