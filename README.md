@@ -66,3 +66,7 @@ Die erste mobilfreundliche Testwebseite unter `docs/index.html` soll den echten 
 **Einmalige Admin-Einstellung notwendig:** Repository → Settings → Pages → Source **GitHub Actions**. Erst nach erfolgreicher Veröffentlichung ist die übliche Projekt-Pages-Adresse erreichbar. Das ist noch **keine veröffentlichte und auf Android getestete App**.
 
 [Deutsche Schritt-für-Schritt-Anleitung mit Testgrößen und Grenzen](docs/ANDROID_BENCHMARK.md).
+
+## NEU: Acht Fahrer fahren erstmals gemeinsam
+
+Der experimentelle Baustein `src/engine/physics/drafting-group.ts` lässt **3–8 Fahrer wirklich gleichzeitig mit Positions-/Windschatten-Wechselwirkung** fahren. Der Testfahrer F8 bekommt in Sekunde 30 eine von außen vorgegebene niedrigere Wattzahl und verliert durch die Physik den Anschluss. **Noch keine Fahrer-KI oder vollständiges Peloton.** Die Android-Benchmarkseite enthält einen zusätzlichen Testknopf für diese gemeinsame Gruppe. Formeln und Grenzen: [docs/physik/R03G_ACHTFAHRER.md](docs/physik/R03G_ACHTFAHRER.md).
