@@ -367,3 +367,22 @@ Der neue browserseitige Überholtest ist noch **keine tatsächliche Android-Mess
 Neue automatisierte R-07-Prüfungen: richtige Wahl einer freien Überholspur, Alternative bei belegter bevorzugter Seite, **kein Manöver bei beidseitiger Blockade**, Prognose eines von hinten aufrückenden Fahrers, Straßenbreiten-Limit, Argumentvalidierung, echte Achtfahrer-Integration mit `agent-lane-choice`/`lane-complete`/`overtake`, **identische Physik und W′-Rest** für den zeitlich identisch vorgegebenen Kontrolllauf, CP/W′-Erschöpfung, alte R-03G-Regressionen und deterministische Wiederholungen.
 
 **Kein Test-Erfolg vor Bestätigung des GitHub-Runners.** Frühere Messwerte (134/134 Tests, R-06-Überholungen) bleiben unabhängig von R-07 gültig. Browserpreset `autoPassing` ist neu und muss nach Pages-Build auf einem echten Android-Gerät gemessen werden. [R-07-Design](ai/R07_UEBERHOLAGENT.md).
+
+
+## R-07 auf GitHub vollständig geprüft: 150/150 Tests, autonome Spur und CP (03.11.2026)
+
+**Implementierung und Merge:** [PR #36](https://github.com/Lancester/radsportmanager/pull/36), Squash-Commit `254a256faef510d35b9b18cc568ab9a89ebf009e` erfolgreich in `main`.
+
+**Vollständig verifizierter GitHub-Actions-Lauf:** [#41705987015](https://github.com/Lancester/radsportmanager/actions/runs/41705987015), `conclusion=success`. Reale Logs: **150 Tests ausgeführt, 150 bestanden, 0 Fehler**, TypeScript-Browser-Kompilierung, alle älteren R-03/R-04/R-05/R-06-Prüfungen, neuer R-07-ESM-Smoke-Test und GitHub-Pages-Bereitstellung erfolgreich.
+
+**Kontrolllauf in der GitHub-Node-Laufzeit (keine Android-Zeitmessung):**
+- F8 trifft in der 65-s-Achtfahrergruppe **genau eine autonome Spurentscheidung**. Zielspur y=2 m, nach abgeschlossenem stetigem Wechsel **erst dann** Wattanforderung.
+- Physischer Gruppenlauf registriert **7 Überholereignisse** von F8 gegenüber F1–F7 auf getrennter Spur.
+- Nach CP/W′-Leistungsbegrenzung bleiben am Ende **8.250 J W′** des **rein fiktiven** Ausgangsprofils (CP 300 W, W′ 12.000 J, FTP 285 W).
+- Der identisch physikalisch gesteuerte **manuelle** Kontrolllauf (vorher fest vorgegebene Spur bei 0 s, dieselben 360 W ab 2,5 s) unterscheidet sich in der F8-Endposition nur um **0,000009218 m**. Die winzige Abweichung ist numerisch plausibel; keine künstliche Beschleunigung oder Positionsteleportation.
+- Verifizierte Android-Webseite https://lancester.github.io/radsportmanager/ enthält jetzt einen **zusätzlichen**, separat auswählbaren Button `NEU · 8 Fahrer · autonome Überhol-KI`; alte Tests bleiben verfügbar.
+- **Noch kein echter R-07-Android-Benchmark übermittelt**, daher keine Aussage zur Rechenzeit auf dem Smartphone oder einer 160-Fahrer-Gruppe.
+
+**Drei erfüllte technische Ziele im gebündelten Paket:** autonome, nachvollziehbare Wahl unter mehreren Seiten / Verzicht bei Blockade; vorausschauende swept-Konfliktprüfung mit tatsächlicher stetiger Querbewegung; physikalisch konsistente, begrenzte Angriffswatt mit CP/W′, FTP-Telemetrie und realer Abstandsregel. Die Prognose selbst setzt vorläufig konstante aktuelle Geschwindigkeiten der Nachbarn voraus.
+
+**Verbleibende Grenzen:** Noch kein selbstständiges Wiedereinscheren, keine koordinierte dynamische Spurwahl vieler Fahrer, keine fahrtechnische Querbeschleunigung/Lenkung/Kurven-Reibkreisphysik, keine Garantie kollisionsfreier Feldfahrt, keine kalibrierte CP/W′-Regeneration und kein vollständiges Rennen/Managerspiel. Genau diese Grenzen nicht als erreicht ausgeben. [R-07-Dokumentation](ai/R07_UEBERHOLAGENT.md).
