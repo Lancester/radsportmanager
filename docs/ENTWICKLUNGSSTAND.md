@@ -878,3 +878,38 @@ Geprüfte Führung an der tatsächlich vorderen Position,
 koordinierter Wechsel der Helfer, intelligentere
 Teamreaktion und sportliche Leiter als spätere Spielfigur.
 Issue #42 bleibt dafür offen. Keine Detail-Lenkphysik.
+
+
+### R-14: erfolgreicher main-Merge, komplette Regression und Pages (04.11.2026)
+
+[PR #51](https://github.com/Lancester/radsportmanager/pull/51),
+Squash-Commit `83d3e912a118903dc8cf523e6c724aef4e7d5e2f`.
+Der abschließende [main-Actions-Lauf #41738747990](https://github.com/Lancester/radsportmanager/actions/runs/41738747990)
+ist **erfolgreich beendet: 221 Tests bestanden, 0 Fehler**,
+drei vollständige 50-km-Rennen, TypeScript-ESM-/Browser-Build,
+Smoketest und **GitHub-Pages-Deployment erfolgreich**.
+Eine siebenfache Full-Race-Ergänzungsdiagnose (210
+Zielankünfte) wurde separat in
+[Actions #41738013741](https://github.com/Lancester/radsportmanager/actions/runs/41738013741)
+mit Event-/Teamzähler- und Energiebilanz ausgeführt.
+
+**Aktuelle Standardrennen, Seed 2026:** Hügelig geschützt
+Sieger F26, **18** maximal getrennte Abstandsgruppen,
+**6** gezielte Teamverfolgungsstarts, letzte Zielperson
+**648,4 s** zurück. Hügelig offensiv: Sieger F13,
+**7** Teamverfolgungen, letzter Rückstand **618,3 s**.
+Flach Sprint: Sieger F20, **223** Führungsauftragsstarts,
+**0** Verfolgung ohne belegte Flucht, letzter Rückstand
+**396,7 s**. Die veränderten Zielzeiten entstehen nur aus
+Watt-/CP-/W′-/Widerstands- und Streckenphysik; kein
+Ergebnisbonus. Die Werte sind fiktiv, keine
+Realrenndaten.
+
+**Weiterführung:** `team-pace` belegt den Start eines
+Watt-Auftrags, nicht die physisch erreichte Position als
+tatsächlicher Frontfahrer. Diese Lücke gezielt
+verringern, anschließend Mannschaftstaktik, realere
+Verfolgungsorganisation und Sportdirektoren
+entwickeln. Keine ungebetene Detail-Lenkphysik.
+[Alle sieben R-14-Fälle und Grenzen](race/R14_TEAM_FUEHRUNG_VERFOLGUNG.md).
+Issue #42 bleibt offen.
