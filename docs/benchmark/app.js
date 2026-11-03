@@ -14,6 +14,7 @@ const presets = {
   mittel: {pairs: 10, durationS: 120, repeats: 3},
   gross: {pairs: 80, durationS: 120, repeats: 3},
   gruppe: {group: true, durationS: 120, repeats: 3},
+  agent: {group: true, agent: true, durationS: 120, repeats: 3},
 };
 let commit = 'unbekannt';
 fetch('./benchmark/version.txt', {cache: 'no-store'})
@@ -51,9 +52,15 @@ function run(presetName) {
         status.textContent = `Berechnung ${msg.current} von ${msg.total} abgeschlossen …`;
       } else if (msg.type === 'result') {
         const result = msg.result;
-        lastReport = {commit, benchmarkVersion: 'r03-android-v2', ...result};
+        lastReport = {commit, benchmarkVersion: 'r04-android-v3', ...result};
         runtime.textContent = result.medianMs.toLocaleString('de-DE', {maximumFractionDigits: 1});
-        detail.textContent = result.mode === 'achtfahrer-gruppe'
+        detail.textContent = result.mode === 'achtfahrer-agent'
+          ? `8 Fahrer gemeinsam, F8 entscheidet selbst über begrenztes Nachsetzen. ` +
+            `Endlücke: ${result.finalGapM.toLocaleString('de-DE')} m; ` +
+            `Agentenentscheidungen: ${result.agentDecisionCount}; ` +
+            `Nachsetzzeit: ${result.agentPursuitS.toLocaleString('de-DE')} s. ` +
+            `Alle Wiederholungen mit gleicher Prüfzahl.`
+          : result.mode === 'achtfahrer-gruppe'
           ? `8 Fahrer interagieren gemeinsam über ${result.durationS} virtuelle Sekunden. ` +
             `Nach 30 s reduziert Fahrer F8 testweise seine Leistung. ` +
             `Endlücke: ${result.finalGapM.toLocaleString('de-DE')} m; Lückenereignisse: ${result.gapEvents}. ` +
