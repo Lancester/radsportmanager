@@ -18,6 +18,8 @@ const presets = {
   r05: {group: true, agent: true, r05: true, durationS: 120, repeats: 3},
   passing: {group: true, passing: true, durationS: 65, repeats: 3},
   autoPassing: {group: true, autoPassing: true, durationS: 65, repeats: 3},
+  rejoin: {group:true,rejoin:true,durationS:115,repeats:3},
+  multiAgent: {group:true,multiAgent:true,durationS:70,repeats:3},
 };
 let commit = 'unbekannt';
 fetch('./benchmark/version.txt', {cache: 'no-store'})
@@ -55,9 +57,18 @@ function run(presetName) {
         status.textContent = `Berechnung ${msg.current} von ${msg.total} abgeschlossen …`;
       } else if (msg.type === 'result') {
         const result = msg.result;
-        lastReport = {commit, benchmarkVersion: 'r07-android-v6', ...result};
+        lastReport = {commit, benchmarkVersion: 'r08-android-v7', ...result};
         runtime.textContent = result.medianMs.toLocaleString('de-DE', {maximumFractionDigits: 1});
-        detail.textContent = result.mode === 'achtfahrer-autonom-ueberholen'
+        detail.textContent = result.mode === 'achtfahrer-wiedereinscheren'
+          ? `F8 überholt selbstständig und schert erst mit geprüftem Vorsprung zurück. ` +
+            `Rückkehrentscheidungen: ${result.rejoinChoices}; abgeschlossene Rückkehr: ${result.autonomousRejoins}; ` +
+            `Überholereignisse: ${result.autonomousOvertakes}.`
+          : result.mode === 'achtfahrer-mehrfach-ki'
+          ? `F7 und F8 wählen selbstständige, koordinierte Überholspuren. ` +
+            `Entscheidungen: ${result.multiAgentChoices.map(x=>x.riderId + ' nach '+x.targetM+' m').join(', ')}; ` +
+            `Überholereignisse: ${result.totalAutonomousOvertakes}; ` +
+            `maximale Querbeschleunigung: ${result.maxSteeringAccelerationMps2.toLocaleString('de-DE')} m/s².`
+          : result.mode === 'achtfahrer-autonom-ueberholen'
           ? `8 Fahrer, F8 wählt die Überholspur selbstständig. ` +
             `Überholereignisse: ${result.autonomousOvertakes}; ` +
             `KI-Spurentscheidungen: ${result.autoLaneChoices}; ` +

@@ -386,3 +386,10 @@ Neue automatisierte R-07-Prüfungen: richtige Wahl einer freien Überholspur, Al
 **Drei erfüllte technische Ziele im gebündelten Paket:** autonome, nachvollziehbare Wahl unter mehreren Seiten / Verzicht bei Blockade; vorausschauende swept-Konfliktprüfung mit tatsächlicher stetiger Querbewegung; physikalisch konsistente, begrenzte Angriffswatt mit CP/W′, FTP-Telemetrie und realer Abstandsregel. Die Prognose selbst setzt vorläufig konstante aktuelle Geschwindigkeiten der Nachbarn voraus.
 
 **Verbleibende Grenzen:** Noch kein selbstständiges Wiedereinscheren, keine koordinierte dynamische Spurwahl vieler Fahrer, keine fahrtechnische Querbeschleunigung/Lenkung/Kurven-Reibkreisphysik, keine Garantie kollisionsfreier Feldfahrt, keine kalibrierte CP/W′-Regeneration und kein vollständiges Rennen/Managerspiel. Genau diese Grenzen nicht als erreicht ausgeben. [R-07-Dokumentation](ai/R07_UEBERHOLAGENT.md).
+
+
+## R-08 – neue, noch zu verifizierende Rejoin-/Multi-Agent-/Querdynamik-Prüfungen (03.11.2026)
+
+`tests/r08-rejoin-multi-steering.test.mjs` mit **19 neuen Tests**: reservierte/alternative Spuren, kreuzende Bewegungen, fehlender Wiedereinscher-Vorsprung, kontrollierte Rückkehr, reproduzierbare gleichzeitige Fahrerentscheidungen unabhängig von der Eingabereihenfolge, physikalischer CP/W′-Energieerhalt, definierte Querbeschleunigungs- und Kurven-Haftungsgrenzen sowie bitgenaue R-07-Regressionen. Zusammen mit bisher 150 sind **169 erwartete Tests**, noch **kein bestandenes Ergebnis vor GitHub-Run**.
+
+Die bisherige Android-Seite erhält zwei zusätzliche, eigenständige Presets. **Ohne echten Gerätebericht keinerlei neue Android-Laufzeit angeben.** [Modellgrenzen](ai/R08_WIEDEREINSCHEREN_MULTIAGENT.md).

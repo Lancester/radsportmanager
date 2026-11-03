@@ -175,3 +175,15 @@ Ausführliche Erklärung und Quellen: [physik/R05_ABSTAND_CP_WPRIME.md](physik/R
 | D-069 | **Offen** | Zeitpunkt des Überholens mit Taktik/Teamrolle, Wiedereinscheren, Fahrtechnik/Risiko, dynamische Kurven-/Haftungsphysik und intelligente Feldpositionswahl. |
 
 [Technische Beschreibung R-07](ai/R07_UEBERHOLAGENT.md).
+
+
+## R-08 – drei gebündelte Simulationsbausteine (03.11.2026)
+
+| Nr. | Status | Entscheidung | Grenze |
+| --- | --- | --- | --- |
+| D-070 | **Prototyp technisch umgesetzt** | Autonomes Wiedereinscheren zunächst nur **vor die gesamte Heimatspurreihe**, nach belegten Überholungen und 8 m Sicherheitsvorsprung. | Noch kein intelligentes Einscheren in kleine Feldlücken. |
+| D-071 | **Prototyp technisch umgesetzt** | Zwei oder mehr Fahrer können zugleich Entscheidungen treffen; geplante Seitenwechsel werden nach stabiler Fahrer-ID reserviert und bei Konflikten Alternativspuren geprüft. | Konstante v-Prognose, keine allgemeine Kollisionsgarantie oder ausgefeiltes Vorfahrtsrecht. |
+| D-072 | **Prototyp technisch umgesetzt** | Für neue Szenarien optionale glatte Querbewegung mit expliziten v-/a-Grenzen und vorläufigem Kurven-Haftungsbudget. | Kein vollständiges gekoppeltes Fahrrad-Lenk-, Kurven- und Reifenmodell. |
+| D-073 | **Noch offen** | Sichere Rückkehr zwischen Fahrer, echte Kurvendynamik, automatisches Reagieren auf bewegliche Hindernisse, Fahrerfähigkeiten und Teamstrategie. | Erst nach nachgewiesener Gesamtintegration weiterentwickeln. |
+
+[Ausführliche technische Einordnung](ai/R08_WIEDEREINSCHEREN_MULTIAGENT.md).

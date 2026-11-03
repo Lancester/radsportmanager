@@ -9,6 +9,11 @@ import {emptyFtpWork,accumulateFtpWork,meanCrankPowerW} from '../physiology/ftp-
 import type {FtpWorkState} from '../physiology/ftp-work.ts';
 import {decideGapPower, initialGapState, validateGapConfig, F8_GAP_AGENT} from '../ai/gap-controller.ts';
 import {decideOvertakeLane,validateOvertakeAgent,R07_F8_AGENT} from '../ai/overtake-controller.ts';
+import {lanePlanConflicts,R08_RESERVATION} from '../ai/lane-coordination.ts';
+import type {ReservedLaneMove} from '../ai/lane-coordination.ts';
+import {decideRejoin} from '../ai/rejoin-controller.ts';
+import {beginSteeringProfile,advanceSteeringProfile,validateSteeringLimits} from './steering-limits.ts';
+import type {SteeringLimits,SteeringProfile} from './steering-limits.ts';
 import type {OvertakeAgentConfig} from '../ai/overtake-controller.ts';
 import type {GapAgentConfig, GapAgentState} from '../ai/gap-controller.ts';
 import {decideFollowingSafety,validateFollowingSafety,R05_SAFETY} from '../ai/following-safety.ts';
@@ -41,6 +46,8 @@ export interface GroupInput {
   roadHalfWidthM?:number;
   /** Nur bei Angabe entscheidet ein Fahrer selbst über eine einzelne freie Überholspur. */
   overtakeAgents?:OvertakeAgentConfig[];
+  /** Optionales, noch nicht kalibriertes Querkraft-/Kurvenbudget. */
+  steeringLimits?:SteeringLimits;
 }
 export interface GroupRiderSummary {
   id: string; positionM: number; speedMps: number; lateralPositionM: number;
@@ -61,6 +68,8 @@ export interface GroupRiderSummary {
   workAboveFtpJ?:number;
   autonomousOvertakes?:number;
   autonomousLaneM?:number;
+  autonomousRejoins?:number;
+  maximumSteeringAccelerationMps2?:number;
 }
 export interface GroupSnapshot {
   timeS: number;
@@ -69,7 +78,7 @@ export interface GroupSnapshot {
   openGaps: number;
 }
 export interface GroupEvent {
-  timeS: number; type: 'gap-opened' | 'command' | 'agent-decision' | 'safety' | 'cp-limit' | 'lane-command' | 'lane-complete' | 'overtake' | 'agent-lane-choice'; riderId: string;
+  timeS: number; type: 'gap-opened' | 'command' | 'agent-decision' | 'safety' | 'cp-limit' | 'lane-command' | 'lane-complete' | 'overtake' | 'agent-lane-choice' | 'agent-rejoin-choice'; riderId: string;
   leaderId?: string; gapM?: number;
   agentMode?: string; powerW?: number; reason?: string; brakeForceN?: number;
   passedRiderId?:string; lateralPositionM?:number;
@@ -199,6 +208,8 @@ export function simulateGroup(input:GroupInput):GroupResult {
   finite('roadHalfWidthM',roadHalfWidthM,roadHalfWidthM>=1&&roadHalfWidthM<=10);
   const laneCommands=[...(input.laneCommands??[])].sort((a,b)=>a.timeS-b.timeS);
   const laneTargets=new Map<string,{target:number;rate:number}>();
+  // Steering-Profile wird erst bei Aktivierung des jeweiligen Befehls
+  // erstellt, nicht beim Parsen des späteren Zeitplans.
   for(const lane of laneCommands){
     if(!ids.has(lane.riderId))throw new RangeError('Unbekannter Spurfahrauftrag');
     finite('lane.timeS',lane.timeS,lane.timeS>=0&&lane.timeS<=input.durationS);
@@ -211,15 +222,20 @@ export function simulateGroup(input:GroupInput):GroupResult {
     for(const r of riders)finite('Anfangsposition ausserhalb Straße',
       r.lateralPositionM,Math.abs(r.lateralPositionM)<=roadHalfWidthM);
   }
+  if(input.steeringLimits)validateSteeringLimits(input.steeringLimits);
+  const steeringProfiles=new Map<string,SteeringProfile>();
   const externalBrakes=new Map<string,number>();
   const autoLanes=new Map<string,{
-    config:OvertakeAgentConfig;mode:'search'|'moving'|'passing';target?:number
+    config:OvertakeAgentConfig;
+    mode:'search'|'moving'|'passing'|'returning'|'done';
+    target?:number;home:number
   }>();
   for(const config of input.overtakeAgents??[]){
     validateOvertakeAgent(config);
     if(!ids.has(config.riderId)||autoLanes.has(config.riderId))
       throw new RangeError('Unbekannter oder doppelter Überholagent');
-    autoLanes.set(config.riderId,{config,mode:'search'});
+    const initial=riders.find(r=>r.id===config.riderId)!;
+    autoLanes.set(config.riderId,{config,mode:'search',home:initial.lateralPositionM});
   }
   if(autoLanes.size&&input.laneCommands?.some(c=>autoLanes.has(c.riderId)))
     throw new RangeError('Kein externer Spurauftrag für autonom fahrenden Agenten');
@@ -268,7 +284,8 @@ export function simulateGroup(input:GroupInput):GroupResult {
       wPrimeRemainingJ:physiology.get(r.id)!.state.remainingWPrimeJ,
       wPrimeSpentJ:0,wPrimeRecoveredJ:0}:{}),
     ...(ftpStats.has(r.id)?{averageCrankPowerW:0,timeAboveFtpS:0,workAboveFtpJ:0}:{}),
-    ...(autoLanes.has(r.id)?{autonomousOvertakes:0}:{}),
+    ...(autoLanes.has(r.id)?{autonomousOvertakes:0,autonomousRejoins:0,
+      maximumSteeringAccelerationMps2:0}:{}),
   }));
   const events:GroupEvent[]=[],snapshots:GroupSnapshot[]=[];
   let t=0,steps=0,nextSample=sampleEveryS,cmdIndex=0,laneCmdIndex=0;
@@ -282,8 +299,14 @@ export function simulateGroup(input:GroupInput):GroupResult {
     }
     while(laneCmdIndex<laneCommands.length&&laneCommands[laneCmdIndex].timeS<=t+1e-9){
       const cmd=laneCommands[laneCmdIndex++];
-      laneTargets.set(cmd.riderId,{target:cmd.targetLateralPositionM,
-        rate:cmd.maxLateralSpeedMps??R06_LANE_LIMITS.defaultLateralSpeedMps});
+      const rate=cmd.maxLateralSpeedMps??R06_LANE_LIMITS.defaultLateralSpeedMps;
+      laneTargets.set(cmd.riderId,{target:cmd.targetLateralPositionM,rate});
+      if(input.steeringLimits){
+        const own=riders.find(r=>r.id===cmd.riderId)!;
+        steeringProfiles.set(cmd.riderId,beginSteeringProfile(
+          own.lateralPositionM,cmd.targetLateralPositionM,rate,
+          roadHalfWidthM,own.speedMps,input.steeringLimits));
+      }
       events.push({timeS:t,type:'lane-command',riderId:cmd.riderId,
         lateralPositionM:cmd.targetLateralPositionM});
     }
@@ -306,18 +329,55 @@ export function simulateGroup(input:GroupInput):GroupResult {
           leaderId:leader?.id,gapM:nearest?.gapM,
           agentMode:decision.state.mode,powerW:decision.powerW,reason:decision.reason});
       }
-      for(const r of riders){
+      // Alle Entscheider sehen denselben alten Gruppenzustand. Die
+      // Reservierungen bereits entschiedener Bewegungen werden deterministisch
+      // in Fahrer-ID-Reihenfolge ergänzt, NIE in Input-Array-Reihenfolge.
+      const observation={riders,roadHalfWidthM};
+      const plans=():ReservedLaneMove[]=>[...laneTargets.entries()]
+        .map(([riderId,lane])=>({riderId,targetM:lane.target,rateMps:lane.rate}));
+      for(const r of [...riders].sort((a,b)=>a.id.localeCompare(b.id))){
         const auto=autoLanes.get(r.id);
-        if(!auto||auto.mode!=='search')continue;
-        const decision=decideOvertakeLane(auto.config,{
-          riders,roadHalfWidthM
-        });
-        if(decision.action==='move'){
-          laneTargets.set(r.id,{target:decision.targetLateralPositionM,
-            rate:auto.config.maxLateralSpeedMps});
-          auto.mode='moving';auto.target=decision.targetLateralPositionM;
+        if(!auto)continue;
+        if(auto.mode==='passing'&&auto.config.autoRejoin){
+          const decision=decideRejoin(r.id,observation,{
+            homeLaneM:auto.home,
+            requiredLeadGapM:auto.config.rejoinLeadGapM??8,
+            minimumCompletedPasses:auto.config.rejoinAfterPasses??1,
+          },summaries.find(s=>s.id===r.id)!.autonomousOvertakes??0,
+          auto.config.maxLateralSpeedMps,plans(),R08_RESERVATION);
+          if(decision.action==='move'){
+            laneTargets.set(r.id,{target:decision.targetLateralPositionM,
+              rate:auto.config.maxLateralSpeedMps});
+            if(input.steeringLimits)steeringProfiles.set(r.id,
+              beginSteeringProfile(r.lateralPositionM,decision.targetLateralPositionM,
+                auto.config.maxLateralSpeedMps,roadHalfWidthM,
+                r.speedMps,input.steeringLimits));
+            auto.mode='returning';auto.target=decision.targetLateralPositionM;
+            events.push({timeS:t,type:'agent-rejoin-choice',riderId:r.id,
+              lateralPositionM:decision.targetLateralPositionM,reason:decision.reason});
+          }
+          continue;
+        }
+        if(auto.mode!=='search')continue;
+        // Jede Seite einzeln prüfen, damit blockierte Reservierung nicht
+        // die alternative, tatsächlich freie Seite verhindert.
+        for(const desiredY of auto.config.candidateLanesM){
+          const decision=decideOvertakeLane({
+            ...auto.config,candidateLanesM:[desiredY],
+          },observation);
+          if(decision.action!=='move')continue;
+          const proposal={riderId:r.id,targetM:decision.targetLateralPositionM,
+            rateMps:auto.config.maxLateralSpeedMps};
+          if(lanePlanConflicts(observation,proposal,plans(),R08_RESERVATION))
+            continue;
+          laneTargets.set(r.id,{target:proposal.targetM,rate:proposal.rateMps});
+          if(input.steeringLimits)steeringProfiles.set(r.id,
+            beginSteeringProfile(r.lateralPositionM,proposal.targetM,
+              proposal.rateMps,roadHalfWidthM,r.speedMps,input.steeringLimits));
+          auto.mode='moving';auto.target=proposal.targetM;
           events.push({timeS:t,type:'agent-lane-choice',riderId:r.id,
-            lateralPositionM:decision.targetLateralPositionM,reason:decision.reason});
+            lateralPositionM:proposal.targetM,reason:decision.reason});
+          break;
         }
       }
       // Dieselbe Uhr für Lücken- und Spur-Agenten, kein versteckter zweiter Solver.
@@ -332,13 +392,14 @@ export function simulateGroup(input:GroupInput):GroupResult {
     // (und nur nach vollständigem Spurwechsel) Angriff mit CP/W′-Limit.
     let autoLaneFinishS=Infinity;
     for(const [id,agent] of autoLanes){
-      if(agent.mode!=='moving')continue;
+      if(agent.mode!=='moving'&&agent.mode!=='returning')continue;
       const r=riders.find(x=>x.id===id)!;
       autoLaneFinishS=Math.min(autoLaneFinishS,
         Math.abs(agent.target!-r.lateralPositionM)/agent.config.maxLateralSpeedMps);
     }
     const dt=Math.min(stepSeconds,input.durationS-t,nextCommand-t,nextLane-t,
-      nextSample-t,nextAgentDecision-t,autoLaneFinishS);
+      nextSample-t,nextAgentDecision-t,
+      input.steeringLimits?Infinity:autoLaneFinishS);
     if(!(dt>1e-11)){
       if(nextSample<=t+1e-10){nextSample+=sampleEveryS;continue;}
       throw new RangeError('Zeitschritt unter numerischer Grenze');
@@ -407,10 +468,16 @@ export function simulateGroup(input:GroupInput):GroupResult {
     const oldPositions=riders.map(r=>r.positionM);
     const laterals=riders.map(r=>r.lateralPositionM);
     const newPositions=riders.map((r,i)=>r.positionM+changes[i].distanceM);
-    const newLaterals=riders.map(r=>{
+    const steeringSteps=riders.map(r=>{
+      const profile=steeringProfiles.get(r.id);
+      return profile&&input.steeringLimits?
+        advanceSteeringProfile(profile,dt,r.speedMps,input.steeringLimits):null;
+    });
+    const newLaterals=riders.map((r,i)=>{
       const lane=laneTargets.get(r.id);
-      return lane ? lateralAdvance(r.lateralPositionM,lane.target,
-        lane.rate,dt,roadHalfWidthM) : r.lateralPositionM;
+      return steeringSteps[i]?.lateralPositionM ??
+        (lane ? lateralAdvance(r.lateralPositionM,lane.target,
+          lane.rate,dt,roadHalfWidthM) : r.lateralPositionM);
     });
     if(sweptRectCollision(oldPositions,newPositions,laterals,newLaterals,
       params.minimumCenterDistanceM,params.overtakingLaneSeparationM))
@@ -421,14 +488,27 @@ export function simulateGroup(input:GroupInput):GroupResult {
       const r=riders[i],u=changes[i],s=summaries[i];
       r.positionM=newPositions[i];r.speedMps=u.endSpeedMps;
       const lane=laneTargets.get(r.id);
-      if(lane&&Math.abs(newLaterals[i]-lane.target)<1e-9&&
-         Math.abs(r.lateralPositionM-lane.target)>1e-9){
-        events.push({timeS:t+dt,type:'lane-complete',riderId:r.id,
-          lateralPositionM:lane.target});
+      const steering=steeringSteps[i];
+      if(steering){
+        steeringProfiles.set(r.id,steering.state);
+        s.maximumSteeringAccelerationMps2=Math.max(
+          s.maximumSteeringAccelerationMps2??0,
+          Math.abs(steering.steeringAccelerationMps2));
+      }
+      if(lane&&Math.abs(newLaterals[i]-lane.target)<1e-7 &&
+         (!input.steeringLimits||steering?.completed)){
+        if(Math.abs(r.lateralPositionM-lane.target)>1e-9)
+          events.push({timeS:t+dt,type:'lane-complete',riderId:r.id,
+            lateralPositionM:lane.target});
         laneTargets.delete(r.id);
+        steeringProfiles.delete(r.id);
         const auto=autoLanes.get(r.id);
         if(auto?.mode==='moving'&&Math.abs(auto.target!-lane.target)<1e-9){
-          auto.mode='passing';
+          auto.mode='passing';s.autonomousLaneM=lane.target;
+        } else if(auto?.mode==='returning'&&
+                  Math.abs(auto.target!-lane.target)<1e-9){
+          auto.mode='done';
+          s.autonomousRejoins=(s.autonomousRejoins??0)+1;
           s.autonomousLaneM=lane.target;
         }
       }
@@ -568,4 +648,37 @@ export function createEightRiderTimedPassWithCpExample(durationS=65):GroupInput 
   return {...input,overtakeAgents:[],laneCommands:[{
     timeS:0,riderId:'F8',targetLateralPositionM:2,maxLateralSpeedMps:0.8,
   }],commands:[{timeS:2.5,riderId:'F8',crankPowerW:360}]};
+}
+
+/** R-08: F8 greift autonom an und schert erst deutlich vor allen
+ * anderen auf die ursprüngliche y=0-Spur zurück. Fiktives Profil.
+ */
+export function createEightRiderRejoinExample(durationS=115):GroupInput {
+  const input=createEightRiderAutoPassExample(durationS);
+  input.overtakeAgents=[{...input.overtakeAgents![0],autoRejoin:true,
+    rejoinAfterPasses:7,rejoinLeadGapM:8}];
+  return input;
+}
+/** R-08: Zwei gleichzeitig unabhängig denkende Fahrer. Der
+ * gemeinsame Spurreservierungsplan vermeidet konkurrierendes
+ * Hineinwechseln in dieselbe Überholspur. Alle Wattwerte fiktiv.
+ */
+export function createEightRiderMultiAgentExample(durationS=70):GroupInput {
+  const input=createEightRiderAutoPassExample(durationS);
+  const agents=[
+    {...R07_F8_AGENT,riderId:'F7',attackPowerW:355,
+      candidateLanesM:[2,-2]},
+    {...R07_F8_AGENT,riderId:'F8',attackPowerW:360,
+      candidateLanesM:[2,-2]},
+  ];
+  return {...input,overtakeAgents:agents,
+    physiology:[
+      {riderId:'F7',criticalPowerW:300,ftpW:285,
+        wPrimeCapacityJ:12000,recoveryEfficiency:0.3},
+      {riderId:'F8',criticalPowerW:300,ftpW:285,
+        wPrimeCapacityJ:12000,recoveryEfficiency:0.3},
+    ],
+    steeringLimits:{maxSteeringAccelerationMps2:1.5,
+      combinedLateralGripMps2:3,curveRadiusM:80},
+  };
 }

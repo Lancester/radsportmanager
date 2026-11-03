@@ -149,3 +149,8 @@ Der Radsportmanager-Prototyp erweitert die feste Seitenbewegung um einen **deter
 **Drei erfüllte technische Ziele im gebündelten Paket:** autonome, nachvollziehbare Wahl unter mehreren Seiten / Verzicht bei Blockade; vorausschauende swept-Konfliktprüfung mit tatsächlicher stetiger Querbewegung; physikalisch konsistente, begrenzte Angriffswatt mit CP/W′, FTP-Telemetrie und realer Abstandsregel. Die Prognose selbst setzt vorläufig konstante aktuelle Geschwindigkeiten der Nachbarn voraus.
 
 **Verbleibende Grenzen:** Noch kein selbstständiges Wiedereinscheren, keine koordinierte dynamische Spurwahl vieler Fahrer, keine fahrtechnische Querbeschleunigung/Lenkung/Kurven-Reibkreisphysik, keine Garantie kollisionsfreier Feldfahrt, keine kalibrierte CP/W′-Regeneration und kein vollständiges Rennen/Managerspiel. Genau diese Grenzen nicht als erreicht ausgeben. [R-07-Dokumentation](ai/R07_UEBERHOLAGENT.md).
+
+
+## R-08 – drei gebündelte Folgeentwicklungen
+
+Autonom überholende Fahrer können konservativ wieder vor ihrer Ausgangsreihe einscheren; mehrere Fahrer planen ihre Spurziele aus einem konsistenten Gruppenzustand mit festen Reservierungen und Ausweichoptionen; für neue Szenarien begrenzt eine glatte Querdynamik Geschwindigkeit und Beschleunigung einschließlich vorläufiger Kurvenkraft-Abschätzung. Keine vollständige Radfahr-/Kurvenphysik oder große Peloton-KI. [Details](docs/ai/R08_WIEDEREINSCHEREN_MULTIAGENT.md).
