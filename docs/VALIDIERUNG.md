@@ -393,3 +393,22 @@ Neue automatisierte R-07-Prüfungen: richtige Wahl einer freien Überholspur, Al
 `tests/r08-rejoin-multi-steering.test.mjs` mit **19 neuen Tests**: reservierte/alternative Spuren, kreuzende Bewegungen, fehlender Wiedereinscher-Vorsprung, kontrollierte Rückkehr, reproduzierbare gleichzeitige Fahrerentscheidungen unabhängig von der Eingabereihenfolge, physikalischer CP/W′-Energieerhalt, definierte Querbeschleunigungs- und Kurven-Haftungsgrenzen sowie bitgenaue R-07-Regressionen. Zusammen mit bisher 150 sind **169 erwartete Tests**, noch **kein bestandenes Ergebnis vor GitHub-Run**.
 
 Die bisherige Android-Seite erhält zwei zusätzliche, eigenständige Presets. **Ohne echten Gerätebericht keinerlei neue Android-Laufzeit angeben.** [Modellgrenzen](ai/R08_WIEDEREINSCHEREN_MULTIAGENT.md).
+
+
+
+## R-08 GitHub-Abnahme: 169/169 und zwei echte KI-Szenarien (03.11.2026)
+
+**Implementierung:** [Pull Request #38](https://github.com/Lancester/radsportmanager/pull/38) mit Merge-Commit `f4052cc149ae6897b2acacd3b377c6e46f7ed80a` auf `main` übernommen.
+
+**Automatische Abnahme:** [GitHub-Actions-Lauf #41710587230](https://github.com/Lancester/radsportmanager/actions/runs/41710587230), `completed/success`. Der tatsächliche Job-Log bestätigt **169 Tests / 169 bestanden / 0 fehlgeschlagen**, erfolgreiche Browser-TypeScript-Kompilierung, alle bisherigen R-03–R-07-Smoke-Tests, neue R-08-ESM-Gruppentests und erfolgreiches **GitHub-Pages-Deployment** nach https://lancester.github.io/radsportmanager/.
+
+**Drei in diesem Paket technisch erreichte Meilensteine:**
+1. **Autonomes Wiedereinscheren:** Im Achtfahrer-Referenztest wählt F8 nach **7 physikalischen Überholungen** und genügend Vorsprung **einmal** die sichere Rückkehr, und die Fahrt beendet den Seitenwechsel wieder bei **y=0 m**; Event-Zahlen `rejoinChoices=1` / `autonomousRejoins=1`. Der Test benutzt eine sehr konservative Strategie: nur **vor** der gesamten Reihe, nicht zwischen anderen Fahrern.
+2. **Koordinierte autonome Spurwahl von zwei Fahrern:** F7 erhält **y=+2 m**, F8 **y=−2 m**, obwohl beide zunächst dieselbe bevorzugte Seite wollen. Der simulierte Mehrfahrer-Gruppenlauf meldet **12 physikalisch berechnete Überholereignisse**. Die Spurreservierung wird nach **stabiler Fahrer-ID**, nicht Eingabe-Array-Reihenfolge ausgewertet; die betreffenden Regressionstests sind bestanden.
+3. **Glatter Seitenwechsel mit Querbeschleunigungsgrenze:** Im R-08-Mehrfahrer-Referenzlauf betrug die größte vom Modell erfasste Querbeschleunigung der beiden aktiven Fahrer **0,7850666666666671 m/s²**, also unter der fiktiven Obergrenze **1,5 m/s²**. Das Kurven-Gripbudget ist bisher nur eine konstante-Radius-Prüfung für den Seitenwechsel, **keine realistische, gekoppelte Kurvenfahrt**.
+
+**Browser:** Die bestehende Testseite hat jetzt zusätzlich die Knöpfe **„NEU · Überholen + Wiedereinscheren“** (115 simulierte Sekunden) und **„NEU · Zwei KI-Fahrer gleichzeitig“** (70 simulierte Sekunden). Beide verwenden die aus dem Original-TypeScript gebauten Module in einem Web Worker. **Noch keine echten Android-Laufzeiten** für diese zwei neuen Szenarien vorliegend. Kein Smartphone-Ergebnis erfinden; der GitHub-Runner ist kein Android-Gerät.
+
+**Grenzen:** Ein Konflikt in der Vorhersage führt zur Zurückhaltung, aber eine unerwartete Änderung der Geschwindigkeit/Spur anderer Fahrer kann im laufenden, eigentlichen Solver weiterhin einen Sicherheitsfehler auslösen. Keine voll gekoppelte Fahrrad-Lenk-/Kurvendynamik, keine intelligenten mittigen Peloton-Lücken und noch keine vollständige Fahrerfeld-/Renn-KI mit 160 Fahrern. FTP, CP/W′ und langfristiges Training sind weiterhin nicht sportwissenschaftlich kalibriert.
+
+**Nächste Aufgaben:** Wiedereinscheren in variierende, tatsächlich sichere Lücken; bewegliche Hindernisse und gemeinsames Aushandeln geplanter Spurwechsel; tatsächliche 2D-Lenk-/Kurven-/Bremshaftungsphysik und später ein vollständiges Rennfeld. [R-08-Modell](ai/R08_WIEDEREINSCHEREN_MULTIAGENT.md).
