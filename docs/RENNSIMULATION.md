@@ -104,3 +104,8 @@ Die Fähigkeit, sich im Feld sinnvoll zu bewegen, gehört verbindlich zum Fahrer
 Bevorzugt wird eine Kopplung aus **regelbasierter Agenten-KI** (Ziele/Entscheidungen), **Physiologie** (abrufbare Leistung), **Physik** (Tempo/Widerstand) und **Gruppendynamik** (Positionen/Abstände). Die endgültige räumliche Auflösung ist noch offen.
 
 Details, wissenschaftliche Quellen und Referenzszenarien **R-09 bis R-11**: [PELOTON_POSITIONIERUNG.md](PELOTON_POSITIONIERUNG.md).
+
+
+## Erste ausführbare Teilkomponente: R-01 (03.11.2026)
+
+Der stationäre Einzelfahrer-Test auf ebener windstiller Strecke ist als isolierte TypeScript-Funktion mit lokalen Tests implementiert. Fachliche Herleitung, Leistungsbilanz und vorläufige Antriebswirkungsgrad-Annahme: [physik/R01_EBENE.md](physik/R01_EBENE.md). **Noch kein dynamisches Rennmodell, keine Beschleunigung, kein Peloton und keine KI.**
