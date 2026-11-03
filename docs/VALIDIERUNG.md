@@ -605,3 +605,26 @@ sind prüfbar; die konkrete Formel ist eine für das Spiel
 gewählte Abstraktion, keine bestätigte Messkurve eines
 30er-Profi-Pelotons. Kein erfundener positiver Einholbonus,
 keine direkte Speed-/Zielzeitkorrektur.
+
+
+### R-13: endgültiger main-CI- und Browser-Nachweis (03.11.2026)
+
+[Merge-PR #50](https://github.com/Lancester/radsportmanager/pull/50),
+`main`-Code `5764f090863d53ed7517d3f32bc615f105a951ce`:
+[Actions #41734418472](https://github.com/Lancester/radsportmanager/actions/runs/41734418472)
+**vollständig erfolgreich**, **213 Tests/213 bestanden/0
+fehlgeschlagen**, drei vollständige 50-km-Renndiagosen,
+TypeScript-ESM-/Browser-Smoketest und GitHub-Pages-Deployment.
+Die zusätzlichen sieben kompletten Default-Rennen wurden in
+[PR-Actions #41734281038](https://github.com/Lancester/radsportmanager/actions/runs/41734281038)
+ebenfalls erfolgreich absolviert, einschließlich
+Gleichauf-/Abgehängten- und Legacy-Regressionskontrollen.
+Weitere Messwerte: [R-13-Fachnotiz](race/R13_FORMATIONSWINDSCHATTEN_STANDARD.md).
+
+**Wichtig:** Der Nutzen für das spielerische Peloton und seine
+energetischen Konsequenzen sind technisch nachgewiesen; daraus
+folgt weiterhin keine vollständige Messvalidierung gegenüber
+Profi-Rennen. Die Nutzerentscheidung ist dennoch **verbindlich
+umgesetzt** – dieses empirische Restthema blockiert den
+Rennbetrieb nicht. Großer Abstand eines tatsächlich isolierten
+Fahrers zum Feld ist **kein** pauschaler Mangel.
