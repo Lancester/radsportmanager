@@ -292,15 +292,17 @@ export function simulateRace(x:RaceInput):RaceResult {
           coordinatedTeamPace:true,
           ...(coordinated?{
             attackOpportunity:(()=>{
+              const reserve=s.physiology.remainingWPrimeJ/
+                s.profile.wPrimeCapacityJ;
+              // Begonnene Attacke darf sich auch bei gelungener Ablösung
+              // vom Feld fortsetzen; sie endet nach 40 s oder W′-Mangel.
+              if(s.intent==='angriff'&&t-s.lastAttackS<40&&reserve>=0.18)
+                return true;
               const group=attackGroups.find(g=>g.includes(s));
               if(!group||group.length<4)return false;
               const groupFront=group[0].positionM;
               const meanCp=group.reduce((n,r)=>n+r.dayCpW,0)/group.length;
               const grade=x.segments[segmentFor(s,boundaries)].gradeFraction;
-              const reserve=s.physiology.remainingWPrimeJ/
-                s.profile.wPrimeCapacityJ;
-              const continuing=s.intent==='angriff'&&
-                t-s.lastAttackS<40&&reserve>=0.18;
               const opening=t-s.lastAttackS>=420&&t>=250&&
                 s.positionM/totalM>=0.18&&s.positionM/totalM<0.88&&
                 reserve>=0.42&&s.positionM>=groupFront-40&&
