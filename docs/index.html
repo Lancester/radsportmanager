@@ -25,16 +25,17 @@
 <body>
 <main>
   <div class="eyebrow">Radsportmanager · R-03</div>
-  <h1>Wie schnell simuliert dein Handy zwei Radfahrer?</h1>
+  <h1>Wie schnell simuliert dein Handy eine Radfahrergruppe?</h1>
   <p>Wir testen <strong>denselben TypeScript-Physikkern</strong> wie auf GitHub. Die Berechnung läuft in einem <strong>Web Worker</strong>, die Oberfläche bleibt nutzbar. Es werden keine persönlichen Messdaten an uns gesendet.</p>
 
   <section class="panel" aria-labelledby="presetTitle">
     <h2 id="presetTitle">1. Testgröße auswählen</h2>
-    <p class="small">Mehrere Paare sind vollständig <strong>voneinander unabhängig</strong>. Das ist noch <strong>kein Peloton</strong> und kein 200-km-Rennen.</p>
+    <p class="small">Die drei bisherigen Tests berechnen unabhängige Zweiergruppen. <strong>Neu:</strong> Im Achtfahrer-Test fahren alle acht auf einer gemeinsamen Uhr und beeinflussen sich durch Windschatten. Noch keine Fahrer-KI oder vollständiges Peloton.</p>
     <div class="buttons">
       <button data-preset="klein">Klein · 1 Paar · 12 s</button>
       <button data-preset="mittel">Mittel · 10 Paare · 120 s</button>
       <button data-preset="gross">Groß · 80 Paare · 120 s</button>
+      <button data-preset="gruppe">NEU · 8 Fahrer gemeinsam · 120 s</button>
     </div>
     <div class="buttons" style="margin-top:9px"><button class="secondary" id="cancel" disabled>Test abbrechen</button></div>
     <div class="state" id="status" role="status" aria-live="polite">Bereit. Wähle einen Test.</div>
@@ -44,7 +45,7 @@
     <h2 id="resultTitle">2. Ergebnis</h2>
     <div class="grid">
       <div><div class="small">Mittlere Rechenzeit (Median)</div><div id="runtime" class="metric">–</div><div class="small">Millisekunden</div></div>
-      <div><div class="small">Virtuelle Rennzeit je Paar</div><div id="virtual" class="metric">–</div><div class="small">Sekunden</div></div>
+      <div><div class="small">Virtuelle Simulationszeit</div><div id="virtual" class="metric">–</div><div class="small">Sekunden</div></div>
     </div>
     <p class="small" id="detail" style="margin-top:15px">Nach dem Test erscheinen hier die technischen Details.</p>
     <label for="report" class="small">Messbericht zum Kopieren:</label>
@@ -54,8 +55,8 @@
 
   <section class="panel" aria-labelledby="whatTitle">
     <h2 id="whatTitle">3. Was sagen die Ergebnisse aus?</h2>
-    <p>Wir messen die Rechenzeit für 2, 20 oder 160 Fahrer, jeweils in voneinander unabhängigen Zweiergruppen. So vergleichen wir die Leistung verschiedener Smartphones, ohne bereits eine komplette Rennsimulation vorzutäuschen.</p>
-    <p>Die Physik berücksichtigt Pedalleistung, Roll- und Luftwiderstand, Positionen und Windschatten. Gruppendynamik, Fahrer-KI, Ermüdung und lange Etappen fehlen noch.</p>
+    <p>Die drei bisherigen Tests rechnen 2, 20 oder 160 Fahrer in unabhängigen Zweiergruppen. Der neue Test berechnet <strong>acht tatsächlich gekoppelte Fahrer</strong>, deren Windschatten von allen vorausfahrenden Nachbarn beeinflusst wird.</p>
+    <p>Bei den acht Fahrern wird in Sekunde 30 die Pedalleistung des letzten Fahrers fest vorgegeben reduziert. Die daraus entstehende Lücke und die Rechenzeit werden gemessen. <strong>Keine KI:</strong> Taktik, Training, automatische Spurwechsel, Querwind, Ermüdung und lange Etappen fehlen weiterhin.</p>
     <p class="small">Laufzeit und Ergebnisse entstehen lokal im Browser. Die Webseite ist öffentlich, aber es gibt kein Benutzerkonto und keinen Ergebnis-Upload. Ein Export erfolgt nur, wenn du ihn selbst kopierst.</p>
   </section>
   <p class="foot">Version <span id="version">wird geladen</span> · <a class="link" href="https://github.com/Lancester/radsportmanager">Quellcode auf GitHub</a></p>
