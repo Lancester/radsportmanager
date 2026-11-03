@@ -185,3 +185,34 @@ Pages. Neues Formations-Aero **nur opt-in**,
 Pelotonmodus ableiten. Exakter nächster Schritt ist die
 Abgestimmtheit von Gruppenschutz, Tempoarbeit und Abgehängten,
 nicht wieder detaillierte Lenkphysik.
+
+
+## R-13 – neue verbindliche Regel: Formationswindschatten ist Rennstandard (03.11.2026)
+
+Der Nutzer hat den zuvor in [R-12](race/R12_FORMATIONSAERODYNAMIK.md) schaltbar getesteten
+Gruppenwindschatten ausdrücklich **zur regulären Rennmechanik erklärt**.
+Ein schwacher oder abgehängter Fahrer kann gegen das aerodynamisch besser
+geschützte Peloton **erheblich Zeit verlieren** – das ist nicht automatisch
+ein Fehler. **Keine künstliche Aufholhilfe oder Ergebnisangleichung**
+implementieren.
+
+**Technik:** `RaceInput.aeroModel` ohne Angabe verwendet nun
+mehrere Vordermänner innerhalb von 24 m (bis zu zehn tatsächlich
+weiter vorn fahrende Nachbarn) und einen weiterhin als Modellannahme
+ausgewiesenen Aero-Faktor von mindestens 0,40. `'formation'` aktiviert
+denselben Standard ausdrücklich; `'formation-experiment'` bleibt
+ein historischer Alias und `'legacy'` erhält das bisherige
+R-10-/R-11-Modell zum A/B-Vergleich. Einzeln Abgehängte ohne nahe
+Vorderleute erhalten keinen Feldbonus. Gleichauf-Fahrer gelten nicht
+mehr aufgrund der internen ID-Reihenfolge als Vordermänner.
+
+**Keine** Änderung an CP/W′-Kern, Bewegungsintegrator, Fahrtechnik,
+R-01–R-08, Teamrollen oder Ergebnisrechnung. Auch die Browserseite
+nutzt den neuen Default. Die Grundlagen und die aktuelle Testabnahme
+stehen in [R13_FORMATIONSWINDSCHATTEN_STANDARD.md](race/R13_FORMATIONSWINDSCHATTEN_STANDARD.md).
+
+**Nächster Entwicklungsauftrag nach R-13:** Nicht Rückstände
+wegkalibrieren, sondern glaubwürdige autonome Führung, gezielte
+Teamtempoarbeit, Verfolgung und Wechsel zwischen Fluchtgruppe und
+geschütztem Peloton verbessern. Keine neue Detail-Lenkphysik
+vor funktionierendem Rennmanagement. Issue #42 bleibt hierfür offen.
