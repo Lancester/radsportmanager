@@ -668,3 +668,22 @@ Rückstände tatsächlicher Nachzügler sind
 Detailtabelle aller sieben Situationen und
 offene Arbeiten im
 [R-14-Fachdokument](race/R14_TEAM_FUEHRUNG_VERFOLGUNG.md).
+
+
+### R-14: verbindliche finale Abnahme auf main (04.11.2026)
+
+[PR #51](https://github.com/Lancester/radsportmanager/pull/51)
+übernommen, Commit `83d3e912a118903dc8cf523e6c724aef4e7d5e2f`.
+[Main-Actions #41738747990](https://github.com/Lancester/radsportmanager/actions/runs/41738747990)
+hat **221/221 Tests**, **0 Fehler**, drei komplette
+50-km-Rennen, TypeScript-Browser-Build und ESM-Smoke-Test,
+sowie Pages-Veröffentlichung vollständig erfolgreich
+abgeschlossen. Die separat ausgeführten
+[sieben vollständigen R-14-Rennen #41738013741](https://github.com/Lancester/radsportmanager/actions/runs/41738013741)
+mit je 30 Fahrern bestätigen die Teamtempo- und
+Verfolgungszähler, Energiereste und CP/W′-Grenzen.
+Zusätzliche Browseransicht zeigt nun Teamtempo-
+und Verfolgungsstarts. Kein Android-Performance-
+Nachweis; keine externe Profi-Rennkalibrierung.
+Tatsächlich erreichte Führungspositionen bleiben
+separates zu testendes Spielverhalten.
