@@ -979,3 +979,50 @@ Kooperation/Konkurrenz und gezielte
 Verfolgungsentscheidungen mit verschiedenen
 Fahrerfeldern. Issue #42 bleibt für
 weitere Rennmechanik offen.
+
+
+### R-15/R-16 – finale Implementierungsabnahme und nächster Auftrag (04.11.2026)
+
+[PR #52](https://github.com/Lancester/radsportmanager/pull/52)
+ist mit Squash `26a195b540c0c39d1ca5911198fd058bcd6be70b`
+auf `main` übernommen.
+[Actions #41742236444](https://github.com/Lancester/radsportmanager/actions/runs/41742236444)
+ist vollständig erfolgreich: **232/232 Tests**,
+drei 50-km-Rennläufe, TypeScript-Browser-/ESM-Build
+und GitHub-Pages-Deployment. Dazu
+[separat 14 echte 50-km-Simulationen, 420 Zielankünfte](https://github.com/Lancester/radsportmanager/actions/runs/41741844022)
+mit identischen sieben R-14- und R-15/R-16-Eingabepaaren,
+ohne Kunstboni oder Abstandsangleichung.
+
+**Technische Wirkung:** Mehrhelfer-Aufträge wurden
+in allen sieben neuen Vollrennen zugeteilt,
+in fünf davon gleichzeitig mehrere eines Teams.
+Frontnahe Führungszeit wurde in allen sieben
+gemessen und Sprintzugauftrag in zwei.
+Ein eigener isolierter Test beweist
+**alle fünf Helfer eines Teams** in einer
+dringlichen Verfolgung, mit unterschiedlicher
+Führungs-/Unterstützungsleistung.
+Unter den Standardfällen war das Maximum
+**drei aktive Helfer eines Teams**.
+Die Dynamik ist noch ein abstrahiertes 1D-
+Rennmodell, keine umfassende reale 2D-Staffelfahrt.
+
+**Beispiel Seed 2026:** hügelig geschützt
+Sieger F07, Median-Zielrückstand 63,9 s,
+letzter Rückstand 564,0 s; flach Sprint
+Sieger F08, Median 1,3 s, letzter
+Rückstand 369,8 s. Gewinnerwechsel
+ergeben sich ausschließlich aus
+veränderter KI-Wattarbeit durch
+unveränderte physikalische Modelle.
+
+**Nächste Entwicklungsaufgabe nur innerhalb der
+Rennengine:** tatsächliche ablösefähige
+Führungspositionen und koordinierte Reaktionen
+mehrerer Teams, ohne vollständige 2D-Lenkphysik.
+**Karrieremodus, Rundfahrten, Verträge,
+Personal, Training und Manageroberflächen sind
+ausdrücklich ein getrenntes späteres System.**
+Issue #42 offen.
+[Messungen und Methoden](race/R15_R16_MEHRHELFER_RENNINTELLIGENZ.md).
