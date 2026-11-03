@@ -53,3 +53,9 @@ Die spätere statische PWA kann auf einem geeigneten kostenlosen Webhost bereits
 ## Sicherheit und Kompatibilität
 
 Speicherstände versionieren, Änderungen mit automatischen Regressionstests prüfen, Eingabedaten validieren, keine dynamisch ausführbaren Spielstand-Dateien laden. Dokumentation und UI zunächst auf Deutsch.
+
+## Technischer Zwischenstand R-01/R-02 (03.11.2026)
+
+Die stationären Physiktests auf Ebene und Anstieg benutzen nun denselben **TypeScript-Rechenkern** `src/engine/physics/steady-state.ts`, um die Grundgleichungen nicht doppelt pflegen zu müssen. `r01-flat.ts` und `r02-climb.ts` sind schlanke Szenario-Adapter. `npm test` führt sieben vorhandene und neun neue Tests ohne externe Abhängigkeiten lokal unter Node.js 22.16 aus.
+
+Das ist noch keine dynamische mehrstündige Simulation. Die Engine besitzt bewusst weder Wind/Bergab- noch Peloton-/KI-Funktionalität. Erst nach zusätzlichen Physikschritten soll das Web-Worker-/Android-Benchmark-Gerüst entstehen.
