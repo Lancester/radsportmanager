@@ -338,3 +338,10 @@ In R-05 hat F8 im **frei erfundenen** Profil `CP=220 W`, `FTP=210 W` und anfäng
 **Sicherheit:** Keine Bremsung in diesem **Abreißszenario**, weil F8 langsamer wird. Der separate bestandene Drei-Fahrer-Bremstest und 116/116 erfolgreich geprüfte GitHub-Tests belegen nur den vorhandenen begrenzten Längsabstandsschutz. **Keine Garantie kollisionsfreier Rennen**, kein automatischer 2D-Spurwechsel, kein Mehrfahrer-Kurven-/Reibkreis-Modell.
 
 **Messmeilenstein erfüllt:** R-05-Worker mit CP/W′ und aktiver Abstandsregelung ist tatsächlich auf Android lauffähig. **Nicht** mit einem validierten physiologischen W′bal-Modell oder mehrstündiger 160-Fahrer-Rennsimulation verwechseln. Die gemessene W′-Regeneration beruht weiterhin auf einer frei gewählten Testheuristik; `ftpW` ist bewusst separat von `criticalPowerW`. Offene technische Nachfolgeaufgaben siehe Issues [#30](https://github.com/Lancester/radsportmanager/issues/30) und [#32](https://github.com/Lancester/radsportmanager/issues/32).
+
+
+## R-06 – Prüfpaket für Führungsbremsung, seitliche Bewegung und FTP (03.11.2026)
+
+Neue Datei `tests/r06-safety-lane-ftp.test.mjs`: stetige Querverschiebung, swept-Zweiachs-Kollision beim Überspringen eines Zwischenzeitpunkts, gefahrloses Nebeneinander, Achtfahrer-Überholereignis, Grenzen der Straßenbreite und deterministische Wiederholung; beim bekannten Führungsbremsbefehl frühzeitige Sicherheitsreaktion und Bremsarbeitsbilanz; getrennte FTP-Kurbelwattstatistik **nach** CP/W′-Limit. Die gesamte Suite umfasst zuvor **116 Tests**. Der neue Erfolg ist **erst nach Actions-Ergebnis** zu bestätigen.
+
+Der neue browserseitige Überholtest ist noch **keine tatsächliche Android-Messung**. [Vollständige technische Grenzen](physik/R06_SICHERHEIT_SPUR_FTP.md).
