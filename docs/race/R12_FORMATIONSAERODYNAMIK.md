@@ -93,3 +93,98 @@ positions-/größenabhängiger Effekt sinnvoll ist.
 **Beschlüsse:** D-074 bis D-077 bleiben unberührt. Die Werte
 und ein mögliches Ersetzen des Legacy-Modells sind **nicht**
 als beschlossen markiert. Issue #42 bleibt offen.
+
+
+## Tatsächlicher A/B-Lauf und Ergebnis (03.11.2026)
+
+Die **sieben Paare, insgesamt 14 vollständige 50-km-Rennen mit je 30
+Fahrern (420 Zielankünfte)**, sind im echten [GitHub-Actions-Lauf
+#41730692771](https://github.com/Lancester/radsportmanager/actions/runs/41730692771)
+**erfolgreich** durchgerechnet worden. Der Lauf prüft ausdrücklich
+sieben `R12-VERGLEICH`-Datensätze und eine `R12-GESAMT`-Auswertung.
+Alle sieben R-11-Legacy-Maxima wurden im Script gegen die
+früher gemessenen 20/22/12/24/20/12/23 überprüft. Ergebnis: keine
+ungewollte Änderung des bisherigen Rennmodells.
+
+| Fiktives 30-Fahrer-/50-km-Rennen | Maximalgruppen alt → Variante | Median-Gruppen* alt → Variante | letzter Zielrückstand alt → Variante | Kurbelwatt im Feld alt → Variante |
+| --- | ---: | ---: | ---: | ---: |
+| Hügelig geschützt 2026 | **20 → 21** | 14 → 9 | 581,4 → 619,7 s | 270,0 → 264,9 W |
+| Hügelig offensiv 2026 | **22 → 20** | 12 → 10 | 504,6 → 721,7 s | 270,7 → 263,2 W |
+| Flach Sprint 2026 | **12 → 3** | 10 → 3 | 420,9 → 689,5 s | 269,6 → 247,1 W |
+| Hügelig geschützt 2027 | **24 → 20** | 13 → 12 | 544,9 → 605,0 s | 269,7 → 265,3 W |
+| Hügelig offensiv 2027 | **20 → 22** | 11 → 11 | 517,4 → 718,2 s | 269,5 → 263,5 W |
+| Flach Sprint 2027 | **12 → 4** | 9 → 3 | 334,1 → 937,5 s | 269,6 → 245,9 W |
+| Hügelig, F03 geschwächt, 2026 | **23 → 23** | 13 → 13 | 634,6 → 691,0 s | 269,2 → 264,2 W |
+
+*Median-Gruppen stammen aus den 5-km-Snapshots, nicht aus allen
+Sekunden. 42-m-Abstandsgruppen sind keine nachgewiesenen
+physikalischen 2D-Formationen.*
+
+**Erreichte Verbesserung:** Auf der flachen Strecke geht das
+beobachtete Gruppenmaximum stark zurück (12 → 3 bzw. 4) und die
+gemessene Median-Zeitlücke zwischen allen Zielankünften (nicht
+die Gruppentrennzahl) sinkt von **152,9 auf 0,8 s** (2026) bzw.
+von **162,6 auf 1,5 s** (2027). Der Test bewirkt also
+eindeutig einen **stärkeren gemeinsamen Verlauf eines großen Teils
+des Feldes**. Die mittlere Kurbelwatt sinkt auf den flachen
+Rennen um 22,5–23,7 W, und die mittlere verbleibende W′-Reserve
+steigt deutlich: **10.075 → 17.649 J** bzw.
+**9.766 → 17.560 J**. Der mittlere Aero-Faktor sinkt
+dort von ca. **0,890 auf 0,502 bzw. 0,495**.
+
+**Deutliche Probleme:** In **allen sieben** Vergleichen wird der
+Rückstand des **letzten** Fahrers größer, teilweise dramatisch
+(Flach 2027: **334,1 → 937,5 s**). Auch das Gruppenmaximum
+ist nicht durchgängig besser: Hügelig geschützt 2026 20 → 21,
+hügelig offensiv 2027 20 → 22. Der beobachtete
+Alleinfahreranteil steigt in einem Hügelszenario von 12,2 auf
+17,4 Prozent. Einzelne Sieger ändern sich durch veränderte
+physikalische Energie-/Abstandsdynamik (z. B. Flach 2026
+F25 → F14). Im Hügelrennen 2027 geschützt steigen
+Verfolgungsstarts von 31 auf 42. **Die Variante kann große
+Felder zusammenhalten und zugleich abgehängte Fahrer
+unplausibel benachteiligen.** Es wäre fachlich falsch,
+sie allein wegen geringerer Gruppenmaxima freizugeben.
+
+### Interpretation und fachlicher nächster Schritt
+
+- Der ursprüngliche **fehlende Formationsschutz ist als wirksamer
+  Hebel bestätigt**: Verändert man ausschließlich den
+  aerodynamischen Widerstandsfaktor, verändern sich reale
+  Kurbelwatt-/W′-Bilanzen, Zielabstände und Gruppenformationen.
+- **Noch keine Validierung des vorgeschlagenen Modells**:
+  Der 24-m-/10-Nachbarn-Korridor und 40-%-Restwiderstandsdeckel
+  sind willkürlich gewählte, offen deklarierte Testparameter;
+  sie sind nicht an realen 30-Fahrer-Feldern kalibriert.
+- Das **1D-Längskoordinatenproblem** bleibt: ein dichtes
+  Peloton mit mehreren nebeneinander fahrenden Fahrern und eine
+  sehr lange Einerreihe lassen sich nicht korrekt trennen.
+  Der Start mit identischen Streckenpositionen vereinfacht
+  diese Unterscheidung zusätzlich. Es gibt noch keine realen
+  Führungswechsel und keine teamübergreifende Tempokontrolle.
+- Die **Watt-Abstandsregelung ist weiterhin die alte R-10-Logik**,
+  die bei erhöhtem Windschutz nur begrenzt nachregeln kann.
+  Ein starker Schutz und eine nicht darauf abgestimmte
+  autonome Verfolgung können sowohl Feldzusammenhalt als auch
+  massive Verluste Abgehängter erzeugen.
+- **Bewusst KEINE stille Freigabe für den Standardmodus**:
+  `RaceInput.aeroModel` bleibt ohne Angabe bei
+  `legacy`. Den Experiment-Modus weiterhin nur als
+  Vergleichs-/Forschungsbaustein nutzen.
+- **Nächste priorisierte Einzelaufgabe:** lokale
+  Gruppendichte und Rollen/Führungsarbeit genauer
+  repräsentieren, ohne 2D-Kollisions-Mikrophysik; die
+  Modellgrenzen für Ausreißer, Peloton und einzeln
+  Abgehängte gesondert prüfen. Danach Leistungspuffer
+  und Gruppenanschluss-Logik mit der Aerodynamik
+  **abgestimmt** testen. Dabei dieselben sieben R-11-Fälle
+  plus isolierte 2er-/3er-Fälle als Kontrollbedingungen
+  beibehalten; Werte nicht allein auf die Zahl der
+  Gruppen optimieren.
+
+**Teststatus:** Nach dem ersten A/B-Diagnoselauf:
+[PR-Regression #41730702259](https://github.com/Lancester/radsportmanager/actions/runs/41730702259)
+**209/209 Tests**, einschließlich sieben neuer R-12-Tests.
+Der gesonderte TypeScript-Browser-Build wird im
+Feature-Branch vor dem Merge geprüft. GitHub-Runner-
+Laufzeiten sind weiterhin **keine Android-Laufzeiten**.
