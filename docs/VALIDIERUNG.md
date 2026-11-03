@@ -269,3 +269,12 @@ Die Prüfsummen der beiden 120-s-Tests stimmen bis auf 0,000003 mit einer achtfa
 **Technischer Abnahmestand:** Reale Browser-Web-Worker-Ausführung beider Varianten bestätigt; zuvor [95/95 GitHub-Tests und erfolgreicher Pages-Publish](https://github.com/Lancester/radsportmanager/actions/runs/41692857294) bestanden. **Erste Agentenmeilenstein-Messung abgeschlossen**, aber weiterhin **keine autonome Spur- und Kollisionsvermeidung, kein CP/W′/Ermüdungsmodell, keine Gruppen-Berg-/Kurvenfahrt, kein 160-Fahrer-Peloton oder kompletter Manager**. Die Aero-Abschirmung im Gruppenmodell ist nicht empirisch kalibriert.
 
 **Empfohlene nächste technische Arbeit:** Sichere Abstandsregelung mit physikalisch begründeter Bremsung/Leistungsrücknahme, noch bevor Fahrer vollautomatisch Positionswechsel und Angriffe fahren. Danach CP/W′/Ermüdung integrieren, damit zusätzliche Watt nicht unbegrenzt zur Verfügung stehen.
+
+
+## In Prüfung: R-05 · longitudinaler Sicherheitsschutz und CP/W′ (03.11.2026)
+
+**Vorheriger geprüfter Stand:** 95/95 GitHub-Actions-Tests plus Android-R-04-Workerlauf.
+
+**Zusätzlich im Branch:** `tests/r05-safety-cp.test.mjs` mit Sicherheits- und Physikprüfungen (Frühreaktion, physikalische Bremskraft samt Arbeitsbilanz, bewusst zu später Bremsweg, Drei-/Achtfahrer-Integration, CP-/W′-Deckelung, Erholung unter CP, separate FTP und deterministische Energie-/Positionsdaten). **Eine Gesamtanzahl von 115+ Tests erst nach tatsächlichem Actions-Lauf bestätigen.** Die Browserseite bekommt einen neuen separaten R-05-Test.
+
+**Nicht als bestanden ausgeben:** Vollständiges physikalisch sicheres Überholen, reale CP/W′-Kalibrierung, Ermüdung über viele Stunden, Android-R-05-Lauf oder ganzes 160-Fahrer-Peloton. [Herleitung](physik/R05_ABSTAND_CP_WPRIME.md).

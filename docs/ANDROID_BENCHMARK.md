@@ -224,3 +224,12 @@ Im Gegensatz zum bisherigen 160-Fahrer-Test aus 80 unabhängigen Paaren fährt d
 **Technischer Abnahmestand:** Reale Browser-Web-Worker-Ausführung beider Varianten bestätigt; zuvor [95/95 GitHub-Tests und erfolgreicher Pages-Publish](https://github.com/Lancester/radsportmanager/actions/runs/41692857294) bestanden. **Erste Agentenmeilenstein-Messung abgeschlossen**, aber weiterhin **keine autonome Spur- und Kollisionsvermeidung, kein CP/W′/Ermüdungsmodell, keine Gruppen-Berg-/Kurvenfahrt, kein 160-Fahrer-Peloton oder kompletter Manager**. Die Aero-Abschirmung im Gruppenmodell ist nicht empirisch kalibriert.
 
 **Empfohlene nächste technische Arbeit:** Sichere Abstandsregelung mit physikalisch begründeter Bremsung/Leistungsrücknahme, noch bevor Fahrer vollautomatisch Positionswechsel und Angriffe fahren. Danach CP/W′/Ermüdung integrieren, damit zusätzliche Watt nicht unbegrenzt zur Verfügung stehen.
+
+
+## Neuer Vergleichsmodus R-05 · KI + Abstand + CP/W′ (03.11.2026)
+
+Die bekannte Seite unter https://lancester.github.io/radsportmanager/ soll einen fünften Testknopf `NEU · KI + Abstand + CP/W′` erhalten. Er verwendet dieselbe Achtfahrergruppe mit dem bisherigen Lückenagenten, ergänzt um eine **optionale longitudinale Sicherheitsregel** und ein **eigenes CP/W′-Profil von F8**, wobei FTP separat als Datenfeld gespeichert wird.
+
+Der Bericht ergänzt `wPrimeRemainingJ`, `wPrimeSpentJ`, `cpLimitedSeconds`, `safetyBrakeSeconds` sowie Ereignisanzahlen. **Vor bestätigter Actions-Veröffentlichung und tatsächlichem Android-Lauf sind diese neuen Werte nicht gemessen.** Die früheren 21,6/32,9-ms-Werte stammen weiterhin aus der R-04-Version.
+
+Zur Bedeutung/den ausdrücklich noch fehlenden physiologischen Realitätsnachweisen: [R-05](physik/R05_ABSTAND_CP_WPRIME.md).

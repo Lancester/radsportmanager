@@ -104,3 +104,10 @@ Ein kleines TypeScript-Zustandsmodell (ohne KI-Bibliotheken) beobachtet eine Lü
 **Anschließend:** sichere Abstands-/Kollisionsregelung samt erreichbarer seitlicher Positionen; CP/W′ und Ermüdung; Fahrerübersicht, Talente, Fahrtechnik, Risikobereitschaft und Teamstrategie. Die vollständige Rennengine bleibt eine frühe Prototypenphase; 160 Fahrer/200 km sind noch nicht als gekoppelte Rennsimulation vorhanden.
 
 [Agentenentscheidung und offene Fragen](ai/LUECKENAGENT.md).
+
+
+## R-05: erste physiologisch begrenzte Renn-KI mit Längsabstandsregler (03.11.2026)
+
+Im nächsten Prototyp kann ein Agent eine Lücke schließen wollen, bekommt aber **zuerst** von einer Sicherheitsinstanz gegebenenfalls Wattreduzierung/physikalische Bremskraft und wird **danach** durch individuelle CP/W′-Reserve auf tatsächlich leistbare Watt begrenzt. **FTP** ist als separater Trainings-/Fahrerwert angelegt; das echte langfristige FTP-Trainingssystem fehlt noch.
+
+**Nächste Nachweise:** Vollständigen GitHub-Testsatz samt Android-Browsermodul bestehen, dann den neuen R-05-Preset auf echtem Android-Gerät testen. **Danach** Seitenbewegung, Brems-/Kurvenhaftung, kalibrierte W′-Erholung und Ermüdung über Stunden. [Dokumentation](physik/R05_ABSTAND_CP_WPRIME.md).

@@ -15,6 +15,7 @@ const presets = {
   gross: {pairs: 80, durationS: 120, repeats: 3},
   gruppe: {group: true, durationS: 120, repeats: 3},
   agent: {group: true, agent: true, durationS: 120, repeats: 3},
+  r05: {group: true, agent: true, r05: true, durationS: 120, repeats: 3},
 };
 let commit = 'unbekannt';
 fetch('./benchmark/version.txt', {cache: 'no-store'})
@@ -52,9 +53,15 @@ function run(presetName) {
         status.textContent = `Berechnung ${msg.current} von ${msg.total} abgeschlossen …`;
       } else if (msg.type === 'result') {
         const result = msg.result;
-        lastReport = {commit, benchmarkVersion: 'r04-android-v3', ...result};
+        lastReport = {commit, benchmarkVersion: 'r05-android-v4', ...result};
         runtime.textContent = result.medianMs.toLocaleString('de-DE', {maximumFractionDigits: 1});
-        detail.textContent = result.mode === 'achtfahrer-agent'
+        detail.textContent = result.mode === 'achtfahrer-sicher-cp'
+          ? `8 Fahrer mit aktiver Abstandsregelung und CP/W′-Limit. ` +
+            `F8: ${result.finalGapM.toLocaleString('de-DE')} m Endlücke, ` +
+            `${result.wPrimeRemainingJ.toLocaleString('de-DE')} J Rest-W′, ` +
+            `${result.cpLimitedSeconds.toLocaleString('de-DE')} s Wattbegrenzung, ` +
+            `${result.safetyBrakeSeconds.toLocaleString('de-DE')} s Bremsung in der Gruppe.`
+          : result.mode === 'achtfahrer-agent'
           ? `8 Fahrer gemeinsam, F8 entscheidet selbst über begrenztes Nachsetzen. ` +
             `Endlücke: ${result.finalGapM.toLocaleString('de-DE')} m; ` +
             `Agentenentscheidungen: ${result.agentDecisionCount}; ` +

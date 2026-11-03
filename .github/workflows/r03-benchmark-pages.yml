@@ -78,6 +78,17 @@ jobs:
             throw new Error('Regelagent erzielt keine nachvollziehbare Änderung');
           }
           console.log('Regelagent kontrolliert den Wattwunsch erfolgreich');
+          const safe = group.simulateGroup(group.createEightRiderR05Example(120));
+          const last = safe.riders[7];
+          console.log('R05: Endlücke',safe.riders[6].positionM-last.positionM,
+            'Wprime Rest',last.wPrimeRemainingJ,'CP-Limit Sekunden',last.cpLimitedSeconds,
+            'Bremszeit',safe.riders.reduce((x,r)=>x+r.safetyBrakeSeconds,0));
+          if(Math.abs(safe.elapsedS-120)>1e-9 || safe.riders.length!==8 ||
+            last.wPrimeRemainingJ < 0 || last.wPrimeRemainingJ > 1200 ||
+            !safe.events.some(e=>e.type==='agent-decision') ||
+            safe.riders.some(r=>!Number.isFinite(r.energyResidualJ))) {
+            throw new Error('R05 CP/Wprime + Sicherheitskontrolle fehlerhaft');
+          }
           NODE
       - name: Git-Commit des Teststands für Bericht notieren
         run: git rev-parse --short HEAD > docs/benchmark/version.txt
