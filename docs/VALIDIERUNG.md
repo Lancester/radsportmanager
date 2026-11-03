@@ -687,3 +687,41 @@ und Verfolgungsstarts. Kein Android-Performance-
 Nachweis; keine externe Profi-Rennkalibrierung.
 Tatsächlich erreichte Führungspositionen bleiben
 separates zu testendes Spielverhalten.
+
+
+## R-15/R-16: getrennte Physik- und Renn-KI-Prüfung (04.11.2026)
+
+Die neue Rennlogik erteilt **ausschließlich**
+Watt-Anforderungen. Der vorhandene
+Physik- und CP/W′-Kern bleibt unverändert.
+Ein ohne Nahwindschatten abgehängter
+Fahrer erhält keine künstliche
+Beschleunigung oder Ergebnisangleichung.
+
+Isolationstests erfassen mehrere Helfer
+und bis zu fünf Helfer desselben Teams
+bei Dringlichkeit, physische Frontposition,
+W′-Grenzen, teamfremde Konkurrenz,
+taktisches Überlassen der Jagd,
+ungünstige Fluchtlücken, dynamische
+Attacken und reihenfolgestabile Entscheidungen.
+Integrationstests führen komplette
+30-Fahrer-/50-km-Rennen mit dem
+neuen Standard sowie explizitem
+R-14-Vergleich aus und prüfen
+CP/W′-/Energierest und Klassifikation.
+
+Ein gesondertes einmaliges
+GitHub-Actions-Skript führt sieben
+identische Fälle mit beiden Taktikmodellen
+aus (14 vollständige Rennen,
+420 Zielankünfte), prüft
+TypeScript-ESM-Browser-Build und
+reale 30-Fahrer-Ausführung.
+Die fachliche Freigabe erfolgt erst nach
+erfolgreichen tatsächlichen
+CI-Logs; hohe mögliche Rückstände
+sind nicht automatisch zu korrigieren.
+Eine Auftragszuweisung ist noch kein
+belegter 2D-Führungswechsel.
+[Siehe R-15/R-16-Fachnotiz](race/R15_R16_MEHRHELFER_RENNINTELLIGENZ.md).
