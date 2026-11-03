@@ -13,7 +13,8 @@ import {advanceMotionStep} from '../physics/motion-core.ts';
 import type {CornerRider} from '../physics/motion-core.ts';
 import {initialCpState,applyCpWprimeStep} from '../physiology/critical-power.ts';
 import type {CpWprimeState,CpWprimeProfile} from '../physiology/critical-power.ts';
-import {chooseRacePower} from './race-tactics.ts';
+import {chooseRacePower,stabilizeRaceDecision} from './race-tactics.ts';
+import {decidePackInstruction,pelotonGroups} from './peloton.ts';
 import type {RaceRole,RaceStrategy,RaceIntent,TacticDecision} from './race-tactics.ts';
 
 export interface RaceSegment {
@@ -38,7 +39,7 @@ export interface RaceInput {
   maxRaceTimeS?:number;
 }
 export type RaceEventType =
-  'start'|'attack'|'chase'|'sprint'|'recovery'|'segment'|'group-split'|'finish';
+  'start'|'attack'|'chase'|'sprint'|'recovery'|'segment'|'group-split'|'breakaway'|'breakaway-caught'|'finish';
 export interface RaceEvent {
   timeS:number;km:number;type:RaceEventType;
   riderId?:string;teamId?:string;description:string;
@@ -61,7 +62,8 @@ export interface RaceResult {
   winnerId:string;finisherCount:number;
   /** Klein gehaltene, überprüfbare Testdiagnosen. */
   diagnostics:{attacks:number;chases:number;sprints:number;
-    groupSplits:number;maximumGroups:number;teams:number};
+    groupSplits:number;maximumGroups:number;teams:number;
+    breakaways:number;caughtBreakaways:number;paceSupportSteps:number};
 }
 interface State {
   rider:RaceRider;physical:CornerRider;profile:CpWprimeProfile;
@@ -69,7 +71,7 @@ interface State {
   speedMps:number;peakMps:number;finishTimeS:number|null;
   segmentIndex:number;decision:TacticDecision;intent:RaceIntent;
   driveWorkJ:number;brakeLossJ:number;energyResidualJ:number;
-  crankWorkJ:number;
+  crankWorkJ:number;intentSinceS:number;lastChaseEndS:number;
 }
 const ensure=(label:string,n:number,condition:boolean)=>{
   if(!Number.isFinite(n)||!condition)throw new RangeError('Rennsimulation: '+label);
@@ -147,19 +149,13 @@ function buildStates(x:RaceInput):State[] {
       peakMps:10,finishTimeS:null,segmentIndex:0,
       decision:{desiredPowerW:dayCpW,intent:'grundtempo',reason:'Rennstart'},
       intent:'grundtempo',driveWorkJ:0,brakeLossJ:0,energyResidualJ:0,
-      crankWorkJ:0};
+      crankWorkJ:0,intentSinceS:0,lastChaseEndS:-1e9};
   });
 }
-function splitGroups(active:State[],thresholdM=14):State[][] {
-  const sorted=[...active].sort((a,b)=>b.positionM-a.positionM||
-    a.rider.id.localeCompare(b.rider.id));
-  const groups:State[][]=[];
-  for(const s of sorted){
-    const last=groups.at(-1);
-    if(!last||last.at(-1)!.positionM-s.positionM>thresholdM)groups.push([s]);
-    else last.push(s);
-  }
-  return groups;
+function splitGroups(active:State[]):State[][] {
+  const packed=pelotonGroups(active.map(s=>({id:s.rider.id,
+    positionM:s.positionM,state:s})));
+  return packed.map(group=>group.map(g=>g.state));
 }
 function segmentFor(s:State,boundaries:number[]):number {
   while(s.segmentIndex<boundaries.length-1 &&
@@ -191,7 +187,11 @@ export function simulateRace(x:RaceInput):RaceResult {
   const dt=x.stepSeconds??1;
   let t=0,steps=0,nextTacticS=0,nextSnapshotM=5000;
   let oldGroups=1,maximumGroups=1,lastSection=0;
-  const counters={attacks:0,chases:0,sprints:0,groupSplits:0};
+  let lastGroupEventS=-Infinity;
+  let breakawaySinceS:number|null=null,catchSinceS:number|null=null;
+  let breakawayActive=false;
+  const counters={attacks:0,chases:0,sprints:0,groupSplits:0,
+    breakaways:0,caughtBreakaways:0,paceSupportSteps:0};
   while(states.some(s=>s.finishTimeS===null)){
     if(t>=(x.maxRaceTimeS??30000))throw new RangeError('Rennsimulation: Zeitlimit überschritten');
     const active=states.filter(s=>s.finishTimeS===null);
@@ -199,9 +199,12 @@ export function simulateRace(x:RaceInput):RaceResult {
       a.rider.id.localeCompare(b.rider.id));
     const leader=ordered[0];
     const frontGap=new Map<string,number|null>();
-    for(let i=0;i<ordered.length;i++)
+    const frontSpeed=new Map<string,number|null>();
+    for(let i=0;i<ordered.length;i++){
       frontGap.set(ordered[i].rider.id,i===0?null:
         Math.max(0,ordered[i-1].positionM-ordered[i].positionM));
+      frontSpeed.set(ordered[i].rider.id,i===0?null:ordered[i-1].speedMps);
+    }
     if(t>=nextTacticS-1e-9){
       for(const s of states){
         if(s.finishTimeS!==null)continue;
@@ -218,8 +221,18 @@ export function simulateRace(x:RaceInput):RaceResult {
           deficitToLeaderM:Math.max(0,leader.positionM-s.positionM),
           reserveFraction:s.physiology.remainingWPrimeJ/s.profile.wPrimeCapacityJ,
         };
-        const decision=chooseRacePower(obs);
+        const proposal=chooseRacePower(obs);
+        const decision=stabilizeRaceDecision({
+          previous:s.decision,proposal,timeS:t,
+          previousSinceS:s.intentSinceS,
+          lastChaseEndS:s.lastChaseEndS,
+          reserveFraction:obs.reserveFraction,
+        });
         const before=s.intent;
+        if(before!==decision.intent){
+          if(before==='verfolgung')s.lastChaseEndS=t;
+          s.intentSinceS=t;
+        }
         s.decision=decision;s.intent=decision.intent;
         if(before!==decision.intent && events.length<1000){
           const kind=decision.intent==='angriff'?'attack':
@@ -243,10 +256,18 @@ export function simulateRace(x:RaceInput):RaceResult {
     for(const s of active){
       const index=segmentFor(s,boundaries);
       const segment=x.segments[index];
-      const gap=frontGap.get(s.rider.id);
-      const aeroFactor=gap!==null && gap<20?
-        0.70+0.30*Math.max(0,gap)/20:1;
-      let commanded=s.decision.desiredPowerW;
+      const pack=decidePackInstruction({
+        frontGapM:frontGap.get(s.rider.id)??null,
+        frontSpeedMps:frontSpeed.get(s.rider.id)??null,
+        ownSpeedMps:s.speedMps,
+        desiredPowerW:s.decision.desiredPowerW,
+        criticalPowerW:s.dayCpW,
+        tacticalIntent:s.intent,
+        reserveFraction:s.physiology.remainingWPrimeJ/s.profile.wPrimeCapacityJ,
+      });
+      const aeroFactor=pack.aeroFactor;
+      let commanded=pack.requestedPowerW;
+      if(Math.abs(pack.addedPowerW)>0.5)counters.paceSupportSteps++;
       let brakeForceN=0;
       if(segment.gradeFraction<-0.012&&segment.descentTechnicality>0){
         const limit=descentSafeSpeedMps(segment.descentTechnicality,s.rider.descentSkill);
@@ -299,16 +320,47 @@ export function simulateRace(x:RaceInput):RaceResult {
       }
       const groups=splitGroups(inRace);
       maximumGroups=Math.max(maximumGroups,groups.length);
-      if(groups.length>oldGroups&&t>=60&&events.length<1100){
+      // Abstandsgruppen sind nur Diagnose; keinen Abstand künstlich
+      // zusammenziehen. Meldungen erst nach einer Mindestdauer.
+      if(groups.length>oldGroups&&t>=90&&t-lastGroupEventS>=75&&
+         events.length<1100){
         counters.groupSplits++;
+        lastGroupEventS=t;
         events.push({timeS:t,km:best.positionM/1000,type:'group-split',
-          description:`Fahrerfeld jetzt in ${groups.length} Abstandsgruppen`});
+          description:`Feld geteilt: ${groups.length} Abstandsgruppen`});
       }
       oldGroups=groups.length;
+      // Flucht als PERSISTENTE tatsächlich gefahrene Lücke erkennen.
+      const leadGap=groups.length>1?
+        groups[0].at(-1)!.positionM-groups[1][0].positionM:0;
+      const escaped=groups.length>1&&groups[0].length<=6&&
+        leadGap>=75&&best.positionM>1000;
+      if(!breakawayActive){
+        if(escaped){
+          if(breakawaySinceS===null)breakawaySinceS=t;
+          if(t-breakawaySinceS>=40){
+            breakawayActive=true;catchSinceS=null;counters.breakaways++;
+            if(events.length<1100)events.push({timeS:t,
+              km:best.positionM/1000,type:'breakaway',
+              description:`Fluchtgruppe (${groups[0].length} Fahrer) hat ${leadGap.toFixed(0)} m Vorsprung`});
+          }
+        }else breakawaySinceS=null;
+      }else{
+        if(!escaped||leadGap<35){
+          if(catchSinceS===null)catchSinceS=t;
+          if(t-catchSinceS>=40){
+            breakawayActive=false;breakawaySinceS=null;catchSinceS=null;
+            counters.caughtBreakaways++;
+            if(events.length<1100)events.push({timeS:t,
+              km:best.positionM/1000,type:'breakaway-caught',
+              description:'Fluchtgruppe wurde wieder eingeholt oder aufgelöst'});
+          }
+        }else catchSinceS=null;
+      }
       if(best.positionM>=nextSnapshotM){
         snapshots.push({timeS:t,km:best.positionM/1000,leaderId:best.rider.id,
           activeRiders:inRace.length,
-          groupSizes:groups.slice(0,8).map(g=>g.length),
+          groupSizes:groups.map(g=>g.length),
           leadingGapM:groups.length>1?
             groups[0].at(-1)!.positionM-groups[1][0].positionM:0});
         nextSnapshotM+=5000;

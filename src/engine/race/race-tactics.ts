@@ -65,8 +65,8 @@ export function chooseRacePower(o:TacticObservation):TacticDecision {
   }
   // Nur bei Rückstand wird die Verfolgung teurer, nie automatisch schneller.
   if((o.strategy==='sprint'||o.strategy==='kapitaen_schuetzen') &&
-     o.role==='helfer' && o.deficitToLeaderM>25 && o.progress<0.92 &&
-     o.reserveFraction>0.18){
+     o.role==='helfer' && o.deficitToLeaderM>60 && o.progress<0.90 &&
+     o.reserveFraction>0.28){
     return {intent:'verfolgung',desiredPowerW:cp+16+18*o.aggression,
       reason:'Helfer arbeitet gegen eine abgesetzte Spitze'};
   }
@@ -79,4 +79,31 @@ export function chooseRacePower(o:TacticObservation):TacticDecision {
   return {intent:protectedFromWind?'windschatten':'grundtempo',
     desiredPowerW:base,
     reason:protectedFromWind?'Geschützt im Windschatten fahren':'Grundtempo nach Fahrerleistung'};
+}
+
+/** Taktische Hysterese auf einer 10-s-Entscheidungsuhr.
+ * Keine unsichtbare Bewegung: nur Vermeidung unrealistisch häufiger
+ * Wechsel zwischen Verfolgen/Entspannen. Alle Watt bleiben im CP-Kern.
+ */
+export function stabilizeRaceDecision(input:{
+  previous:TacticDecision;
+  proposal:TacticDecision;
+  timeS:number;
+  previousSinceS:number;
+  lastChaseEndS:number;
+  reserveFraction:number;
+}):TacticDecision {
+  const {previous,proposal,timeS,previousSinceS,lastChaseEndS,reserveFraction}=input;
+  for(const [k,v] of [['timeS',timeS],['previousSinceS',previousSinceS],
+    ['lastChaseEndS',lastChaseEndS],['reserveFraction',reserveFraction]] as const)
+    if(!Number.isFinite(v))throw new RangeError('Renn-KI: '+k);
+  if(reserveFraction<0||reserveFraction>1+1e-7)
+    throw new RangeError('Renn-KI: reserveFraction');
+  if(previous.intent==='verfolgung' && proposal.intent!=='verfolgung' &&
+     timeS-previousSinceS<50 && reserveFraction>0.10)
+    return previous;
+  if(previous.intent!=='verfolgung' && proposal.intent==='verfolgung' &&
+     timeS-lastChaseEndS<90)
+    return previous;
+  return proposal;
 }
