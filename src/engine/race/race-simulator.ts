@@ -15,6 +15,7 @@ import {initialCpState,applyCpWprimeStep} from '../physiology/critical-power.ts'
 import type {CpWprimeState,CpWprimeProfile} from '../physiology/critical-power.ts';
 import {chooseRacePower,stabilizeRaceDecision} from './race-tactics.ts';
 import {decidePackInstruction,pelotonGroups} from './peloton.ts';
+import {formationAeroFactors} from './formation-aero.ts';
 import type {RaceRole,RaceStrategy,RaceIntent,TacticDecision} from './race-tactics.ts';
 
 export interface RaceSegment {
@@ -35,6 +36,8 @@ export interface RaceInput {
   title:string;
   segments:RaceSegment[];teams:RaceTeam[];riders:RaceRider[];
   seed:number;
+  /** Standard bleibt R-10; Variante ist nur ein schaltbarer Forschungsversuch. */
+  aeroModel?:'legacy'|'formation-experiment';
   stepSeconds?:number;
   maxRaceTimeS?:number;
 }
@@ -65,7 +68,8 @@ export interface RaceResult {
   /** Klein gehaltene, überprüfbare Testdiagnosen. */
   diagnostics:{attacks:number;chases:number;sprints:number;
     groupSplits:number;maximumGroups:number;teams:number;
-    breakaways:number;caughtBreakaways:number;paceSupportSteps:number};
+    breakaways:number;caughtBreakaways:number;paceSupportSteps:number;
+    meanAeroFactor:number;minimumAeroFactor:number};
 }
 interface State {
   rider:RaceRider;physical:CornerRider;profile:CpWprimeProfile;
@@ -128,6 +132,9 @@ export function validateRace(x:RaceInput):void {
     for(const k of ['descentSkill','sprintSkill','aggression'] as const)
       ensure(k,r[k],r[k]>=0&&r[k]<=1);
   }
+  if(x.aeroModel!==undefined &&
+    x.aeroModel!=='legacy'&&x.aeroModel!=='formation-experiment')
+    throw new RangeError('Rennsimulation: aeroModel ungültig');
   if(!Number.isSafeInteger(x.seed)||x.seed<0||x.seed>2147483647)
     throw new RangeError('Rennsimulation: Seed (0..2^31−1)');
   ensure('stepSeconds',x.stepSeconds??1,(x.stepSeconds??1)>=0.2&&(x.stepSeconds??1)<=1);
@@ -192,6 +199,7 @@ export function simulateRace(x:RaceInput):RaceResult {
   let lastGroupEventS=-Infinity;
   let breakawaySinceS:number|null=null,catchSinceS:number|null=null;
   let breakawayActive=false;
+  let aeroFactorSum=0,aeroFactorSamples=0,minimumAeroFactor=1;
   const counters={attacks:0,chases:0,sprints:0,groupSplits:0,
     breakaways:0,caughtBreakaways:0,paceSupportSteps:0};
   while(states.some(s=>s.finishTimeS===null)){
@@ -207,6 +215,11 @@ export function simulateRace(x:RaceInput):RaceResult {
         Math.max(0,ordered[i-1].positionM-ordered[i].positionM));
       frontSpeed.set(ordered[i].rider.id,i===0?null:ordered[i-1].speedMps);
     }
+    // Schaltbarer A/B-Test: lokale Vordermann-Formation nur für diese
+    // Rennsekunde ermitteln. Standard-Pfad bleibt exakt die R-10-Regel.
+    const formationFactors=x.aeroModel==='formation-experiment'?
+      formationAeroFactors(ordered.map(s=>({id:s.rider.id,
+        positionM:s.positionM}))):null;
     if(t>=nextTacticS-1e-9){
       for(const s of states){
         if(s.finishTimeS!==null)continue;
@@ -267,7 +280,11 @@ export function simulateRace(x:RaceInput):RaceResult {
         tacticalIntent:s.intent,
         reserveFraction:s.physiology.remainingWPrimeJ/s.profile.wPrimeCapacityJ,
       });
-      const aeroFactor=pack.aeroFactor;
+      const aeroFactor=formationFactors?
+        Math.min(pack.aeroFactor,formationFactors.get(s.rider.id)!):
+        pack.aeroFactor;
+      aeroFactorSum+=aeroFactor;aeroFactorSamples++;
+      minimumAeroFactor=Math.min(minimumAeroFactor,aeroFactor);
       let commanded=pack.requestedPowerW;
       if(Math.abs(pack.addedPowerW)>0.5)counters.paceSupportSteps++;
       let brakeForceN=0;
@@ -392,7 +409,9 @@ export function simulateRace(x:RaceInput):RaceResult {
     durationS:Math.max(...sorted.map(s=>s.finishTimeS!)),
     steps,seed:x.seed,classification,events,snapshots,
     winnerId:sorted[0].rider.id,finisherCount:sorted.length,
-    diagnostics:{...counters,maximumGroups,teams:x.teams.length}};
+    diagnostics:{...counters,maximumGroups,teams:x.teams.length,
+      meanAeroFactor:aeroFactorSum/aeroFactorSamples,
+      minimumAeroFactor}};
 }
 
 /** Ausdrücklich fiktives, lizenzfreies 5-Teams-/30-Fahrer-Testszenario. */
