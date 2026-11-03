@@ -792,3 +792,30 @@ wissenschaftlich kalibriert wären. **Offener nächster Schritt:**
 Führung, Helfer-/Kapitänszusammenarbeit und Verfolgung als
 eigenständige Spielmechaniken verbessern, ohne große natürliche
 Zeitabstände künstlich zu vermeiden. Issue #42 bleibt offen.
+
+
+### R-13: abschließende main-Abnahme und regulärer Browser-Stand (03.11.2026)
+
+[PR #50](https://github.com/Lancester/radsportmanager/pull/50) ist
+mit Merge-Squash `5764f090863d53ed7517d3f32bc615f105a951ce`
+auf `main` übernommen. Der **tatsächlich abgeschlossene und
+erfolgreiche** [main-Actions-Lauf #41734418472](https://github.com/Lancester/radsportmanager/actions/runs/41734418472)
+bestätigt **213/213 Tests, 0 Fehler**, drei vollständige
+50-km-Referenzrennen im **neuen Standard**, TypeScript-Browser-
+Build, ESM-Smoke-Test und erfolgreiche GitHub-Pages-Veröffentlichung.
+
+**Verifizierte neue Live-Standard-Rennergebnisse, Seed 2026:**
+Hügelig Kapitän schützen: Sieger F25, maximal 22 Abstandsgruppen,
+Median-Zielrückstand 180,7 s, letzter Rückstand 604,6 s.
+Hügelig offensiv: Sieger F07, letzter Rückstand 712,1 s.
+Flach Sprint: Sieger F26, maximal 3 Abstandsgruppen,
+Median-Zielrückstand 0,8 s, letzter Rückstand 688,5 s.
+Weitere vier Standard-Szenarien und CP/W′-/Aero-Sicherheitsprüfungen
+im [R-13-Fachdokument](race/R13_FORMATIONSWINDSCHATTEN_STANDARD.md).
+Dies sind fiktive Modellresultate, keine empirischen Rennprognosen.
+
+**Aktueller verbindlicher nächster Schritt:** Teamführung,
+Helfer/Kapitän, Fahren in der Spitze, Führungswechsel und
+Verfolgungsentscheidungen – nicht bloß die größeren Rückstände
+einzeln Abgehängter abschaffen. `legacy` nur noch explizite
+R-10-/R-11-Vergleichsoption. Issue #42 bleibt offen.
