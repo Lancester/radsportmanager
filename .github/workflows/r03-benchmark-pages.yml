@@ -1,4 +1,4 @@
-name: Android R-03 Benchmark (GitHub Pages)
+name: Radsportmanager – Rennen und Physiktests (GitHub Pages)
 
 on:
   push:
@@ -7,8 +7,11 @@ on:
       - 'src/engine/physics/**'
       - 'src/engine/ai/**'
       - 'src/engine/physiology/**'
+      - 'src/engine/race/**'
       - 'tests/**'
       - 'docs/index.html'
+      - 'docs/rennen.html'
+      - 'docs/race/**'
       - 'docs/benchmark/**'
       - 'package.json'
       - '.github/workflows/r03-benchmark-pages.yml'
@@ -129,6 +132,26 @@ jobs:
             throw new Error('R08 Wiedereinscheren nicht abgeschlossen');
           const multi=group.simulateGroup(group.createEightRiderMultiAgentExample(70));
           const choices=multi.events.filter(e=>e.type==='agent-lane-choice');
+          const race = await import('./docs/benchmark/generated/race/race-simulator.js');
+          const firstRace=race.simulateRace(race.createRaceExample());
+          const attackRace=race.simulateRace(race.createRaceExample({
+            homeStrategy:'offensiv',
+          }));
+          console.log('R09 50km-Rennen:',firstRace.classification.length,'Fahrer,',
+            firstRace.durationS.toFixed(1),'s, Sieger',firstRace.winnerId,
+            'Attacken',firstRace.diagnostics.attacks,
+            'Taktikvergleich:',firstRace.classification.find(x=>x.id==='F01').finishTimeS,
+            attackRace.classification.find(x=>x.id==='F01').finishTimeS);
+          if(firstRace.distanceM!==50000 || firstRace.finisherCount!==30 ||
+             firstRace.classification.length!==30 ||
+             !firstRace.classification.every(r=>r.finishTimeS>0&&r.gapS>=0&&
+               Number.isFinite(r.averageCrankPowerW)) ||
+             !firstRace.events.some(e=>e.type==='sprint') ||
+             !attackRace.events.some(e=>e.type==='attack'&&e.teamId==='T1') ||
+             Math.abs(firstRace.classification.find(x=>x.id==='F01').finishTimeS-
+                attackRace.classification.find(x=>x.id==='F01').finishTimeS)<0.1) {
+            throw new Error('R09: vollständiges Rennen oder Taktikvergleich gescheitert');
+          }
           console.log('R08 Multi-Agent:',choices.map(e=>e.riderId+':'+e.lateralPositionM),
             'Überholvorgänge',multi.events.filter(e=>e.type==='overtake').length,
             'Querdynamik',multi.riders.map(r=>r.maximumSteeringAccelerationMps2??0));
