@@ -75,7 +75,7 @@ Das bisherige Browser-Frontend erhält einen getrennten Vergleichsmodus **„KI 
 
 - Poole et al. (2016): [*Critical Power: An Important Fatigue Threshold in Exercise Physiology*](https://pmc.ncbi.nlm.nih.gov/articles/PMC5070974/) – CP und W′ als zwei Parameter des Leistungs-Zeit-Zusammenhangs.
 - Karsten et al. (2021): [*Relationship Between the Critical Power Test and a 20-min Functional Threshold Power Test in Cycling*](https://pmc.ncbi.nlm.nih.gov/articles/PMC7862708/) – FTP und CP korrelieren, sind aber nicht individuell austauschbar.
-- Sreedhara et al. (2020): [*The Application of Critical Power, the Work Capacity above Critical Power (W′), and Its Reconstitution*](https://pmc.ncbi.nlm.nih.gov/articles/PMC7552657/) – Potential und Grenzen der W′-Rekonstruktion im Radtraining.
+- Chorley und Lamb (2020): [*The Application of Critical Power, the Work Capacity above Critical Power (W′), and Its Reconstitution*](https://pmc.ncbi.nlm.nih.gov/articles/PMC7552657/) – Potential und Grenzen der W′-Rekonstruktion im Radtraining.
 
 
 ## Verifizierter R-05-Abschluss auf GitHub (03.11.2026)
