@@ -725,3 +725,34 @@ sind nicht automatisch zu korrigieren.
 Eine Auftragszuweisung ist noch kein
 belegter 2D-Führungswechsel.
 [Siehe R-15/R-16-Fachnotiz](race/R15_R16_MEHRHELFER_RENNINTELLIGENZ.md).
+
+
+### R-15/R-16 – erfolgreiches reguläres main-CI- und Browser-Release (04.11.2026)
+
+[PR #52](https://github.com/Lancester/radsportmanager/pull/52),
+Merge-Commit `26a195b540c0c39d1ca5911198fd058bcd6be70b`.
+[GitHub-Actions #41742236444](https://github.com/Lancester/radsportmanager/actions/runs/41742236444)
+hat **232/232 Tests, null Fehler**, drei
+vollständige 50-km-Standardrennen,
+Browser-TypeScript/ESM und
+GitHub-Pages-Veröffentlichung bestätigt.
+[Einmalige A/B-Abnahme #41741844022](https://github.com/Lancester/radsportmanager/actions/runs/41741844022):
+sieben Paare, **14 vollständige Rennen und 420
+fiktive Zielankünfte**, erfolgreich,
+einschließlich 30-Fahrer-Browser-ESM-Lauf.
+Der temporäre Workflow ist wieder entfernt.
+
+Isolierter Test: bei dringlicher Jagd
+können **fünf** geeignete Helfer einer
+Mannschaft gleichzeitig eingesetzt werden;
+genau ein geeigneter Fahrer übernimmt
+die frontnahe hohe Führungs-Wattzahl.
+In regulären Standardrennläufen wurden
+höchstens **drei** gleichzeitig eingeteilte
+Helfer eines Teams festgestellt.
+Kein Nachweis einer vollständigen
+2D-Führungswechsel-Dynamik oder
+wissenschaftlich kalibrierter Profi-Rennen.
+Keine Karriere-/Rundfahrt-Funktionen
+mit dieser Rennengine-Abnahme vermischen.
+Siehe [R-15/R-16-Methodik](race/R15_R16_MEHRHELFER_RENNINTELLIGENZ.md).
