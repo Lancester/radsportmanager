@@ -36,8 +36,9 @@ export interface RaceInput {
   title:string;
   segments:RaceSegment[];teams:RaceTeam[];riders:RaceRider[];
   seed:number;
-  /** Standard bleibt R-10; Variante ist nur ein schaltbarer Forschungsversuch. */
-  aeroModel?:'legacy'|'formation-experiment';
+  /** Standard: Formations-Windschatten. 'legacy' bewahrt den R-10-Vergleich.
+   * 'formation-experiment' bleibt als Alias für R-12-Vergleichsdaten erhalten. */
+  aeroModel?:'formation'|'legacy'|'formation-experiment';
   stepSeconds?:number;
   maxRaceTimeS?:number;
 }
@@ -133,7 +134,8 @@ export function validateRace(x:RaceInput):void {
       ensure(k,r[k],r[k]>=0&&r[k]<=1);
   }
   if(x.aeroModel!==undefined &&
-    x.aeroModel!=='legacy'&&x.aeroModel!=='formation-experiment')
+    x.aeroModel!=='legacy'&&x.aeroModel!=='formation'&&
+    x.aeroModel!=='formation-experiment')
     throw new RangeError('Rennsimulation: aeroModel ungültig');
   if(!Number.isSafeInteger(x.seed)||x.seed<0||x.seed>2147483647)
     throw new RangeError('Rennsimulation: Seed (0..2^31−1)');
@@ -215,9 +217,10 @@ export function simulateRace(x:RaceInput):RaceResult {
         Math.max(0,ordered[i-1].positionM-ordered[i].positionM));
       frontSpeed.set(ordered[i].rider.id,i===0?null:ordered[i-1].speedMps);
     }
-    // Schaltbarer A/B-Test: lokale Vordermann-Formation nur für diese
-    // Rennsekunde ermitteln. Standard-Pfad bleibt exakt die R-10-Regel.
-    const formationFactors=x.aeroModel==='formation-experiment'?
+    // Regulärer Windschatten mit lokaler Mehrfahrer-Abschirmung.
+    // Nur explizites 'legacy' schaltet für alte A/B-Referenzen zurück.
+    // R-12-'formation-experiment' bleibt als identischer Alias bestehen.
+    const formationFactors=x.aeroModel!=='legacy'?
       formationAeroFactors(ordered.map(s=>({id:s.rider.id,
         positionM:s.positionM}))):null;
     if(t>=nextTacticS-1e-9){
