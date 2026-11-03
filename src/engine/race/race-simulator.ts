@@ -16,6 +16,8 @@ import type {CpWprimeState,CpWprimeProfile} from '../physiology/critical-power.t
 import {chooseRacePower,stabilizeRaceDecision} from './race-tactics.ts';
 import {decidePackInstruction,pelotonGroups} from './peloton.ts';
 import {formationAeroFactors} from './formation-aero.ts';
+import {decideTeamPace} from './team-pacing.ts';
+import type {TeamPaceKind} from './team-pacing.ts';
 import type {RaceRole,RaceStrategy,RaceIntent,TacticDecision} from './race-tactics.ts';
 
 export interface RaceSegment {
@@ -43,7 +45,7 @@ export interface RaceInput {
   maxRaceTimeS?:number;
 }
 export type RaceEventType =
-  'start'|'attack'|'chase'|'sprint'|'recovery'|'segment'|'group-split'|'breakaway'|'breakaway-caught'|'finish';
+  'start'|'attack'|'chase'|'sprint'|'recovery'|'segment'|'group-split'|'breakaway'|'breakaway-caught'|'finish'|'team-pace'|'team-chase';
 export interface RaceEvent {
   timeS:number;km:number;type:RaceEventType;
   riderId?:string;teamId?:string;description:string;
@@ -70,7 +72,8 @@ export interface RaceResult {
   diagnostics:{attacks:number;chases:number;sprints:number;
     groupSplits:number;maximumGroups:number;teams:number;
     breakaways:number;caughtBreakaways:number;paceSupportSteps:number;
-    meanAeroFactor:number;minimumAeroFactor:number};
+    meanAeroFactor:number;minimumAeroFactor:number;
+    teamPaceStarts:number;teamChaseStarts:number};
 }
 interface State {
   rider:RaceRider;physical:CornerRider;profile:CpWprimeProfile;
@@ -79,6 +82,7 @@ interface State {
   segmentIndex:number;decision:TacticDecision;intent:RaceIntent;
   driveWorkJ:number;brakeLossJ:number;energyResidualJ:number;
   crankWorkJ:number;intentSinceS:number;lastChaseEndS:number;
+  teamPaceKind:TeamPaceKind|null;
 }
 const ensure=(label:string,n:number,condition:boolean)=>{
   if(!Number.isFinite(n)||!condition)throw new RangeError('Rennsimulation: '+label);
@@ -160,7 +164,8 @@ function buildStates(x:RaceInput):State[] {
       peakMps:10,finishTimeS:null,segmentIndex:0,
       decision:{desiredPowerW:dayCpW,intent:'grundtempo',reason:'Rennstart'},
       intent:'grundtempo',driveWorkJ:0,brakeLossJ:0,energyResidualJ:0,
-      crankWorkJ:0,intentSinceS:0,lastChaseEndS:-1e9};
+      crankWorkJ:0,intentSinceS:0,lastChaseEndS:-1e9,
+      teamPaceKind:null};
   });
 }
 function splitGroups(active:State[]):State[][] {
@@ -203,7 +208,8 @@ export function simulateRace(x:RaceInput):RaceResult {
   let breakawayActive=false;
   let aeroFactorSum=0,aeroFactorSamples=0,minimumAeroFactor=1;
   const counters={attacks:0,chases:0,sprints:0,groupSplits:0,
-    breakaways:0,caughtBreakaways:0,paceSupportSteps:0};
+    breakaways:0,caughtBreakaways:0,paceSupportSteps:0,
+    teamPaceStarts:0,teamChaseStarts:0};
   while(states.some(s=>s.finishTimeS===null)){
     if(t>=(x.maxRaceTimeS??30000))throw new RangeError('Rennsimulation: Zeitlimit überschritten');
     const active=states.filter(s=>s.finishTimeS===null);
@@ -224,6 +230,16 @@ export function simulateRace(x:RaceInput):RaceResult {
       formationAeroFactors(ordered.map(s=>({id:s.rider.id,
         positionM:s.positionM}))):null;
     if(t>=nextTacticS-1e-9){
+      const orders=decideTeamPace({
+        timeS:t,progress:Math.min(1,leader.positionM/totalM),
+        teams:x.teams.map(team=>({id:team.id,strategy:team.strategy})),
+        riders:active.map(s=>({
+          id:s.rider.id,teamId:s.rider.teamId,role:s.rider.role,
+          positionM:s.positionM,criticalPowerW:s.dayCpW,
+          reserveFraction:s.physiology.remainingWPrimeJ/
+            s.profile.wPrimeCapacityJ,
+        })),
+      });
       for(const s of states){
         if(s.finishTimeS!==null)continue;
         const cap=captainByTeam.get(s.rider.teamId);
@@ -238,14 +254,41 @@ export function simulateRace(x:RaceInput):RaceResult {
           frontGapM:frontGap.get(s.rider.id)??null,teamCaptainGapM:teamCaptainGap,
           deficitToLeaderM:Math.max(0,leader.positionM-s.positionM),
           reserveFraction:s.physiology.remainingWPrimeJ/s.profile.wPrimeCapacityJ,
+          coordinatedTeamPace:true,
         };
-        const proposal=chooseRacePower(obs);
-        const decision=stabilizeRaceDecision({
-          previous:s.decision,proposal,timeS:t,
-          previousSinceS:s.intentSinceS,
-          lastChaseEndS:s.lastChaseEndS,
-          reserveFraction:obs.reserveFraction,
-        });
+        const baseProposal=chooseRacePower(obs);
+        const order=orders.get(s.rider.id);
+        // Volle W′-/Sprint-/Angriffssouveränität hat Vorrang vor Teamarbeit.
+        const eligible=order&&
+          !['sprint','angriff','erholung'].includes(baseProposal.intent);
+        const proposal=eligible?{
+          desiredPowerW:order.desiredPowerW,
+          intent:order.kind==='verfolgung'?'verfolgung' as const:'helferarbeit' as const,
+          reason:order.reason,
+        }:baseProposal;
+        // Wechsel einer Schicht wird nicht durch die alte Chase-Hysterese
+        // zu mehreren gleichzeitig führenden Helfern verlängert.
+        const decision=order?.kind==='verfolgung'||s.teamPaceKind==='verfolgung'?
+          proposal:stabilizeRaceDecision({
+            previous:s.decision,proposal,timeS:t,
+            previousSinceS:s.intentSinceS,
+            lastChaseEndS:s.lastChaseEndS,
+            reserveFraction:obs.reserveFraction,
+          });
+        const acceptedKind=eligible&&
+          decision.intent===(order.kind==='verfolgung'?'verfolgung':'helferarbeit')?
+          order.kind:null;
+        if(acceptedKind!==s.teamPaceKind){
+          s.teamPaceKind=acceptedKind;
+          if(acceptedKind==='verfolgung')counters.teamChaseStarts++;
+          if(acceptedKind==='fuehrung')counters.teamPaceStarts++;
+          if(acceptedKind&&events.length<1000)events.push({
+            timeS:t,km:s.positionM/1000,
+            type:acceptedKind==='verfolgung'?'team-chase':'team-pace',
+            riderId:s.rider.id,teamId:s.rider.teamId,
+            description:`${s.rider.name}: ${order!.reason}`,
+          });
+        }
         const before=s.intent;
         if(before!==decision.intent){
           if(before==='verfolgung')s.lastChaseEndS=t;
