@@ -737,3 +737,20 @@ die bisherige auf R-10-Aero ausgelegte Watt-Regelung mit starkem
 Windschutz und erschöpften Fahrern sinnvoll interagiert.
 Danach mehrere feste Seed-/Strecken-/Profilvergleiche wiederholen;
 bis dahin `legacy` als Standard beibehalten. Issue #42 offen.
+
+
+### R-12 – endgültig geprüfter Merge- und Deploymentstand (03.11.2026)
+
+[PR #49](https://github.com/Lancester/radsportmanager/pull/49)
+ist mit Squash-Commit `8138141b487f9585147b83616651dd97d8062d2f`
+in `main` übernommen. Der **tatsächlich erfolgreiche**
+[GitHub-Actions-Lauf #41731492676](https://github.com/Lancester/radsportmanager/actions/runs/41731492676)
+bestätigt **209/209 Tests, 0 Fehler**, die unveränderten drei
+Legacy-Referenzrennen, TypeScript-Browser-Build, ESM-Smoke-Test und
+GitHub-Pages-Veröffentlichung. Die **zusätzlichen 14 A/B-Vollrennen**
+wurden getrennt in [#41730692771](https://github.com/Lancester/radsportmanager/actions/runs/41730692771)
+ausgeführt. **Das neue Modell ist auf main vorhanden, aber nicht
+der aktive Standard**; `legacy` gilt weiterhin ohne explizite
+Anforderung. Offener nächster Schritt wie oben: Gruppen-/Positions-
+Repräsentation mit Fahrerrollen und Abgehängtenlogik verbessern,
+bevor eine Aero-Parameterfreigabe beschlossen wird.
