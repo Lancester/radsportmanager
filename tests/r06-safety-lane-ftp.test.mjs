@@ -4,6 +4,7 @@ import {sweptRectCollision,lateralAdvance,detectPasses} from '../src/engine/phys
 import {decideFollowingSafety,R05_SAFETY} from '../src/engine/ai/following-safety.ts';
 import {accumulateFtpWork,emptyFtpWork,meanCrankPowerW} from '../src/engine/physiology/ftp-work.ts';
 import {simulateGroup,createEightRiderExample,createEightRiderPassExample,createEightRiderR05Example} from '../src/engine/physics/drafting-group.ts';
+import {advanceMotionStep} from '../src/engine/physics/motion-core.ts';
 const near=(a,b,e=1e-7)=>assert.ok(Math.abs(a-b)<e,`${a} ≠ ${b}`);
 test('Stetiger Spurwechsel ist pro Schritt geschwindigkeitsbegrenzt',()=>{
   near(lateralAdvance(0,2,0.8,0.2,3),0.16);
@@ -104,4 +105,16 @@ test('FTP-Profil bleibt unabhängig von CP beim tatsächlichen R05-Lauf',()=>{
 test('Ungültige FTP-Diagnosen werden abgelehnt',()=>{
   assert.throws(()=>accumulateFtpWork(emptyFtpWork(),200,0,1),RangeError);
   assert.throws(()=>accumulateFtpWork(emptyFtpWork(),200,210,-1),RangeError);
+});
+
+test('Bremsung zum völligen Stillstand stoppt vor dem Zeitschrittende mit Energieerhaltung',()=>{
+  const rider={riderMassKg:72,equipmentMassKg:8,dragAreaM2:.3,
+    rollingCoefficient:.004,airDensityKgM3:1.2,drivetrainEfficiency:.975};
+  const result=advanceMotionStep({rider,speedMps:.2,stepSeconds:.2,
+    crankPowerW:0,brakeForceN:320});
+  near(result.endSpeedMps,0,1e-12);
+  assert.ok(result.distanceM>0 && result.distanceM<.02,
+    `Bremsweg überschätzt: ${result.distanceM}`);
+  assert.ok(Math.abs(result.energyResidualJ)<1e-5,
+    `Energie-Differenz: ${result.energyResidualJ}`);
 });
