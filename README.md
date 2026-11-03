@@ -75,3 +75,8 @@ Der experimentelle Baustein `src/engine/physics/drafting-group.ts` lässt **3–
 ## Erste regelbasierte Fahrer-KI (R-04)
 
 Ein kleiner **erklärbarer TypeScript-Fahrer-Agent** darf im Achtfahrer-Test eine wachsende Lücke erkennen und für kurze Zeit begrenzt zusätzliche Watt anfordern. Keine ML-Bibliotheken, keine Cloud, keine direkte Änderung von Geschwindigkeit oder Ergebnis. Vergleichbare Web-Worker-Tests **ohne KI / mit Regel-KI** auf GitHub Pages. Noch kein vollwertiges Peloton oder Managerspiel. [Funktionsweise und Grenzen](docs/ai/LUECKENAGENT.md).
+
+
+## R-05: Abstandsregler, CP/W′ und getrennte FTP-Kennzahl
+
+Der nächste Schritt verbindet die erste regelbasierte Lücken-KI mit einer optionalen **physikalischen Brems-/Abstandsregelung** und einer **begrenzten W′-Reserve oberhalb der Critical Power**. FTP wird als eigenständiger Fahrer-/Trainingswert vorgesehen, nicht mit CP verwechselt. Keine realistische Langzeit-Ermüdungs- oder vollständige 160-Fahrer-Rennsimulation; kein automatisches seitliches Ausweichen. [Formeln und Grenzen](docs/physik/R05_ABSTAND_CP_WPRIME.md).
