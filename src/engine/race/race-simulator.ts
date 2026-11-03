@@ -308,7 +308,7 @@ export function simulateRace(x:RaceInput):RaceResult {
                 reserve>=0.42&&s.positionM>=groupFront-40&&
                 s.positionM>=leader.positionM-120&&
                 s.dayCpW>=meanCp*0.93&&grade>=-0.03;
-              return continuing||opening;
+              return opening;
             })(),
           }:{})
         };
