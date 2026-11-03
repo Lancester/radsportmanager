@@ -237,3 +237,13 @@ wird dadurch **nicht verändert**.
 **Priorität:** echte glaubwürdige Rennverläufe und autonome Taktik
 vor Detail-Lenkphysik. Zuerst isoliert lokale Formation, Gruppenführung,
 Abgehängten-/Verfolgungsdynamik prüfen; dann Parameterentscheidung.
+
+
+## D-080/D-081 – Formationswindschatten und natürliche Rückstände (03.11.2026)
+
+| ID | Status | Entscheidung | Grenze |
+| --- | --- | --- | --- |
+| D-080 | **Vom Nutzer ausdrücklich beschlossen – R-13** | Das zuvor schaltbar verglichene Formationswindschattenmodell wird **Standard für neue Rennläufe**, auch auf der Rennseite. Einzelne Fahrer ohne Windschutz dürfen gegenüber einem geschützten Feld erheblich zurückfallen. Keine künstliche Aufhol- oder Ergebnisangleichung. | Die konkrete 1D-Heuristik ersetzt nicht jede physikalische Eigenschaft eines echten mehrspurigen Pelotons; empirische Vollkalibrierung ist **keine Voraussetzung für die Implementierung**. |
+| D-081 | **Beschlossen: reproduzierbare Rückfalloption** | `RaceInput.aeroModel` ohne Angabe bzw. `'formation'` nutzt neuen Standard. `'formation-experiment'` bleibt aus Kompatibilität als Alias; `'legacy'` bewahrt die alte R-10-/R-11-Referenz. Gleiche Längspositionen zählen nicht als voreinander fahrende Personen, der mechanische CP/W′-Kern bleibt gleich. | D-074 bis D-079 bleiben als historische Begründung/Testergebnisse erhalten; dies ist eine **neue**, ausdrückliche Entscheidung. Offene Führungs-/Verfolgungsmechanik bleibt Issue #42. |
+
+Ausführliche [R-13-Umsetzung und Abnahme](race/R13_FORMATIONSWINDSCHATTEN_STANDARD.md).
