@@ -25,6 +25,51 @@ Die technischen Parameter sind weiterhin vereinfachte, nicht empirisch exakt bes
 - `tests/r13-default-races.test.mjs`: **sieben vollständige 50-km-Rennen** mit unverändertem Standardparameter, zwei Seeds × drei Team-/Streckenfälle und einem bewusst um 12 % geschwächten Helfer F03. Für alle 210 Zielankünfte werden Ranglisten, Gruppen, CP-/W′-Reserve, negative Energiereste und korrekte Flucht-/Einholmeldungen geprüft.
 - Haupt-CI: `npm test`, TypeScript-Browser-Build, ESM-Smoke-Test und GitHub Pages. Nur Ergebnisse nach tatsächlich bestätigtem Job als erfolgreich beschreiben.
 
-**Status und Messergebnisse:** Die folgenden Testresultate und die finalen GitHub-Actions-Links werden nach bestätigter Ausführung dokumentiert. Keine realen Profirenn-Ergebnisse behauptet.
+**Status und Messergebnisse:** Die sieben R-13-Standardrennen und 213 Tests wurden tatsächlich auf GitHub Actions ausgeführt und bestanden; siehe nachfolgende Auswertung. Keine realen Profirenn-Ergebnisse behauptet.
 
 **Offen in Issue #42:** Umsetzung sinnvoller autonomer Führung, Tempoarbeit, Mannschaftsrollen und Verfolgungsentscheidungen. Größere Abstände der abgehängten Fahrer sind hierfür **kein Fehlerkriterium**. Priorität bleibt Rennen und Spieltiefe, nicht neue Reifen-/Lenkphysik.
+
+
+## Verifizierte Standardrennen mit korrigierten Gleichauf-Fahrern
+
+[PR-Tests #41734021919](https://github.com/Lancester/radsportmanager/actions/runs/41734021919):
+**213/213 Tests bestanden, 0 Fehler**, inklusive sieben neuer
+vollständiger 50-km-Standardrennen mit je 30 klassifizierten Fahrern
+(210 modellierte Zielankünfte). Die neuen Gruppenwerte unterscheiden
+sich teils geringfügig von R-12, weil die ID-bedingten Scheinaerovorteile
+bei identischen Positionen entfernt wurden.
+
+| Rennfall | Max. 42-m-Abstandsgruppen | Median Gruppen bei 5-km-Snapshots | Median-Zielrückstand | Rückstand des Letzten | Mittlerer Aero-Faktor |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Hügelig geschützt, Seed 2026 | 22 | 12 | 180,7 s | 604,6 s | 0,780 |
+| Hügelig offensiv, Seed 2026 | 20 | 11 | 239,1 s | 712,1 s | 0,773 |
+| Flach Sprint, Seed 2026 | **3** | **3** | **0,8 s** | 688,5 s | 0,502 |
+| Hügelig geschützt, Seed 2027 | 20 | 10 | 237,6 s | 631,3 s | 0,786 |
+| Hügelig offensiv, Seed 2027 | 25 | 9 | 231,8 s | 696,5 s | 0,738 |
+| Flach Sprint, Seed 2027 | **4** | **3** | **1,5 s** | 938,6 s | 0,495 |
+| Hügelig geschützt, F03 -12 % CP/FTP/W′, 2026 | 20 | 12 | 257,3 s | 707,2 s | 0,790 |
+
+**Fachliche Beurteilung:** Die Flachrennen zeigen das gewünschte
+dichte Hauptfeld mit teils sehr knapp zusammenliegenden Fahrern.
+Dass ein isolierter Fahrer bis zu rund 11–16 Minuten verlieren kann,
+ist **ausdrücklich erlaubt**. Dabei ist weder die genaue Höhe des
+Rückstands als realistischer Profi-Rennwert bestätigt noch eine
+künstliche Zeitangleichung eingebaut.
+
+**Technischer Sicherheitsnachweis:** Die sieben Fälle werden auf
+vollständige Zielklassifikation, Energiereste,
+nichtnegative W′-Reserven, echte Flucht-/Einholungsabstände sowie
+den aktiven Luftwiderstandsfaktor geprüft. Der explizite
+`legacy`-Pfad reproduziert weiter die bisherige flache
+30-Fahrer-Sprintreferenz (12 Maximalgruppen).
+`'formation'`, ohne Modellangabe und historisches
+`'formation-experiment'` liefern bei gleichem Seed
+bitidentische Rennergebnisse.
+
+**Schlussfolgerung für die Entwicklung:** R-13 ist damit eine
+bewusst getroffene, technisch erfolgreiche *Spielmechanik-
+Freigabe*, keine messwissenschaftliche Kalibrierung.
+Ein nächster eigenständiger Schritt kann reale Führung,
+Teamzusammenarbeit und Verfolgung behandeln, ohne die
+natürlichen Unterschiede zwischen geschütztem Feld und
+isolierten Fahrern künstlich zu verkleinern.
