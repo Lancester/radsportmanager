@@ -412,3 +412,14 @@ Die bisherige Android-Seite erhält zwei zusätzliche, eigenständige Presets. *
 **Grenzen:** Ein Konflikt in der Vorhersage führt zur Zurückhaltung, aber eine unerwartete Änderung der Geschwindigkeit/Spur anderer Fahrer kann im laufenden, eigentlichen Solver weiterhin einen Sicherheitsfehler auslösen. Keine voll gekoppelte Fahrrad-Lenk-/Kurvendynamik, keine intelligenten mittigen Peloton-Lücken und noch keine vollständige Fahrerfeld-/Renn-KI mit 160 Fahrern. FTP, CP/W′ und langfristiges Training sind weiterhin nicht sportwissenschaftlich kalibriert.
 
 **Nächste Aufgaben:** Wiedereinscheren in variierende, tatsächlich sichere Lücken; bewegliche Hindernisse und gemeinsames Aushandeln geplanter Spurwechsel; tatsächliche 2D-Lenk-/Kurven-/Bremshaftungsphysik und später ein vollständiges Rennfeld. [R-08-Modell](ai/R08_WIEDEREINSCHEREN_MULTIAGENT.md).
+
+
+## R-09: Abnahme vollständiger 30-Fahrer-Rennen (03.11.2026)
+
+**Vorheriger verifizierter Stand:** 169 bestandene Physik-/KI-Tests (R-08).
+
+**Neuer Testsatz `tests/r09-race.test.mjs`:** Vollständige 50-km-Durchläufe mit 30 Fahrern auf **flachem und hügeligem Profil**, eindeutige Platzierungen, echte Zielzeit-/Gap-Berechnung, CP/W′-Bilanz, mechanische Energieerhaltung, reproduzierbare Tagesform über Seed, tatsächlich physikalisch unterschiedliche Zielzeiten durch Teamleitlinie, offensive Attacken, Sprints, Abschnitte, Gruppen und Fahrtechnik in der Abfahrt. Abweisung unrealistischer Eingaben und abgelaufenem Zeitlimit.
+
+**Browser-Abnahme:** Der GitHub-Pages-Workflow soll das Original-TypeScript-Modul `src/engine/race/race-simulator.ts` für Browser kompilieren, ein echtes 30-Fahrer-Rennen sowie einen offensiven Vergleichslauf ausführen und dann `docs/rennen.html` veröffentlichen. **Keine Erfolgsbehauptung vor tatsächlichem GitHub-Run**. Der lokale Android-Web-Worker ist noch nicht vom Nutzer gemessen.
+
+**Wichtig:** Ein erfolgreiches vollständiges Modellrennen beweist mathematische Konsistenz, nicht realistische Abstände/Taktik in WorldTour-Rennen. Diese Kalibrierung ist Gegenstand nachfolgender Runden. [Ehrliche Grenzen](RENNPROTOTYP_R09.md).
