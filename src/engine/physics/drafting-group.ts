@@ -3,7 +3,7 @@
  * Windschatten-Kombination ist vorläufige Heuristik, nicht empirisch kalibriert.
  */
 import { advanceMotionStep } from './motion-core.ts';
-import {decideGapPower, initialGapState, validateGapConfig} from '../ai/gap-controller.ts';
+import {decideGapPower, initialGapState, validateGapConfig, F8_GAP_AGENT} from '../ai/gap-controller.ts';
 import type {GapAgentConfig, GapAgentState} from '../ai/gap-controller.ts';
 import type { CornerRider } from './motion-core.ts';
 import { R03_DRAFT, requiredCrankPowerAtSpeedW } from './drafting-pair.ts';
@@ -280,4 +280,13 @@ export function createEightRiderExample(durationS=120):GroupInput {
   return {riders,durationS,stepSeconds:0.2,sampleEveryS:5,
     gapEventThresholdM:8,commands:[{timeS:30,riderId:'F8',
       crankPowerW:riders[7].crankPowerW-45}]};
+}
+
+/** Gleiche physikalische Ausgangslage wie R-03G, aber F8 hat jetzt
+ * einen kleinen, selbst entscheidenden regelbasierten Lückenagenten.
+ * Einziger Eingriff des Agenten: befohlene Kurbelwatt innerhalb der Limits.
+ */
+export function createEightRiderAgentExample(durationS=120):GroupInput {
+  const input=createEightRiderExample(durationS);
+  return {...input,gapAgents:[{...F8_GAP_AGENT}],agentDecisionEveryS:1};
 }
