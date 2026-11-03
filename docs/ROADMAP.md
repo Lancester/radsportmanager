@@ -81,3 +81,11 @@ Die Performance-Messung mit 160 voneinander unabhängigen 4-km-Fahrten auf Node.
 Erster gekoppelter Zweier-Prototyp: Positions-/Abstandsdaten steuern eine parametrisierte **Aero-Reduktion** und beide Fahrer werden in gemeinsamen Zeitschritten berechnet. 64/64 lokale Tests bestanden. Mehr als zwei Fahrer, Wind, taktische KI und echte relative seitliche Bewegungen fehlen.
 
 **Nächster technischer Meilenstein:** einen simplen Browser-/Web-Worker-Test der R-03-Engine auf **Android** ausführbar machen; dann positionsabhängiger Windschatten in einer **3–8-Fahrer-Gruppe** und langfristig adaptiv effizientere Simulation statt unnötig aufwändiger 0,2-s-Berechnung für alle 160 Fahrer. [R-03-Dokumentation](physik/R03_WINDSCHATTEN_ZWEI_FAHRER.md).
+
+## Smartphone-Meilenstein in Arbeit (03.11.2026)
+
+Der erste deutschsprachige, statische Android-/Browser-Benchmark für **R-03-Zweierfahrten** ist als GitHub-Pages-Webseite vorbereitet. Er verwendet den **identischen kompilierten TypeScript-Rechenkern** und führt unabhängige Testpaare im Web Worker aus, während die UI bedienbar bleiben soll. GitHub-Pages-Freischaltung durch den Repo-Admin und der echte Android-Test stehen noch aus.
+
+**Unmittelbar:** GitHub Pages → Source **GitHub Actions** aktivieren; App-Link/Build prüfen; Android 1/10/80-Paar-Test durchführen und Bericht auswerten. **Danach:** 3–8 tatsächlich gekoppelte Fahrer auf einer gemeinsamen Uhr mit gegenseitiger Position/Windschatten. Erst nach validierten Mobilwerten Optimierung und größere Gruppen.
+
+[Anleitung](ANDROID_BENCHMARK.md) · [Issue #23](https://github.com/Lancester/radsportmanager/issues/23).

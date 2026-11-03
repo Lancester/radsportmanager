@@ -9,3 +9,7 @@ coverage/
 .DS_Store
 .idea/
 .vscode/
+
+# Browser-JavaScript wird aus dem originalen TypeScript beim Pages-Build erzeugt.
+docs/benchmark/generated/
+docs/benchmark/version.txt

@@ -1,0 +1,59 @@
+name: Android R-03 Benchmark (GitHub Pages)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/engine/physics/**'
+      - 'tests/**'
+      - 'docs/index.html'
+      - 'docs/benchmark/**'
+      - 'package.json'
+      - '.github/workflows/r03-benchmark-pages.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: r03-pages
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Repository herunterladen
+        uses: actions/checkout@v4
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: TypeScript Compiler einmalig installieren
+        run: npm install --no-save --ignore-scripts --no-audit --no-fund typescript@5.8.3
+      - name: Alle Physiktests ausführen
+        run: npm test
+      - name: Exakt vorhandene R-03-Engine für Browser übersetzen
+        run: npm run build:benchmark
+      - name: Erzeugtes Browsermodul mit Node ESM smoke-testen
+        run: node --input-type=module -e "const m = await import('./docs/benchmark/generated/drafting-pair.js'); const r=m.simulateTwoRiders(m.R03_PAIR_EXAMPLE); if (!Number.isFinite(r.elapsedS) || r.elapsedS !== 12) process.exit(1); console.log('Browsermodul importierbar');"
+      - name: Git-Commit des Teststands für Bericht notieren
+        run: git rev-parse --short HEAD > docs/benchmark/version.txt
+      - name: GitHub Pages vorbereiten
+        uses: actions/configure-pages@v5
+      - name: Statische Seite hochladen
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: docs
+      - name: Webseite veröffentlichen
+        id: deploy
+        uses: actions/deploy-pages@v4

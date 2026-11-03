@@ -112,3 +112,11 @@ Neue Checks: Luftwiderstandsreduktion vs. unveränderter Rollwiderstand, vordere
 **Benchmark (rein lokal, kein Android):** 1, 10 und 100 wiederholte 12-s-Zweierläufe haben in 3 Node-Messläufen Medianlaufzeiten von ca. **0,82 / 8,39 / 41,15 ms**. Dies sind *unabhängige Zweierfahrten*, keine miteinander wechselwirkenden 200-km-Gruppen.
 
 Noch fehlend: empirisch kalibrierte Windschattenparameter, Querwind, 3+ Fahrer, 2D-Bewegung, Leistungs-Dauer-Profil und echte Android-/Web-Worker-Laufzeitmessung. Herleitung und Quellengrundlage: [physik/R03_WINDSCHATTEN_ZWEI_FAHRER.md](physik/R03_WINDSCHATTEN_ZWEI_FAHRER.md).
+
+## Browser-/Android-Benchmark zunächst technisch vorbereitet (03.11.2026)
+
+**Geprüft:** 64/64 bisherige Node.js-Tests, TypeScript-Übersetzung der originalen R-03-Engine nach Browser-JavaScript, manueller Worker-Aufruf in einer kontrollierten Node-Testumgebung mit reproduzierbaren Prüfsummen auch für 80 unabhängige Paare/120 s (ein einzelner lokaler solcher Lauf ca. 0,43 s). **Nicht geprüft:** tatsächliches Android-Gerät, echter Browser-Web-Worker, veröffentlichtes Pages-Deployment und große, interagierende Gruppen.
+
+Ein kleiner GitHub-Pages-Workflow soll bei relevantem Commit genau dieselben 64 Tests wiederholen und die Browserseite veröffentlichen. Die tatsächliche GitHub-Ausführung wird erst nach erfolgreichem Workflowlauf als bestanden verbucht. Die Android-Messwerte werden nach Nutzerbericht in die Validierungsdokumentation aufgenommen.
+
+[Android-Testanleitung und Testgrenzen](ANDROID_BENCHMARK.md).

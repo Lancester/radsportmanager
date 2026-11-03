@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d1523">
+  <title>Radsportmanager – Smartphone-Physiktest</title>
+  <style>
+    :root{color-scheme:dark;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#0d1523;color:#e7eef9}
+    *{box-sizing:border-box}body{margin:0;line-height:1.5}main{max-width:760px;margin:auto;padding:22px 17px 44px}
+    .eyebrow{color:#7dc3d6;font-size:.82rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+    h1{font-size:clamp(1.65rem,7vw,2.6rem);line-height:1.15;margin:10px 0}h2{font-size:1.1rem;margin:0 0 8px}
+    p{color:#b9c6d9;margin:0 0 14px}.panel{background:#152236;border:1px solid #294056;padding:18px;border-radius:17px;margin-top:18px}
+    .buttons{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px}
+    button{background:#276c91;color:white;font:inherit;font-weight:700;border:1px solid #478ab2;padding:12px;border-radius:10px;min-height:48px;cursor:pointer}
+    button:disabled{opacity:.44;cursor:default}button.secondary{background:transparent;color:#cee5f0;border-color:#547086}
+    .state{padding:12px 13px;background:#101c2e;border-radius:10px;min-height:48px;border:1px solid #263c55;margin-top:12px}
+    .metric{font-size:2.15rem;font-weight:760;font-variant-numeric:tabular-nums;letter-spacing:-.04em;line-height:1.2}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.small{font-size:.89rem;color:#aebfd4}
+    textarea{width:100%;height:170px;background:#0e192a;border:1px solid #446079;color:#d7e6f7;line-height:1.4;border-radius:10px;padding:10px;font-family:ui-monospace,monospace;font-size:.75rem;resize:vertical}
+    .link{color:#91d5fa}a:focus-visible,button:focus-visible{outline:3px solid #f0d887;outline-offset:3px}
+    [hidden]{display:none!important}.foot{font-size:.79rem;margin-top:22px;color:#a8bacd}
+  </style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">Radsportmanager · R-03</div>
+  <h1>Wie schnell simuliert dein Handy zwei Radfahrer?</h1>
+  <p>Wir testen <strong>denselben TypeScript-Physikkern</strong> wie auf GitHub. Die Berechnung läuft in einem <strong>Web Worker</strong>, die Oberfläche bleibt nutzbar. Es werden keine persönlichen Messdaten an uns gesendet.</p>
+
+  <section class="panel" aria-labelledby="presetTitle">
+    <h2 id="presetTitle">1. Testgröße auswählen</h2>
+    <p class="small">Mehrere Paare sind vollständig <strong>voneinander unabhängig</strong>. Das ist noch <strong>kein Peloton</strong> und kein 200-km-Rennen.</p>
+    <div class="buttons">
+      <button data-preset="klein">Klein · 1 Paar · 12 s</button>
+      <button data-preset="mittel">Mittel · 10 Paare · 120 s</button>
+      <button data-preset="gross">Groß · 80 Paare · 120 s</button>
+    </div>
+    <div class="buttons" style="margin-top:9px"><button class="secondary" id="cancel" disabled>Test abbrechen</button></div>
+    <div class="state" id="status" role="status" aria-live="polite">Bereit. Wähle einen Test.</div>
+  </section>
+
+  <section class="panel" aria-labelledby="resultTitle">
+    <h2 id="resultTitle">2. Ergebnis</h2>
+    <div class="grid">
+      <div><div class="small">Mittlere Rechenzeit (Median)</div><div id="runtime" class="metric">–</div><div class="small">Millisekunden</div></div>
+      <div><div class="small">Virtuelle Rennzeit je Paar</div><div id="virtual" class="metric">–</div><div class="small">Sekunden</div></div>
+    </div>
+    <p class="small" id="detail" style="margin-top:15px">Nach dem Test erscheinen hier die technischen Details.</p>
+    <label for="report" class="small">Messbericht zum Kopieren:</label>
+    <textarea id="report" readonly placeholder="Hier erscheint ein Ergebnisbericht im JSON-Format."></textarea>
+    <div class="buttons" style="margin-top:9px"><button class="secondary" id="copy" disabled>Ergebnis kopieren</button></div>
+  </section>
+
+  <section class="panel" aria-labelledby="whatTitle">
+    <h2 id="whatTitle">3. Was sagen die Ergebnisse aus?</h2>
+    <p>Wir messen die Rechenzeit für 2, 20 oder 160 Fahrer, jeweils in voneinander unabhängigen Zweiergruppen. So vergleichen wir die Leistung verschiedener Smartphones, ohne bereits eine komplette Rennsimulation vorzutäuschen.</p>
+    <p>Die Physik berücksichtigt Pedalleistung, Roll- und Luftwiderstand, Positionen und Windschatten. Gruppendynamik, Fahrer-KI, Ermüdung und lange Etappen fehlen noch.</p>
+    <p class="small">Laufzeit und Ergebnisse entstehen lokal im Browser. Die Webseite ist öffentlich, aber es gibt kein Benutzerkonto und keinen Ergebnis-Upload. Ein Export erfolgt nur, wenn du ihn selbst kopierst.</p>
+  </section>
+  <p class="foot">Version <span id="version">wird geladen</span> · <a class="link" href="https://github.com/Lancester/radsportmanager">Quellcode auf GitHub</a></p>
+</main>
+<script type="module" src="./benchmark/app.js"></script>
+</body>
+</html>

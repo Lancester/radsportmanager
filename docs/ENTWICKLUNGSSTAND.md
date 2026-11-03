@@ -1,6 +1,6 @@
 # Entwicklungsstand
 
-**Aktueller Stand: 03.11.2026 · Phase 2: erster gekoppelter Zweifahrer-Windschattenprototyp, 64/64 lokale Tests bestanden.** Die früheren Phasenstände weiter unten sind als chronologisches Journal zu lesen; die aktuelle nächste Aufgabe steht im letzten Abschnitt.
+**Aktueller Stand: 03.11.2026 · Phase 2: R-03-Windschatten vorhanden; Android-Browser-Benchmark vorbereitet, echte Android-Messung steht aus.** Die früheren Phasenstände weiter unten sind als chronologisches Journal zu lesen; die aktuelle nächste Aufgabe steht im letzten Abschnitt.
 
 ## Bereits festgelegt
 
@@ -185,3 +185,22 @@ Die Zusammenführung wurde über [PR #20](https://github.com/Lancester/radsportm
 **64/64 lokale Node.js-Tests bestanden und TypeScript-Typprüfung erfolgreich**, darunter 15 neue Zweier-Tests. Die angenommene Aero-Reduktionsfunktion ist noch **nicht empirisch kalibriert**; Kollision in derselben Spur führt zu erklärtem Fehler, keine automatische Kollisionsvermeidung.
 
 **Nächster konkreter Auftrag:** [Issue #23 – Android-Web-Worker-Benchmark und darauf aufbauende erste 3–8-Fahrer-Gruppen](https://github.com/Lancester/radsportmanager/issues/23). Vor den ersten tatsächlichen Android-Messwerten dürfen keine Hochrechnungen zur Laufzeit einer kompletten 160-Fahrer-/200-km-Etappe als gesichert gelten. Die allgemeinen Issues #4 (Gruppen/Windschatten) und #6 (statistische Validierung/Android) bleiben offen.
+
+## Android-Web-Worker-Benchmark vorbereitet (03.11.2026)
+
+**Auftrag:** R-03 auf einem echten Android-Smartphone messen, bevor große Pelotons implementiert werden.
+
+**Im neuen GitHub-Pull-Request vorbereitet:**
+- `docs/index.html`: deutschsprachige mobile Testseite mit drei Größen (1/10/80 unabhängige Zweiergruppen), Abbruchmöglichkeit, Rechenzeitmessung und lokal kopierbarem Ergebnisbericht.
+- `docs/benchmark/app.js` und `docs/benchmark/r03-worker.js`: die eigentliche Simulation läuft in einem Web Worker ohne Blockieren der Oberfläche; eindeutige Ergebnis-Prüfzahl.
+- `npm run build:benchmark`: **bestehende** R-03-TypeScript-Engine samt Physikimporten wird mit TypeScript 5.8.3 in echtes Browser-JavaScript kompiliert. Keine separat entwickelte zweite Physik-Engine.
+- `.github/workflows/r03-benchmark-pages.yml`: kleiner auf relevante Dateien begrenzter GitHub-Pages-Workflow mit Node 22, allen 64 Physiktests, anschließender Browser-Übersetzung und 10-Minuten-Timeout. **Erstmalig bewusst GitHub Actions zur Veröffentlichung; Standard-Runner sind im öffentlichen Repo laut GitHub kostenlos.** Keine periodischen Simulationen oder umfangreichen Monte-Carlo-Läufe.
+- Ausführliche Anleitung und Einschränkungen: [ANDROID_BENCHMARK.md](ANDROID_BENCHMARK.md).
+
+**Tatsächlich lokal geprüft:** 64/64 vorhandene Tests bestanden, TypeScript-Übersetzung erzeugte korrekt auf `.js` umgestellte Importe, JS-Worker konnte unter Node.js als kontrollierte Testumgebung sowohl 1 Paar / 12 s als auch 80 unabhängige Paare / 120 s ausführen, inklusive reproduzierbarer Prüfsumme. Der synthetische 80-Paar-Lauf benötigte lokal ca. 0,43 s pro Wiederholung; dies ist **keine Android-Messung**.
+
+**Noch ausdrücklich nicht geprüft:** Benutzeroberfläche in einem echten Browser auf Android, GitHub-Pages-Deployment und Performance/Kompatibilität des echten Smartphone-Web-Workers. Ein grafischer Browseraufruf im Arbeitscontainer wurde durch Zugriffsregeln blockiert.
+
+**Nächste Nutzeraktion:** GitHub Repository `Lancester/radsportmanager` → Settings → Pages → Source **GitHub Actions** auswählen; falls nötig den bestehenden Workflow unter Actions manuell erneut starten. Erst nach erfolgreichem Deployment die vorgeschlagenen Testläufe in Chrome auf dem Android-Gerät ausführen und den Ergebnisbericht hier teilen.
+
+**Nachfolgende Entwicklung:** Auf Grundlage dieser echten Messungen 3–8 gekoppelte Fahrer auf einer gemeinsamen Zeitachse mit Positions-/Windschatten-Nachbarschaft statt unabhängiger Paare implementieren. [Issue #23](https://github.com/Lancester/radsportmanager/issues/23) bleibt bis zur Android-Messung und späteren Gruppenerweiterung offen.
