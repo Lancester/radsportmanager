@@ -90,9 +90,9 @@ export function decideOvertakeLane(
     const horizon=Math.min(config.maxManeuverHorizonS,travelSeconds+0.5);
     for(let t=0;t<horizon-1e-10;){
       const dt=Math.min(config.maneuverPredictionStepS,horizon-t);
-      const previousY=lateralAdvance(own.lateralPositionM,target,
-        config.maxLateralSpeedMps,t===0?1e-6:t,half);
-      const startY=t===0?own.lateralPositionM:previousY;
+      const signed= Math.sign(target-own.lateralPositionM);
+      const startY=own.lateralPositionM+signed*Math.min(
+        Math.abs(target-own.lateralPositionM),config.maxLateralSpeedMps*t);
       const endY=lateralAdvance(startY,target,config.maxLateralSpeedMps,dt,half);
       const xBefore=[own.positionM+own.speedMps*t];
       const xAfter=[own.positionM+own.speedMps*(t+dt)];
