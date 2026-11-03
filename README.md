@@ -33,3 +33,8 @@ Ein kostenloser, langfristig motivierender **Offline-Radsportmanager**. Die Spie
 Projektdokumentation, Aufgaben, Berichte, UI und Kommunikation werden **auf Deutsch** geführt. Technische Bezeichner und Programmiersprachen bleiben in ihrer üblichen Form; ein späteres englisches UI ist optional.
 
 Das Repository ist **öffentlich**, aber eine Open-Source-Lizenz wurde noch **nicht** festgelegt. Bis eine passende LICENSE-Datei vorliegt, ist die Nachnutzung des Codes nicht automatisch freigegeben. Für erste Prototypen ausschließlich fiktive Fahrer und Teams nutzen.
+
+
+## Erster programmierter Physiktest
+
+Der Test **R-01 – Ebene, 20 km, 250/300 Watt** ist als erstes isoliertes, deterministisches TypeScript-Modul umgesetzt. Die verständliche Herleitung und die Ergebnisse stehen in [docs/physik/R01_EBENE.md](docs/physik/R01_EBENE.md). Lokale Tests: `npm run test:r01` (Node.js mit TypeScript-Stripping). **Das ist noch kein spielbarer Rennmanager.**
