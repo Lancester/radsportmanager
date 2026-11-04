@@ -80,8 +80,8 @@ export function coordinatePelotonChase(input:{
   }).filter(x=>x.interested&&x.helpers>0)
     .sort((a,b)=>b.score-a.score||b.helpers-a.helpers||
       a.team.localeCompare(b.team))
-    .slice(0,sprintFinale&&remainingM<35000?4:
-      R22_CHASE.maximumTeams).map(x=>x.team);
+    .slice(0,sprintFinale?4:R22_CHASE.maximumTeams)
+    .map(x=>x.team);
   const state={active:choices,sinceS:timeS,cooldownUntilS:previous.cooldownUntilS};
   return {state,chasingTeamIds:new Set(choices)};
 }
