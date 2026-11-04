@@ -56,9 +56,11 @@ test('R23: dauerhaftes Rampentempo ist reale CP-nahe Wattanforderung',()=>{
   assert.ok(p<=basic.criticalPowerW*HILLY_RACECRAFT.tempoMaxCpFraction);
   for(const specialty of ['klassiker','allrounder','kletterer','zeitfahrer'])
     assert.ok(decideHillyRampTempo({...basic,specialty})!==null);
+  assert.ok(decideHillyRampTempo({...basic,progress:.50})!==null,
+    'kein festes spaetes Anstiegs-Freigabefenster');
   for(const change of [
     {enabled:false},{specialty:'sprinter'},{isGroupNominee:false},
-    {progress:.70},{gradeFraction:.02},{segmentProgress:.02},
+    {gradeFraction:.02},{segmentProgress:.02},
     {segmentLengthM:12000},{groupSize:2},{role:'helfer'},
     {gapToGroupFrontM:71},{gapToRaceFrontM:651},
     {reserveFraction:.1},{currentIntent:'angriff'},

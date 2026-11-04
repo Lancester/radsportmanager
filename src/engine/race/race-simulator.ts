@@ -583,7 +583,11 @@ export function simulateRace(x:RaceInput):RaceResult {
             r.rider.role==='kapitaen'&&
             teams.get(r.rider.teamId)?.strategy==='offensiv'&&
             r.physiology.remainingWPrimeJ/
-              r.profile.wPrimeCapacityJ>=HILLY_RACECRAFT.lateMinReserve&&
+              r.profile.wPrimeCapacityJ>=
+                HILLY_RACECRAFT.reserveAtStart-
+                (HILLY_RACECRAFT.reserveAtStart-
+                 HILLY_RACECRAFT.reserveAtFinish)*
+                Math.min(1,r.positionM/totalM)&&
             t-r.lastAttackS>=HILLY_RACECRAFT.minimumRepeatAttackAgeS&&
             g[0].positionM-r.positionM<=HILLY_RACECRAFT.maxPositionGapM&&
             leader.positionM-r.positionM<=HILLY_RACECRAFT.maxRaceGapM);
@@ -645,6 +649,7 @@ export function simulateRace(x:RaceInput):RaceResult {
                     s.profile.wPrimeCapacityJ,
                   lastAttackAgeS:t-s.lastAttackS,
                   currentIntent:s.intent,
+                  breakawayEstablished:breakawayActive,
                   isGroupNominee:!!g&&
                     hillyAttackNominee.get(g[0].rider.id)===s.rider.id,
                   criticalPowerW:s.dayCpW,
@@ -890,7 +895,6 @@ export function simulateRace(x:RaceInput):RaceResult {
     if(hillyRace){
       for(const group of physicalGroups){
         if(group.length<HILLY_RACECRAFT.minimumGroupSize||
-          group[0].positionM/totalM<HILLY_RACECRAFT.lateFromProgress||
           leader.positionM-group[0].positionM>
             HILLY_RACECRAFT.tempoMaxRaceFrontGapM)continue;
         const eligible=group.map(g=>byId.get(g.id)!).filter(r=>

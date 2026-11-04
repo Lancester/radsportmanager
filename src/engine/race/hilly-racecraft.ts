@@ -10,15 +10,19 @@ export const HILLY_RACECRAFT=Object.freeze({
   minAscentM:1750,maxAscentM:3150,
   minSteepRamps:2,maxLongClimbM:6000,
   minRampGrade:.065,minRampLengthM:700,maxRampLengthM:2500,
-  earlyFromProgress:.015,earlyUntilProgress:.13,
+  // Nur die Anfangsflucht benutzt eine Startphase; alle
+  // Profil-Angriffe sind an jedem Streckenpunkt moeglich.
+  earlyFromProgress:.015,earlyUntilTimeS:2700,
   earlyMinTimeS:180,earlyMinReserve:.53,
-  lateFromProgress:.76,lateUntilProgress:.996,
+  tacticalRampMinGrade:.05,
+  reserveAtStart:.55,reserveAtFinish:.36,
   rampFromFraction:.12,rampUntilFraction:.92,
-  lateMinReserve:.36,continueMinReserve:.18,
+  continueMinReserve:.18,
   minimumRepeatAttackAgeS:1500,continueAttackSeconds:65,
   minimumGroupSize:4,
   maxPositionGapM:115,maxRaceGapM:950,
-  tempoMinReserve:.20,tempoMaxGroupFrontGapM:70,
+  tempoMinReserve:.20,tempoMinGrade:.075,
+  tempoMaxGroupFrontGapM:70,
   tempoMaxRaceFrontGapM:650,tempoMaxCpFraction:1.075,
 });
 export interface HillyRouteObservation {
@@ -48,6 +52,7 @@ export interface HillyTacticalObservation {
   groupSize:number;gapToGroupFrontM:number;gapToRaceFrontM:number;
   reserveFraction:number;lastAttackAgeS:number;
   currentIntent:string;isGroupNominee:boolean;
+  breakawayEstablished?:boolean;
   criticalPowerW:number;requestedPowerW:number;
 }
 function valid(o:HillyTacticalObservation):boolean{
@@ -64,11 +69,12 @@ function valid(o:HillyTacticalObservation):boolean{
     o.reserveFraction>=0&&o.reserveFraction<=1.000001&&
     o.criticalPowerW>0&&o.requestedPowerW>=0;
 }
-function selectiveRamp(o:HillyTacticalObservation):boolean{
+function selectiveRamp(o:HillyTacticalObservation,
+  minGrade=HILLY_RACECRAFT.tacticalRampMinGrade):boolean{
   const c=HILLY_RACECRAFT;
   return o.segmentLengthM>=c.minRampLengthM&&
     o.segmentLengthM<=c.maxRampLengthM&&
-    o.gradeFraction>=c.minRampGrade&&
+    o.gradeFraction>=minGrade&&
     o.segmentProgress>=c.rampFromFraction&&
     o.segmentProgress<=c.rampUntilFraction;
 }
@@ -93,15 +99,19 @@ export function decideHillyAttackOpportunity(
     o.groupSize<c.minimumGroupSize||
     o.gapToGroupFrontM>c.maxPositionGapM||
     o.gapToRaceFrontM>c.maxRaceGapM)return false;
-  const early=o.progress>=c.earlyFromProgress&&
-    o.progress<c.earlyUntilProgress&&
+  const early=!o.breakawayEstablished&&
+    o.progress>=c.earlyFromProgress&&
     o.timeS>=c.earlyMinTimeS&&
+    o.timeS<=c.earlyUntilTimeS&&
     o.reserveFraction>=c.earlyMinReserve&&
     o.gradeFraction>=-.025;
-  const late=o.progress>=c.lateFromProgress&&
-    o.progress<c.lateUntilProgress&&
-    o.reserveFraction>=c.lateMinReserve&&selectiveRamp(o);
-  return early||late;
+  // Sinkende Mindestreserve, wenn das Ziel naeher rueckt,
+  // statt eines starren Freigabefensters bei 76%/88%.
+  const requiredReserve=c.reserveAtStart-
+    (c.reserveAtStart-c.reserveAtFinish)*o.progress;
+  const ramp=o.reserveFraction>=requiredReserve&&
+    selectiveRamp(o);
+  return early||ramp;
 }
 /**
  * Kontrolliertes, fuer Minuten durchhaltbares Pacing am Schluesselanstieg:
@@ -116,9 +126,7 @@ export function decideHillyRampTempo(o:HillyTacticalObservation):
     o.role!=='kapitaen'||
     !['klassiker','allrounder','kletterer','zeitfahrer']
       .includes(o.specialty??'')||
-    o.progress<c.lateFromProgress||
-    o.progress>=c.lateUntilProgress||
-    !selectiveRamp(o)||
+    !selectiveRamp(o,c.tempoMinGrade)||
     o.groupSize<c.minimumGroupSize||
     o.gapToGroupFrontM>c.tempoMaxGroupFrontGapM||
     o.gapToRaceFrontM>c.tempoMaxRaceFrontGapM||
