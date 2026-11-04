@@ -211,3 +211,13 @@ Die hier wiedergegebenen realen Abstände sind ein **illustrativer Vier-Rennen-V
 - **R-22 noch offen; R-23 nicht freigegeben.**
 
 Dieses Dokument bitte bei jeder substanziellen KI-Änderung aktualisieren: *Was ist aktiv? Welche Konstante gilt? Welcher Modus benutzt sie tatsächlich? Was ist nur Diagnose oder Testannahme?*
+
+
+## Stand nach PR #69 – jetzt auch spezifische Klassiker- und Favoritenfunktionen (04.11.2026)
+
+Seit der obigen Bestandsaufnahme wurden **zwei** zusätzliche, bereits integrierte Funktionen verifiziert:
+
+1. **Kurze Ardennen-Rampenattacken** im experimentellen `stable-pack`-Modus, `src/engine/race/classics-punch.ts` sowie Aufruf in `race-simulator.ts`. Geeignete Klassiker-Kapitäne sparen zunächst ihre begrenzten Reserven statt durch verfrühte Angriffe die Favoritengruppe zu verlieren. An den späten, kurzen steilen Rampen können sie eine etwa 180-s-Mehrleistungsanfrage stellen, bezahlt durch die bereits bestehenden CP/W′-/R-19-/Bewegungsmodelle. **Keine automatische Sieggarantie.** Im einzelnen Liège-Seed bestehen nun drei Klassikerfahrer in den Top 8, aber der Sieger ist weiterhin ein Sprinter. [Analyse](R22_KLASSIKER_KRAFTAUSDAUER.md), [CI #41811008468](https://github.com/Lancester/radsportmanager/actions/runs/41811008468).
+2. **Leistungsfavoriten unabhängig vom Rennergebnis:** `src/engine/race/rider-strength-audit.ts` und `R22-FAVORITES` in `scripts/r22-profile-smoke.mjs` bestimmen stärkste Kletterer/Klassiker/Sprinter/Zeitfahrer/Allrounder anhand transparenter Vorab-CP-/W′-/W/kg-/CdA-/Sprint-Indizes und zeigen ihren tatsächlichen Zielplatz/Rückstand sowie die Gesamtfeld-Top-3. Das ist reine Diagnose, nicht die KI selbst. **Lille:** F023 (stärkster Sprinter) Zielrang 150; **Lüttich:** F003 (stärkster Klassiker, Helfer) Zielrang 120; **Hautacam:** F078 (stärkster Kletterer) Sieger. [Methodik und echte Ergebnisse](R22_FAHRERSTAERKE_FAVORITEN_AUSWERTUNG.md).
+
+Die neue, *noch nicht verifizierte* [PR #70](https://github.com/Lancester/radsportmanager/pull/70)-Idee – stärksten Team-Puncheur auch als Helfer ernennen, pro realer Gruppe Attacken selektieren – gehört **noch nicht** zum gültigen `main`-Bestand. Weiterhin nur kleine Profiltests; große Mehrseedkampagne erst ganz am Ende. `legacy` Default unverändert; die mechanischen Grundgesetze werden nicht angerührt.
