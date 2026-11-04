@@ -366,3 +366,77 @@ maximal drei Helfer eines Teams gleichzeitig eingesetzt.
 gehören ausdrücklich nicht zu dieser Rennengine.**
 Nächster reiner Rennengine-Schritt: realere Positionsübernahme
 und Ablösearbeit, nicht neue Karrierefeatures.
+
+
+## Beschlossenes gemeinsames Rennengine-Paket R-17 bis R-21 und danach R-22/R-23 (04.11.2026)
+
+**Vom Nutzer ausdrücklich beauftragt:** R-17, R-18, R-19,
+R-20 und R-21 ohne Einzel-Freigaben zu einem gemeinsamen
+Rennengine-Arbeitspaket zusammenfassen.
+**Verbindlicher vollständiger Fahrplan:**
+[ROADMAP_R17_R23_VERBINDLICH.md](race/ROADMAP_R17_R23_VERBINDLICH.md).
+
+**R-17:** vorne positionierte Helfer, mindestens physisch
+vor dem geschützten Kapitän/Sprinter, stabile 75-s-
+Schichtzuordnung, echte positions-/W′-bedingte Ablösen
+und getrennte Diagnose von Wattauftrag und tatsächlich
+frontnah gefahrenen Modellsekunden.
+
+**R-18:** vorausschauendere Rennlage aus gemessenen
+Flucht- und Feldgeschwindigkeiten: 120-s-Projektion
+der Lücke, reale Reststrecke und konkurrierende
+Mannschaftsstrategie statt garantiertem Einholen.
+
+**R-19:** eigenes bilanzierbares Langzeit-
+Kohlenhydrat-/Ermüdungsmodell, kontrollierbare
+Verpflegung in g/h; nach 90 min mögliche
+Wattbegrenzung, unveränderter CP/W′-/
+Bewegungs-/mechanischer Energie-Kern.
+`enduranceModel='off'` erlaubt A/B.
+
+**R-20:** Fahrertypen ohne Ergebnisbonus
+über tatsächliche physische Masse/CP/W′/CdA;
+Gegen-/Rücken-/Seitenwind und Straßenroll-
+Widerstand wirken durch denselben Physikkern.
+
+**R-21:** 210 erlaubte Fahrer, 30 Teams,
+300 km maximale Einzelrenndistanz;
+realistische 22×7=154-Fahrer-Stresstests
+mit **Flach (200 km), Hügelig (200 km),
+Klassiker (240 km), Berg als einzelnes
+170-km-Rennen**. Alle sind
+Einzelrennen der Rennengine,
+**keine Rundfahrt und kein Karrieremodus**.
+Dazu reproduzierbare Belastungs-/CPU-Tests
+und vollständiges Ereignisprotokoll.
+
+**Erster Großfeld-Audit:** 154 Fahrer und 200 km
+flach wurden erfolgreich im GitHub-Runner in
+ca. **7,8 s** berechnet. In späteren vollständigen
+Tests wurden alle vier Profile mit 154 Fahrern
+durchgerechnet. Deren massive teils
+>30-minütige Median-Zielrückstände (Hügel,
+Klassiker, Berg) sind ausdrücklich **offene
+Realismus-/Kalibrierungsfragen**,
+keine Erfolge allein wegen grüner Tests.
+Rückstände nie mit künstlichen Boni glätten.
+
+**R-22 (DANACH):** intensive unabhängige
+Monte-Carlo-Validierung, 100/500/1000+
+Läufe je Flach-/Hügel-/Klassiker-/Bergprofil
+mit großen UCI-ähnlichen Feldern und
+200-km-Größenordnung; Vergleiche mit echten
+Profi-Daten und Trennung von Kalibrierungs-
+und Validierungsläufen.
+
+**R-23 (DANACH):** dokumentierte Freigabe
+Rennengine 1.0 erst, wenn R-22 tatsächlich
+plausible Taktik-, Energie-, Gruppen-, Feld-,
+Ermüdungs- und Laufzeitverteilungen sowie
+technische Stabilität nachweist.
+
+[Technisches Gesamtdokument](race/R17_R21_ENGINE_ABSCHLUSS.md).
+**Vorgabe zur Fortsetzung:** Keine Etappen-/Rundfahrten-,
+Karriere-, Vertrags-, Transfer-, Saison-, Trainingskalender-
+oder Managerpersonalentwicklung vor dem späteren
+separaten Karrieremodus.
