@@ -395,7 +395,7 @@ export function simulateRace(x:RaceInput):RaceResult {
           if(newMission)counters.multiHelperAssignments++;
           if(newMission==='sprintzug'){
             counters.sprintTrainAssignments++;
-            if(events.length<1000&&s.crewMission!=='sprintzug')events.push({
+            if(events.length<100000&&s.crewMission!=='sprintzug')events.push({
               timeS:t,km:s.positionM/1000,type:'sprint-train',
               riderId:s.rider.id,teamId:s.rider.teamId,
               description:`${s.rider.name}: Sprintzug-Einsatz für den Sprinter`,
@@ -407,7 +407,7 @@ export function simulateRace(x:RaceInput):RaceResult {
           s.teamPaceKind=acceptedKind;
           if(acceptedKind==='verfolgung')counters.teamChaseStarts++;
           if(acceptedKind==='fuehrung')counters.teamPaceStarts++;
-          if(acceptedKind&&events.length<1000)events.push({
+          if(acceptedKind&&events.length<100000)events.push({
             timeS:t,km:s.positionM/1000,
             type:acceptedKind==='verfolgung'?'team-chase':'team-pace',
             riderId:s.rider.id,teamId:s.rider.teamId,
@@ -422,7 +422,7 @@ export function simulateRace(x:RaceInput):RaceResult {
         if(decision.intent==='angriff'&&s.intent!=='angriff')
           s.lastAttackS=t;
         s.decision=decision;s.intent=decision.intent;
-        if(before!==decision.intent && events.length<1000){
+        if(before!==decision.intent && events.length<100000){
           const kind=decision.intent==='angriff'?'attack':
             decision.intent==='verfolgung'?'chase':
             decision.intent==='sprint'?'sprint':
@@ -543,7 +543,7 @@ export function simulateRace(x:RaceInput):RaceResult {
           Math.max(0,Math.min(1,(totalM-before)/step.distanceM)):1;
         s.finishTimeS=t+fraction*dt;
         s.positionM=totalM;
-        if(events.length<1100)events.push({
+        if(events.length<100000)events.push({
           timeS:s.finishTimeS,km:totalM/1000,type:'finish',
           riderId:s.rider.id,teamId:s.rider.teamId,
           description:`${s.rider.name} erreicht das Ziel`,
@@ -557,7 +557,7 @@ export function simulateRace(x:RaceInput):RaceResult {
       const segIndex=segmentFor(best,boundaries);
       if(segIndex!==lastSection){
         lastSection=segIndex;
-        if(events.length<1100)events.push({timeS:t,km:best.positionM/1000,
+        if(events.length<100000)events.push({timeS:t,km:best.positionM/1000,
           type:'segment',description:`Spitze erreicht Abschnitt: ${x.segments[segIndex].name}`});
       }
       const groups=splitGroups(inRace);
@@ -565,7 +565,7 @@ export function simulateRace(x:RaceInput):RaceResult {
       // Abstandsgruppen sind nur Diagnose; keinen Abstand künstlich
       // zusammenziehen. Meldungen erst nach einer Mindestdauer.
       if(groups.length>oldGroups&&t>=90&&t-lastGroupEventS>=75&&
-         events.length<1100){
+         events.length<100000){
         counters.groupSplits++;
         lastGroupEventS=t;
         events.push({timeS:t,km:best.positionM/1000,type:'group-split',
@@ -582,7 +582,7 @@ export function simulateRace(x:RaceInput):RaceResult {
           if(breakawaySinceS===null)breakawaySinceS=t;
           if(t-breakawaySinceS>=40){
             breakawayActive=true;catchSinceS=null;counters.breakaways++;
-            if(events.length<1100)events.push({timeS:t,
+            if(events.length<100000)events.push({timeS:t,
               km:best.positionM/1000,type:'breakaway',
               gapM:leadGap,description:`Fluchtgruppe (${groups[0].length} Fahrer) hat ${leadGap.toFixed(0)} m Vorsprung`});
           }
@@ -593,7 +593,7 @@ export function simulateRace(x:RaceInput):RaceResult {
           if(t-catchSinceS>=40){
             breakawayActive=false;breakawaySinceS=null;catchSinceS=null;
             counters.caughtBreakaways++;
-            if(events.length<1100)events.push({timeS:t,
+            if(events.length<100000)events.push({timeS:t,
               km:best.positionM/1000,type:'breakaway-caught',gapM:leadGap,
               description:`Fluchtgruppe eingeholt: Abstand nur noch ${leadGap.toFixed(0)} m`});
           }
