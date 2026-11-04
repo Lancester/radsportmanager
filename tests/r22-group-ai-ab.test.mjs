@@ -29,7 +29,7 @@ test('R22 Gruppen-KI: angepasste Wattanfrage statt eigener Maximalleistung',()=>
   const front=decideGroupRiding({...observation,
     distanceFromGroupFrontM:0,frontGapM:0,isPacer:true});
   assert.equal(front.reason,'front_rotation');
-  assert.ok(front.powerW<=350*.86+.001);
+  assert.equal(front.powerW,300);
   const attack=decideGroupRiding({...observation,tacticalIntent:'angriff'});
   assert.deepEqual(attack,{powerW:350,reason:'active_mission'});
   const solo=decideGroupRiding({...observation,groupSize:3});
