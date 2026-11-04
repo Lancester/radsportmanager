@@ -11,6 +11,8 @@ export interface IntelligentRider {
   id:string;teamId:string;role:RaceRole;
   positionM:number;speedMps:number;
   criticalPowerW:number;reserveFraction:number;aggression:number;
+  /** Opt-in: Helfer hat physisch viel Jagdarbeit geleistet und wird abgelöst. */
+  chaseSpent?:boolean;
 }
 export interface IntelligentTeam {id:string;strategy:RaceStrategy}
 export type CrewMission='jagd'|'sprintzug'|'schutz';
@@ -189,6 +191,7 @@ export function decideIntelligentCrew(input:{
       !(input.sprintFinaleMode&&chase))continue;
     const gapToFront=(r:IntelligentRider)=>group[0].positionM-r.positionM;
     const helpers=members.filter(r=>r.role==='helfer'&&group.includes(r)&&
+      !(input.sprintFinaleMode&&r.chaseSpent)&&
       r.reserveFraction>=(chase?R15_R16.minimumChaseReserve:R15_R16.minimumReserve)&&
       (input.sprintFinaleMode&&mission==='sprintzug'?
         Math.abs(r.positionM-target.positionM)<=85:
@@ -202,6 +205,7 @@ export function decideIntelligentCrew(input:{
     const nearbyTeamProtectors=input.sprintFinaleMode&&mission==='jagd'&&
       team.strategy==='sprint'&&targetRemainingM<=25000?
       members.filter(r=>r.role==='helfer'&&group.includes(r)&&
+        !r.chaseSpent&&
         r.reserveFraction>=R15_R16.minimumReserve&&
         Math.abs(r.positionM-target.positionM)<=85)
         .sort((a,b)=>
