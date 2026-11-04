@@ -139,6 +139,38 @@ export function createReferenceSegments(id:ReferenceRouteId):RaceSegment[]{
     cursor=climb.endKm;
   }
   transitionTo(spec.distanceKm);
+  // Makroabgleich, KEINE GPX-Exaktheit: veröffentlichte
+  // Gesamt-Höhenmeter auf die synthetischen Übergänge verteilen,
+  // ohne Länge oder Steigung eines belegten Anstiegs zu verändern.
+  const transitions=segments.filter(s=>
+    s.name.startsWith('Modellierter Übergang'));
+  const knownAscent=segments.filter(s=>
+    !s.name.startsWith('Modellierter Übergang')).reduce((n,s)=>
+      n+Math.max(0,s.gradeFraction)*s.lengthM,0);
+  const positiveTransitions=transitions.filter(s=>s.gradeFraction>0);
+  const transitionAscent=positiveTransitions.reduce((n,s)=>
+    n+s.gradeFraction*s.lengthM,0);
+  const targetAscent=spec.referenceAscentM??(knownAscent+transitionAscent);
+  const scaling=(targetAscent-knownAscent)/Math.max(1,transitionAscent);
+  if(scaling<=0||scaling>10)
+    throw new RangeError('R-22A: veröffentlichte Höhenmeter unvereinbar');
+  for(const s of positiveTransitions)s.gradeFraction*=scaling;
+  // Im Gegensatz zur echten Höhenlage ist der Ziel-Nettoanstieg
+  // bei Boulogne/Lüttich eine Modellannahme (~0 m), keine Quelle.
+  // Bei Lille ca. -14 m, bei Auch→Hautacam ca. +1381 m aus
+  // den dokumentierten Start-/Zielhöhen der Rennprofile.
+  const modelledNetTargetM=spec.id==='tdf25_lille'?-14:
+    spec.id==='tdf25_hautacam'?1381:0;
+  const negativeTransitions=transitions.filter(s=>s.gradeFraction<0);
+  const initialDescent=negativeTransitions.reduce((n,s)=>
+    n-s.gradeFraction*s.lengthM,0);
+  const desiredDescent=targetAscent-modelledNetTargetM;
+  if(desiredDescent<0||initialDescent<=0)
+    throw new RangeError('R-22A: Abstiegsbilanz ungültig');
+  const descentScale=desiredDescent/initialDescent;
+  for(const s of negativeTransitions)s.gradeFraction*=descentScale;
+  if(segments.some(s=>Math.abs(s.gradeFraction)>.2))
+    throw new RangeError('R-22A: Übergangssteigung > 20 Prozent');
   if(segments.length>60)throw new RangeError('R-22A: mehr als 60 Abschnitte');
   const actual=segments.reduce((s,x)=>s+x.lengthM,0);
   if(Math.abs(actual-spec.distanceKm*1000)>0.01)
