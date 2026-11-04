@@ -79,6 +79,9 @@ for(const id of routes){
     chaseLeaderChanges:r.diagnostics.mainFieldChaserLeaderChanges??0,
     longestPhysicalChaseFrontStintS:r.diagnostics.longestMainFieldChaserStintS??0,
     climbingTempoSeconds:r.diagnostics.climbingTempoSeconds??0,
+    classicsApproachSeconds:r.diagnostics.classicsApproachSeconds??0,
+    classicsRampTempoSeconds:r.diagnostics.classicsRampTempoSeconds??0,
+    classicsRampTempoRiders:r.diagnostics.classicsRampTempoRiderIds??[],
     sprintPositioningSeconds:r.diagnostics.sprintPositioningSeconds??0,
     sprintEscortSeconds:r.diagnostics.sprintEscortSeconds??0,
     leadoutPaceCoordinationSeconds:r.diagnostics.leadoutPaceCoordinationSeconds??0,
@@ -374,6 +377,35 @@ for(const id of routes){
         finishRank:classification?.rank??null,
         finishGapS:classification?n(classification.gapS):null};
     });
+    const keyRiders=['F003','F024','F049'];
+    const keyRiderTrace=keyRiders.map(id=>{
+      const fin=r.classification.find(x=>x.id===id);
+      const samples=(r.checkpoints??[]).filter(cp=>
+        cp.km>=120&&(Math.round(cp.km)%10<=1||
+          cp.km>=215)).map(cp=>{
+        const row=cp.riders.find(z=>z.riderId===id);
+        if(!row)return null;
+        const fellows=cp.riders.filter(z=>z.groupIndex===row.groupIndex);
+        const groupFront=Math.max(...fellows.map(z=>z.positionM));
+        const groupRank=fellows.filter(z=>z.positionM>row.positionM).length+1;
+        return {km:n(cp.km),group:row.groupSize,
+          rank:groupRank,
+          realFrontGapM:n(groupFront-row.positionM),
+          raceGapM:n(row.gapToLeaderM),
+          wPrimePct:n(row.wPrimeRemainingPct),
+          watts:n(row.appliedPowerW),
+          endurancePct:n(row.enduranceAvailabilityPct)};
+      }).filter(Boolean);
+      return {id,finishRank:fin?.rank,finishGapS:n(fin?.gapS??0),
+        samples:samples.filter((x,i)=>i%2===0||x.km>=215)};
+    });
+    console.log('R22-CLASSICS-SELECTION '+JSON.stringify({
+      route:id,seed,
+      approachS:r.diagnostics.classicsApproachSeconds??0,
+      rampTempoS:r.diagnostics.classicsRampTempoSeconds??0,
+      rampRiders:r.diagnostics.classicsRampTempoRiderIds??[],
+      keyRiderTrace,
+    }));
     console.log('R22-CLASSICS-PUNCH-AUDIT '+JSON.stringify({
       route:id,seed,
       totalPunchEvents:punches.length,uniqueRiders:

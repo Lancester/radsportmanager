@@ -24,6 +24,8 @@ import {decideSprintLaunch,inferredSprintPeakPowerW,sprintPowerDemand}
 import {decideSprintLeadoutPace,SPRINT_LEADOUT} from './sprint-leadout.ts';
 import {chooseIndependentSprintWheel,SPRINT_WHEEL} from './sprint-wheel-choice.ts';
 import {decideClassicsPunch,CLASSICS_PUNCH} from './classics-punch.ts';
+import {decideClassicsApproach,decideClassicsRampTempo}
+  from './classics-racecraft.ts';
 import {decideGroupRiding,decideChaseApproach,R22_GROUP_RIDING} from './group-riding.ts';
 import {decideTeamPace} from './team-pacing.ts';
 import {decideIntelligentCrew,analyzeRaceSituation} from './race-team-ai.ts';
@@ -153,6 +155,9 @@ export interface RaceResult {
     relayChanges:number;maximumEndurancePenalty:number;
     sprintPositioningSeconds?:number;sprintEscortSeconds?:number;
     leadoutPaceCoordinationSeconds?:number;
+    classicsApproachSeconds?:number;
+    classicsRampTempoSeconds?:number;
+    classicsRampTempoRiderIds?:string[];
     independentWheelFindingSeconds?:number;
     actualSprintTrainRiderSeconds?:number;
     nearSprinterTrainRiderSeconds?:number;
@@ -411,6 +416,8 @@ export function simulateRace(x:RaceInput):RaceResult {
   let unprovokedBreakawayCount=0;
   let orderedRelayTeamSeconds=0;
   let climbingTempoSeconds=0;
+  let classicsApproachSeconds=0,classicsRampTempoSeconds=0;
+  const classicsRampTempoRiders=new Set<string>();
   let sprintPositioningSeconds=0,sprintEscortSeconds=0;
   let leadoutPaceCoordinationSeconds=0,independentWheelFindingSeconds=0;
   let actualSprintTrainRiderSeconds=0,nearSprinterTrainRiderSeconds=0;
@@ -817,6 +824,27 @@ export function simulateRace(x:RaceInput):RaceResult {
       currentMainFieldChaserId=null;
       currentMainFieldChaserStintS=0;
     }
+    // Je REALER Abstandsgruppe EIN taktisch ausgewählter Rampenfahrer.
+    // Bei bereits entkommener Gruppe kann der Fahrer weiterhin echtes
+    // Tempo halten; die Auswahl richtet sich nicht am Ergebnis aus.
+    const classicRampPacerByGroup=new Map<string,string>();
+    const classicsEnabled=x.groupRidingModel==='stable-pack'&&
+      totalM>=220000&&shortSteepClimbs>=4;
+    if(classicsEnabled){
+      for(const group of physicalGroups){
+        if(group.length<4||leader.positionM-group[0].positionM>240)
+          continue;
+        const eligible=group.map(g=>byId.get(g.id)!).filter(r=>
+          r.rider.specialty==='klassiker'&&
+          rampSpecialistByTeam.get(r.rider.teamId)===r.rider.id&&
+          group[0].positionM-r.positionM<=70&&
+          r.physiology.remainingWPrimeJ/r.profile.wPrimeCapacityJ>=.22);
+        eligible.sort((a,b)=>rampScore(b)-rampScore(a)||
+          a.rider.id.localeCompare(b.rider.id));
+        if(eligible[0])classicRampPacerByGroup.set(group[0].id,
+          eligible[0].rider.id);
+      }
+    }
     for(const group of physicalGroups){
       const pacer=byId.get(group[0].id)!;
       if((x.groupRidingModel==='cohesive'||
@@ -1177,6 +1205,44 @@ export function simulateRace(x:RaceInput):RaceResult {
           commanded=approach.powerW;
         }
       }
+      // Frühzeitige echte Positionierung der nominierten Puncheure
+      // plus nachhaltig selektives Rampentempo (Watt, kein Bonus).
+      if(classicsEnabled){
+        const group=physicalGroupOf.get(s.rider.id);
+        const groupFront=group?.[0];
+        const observation={
+          enabled:true,specialty:s.rider.specialty,role:s.rider.role,
+          isDesignatedRider:rampSpecialistByTeam.get(s.rider.teamId)===
+            s.rider.id,
+          isSelectedGroupPacer:!!groupFront&&
+            classicRampPacerByGroup.get(groupFront.id)===s.rider.id,
+          progress:s.positionM/totalM,
+          segmentProgress:(s.positionM-
+            (index>0?boundaries[index-1]:0))/segment.lengthM,
+          gradeFraction:segment.gradeFraction,
+          segmentLengthM:segment.lengthM,
+          physicalGroupSize:group?.length??1,
+          rankInPhysicalGroup:rankInPhysicalGroup.get(s.rider.id)??1,
+          gapToGroupFrontM:Math.max(0,
+            (groupFront?.positionM??s.positionM)-s.positionM),
+          gapToRaceFrontM:Math.max(0,leader.positionM-s.positionM),
+          criticalPowerW:s.dayCpW,
+          reserveFraction:s.physiology.remainingWPrimeJ/
+            s.profile.wPrimeCapacityJ,
+          requestedPowerW:commanded,intent:s.intent,
+        };
+        const approach=decideClassicsApproach(observation);
+        if(approach!==null){
+          commanded=approach;classicsApproachSeconds+=dt;
+        }
+        const pacing=decideClassicsRampTempo({
+          ...observation,requestedPowerW:commanded,
+        });
+        if(pacing!==null){
+          commanded=pacing;classicsRampTempoSeconds+=dt;
+          classicsRampTempoRiders.add(s.rider.id);
+        }
+      }
       if(Math.abs(pack.addedPowerW)>0.5)counters.paceSupportSteps++;
       let brakeForceN=0;
       if(segment.gradeFraction<-0.012&&segment.descentTechnicality>0){
@@ -1518,6 +1584,8 @@ export function simulateRace(x:RaceInput):RaceResult {
         ...(x.groupRidingModel==='stable-pack'?{
           climbingTempoSeconds,sprintPositioningSeconds,sprintEscortSeconds,
           leadoutPaceCoordinationSeconds,independentWheelFindingSeconds,
+    classicsApproachSeconds,classicsRampTempoSeconds,
+    classicsRampTempoRiderIds:[...classicsRampTempoRiders].sort(),
           actualSprintTrainRiderSeconds,nearSprinterTrainRiderSeconds,
           lateSprintChaseRiderSeconds,sprintFinale,
           spentChaseHelpers:spentChaseHelperIds.length,
