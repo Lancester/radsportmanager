@@ -72,7 +72,7 @@ Die zusätzliche **reale** 154er-Lüttich-Diagnose aus [CI #41806132151](https:/
 | Rückstand größte Zielgruppe | 706,93 s | 487,33 s | **109,75 s** |
 | Fahrer binnen 60 s | 21 | 21 | **27** |
 | Maximalgruppen unterwegs | 36 | 39 | **35** |
-| Klassikerfahrer in den ersten acht | 0 | 0 | **3** |
+| Klassikerfahrer in den ersten acht | 1 | 1 | **3** |
 
 **Wichtige tatsächliche Positionsdiagnose bei Kilometer ~215, vor La Redoute:**
 - F001 (Klassiker) nur **5,47 m** hinter absoluter Spitze; F036 nur **9,27 m**; F113 nur **8,56 m**. Drei der zehn Klassikerkapitäne stehen also auf relevante Weise **tatsächlich vorne**, statt mehrere Kilometer entfernt.
