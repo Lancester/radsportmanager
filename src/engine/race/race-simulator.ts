@@ -252,6 +252,9 @@ export function simulateRace(x:RaceInput):RaceResult {
   const teams=new Map(x.teams.map(t=>[t.id,t]));
   const captainByTeam=new Map(x.teams.map(t=>[t.id,
     states.find(s=>s.rider.teamId===t.id&&s.rider.role==='kapitaen')]));
+  const targetByTeam=new Map(x.teams.map(t=>[t.id,
+    states.find(s=>s.rider.teamId===t.id&&s.rider.role===
+      (t.strategy==='sprint'?'sprinter':'kapitaen'))]));
   const events:RaceEvent[]=[{timeS:0,km:0,type:'start',
     description:`${states.length} Fahrer starten auf ${(totalM/1000).toFixed(1)} km`}];
   const snapshots:RaceSnapshot[]=[];
@@ -463,7 +466,9 @@ export function simulateRace(x:RaceInput):RaceResult {
         tacticalIntent:s.intent,
         reserveFraction:s.physiology.remainingWPrimeJ/s.profile.wPrimeCapacityJ,
       });
+      const target=targetByTeam.get(s.rider.teamId);
       if(s.crewDuty==='fuehrung'&&s.teamPaceKind!==null&&
+        target!==undefined&&s.positionM>target.positionM+0.1&&
         actualGroupFront.has(s.rider.id)&&
         actualGroupFront.get(s.rider.id)!-s.positionM<=18)
         counters.actualFrontWorkSteps++;
