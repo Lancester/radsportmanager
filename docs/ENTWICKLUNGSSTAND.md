@@ -1134,3 +1134,56 @@ Erst nach erfolgreichem R-22 folgt
 **R-23 Freigabegate** für Engine 1.0.
 **Rundfahrten, Transfers, Karriere, Mitarbeiter
 und Saisons bleiben ausdrücklich andere Spielsysteme.**
+
+
+## R-22 Pilot 0.1 – manueller Monte-Carlo-Workflow, erste Sensitivität (04.11.2026)
+
+[PR #55](https://github.com/Lancester/radsportmanager/pull/55)
+gemergt, `main`-Commit
+`d5e763cad6d0dea4e6a23ec0ae24c3da2c8cf7e2`.
+[GitHub Actions Main #41763646503](https://github.com/Lancester/radsportmanager/actions/runs/41763646503)
+**242/242 Tests erfolgreich, 0 Fehler; reguläre
+Rennengine-/TypeScript-/Browser- und Pages-Abnahme grün.**
+
+Die künftigen großen
+Monte-Carlo-Serien werden **vom Nutzer selbst**
+in **GitHub Actions per workflow_dispatch**
+gestartet; KEINE Push-/Schedule-/Automationsserie.
+Die Parameter sind Profil, 3–100 Seeds,
+5/10/22 Teams à 7 Fahrer, 50–240 km,
+Seed und optional gepaarter
+20/100-g/h-Vergleich. Bericht im
+GitHub-Run-Summary und als 30-Tage-Artefakt
+(CSV, JSON, Markdown). Dauer-/Quota-Risiko
+bei 154 Fahrern und vielen Seeds
+ausdrücklich dokumentiert.
+
+**Erster tatsächlich ausgeführter Technikpilot:**
+[PR-Actions #41763527407](https://github.com/Lancester/radsportmanager/actions/runs/41763527407):
+vier komplette 170-km-Bergrennen
+(2 Seeds × 2 Kohlenhydratzufuhren,
+5 Teams × 7 Fahrer), **140 Zielankünfte**,
+mechanische Energie-/W′-/KH-Bilanzen geprüft.
+100 gegenüber 20 g/h führte im
+Modell zu durchschnittlich
+**2932 s kürzerer Siegerzeit**
+und durchschnittlich 860,6 s geringerem
+Median-Zielrückstand. Dies ist ein
+**auffällig großer Modell-Effekt,
+keine realweltliche Behauptung**.
+
+**Nächste R-22-Aufgabe:** die
+physiologischen R-19-Annahmen,
+Formations-/Gruppenschwellen
+und langen Rennzeiten mit
+realen unabhängigen Referenzen
+untersuchen, Seeds auf mehr
+physikalisch begründete
+Variabilität ausweiten,
+Kalibrierungs-/Validation Sets
+trennen und skalierte Runs
+manuell durchführen.
+[R-22 Issue #54](https://github.com/Lancester/radsportmanager/issues/54)
+bleibt offen, **R-23 noch nicht begonnen**.
+
+[Anleitung und Pilotreporte](race/R22_MONTE_CARLO_PILOT.md).
