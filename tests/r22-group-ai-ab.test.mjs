@@ -40,6 +40,11 @@ test('R22 Mannschaftsjagd: nur Interessenten, keine Phantombewegung, 150s Mandat
     {id:'h',teamId:'T01',role:'helfer',positionM:195,
       reserveFraction:.9,speedMps:12,criticalPowerW:350,aggression:.5},
   ];
+  // Die Jagd braucht ein echtes Hauptfeld, nicht nur zwei Testfahrer.
+  for(let i=0;i<12;i++)riders.push({
+    id:'extra'+i,teamId:'T02',role:'helfer',positionM:190-i,
+    reserveFraction:.8,speedMps:12,criticalPowerW:345,aggression:.5,
+  });
   const situation={leadingBreakaway:true,gapM:350,breakawaySize:3,
     mainGroupSize:40,relativeSpeedMps:.2,projectedGapM:374,
     gapFractionOfRemaining:.004,chaseViable:true};
