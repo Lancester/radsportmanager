@@ -35,7 +35,7 @@ export const R22_GROUP_RIDING=Object.freeze({
   maxFollowingGapM:42,
   /** Die Referenzleistung bestimmt nur den Wattwunsch des echten Pacesetters.
    * Die anderen Fahrer orientieren sich an dessen tatsächlicher Bewegung. */
-  leaderCpFraction:0.86,
+  leaderCpFraction:1.00,
   targetWheelGapM:2,
   wattsPerGapMeter:0.5,
   wattsPerSpeedDifferenceMps:75,
