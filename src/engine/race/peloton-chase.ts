@@ -68,7 +68,8 @@ export function coordinatePelotonChase(input:{
     situation.projectedGapM>Math.max(400,remainingM*.025);
   const choices=teams.map(team=>{
     const members=groupMembers.filter(r=>r.teamId===team.id);
-    const helpers=members.filter(r=>r.role==='helfer'&&r.reserveFraction>.32);
+    const helpers=members.filter(r=>r.role==='helfer'&&
+      !(sprintFinale&&r.chaseSpent)&&r.reserveFraction>.32);
     const hasSprinter=members.some(r=>r.role==='sprinter');
     const hasCaptain=members.some(r=>r.role==='kapitaen');
     const interested=team.strategy==='sprint'&&hasSprinter||
