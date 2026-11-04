@@ -370,6 +370,16 @@ export function simulateRace(x:RaceInput):RaceResult {
     seg.lengthM>=CLASSICS_PUNCH.minClimbM&&
     seg.lengthM<=CLASSICS_PUNCH.maxClimbM&&
     seg.gradeFraction>=CLASSICS_PUNCH.minGrade).length;
+  // Huegelige Etappen durch Topografie, nicht durch km-Fenster erkennen.
+  const hillyRamps=x.segments.filter(seg=>
+    seg.lengthM>=700&&seg.lengthM<=2600&&
+    seg.gradeFraction>=.075).length;
+  const hasHighMountain=x.segments.some(seg=>
+    seg.lengthM>=7000&&seg.gradeFraction>=.05);
+  const hillyAttackProfile=x.groupRidingModel==='stable-pack'&&
+    totalM>=140000&&totalM<=220000&&
+    ascentM>=1650&&ascentM<=3200&&hillyRamps>=2&&
+    !hasHighMountain;
   let sum=0;
   for(const segment of x.segments){sum+=segment.lengthM;boundaries.push(sum);}
   const states=buildStates(x);
@@ -599,7 +609,7 @@ export function simulateRace(x:RaceInput):RaceResult {
                 s.profile.wPrimeCapacityJ;
               // Moderne, profilübergreifende Angriffslage ohne feste
               // Distanzfenster; alte Versionen bleiben als Vergleich.
-              if(x.groupRidingModel==='stable-pack'){
+              if(hillyAttackProfile){
                 const group=tacticalGroup;
                 const grade=x.segments[segmentFor(s,boundaries)].gradeFraction;
                 const meanCp=group&&group.length?
@@ -669,7 +679,9 @@ export function simulateRace(x:RaceInput):RaceResult {
                 s.positionM>=groupFront-40;
               const opening=t-s.lastAttackS>=900&&t>=250&&
                 (early||s.positionM/totalM>=0.18)&&
-                s.positionM/totalM<0.88&&
+                (x.groupRidingModel!=='stable-pack'?
+                  s.positionM/totalM<0.88:
+                  totalM-s.positionM>=Math.max(300,s.speedMps*40))&&
                 reserve>=0.42&&nearFront&&
                 s.positionM>=leader.positionM-(early?220:120)&&
                 s.dayCpW>=meanCp*0.93&&grade>=-0.03;
@@ -726,9 +738,18 @@ export function simulateRace(x:RaceInput):RaceResult {
             headwindMps:stageSegment.headwindMps??0,
             crosswindMps:stageSegment.crosswindMps??0,
           }):null;
+        const protectedCaptainAttack=x.groupRidingModel==='stable-pack'&&
+          obs.attackOpportunity===true&&s.rider.role==='kapitaen'&&
+          teams.get(s.rider.teamId)!.strategy==='kapitaen_schuetzen'&&
+          stageSegment.gradeFraction>=
+            ADAPTIVE_ATTACK.protectedCaptainClimbGrade&&
+          obs.reserveFraction>.32;
         const baseProposal:TacticDecision=classics?{
           desiredPowerW:classics.powerW,intent:'angriff',
           reason:classics.reason,
+        }:protectedCaptainAttack?{
+          desiredPowerW:s.dayCpW+65+55*s.rider.aggression,
+          intent:'angriff',reason:'Teamkapitaen attackiert selektiv am Anstieg',
         }:chooseRacePower(obs);
         const crew=planned?.orders.get(s.rider.id);
         const oldOrder=orders?.get(s.rider.id);

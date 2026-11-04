@@ -65,9 +65,7 @@ export function chooseRacePower(o:TacticObservation):TacticDecision {
   // Klar definierte Ausreißfenster: keine mehrstündige harte Attacke.
   const inWindow=(o.progress>=0.22&&o.progress<0.245) ||
      (o.progress>=0.64&&o.progress<0.66);
-  if((o.strategy==='offensiv'||
-      o.strategy==='kapitaen_schuetzen'&&o.attackOpportunity===true) &&
-     o.role==='kapitaen' &&
+  if(o.strategy==='offensiv' && o.role==='kapitaen' &&
      (o.attackOpportunity??inWindow) &&
      o.reserveFraction>0.32){
     return {intent:'angriff',desiredPowerW:cp+65+55*o.aggression,
