@@ -216,21 +216,45 @@ const compositions:Record<TeamFocus,{strategy:RaceStrategy;roles:Archetype[]}> =
     'gc','sprinter','kletterer','allrounder',
     'klassiker','zeitfahrer','allrounder']},
 };
-/** 22 Teams: 5 Sprinter-, 6 GC-, 4 Klassiker-, 3 Flucht- und
- * 4 ausgewogene Mannschaften. Verteilung ist Simulation, nicht UCI-Startliste. */
-const teamFocuses:TeamFocus[]=[
-  ...Array<TeamFocus>(5).fill('sprint'),
-  ...Array<TeamFocus>(6).fill('berg'),
-  ...Array<TeamFocus>(4).fill('klassiker'),
-  ...Array<TeamFocus>(3).fill('ausreisser'),
-  ...Array<TeamFocus>(4).fill('ausgewogen'),
-];
-export const REFERENCE_TEAM_COMPOSITIONS:readonly ReferenceTeamComposition[]=
-  teamFocuses.map((focus,i)=>({
+/** Nicht-historische, ausdrücklich modellierte und
+ * profilspezifische 22er-Teamaufstellungen, keine echten Startlisten.
+ * Flach: mehr Sprintzüge; Berge: mehr Kapitäne/Kletterhelfer;
+ * Ardennenklassiker: überwiegend klassische Puncheur-Teams.
+ * Ein realer TdF-Kader hängt natürlich von allen Etappen ab –
+ * wir modellieren nur das einzelne hier getestete Rennen. */
+export const REFERENCE_TEAM_COUNTS:Record<
+  ReferenceRoute['kind'],Readonly<Record<TeamFocus,number>>>={
+  flach:{sprint:8,berg:4,klassiker:4,ausreisser:3,ausgewogen:3},
+  huegelig:{sprint:4,berg:5,klassiker:7,ausreisser:3,ausgewogen:3},
+  klassiker:{sprint:1,berg:4,klassiker:10,ausreisser:4,ausgewogen:3},
+  berg:{sprint:1,berg:11,klassiker:4,ausreisser:3,ausgewogen:3},
+};
+export function createReferenceTeamCompositions(
+  kind:ReferenceRoute['kind'],
+):ReferenceTeamComposition[]{
+  const counts=REFERENCE_TEAM_COUNTS[kind];
+  if(!counts)throw new RangeError('R-22C: Teamprofil unbekannt');
+  // Interleaving verhindert 5x ausschließlich Sprintteams
+  // bei kleinen diagnostischen Subsets.
+  const active={...counts};
+  const focuses:TeamFocus[]=[];
+  const total=Object.values(counts).reduce((a,b)=>a+b,0);
+  for(let i=0;i<total;i++){
+    const next=(Object.keys(active) as TeamFocus[])
+      .filter(type=>active[type]>0)
+      .sort((a,b)=>active[b]-active[a]||
+        a.localeCompare(b))[0];
+    focuses.push(next);
+    active[next]--;
+  }
+  if(focuses.length!==22)
+    throw new RangeError('R-22C: Referenzfeld muss 22 Teams haben');
+  return focuses.map((focus,i)=>({
     teamId:'T'+String(i+1).padStart(2,'0'),focus,
     strategy:compositions[focus].strategy,
     riders:[...compositions[focus].roles],
   }));
+}
 
 function hash(index:number,salt:number):number {
   let n=Math.imul(index+19,2654435761)^Math.imul(salt+11,2246822507);
@@ -274,6 +298,7 @@ export interface ReferenceFixture {
   input:RaceInput;route:ReferenceRoute;
   modelledAscentM:number;
   teamFoci:Record<TeamFocus,number>;
+  teamCompositions:readonly ReferenceTeamComposition[];
 }
 export function createReferenceFixture(options:{
   routeId:ReferenceRouteId;seed?:number;teamCount?:number;
@@ -285,7 +310,7 @@ export function createReferenceFixture(options:{
     throw new RangeError('R-22C: 1–22 Referenzteams');
   const route=REFERENCE_ROUTES[options.routeId];
   const segments=createReferenceSegments(options.routeId);
-  const chosen=REFERENCE_TEAM_COMPOSITIONS.slice(0,count);
+  const chosen=createReferenceTeamCompositions(route.kind).slice(0,count);
   const teams=chosen.map(c=>({
     id:c.teamId,name:'Fiktives Profi-Team '+c.teamId,
     strategy:c.strategy,
@@ -301,7 +326,7 @@ export function createReferenceFixture(options:{
   const teamFoci={sprint:0,berg:0,klassiker:0,ausreisser:0,ausgewogen:0};
   for(const c of chosen)teamFoci[c.focus]++;
   return {
-    input,route,teamFoci,
+    input,route,teamFoci,teamCompositions:chosen,
     modelledAscentM:Math.round(segments.reduce((s,x)=>
       s+Math.max(0,x.gradeFraction)*x.lengthM,0)),
   };
