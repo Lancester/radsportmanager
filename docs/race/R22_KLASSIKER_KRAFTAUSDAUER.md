@@ -58,3 +58,29 @@ Die zusätzliche **reale** 154er-Lüttich-Diagnose aus [CI #41806132151](https:/
 **Neue kleine Hypothese zur Widerlegung:** Offensiv fahrende Klassiker-Kapitäne attackieren zu oft früh beziehungsweise an ungeeigneten Orten und verlieren damit eine konkurrenzfähige Gruppe, ehe sie die entscheidenden Rampen erreichen. Statt den Watt-/W′-Bonus weiter aufzudrehen, wird in `stable-pack` bei einem langen, von mehreren kurzen Rampen geprägten Klassiker die **allgemeine frühzeitige `attackOpportunity` für diese Kapitäne deaktiviert**. Ihre spezielle **späte**, physisch durch CP/W′ begrenzte `decideClassicsPunch`-Attacke bleibt erhalten. Die übrigen Fahrer/Teamstrategien, normale Gruppenregelung und andere Referenzprofile bleiben unverändert. Der neue Vierprofil-Vergleich ist in CI zu prüfen; bei unverändertem Fehlverhalten keine automatische Freigabe.
 
 **Entscheidendes Kriterium:** Nicht „ein Klassiker muss gewinnen“, sondern die geeigneten Klassikerfahrer sollen möglichst **noch im relevanten Vorderfeld** zur Schlüsselrampe gelangen, und erst dann eigenständig nachweisbare physische Lücken fahren. Eine triviale Sonderregel, die mehrere Kilometer Rückstand einfach entfernt, ist ausdrücklich ausgeschlossen.
+
+
+## 7. Versuch C: Frühe Kraftreserven sparen, erst in Führungsgruppe auf Schlüsselrampen attackieren
+
+**Technisch tatsächlich gerechnet:** [CI #41806781796](https://github.com/Lancester/radsportmanager/actions/runs/41806781796) **274/274 Tests bestanden**, vollständige vier Referenzrennen, Seed 2026. In `stable-pack` unterdrückt die Einzelrennen-KI für **Klassiker-Kapitäne auf dem langen rampenreichen Klassikerprofil** die allgemeinen opportunistischen Frühattacken. Dadurch bleiben ihre Reserven/ihre normale Fahrweise bis zu den späten Schlüsselanstiegen erhalten. Die gezielte neue, 180 s dauernde `decideClassicsPunch`-Entscheidung bleibt bestehen. Es wurden keinerlei globale Physik- oder Ergebnisboni hinzugefügt.
+
+| Kennzahl | Vor Classics-KI (PR #65) | Versuch B: 180s-Punch ohne frühes Schonen | **Versuch C: zusätzlich frühes Schonen** |
+| --- | ---: | ---: | ---: |
+| Sieger Lüttich | Sprinter | Sprinter | **Sprinter** (noch offen) |
+| Attacken Lüttich | 41 | 67 | **52** |
+| Größte Zielgruppe | 46 Fahrer | 36 Fahrer | **33 Fahrer** |
+| Rückstand größte Zielgruppe | 706,93 s | 487,33 s | **109,75 s** |
+| Fahrer binnen 60 s | 21 | 21 | **27** |
+| Maximalgruppen unterwegs | 36 | 39 | **35** |
+| Klassikerfahrer in den ersten acht | 0 | 0 | **3** |
+
+**Wichtige tatsächliche Positionsdiagnose bei Kilometer ~215, vor La Redoute:**
+- F001 (Klassiker) nur **5,47 m** hinter absoluter Spitze; F036 nur **9,27 m**; F113 nur **8,56 m**. Drei der zehn Klassikerkapitäne stehen also auf relevante Weise **tatsächlich vorne**, statt mehrere Kilometer entfernt.
+- Zum Vergleich: Im vorigen Versuch lag F008 bereits **5.127 m** hinter Spitze. Dieser Fehler wurde nicht durch mehr Watt auf der Rampe behoben, sondern durch bessere **taktische Schonung und Aufrechterhaltung der Gruppenposition vorher**.
+- Die späteren Attacken bleiben auf die real modellierten Rampen beschränkt: **10 auf La Redoute**, **9 auf Forges**, **10 auf Roche-aux-Faucons** durch zehn Klassikerspezialisten. Kein Spezialangriff auf den frühen Anstiegen.
+
+**Interpretation:** Der Nutzerhinweis auf **Kraftausdauer und Attacken auf kurzen steilen Rampen** war genau richtig; fehlende passende Position vor den Rampen war zusätzlich ein wesentlicher KI-Fehler. Aber auch mit besserer Anfangsposition gewinnen noch Sprinter. Das kann an zu wenig selektiver Rampen-Mehrleistung oder der zu starken Verfolgung auf den anschließenden Flach-/Abfahrtsstücken liegen. **Nicht allein den gewünschten Sieger erzwingen.**
+
+**Nächster konkreter KI-Schritt nach Integration:** Nicht alle zehn Klassiker-Kapitäne gleichzeitig an jeder Rampe losfahren lassen. Einzelner, energie- und rennlagebewusster Angriffsentscheid basierend auf eigener mehrminütiger W/kg-Leistung, konkretem Gruppenpacer und verfügbarer W′/R-19-Reserve; anschließend Verfolgungs-/Kleingruppendynamik auf den letzten 35 km diagnostizieren. Bei Bedarf erst dann die eigenständige *repeated hard effort fatigue resistance* als physiologisches Profilmerkmal mit separater Validierung diskutieren. Die 42-m-Abstandsgruppen, Windschatten, CP/W′-Kern, R-19 und `legacy`-Default bleiben unverändert.
+
+**Freigabegrad:** Sportlich ein echter, aber **vorläufiger** Fortschritt auf einem einzelnen Lüttich-Seed. Größere Mehrseed-/Monte-Carlo-Prüfungen erst wie beschlossen am Ende der KI-Phase.
