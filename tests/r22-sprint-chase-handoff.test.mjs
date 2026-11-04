@@ -130,3 +130,66 @@ test('R22: physically spent helper is released; eligible fresh colleagues inheri
     x.riderId.startsWith('F')),
     'other physically present helpers should pick up the work');
 });
+
+test('R22: Manager kann null, zwei oder vier Jagdhelfer je Sprintteam vorgeben',()=>{
+  const main=Array.from({length:26},(_,i)=>
+    rider('F'+i,i<6?'T1':'T2',
+      i===1?'sprinter':i<6?'helfer':'kapitaen',
+      10000-i*4));
+  const riders=[rider('A1','T3','kapitaen',10350),...main];
+  const situation=analyzeRaceSituation(riders,35000);
+  assert.ok(situation.leadingBreakaway);
+  const basic={timeS:13000,remainingM:35000,progress:.81,
+    mainGroupIds:new Set(main.map(r=>r.id)),
+    riders,situation,previous:none,sprintFinaleMode:true};
+  const team=n=>({id:'T1',strategy:'sprint',chaseHelperCount:n});
+  const other=[{id:'T2',strategy:'ausgewogen'},
+    {id:'T3',strategy:'offensiv'}];
+  const noneChase=coordinatePelotonChase({...basic,
+    teams:[team(0),...other]});
+  assert.ok(!noneChase.chasingTeamIds.has('T1'));
+  for(const configured of [1,2,4]){
+    const teams=[team(configured),...other];
+    const selection=coordinatePelotonChase({...basic,teams});
+    assert.ok(selection.chasingTeamIds.has('T1'));
+    const plan=decideIntelligentCrew({
+      timeS:13000,remainingM:35000,progress:.81,
+      teams,riders,previousLeaders:new Map(),
+      chasingTeamIds:selection.chasingTeamIds,
+      physicalRelayMode:true,sprintFinaleMode:true,
+      restInPeloton:true,
+    });
+    const assigned=[...plan.orders.values()].filter(o=>
+      o.mission==='jagd'&&riders.find(r=>r.id===o.riderId)?.teamId==='T1');
+    assert.ok(assigned.length<=configured,
+      'Managerwert setzt ein echtes Helferlimit ohne Zusatzfahrer');
+  }
+});
+test('R22: physischer Langjagdführer behält seinen Auftrag nach kurzen Positionswechseln',()=>{
+  const ids=['LEAD','TARGET','H1','H2','H3'];
+  const group=Array.from({length:31},(_,i)=>rider('OTHER'+i,'T2',
+    'helfer',12000-i*3));
+  group.push(rider('TARGET','T1','sprinter',11960));
+  group.push(rider('LEAD','T1','helfer',11982));
+  group.push(rider('H1','T1','helfer',11976));
+  group.push(rider('H2','T1','helfer',11970));
+  group.push(rider('H3','T1','helfer',11965));
+  const teams=[{id:'T1',strategy:'sprint'},
+    {id:'T2',strategy:'ausgewogen'}];
+  const first=decideIntelligentCrew({
+    timeS:10000,progress:.75,remainingM:45000,teams,riders:group,
+    previousLeaders:new Map(),chasingTeamIds:new Set(['T1']),
+    restInPeloton:true,physicalRelayMode:true,sprintFinaleMode:true,
+  });
+  const initial=first.leaderByTeam.get('T1');
+  assert.ok(initial,'real helper first assigned to front');
+  const second=decideIntelligentCrew({
+    timeS:10400,progress:.79,remainingM:37000,teams,riders:group.map(r=>
+      r.id===initial.riderId?{...r,positionM:r.positionM-24}:r),
+    previousLeaders:first.leaderByTeam,
+    chasingTeamIds:new Set(['T1']),restInPeloton:true,
+    physicalRelayMode:true,sprintFinaleMode:true,
+  });
+  assert.equal(second.leaderByTeam.get('T1')?.riderId,initial.riderId,
+    '400 seconds in, physical 24m setback does not force arbitrary rotation');
+});
