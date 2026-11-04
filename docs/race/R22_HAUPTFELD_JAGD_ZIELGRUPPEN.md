@@ -104,3 +104,54 @@ Die wissenschaftliche Kalibrierung bleibt offen:
 
 **Keine automatische Monte-Carlo-Kampagne** und keine
 Parameteroptimierung allein für Lille 2025.
+
+## Erster vollständiger A/B/C-Test: 184,9 km, 154 Profis, Seed 2026
+
+[GitHub PR-Test #41778977953](https://github.com/Lancester/radsportmanager/actions/runs/41778977953):
+**254/254 Tests bestanden**, drei vollständige Rennen.
+Das ist eine technische Regression und eine erste
+Sensitivitätsprobe, KEINE physikalische Abnahme.
+
+| Kriterium | Legacy | Cohesive | Coordinated |
+| --- | ---: | ---: | ---: |
+| Siegergeschwindigkeit | 52,75 km/h | 46,01 km/h | **44,76 km/h** |
+| Mittelwatt aller Fahrer | 307,84 W | 207,21 W | **167,80 W** |
+| Max. Gruppen unterwegs | 50 | 18 | **5** |
+| Größte **Zielgruppe** | 23 | 57 | **133** |
+| Rückstand dieser Zielgruppe | 239,4 s | 810,3 s | **929,4 s** |
+| Siegergruppe (1-s-Proxy) | 9 | 3 | **3** |
+| Fahrer innerhalb 60 s der Siegerzeit | 9 | 3 | **3** |
+| Attacken | 2 | 16 | 18 |
+| Wechsel in die Verfolgungsabsicht | 7 | 390 | **123** |
+| Fluchtgruppen eingeholt (Modellereignis) | 1 | 0 | 1 |
+
+**Das Hauptfeld ist jetzt zwar stabil und fordert
+erheblich weniger Watt an, aber gerade nicht
+erfolgreich in der Ausreißerjagd.**
+Die 133 Fahrer erreichen das Ziel
+**15 min 29 s nach der Siegerzeit**.
+Darum dürfen wir die Vergrößerung der
+Zielgruppe **nicht als realistische
+Flachetappen-Kalibrierung feiern**.
+Selbst die neu gestärkte Sprintteam-Verfolgung
+ist unzureichend. Die Geschwindigkeit
+ist gegenüber dem echten Lille-Finale ebenfalls
+zu gering. Aus der niedrigen Wattzahl
+bei niedrigerem Tempo folgt **nicht**
+automatisch bessere Renneffizienz.
+
+**Nächster fachlicher Schritt:** Werden
+verfolgungsbereite Helfer tatsächlich
+zur Feldspitze gebracht? Wird nach
+einer eingeholten Flucht die korrekte
+Spitzengruppe weiter verfolgt?
+Wer bestimmt das Pelotontempo
+nach Jagd-/Relaiswechsel?
+Die 1D-Modellierung des seitlichen
+Überholens/Führungswechsels ist
+ein plausibler struktureller Engpass.
+Erst mit dieser Ursache sollten
+wir das Gleichgewicht aus
+Energiesparen und organisierter
+Jagd anpassen – nicht mit einer
+fest vorgegebenen Sieger-/Gruppenzahl.
