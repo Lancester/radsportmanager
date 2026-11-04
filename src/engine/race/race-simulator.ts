@@ -18,6 +18,9 @@ import {decidePackInstruction,pelotonGroups} from './peloton.ts';
 import {formationAeroFactors} from './formation-aero.ts';
 import {decideTeamPace} from './team-pacing.ts';
 import {decideIntelligentCrew} from './race-team-ai.ts';
+import {initialEnduranceState,advanceEndurance,endurancePowerAvailability}
+  from './endurance.ts';
+import type {EnduranceState} from './endurance.ts';
 import type {CrewMission,CrewDuty} from './race-team-ai.ts';
 import type {TeamPaceKind} from './team-pacing.ts';
 import type {RaceRole,RaceStrategy,RaceIntent,TacticDecision} from './race-tactics.ts';
@@ -26,12 +29,22 @@ export interface RaceSegment {
   name:string; lengthM:number; gradeFraction:number;
   /** 0..1; in technischer Abfahrt senkt Fahrtechnik das nötige Bremstempo. */
   descentTechnicality:number;
+  /** R-20: Rollwiderstand des konkreten Streckenabschnitts (z.B. rauer Belag). */
+  rollingCoefficient?:number;
+  /** Wind relativ zur Fahrtrichtung: positive Werte = Gegenwind. */
+  headwindMps?:number;
+  /** Seitenwind erhöht den Betrag der relativen Luftströmung. */
+  crosswindMps?:number;
 }
 export interface RaceTeam {
   id:string;name:string;strategy:RaceStrategy;
 }
 export interface RaceRider {
   id:string;name:string;teamId:string;role:RaceRole;
+  /** R-20: semantisches Profil für Testdaten; kein versteckter Zeitbonus. */
+  specialty?:'sprinter'|'kletterer'|'klassiker'|'zeitfahrer'|'allrounder';
+  /** R-19: verfügbare Kohlenhydratmenge je Fahrstunde (g/h). */
+  carbsGPerHour?:number;
   criticalPowerW:number;ftpW:number;wPrimeJ:number;
   massKg:number;bikeMassKg:number;dragAreaM2:number;
   descentSkill:number;sprintSkill:number;aggression:number;
@@ -43,6 +56,8 @@ export interface RaceInput {
   /** Standard: Formations-Windschatten. 'legacy' bewahrt den R-10-Vergleich.
    * 'formation-experiment' bleibt als Alias für R-12-Vergleichsdaten erhalten. */
   aeroModel?:'formation'|'legacy'|'formation-experiment';
+  /** Optionales separates Ausdauer-Testmodell, standardmäßig aktiviert. */
+  enduranceModel?:'long'|'off';
   /** Standard: R-15/R-16-Renn-KI. R-14 zum kontrollierten Vergleich. */
   tacticModel?:'r14'|'r15-r16';
   stepSeconds?:number;
@@ -66,6 +81,11 @@ export interface RaceClassification {
   finalWPrimeJ:number;spentWPrimeJ:number;recoveredWPrimeJ:number;
   distanceM:number;finalSpeedKmh:number;peakSpeedKmh:number;
   brakeLossJ:number;driveWorkJ:number;energyResidualJ:number;
+  /** R-19: separate Kohlenhydratbilanz, kein mechanischer Energieterm. */
+  carbohydrateRemainingKcal:number;
+  carbohydrateConsumedKcal:number;
+  carbohydrateIngestedKcal:number;
+  endurancePowerAvailability:number;
 }
 export interface RaceResult {
   title:string;distanceM:number;durationS:number;steps:number;seed:number;
@@ -79,7 +99,9 @@ export interface RaceResult {
     meanAeroFactor:number;minimumAeroFactor:number;
     teamPaceStarts:number;teamChaseStarts:number;
     multiHelperAssignments:number;maxSimultaneousTeamHelpers:number;
-    sprintTrainAssignments:number;actualFrontWorkSteps:number};
+    sprintTrainAssignments:number;actualFrontWorkSteps:number;
+    relayChanges:number;maximumEndurancePenalty:number;
+    participants:number;raceDistanceKm:number};
 }
 interface State {
   rider:RaceRider;physical:CornerRider;profile:CpWprimeProfile;
@@ -91,6 +113,7 @@ interface State {
   teamPaceKind:TeamPaceKind|null;
   crewMission:CrewMission|null;crewDuty:CrewDuty|null;
   lastAttackS:number;
+  endurance:EnduranceState;
 }
 const ensure=(label:string,n:number,condition:boolean)=>{
   if(!Number.isFinite(n)||!condition)throw new RangeError('Rennsimulation: '+label);
@@ -115,12 +138,21 @@ export function validateRace(x:RaceInput):void {
     ensure('Steigung',s.gradeFraction,Math.abs(s.gradeFraction)<=0.20);
     ensure('Abfahrtskomplexität',s.descentTechnicality,
       s.descentTechnicality>=0&&s.descentTechnicality<=1);
+    if(s.rollingCoefficient!==undefined)
+      ensure('Rollwiderstand',s.rollingCoefficient,
+        s.rollingCoefficient>=0.002&&s.rollingCoefficient<=0.03);
+    if(s.headwindMps!==undefined)
+      ensure('Gegen-/Rückenwind',s.headwindMps,
+        s.headwindMps>=-25&&s.headwindMps<=25);
+    if(s.crosswindMps!==undefined)
+      ensure('Seitenwind',s.crosswindMps,
+        s.crosswindMps>=0&&s.crosswindMps<=25);
     totalM+=s.lengthM;
   }
   ensure('Gesamtstrecke',totalM,totalM>=1000&&totalM<=300000);
   if(!Array.isArray(x.teams)||x.teams.length<1||x.teams.length>30||
-     !Array.isArray(x.riders)||x.riders.length<2||x.riders.length>60)
-    throw new RangeError('Rennsimulation: 1–30 Teams und 2–60 Fahrer');
+     !Array.isArray(x.riders)||x.riders.length<2||x.riders.length>210)
+    throw new RangeError('Rennsimulation: 1–30 Teams und 2–210 Fahrer');
   const teamIds=new Set<string>();
   for(const t of x.teams){
     if(!t||typeof t.id!=='string'||!t.id.trim()||teamIds.has(t.id)||
@@ -142,9 +174,18 @@ export function validateRace(x:RaceInput):void {
     ensure('Fahrermasse',r.massKg,r.massKg>=40&&r.massKg<=130);
     ensure('Radmasse',r.bikeMassKg,r.bikeMassKg>=4&&r.bikeMassKg<=20);
     ensure('CdA',r.dragAreaM2,r.dragAreaM2>=0.16&&r.dragAreaM2<=0.55);
+    if(r.specialty!==undefined&&
+      !['sprinter','kletterer','klassiker','zeitfahrer','allrounder'].includes(r.specialty))
+      throw new RangeError('Rennsimulation: Fahrertyp ungültig');
+    if(r.carbsGPerHour!==undefined)
+      ensure('Verpflegung',r.carbsGPerHour,
+        r.carbsGPerHour>=0&&r.carbsGPerHour<=110);
     for(const k of ['descentSkill','sprintSkill','aggression'] as const)
       ensure(k,r[k],r[k]>=0&&r[k]<=1);
   }
+  if(x.enduranceModel!==undefined&&
+    x.enduranceModel!=='off'&&x.enduranceModel!=='long')
+    throw new RangeError('Rennsimulation: enduranceModel ungültig');
   if(x.tacticModel!==undefined&&
     x.tacticModel!=='r14'&&x.tacticModel!=='r15-r16')
     throw new RangeError('Rennsimulation: tacticModel ungültig');
@@ -177,7 +218,7 @@ function buildStates(x:RaceInput):State[] {
       intent:'grundtempo',driveWorkJ:0,brakeLossJ:0,energyResidualJ:0,
       crankWorkJ:0,intentSinceS:0,lastChaseEndS:-1e9,
       teamPaceKind:null,crewMission:null,crewDuty:null,
-      lastAttackS:-1e9};
+      lastAttackS:-1e9,endurance:initialEnduranceState()};
   });
 }
 function splitGroups(active:State[]):State[][] {
@@ -214,6 +255,7 @@ export function simulateRace(x:RaceInput):RaceResult {
   const snapshots:RaceSnapshot[]=[];
   const dt=x.stepSeconds??1;
   let t=0,steps=0,nextTacticS=0,nextSnapshotM=5000;
+  let previousLeaders=new Map<string,{riderId:string;sinceS:number}>();
   let oldGroups=1,maximumGroups=1,lastSection=0;
   let lastGroupEventS=-Infinity;
   let breakawaySinceS:number|null=null,catchSinceS:number|null=null;
@@ -223,7 +265,8 @@ export function simulateRace(x:RaceInput):RaceResult {
     breakaways:0,caughtBreakaways:0,paceSupportSteps:0,
     teamPaceStarts:0,teamChaseStarts:0,
     multiHelperAssignments:0,maxSimultaneousTeamHelpers:0,
-    sprintTrainAssignments:0,actualFrontWorkSteps:0};
+    sprintTrainAssignments:0,actualFrontWorkSteps:0,
+    relayChanges:0,maximumEndurancePenalty:0};
   while(states.some(s=>s.finishTimeS===null)){
     if(t>=(x.maxRaceTimeS??30000))throw new RangeError('Rennsimulation: Zeitlimit überschritten');
     const active=states.filter(s=>s.finishTimeS===null);
@@ -260,12 +303,19 @@ export function simulateRace(x:RaceInput):RaceResult {
         timeS:t,progress:Math.min(1,leader.positionM/totalM),
         remainingM:Math.max(0,totalM-leader.positionM),
         teams:teamRefs,riders:planningRiders,
+        previousLeaders,
       }):null;
       const orders=coordinated?null:decideTeamPace({
         timeS:t,progress:Math.min(1,leader.positionM/totalM),
         teams:teamRefs,riders:planningRiders,
       });
       if(planned){
+        for(const [teamId,lead] of planned.leaderByTeam){
+          const former=previousLeaders.get(teamId);
+          if(former&&former.riderId!==lead.riderId)
+            counters.relayChanges++;
+        }
+        previousLeaders=planned.leaderByTeam;
         const counts=new Map<string,number>();
         for(const order of planned.orders.values()){
           const teamId=byId.get(order.riderId)!.rider.teamId;
@@ -431,8 +481,23 @@ export function simulateRace(x:RaceInput):RaceResult {
             Math.min(2.7,Math.max(0.1,(s.speedMps-limit)*1.8));
         }
       }
+      // R-19: langfristige LeistungsVERFÜGBARKEIT vor CP/W′. Keine
+      // Energie-/Positions- oder Geschwindigkeit-Gutschrift.
+      if(x.enduranceModel!=='off'){
+        commanded*=endurancePowerAvailability(s.endurance);
+      }
       const cp=applyCpWprimeStep(s.profile,s.physiology,commanded,dt);
       s.physiology=cp.state;
+      if(x.enduranceModel!=='off'){
+        const end=advanceEndurance({
+          state:s.endurance,appliedPowerW:cp.appliedPowerW,
+          referenceCpW:s.dayCpW,dt,
+          carbsGPerHour:s.rider.carbsGPerHour,
+        });
+        s.endurance=end.state;
+        counters.maximumEndurancePenalty=Math.max(
+          counters.maximumEndurancePenalty,1-end.powerAvailability);
+      }
       powers.set(s.rider.id,cp.appliedPowerW);
       next.set(s.rider.id,advanceMotionStep({
         speedMps:s.speedMps,stepSeconds:dt,
@@ -536,6 +601,11 @@ export function simulateRace(x:RaceInput):RaceResult {
     peakSpeedKmh:s.peakMps*3.6,
     brakeLossJ:s.brakeLossJ,driveWorkJ:s.driveWorkJ,
     energyResidualJ:s.energyResidualJ,
+    carbohydrateRemainingKcal:s.endurance.carbohydrateKcal,
+    carbohydrateConsumedKcal:s.endurance.carbohydrateConsumedKcal,
+    carbohydrateIngestedKcal:s.endurance.carbohydrateIngestedKcal,
+    endurancePowerAvailability:x.enduranceModel==='off'?1:
+      endurancePowerAvailability(s.endurance),
   }));
   // s.finishTimeS ist bei exakt linear interpoliertem Zielstraßenpunkt
   // sub-sekündlich, während die CP/Arbeit des letzten Intervalls als
@@ -545,6 +615,7 @@ export function simulateRace(x:RaceInput):RaceResult {
     steps,seed:x.seed,classification,events,snapshots,
     winnerId:sorted[0].rider.id,finisherCount:sorted.length,
     diagnostics:{...counters,maximumGroups,teams:x.teams.length,
+      participants:states.length,raceDistanceKm:totalM/1000,
       meanAeroFactor:aeroFactorSum/aeroFactorSamples,
       minimumAeroFactor}};
 }
