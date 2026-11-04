@@ -11,6 +11,9 @@ import {auditRace} from '../src/engine/race/race-audit.ts';
 
 for(const config of [
   {profile:'flach',teams:22,rosterSize:7,distanceKm:200,seed:2026},
+  {profile:'huegelig',teams:22,rosterSize:7,distanceKm:200,seed:2027},
+  {profile:'klassiker',teams:22,rosterSize:7,distanceKm:240,seed:2028},
+  {profile:'berg',teams:22,rosterSize:7,distanceKm:170,seed:2029},
   {profile:'berg',teams:10,rosterSize:7,distanceKm:170,seed:2027},
 ]){
   const input=createLongRaceFixture(config);
