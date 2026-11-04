@@ -27,7 +27,8 @@ export function decideStablePackRiding(
     o.frontGapM>STABLE_PACK.reconnectGapM){
     return {powerW:o.desiredPowerW,reason:'no_group'};
   }
-  if(frontOfGroup&&['verfolgung','helferarbeit'].includes(o.tacticalIntent))
+  if(frontOfGroup&&o.isPacer&&
+    ['verfolgung','helferarbeit'].includes(o.tacticalIntent))
     return {powerW:o.desiredPowerW,reason:'active_mission'};
   if(frontOfGroup&&o.isPacer)
     return {powerW:Math.min(o.desiredPowerW,o.groupPacerPowerW),
@@ -41,6 +42,13 @@ export function decideStablePackRiding(
   const resistance=.5*o.airDensityKgM3*o.dragAreaM2*o.aeroFactor*airV**2+
     mass*9.80665*(o.rollingCoefficient*Math.cos(theta)+Math.sin(theta));
   const hold=Math.max(0,resistance*v/o.drivetrainEfficiency);
+  // Das aktuelle Feldtempo allein reicht bei Beschleunigungen nicht:
+  // die Mitfahrer müssen dieselbe mechanische Beschleunigung mittragen.
+  // Die Prognose stammt aus dem aktuellen physischen Pacesetter-Watt,
+  // sie erzeugt keine unmittelbare Änderung der Fahrergeschwindigkeit.
+  const acceleration=Math.max(-.5,Math.min(.5,
+    o.referenceAccelerationMps2));
+  const accelerationW=mass*v*acceleration/o.drivetrainEfficiency;
   const speedError=v-o.ownSpeedMps;
   const gapError=Math.max(-12,Math.min(45,
     o.frontGapM-STABLE_PACK.wheelGapM));
@@ -54,6 +62,6 @@ export function decideStablePackRiding(
   const extra=o.tacticalIntent==='verfolgung'?STABLE_PACK.approachExtraW:0;
   const cap=o.criticalPowerW*(o.reserveFraction>.15?
     STABLE_PACK.maxReserveCpFraction:STABLE_PACK.exhaustedCpFraction);
-  return {powerW:Math.max(0,Math.min(cap,hold+correction+extra)),
+  return {powerW:Math.max(0,Math.min(cap,hold+accelerationW+correction+extra)),
     reason:'follow_group'};
 }
