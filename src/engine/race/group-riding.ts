@@ -15,6 +15,10 @@
 export interface GroupRidingObservation {
   groupSize:number;distanceFromGroupFrontM:number;
   frontGapM:number|null;frontSpeedMps:number|null;
+  /** Gruppentempo/-beschleunigung vom physisch führenden Fahrer.
+   * Nur zur Ermittlung der angeforderten Leistung, keine Zwangskinematik. */
+  referenceSpeedMps:number;referenceAccelerationMps2:number;
+  isPacer:boolean;groupPacerPowerW:number;
   ownSpeedMps:number;desiredPowerW:number;criticalPowerW:number;
   reserveFraction:number;tacticalIntent:string;
   riderMassKg:number;bikeMassKg:number;dragAreaM2:number;
@@ -29,12 +33,12 @@ export interface GroupRidingDecision {
 export const R22_GROUP_RIDING=Object.freeze({
   minGroupSize:8,
   maxFollowingGapM:42,
-  frontWorkRadiusM:14,
-  /** Führende fahren kontrolliertes Grundtempo, keine Dauer-CP. */
+  /** Die Referenzleistung bestimmt nur den Wattwunsch des echten Pacesetters.
+   * Die anderen Fahrer orientieren sich an dessen tatsächlicher Bewegung. */
   leaderCpFraction:0.86,
-  targetWheelGapM:7,
-  wattsPerGapMeter:0.95,
-  wattsPerSpeedDifferenceMps:65,
+  targetWheelGapM:2,
+  wattsPerGapMeter:0.5,
+  wattsPerSpeedDifferenceMps:75,
   maximumFollowingCpFraction:1.12,
 });
 export function decideGroupRiding(o:GroupRidingObservation):GroupRidingDecision{
@@ -44,6 +48,8 @@ export function decideGroupRiding(o:GroupRidingObservation):GroupRidingDecision{
     o.riderMassKg,o.bikeMassKg,o.dragAreaM2,o.aeroFactor,
     o.gradeFraction,o.rollingCoefficient,o.airDensityKgM3,
     o.drivetrainEfficiency,o.headwindMps,o.crosswindMps,
+    o.referenceSpeedMps,o.referenceAccelerationMps2,
+    o.groupPacerPowerW,
   ];
   if(finite.some(x=>!Number.isFinite(x))||
     o.groupSize<1||!Number.isInteger(o.groupSize)||
@@ -60,10 +66,9 @@ export function decideGroupRiding(o:GroupRidingObservation):GroupRidingDecision{
     return {powerW:o.desiredPowerW,reason:'no_group'};
   if(['angriff','sprint','verfolgung','helferarbeit'].includes(o.tacticalIntent))
     return {powerW:o.desiredPowerW,reason:'active_mission'};
-  if(o.distanceFromGroupFrontM<=R22_GROUP_RIDING.frontWorkRadiusM)
+  if(o.isPacer)
     return {
-      powerW:Math.min(o.desiredPowerW,
-        o.criticalPowerW*R22_GROUP_RIDING.leaderCpFraction),
+      powerW:Math.min(o.desiredPowerW,o.groupPacerPowerW),
       reason:'front_rotation',
     };
   if(o.frontGapM===null||o.frontSpeedMps===null||
@@ -71,7 +76,7 @@ export function decideGroupRiding(o:GroupRidingObservation):GroupRidingDecision{
     return {powerW:o.desiredPowerW,reason:'no_group'};
   // Aus den realen Kräften: Leistung zum Halten des Vordermann-Tempos.
   // Kein Geschwindigkeits-Sollwert wird direkt in die Physik eingespeist.
-  const targetV=Math.max(0,o.frontSpeedMps);
+  const targetV=Math.max(0,o.referenceSpeedMps);
   const airV=Math.hypot(Math.max(0,targetV+o.headwindMps),o.crosswindMps);
   const mass=o.riderMassKg+o.bikeMassKg;
   const theta=Math.atan(o.gradeFraction);
@@ -81,6 +86,11 @@ export function decideGroupRiding(o:GroupRidingObservation):GroupRidingDecision{
     airV*airV;
   const hold=Math.max(0,(drag+roll+gravity)*targetV/
     o.drivetrainEfficiency);
+  // Gleiche Beschleunigung der Gruppe erfordert für jeden Fahrer
+  // andere physisch nachvollziehbare Antriebsarbeit.
+  const groupAccelerationPower=mass*targetV*
+    Math.max(-1.5,Math.min(1.5,o.referenceAccelerationMps2))/
+    o.drivetrainEfficiency;
   const response=R22_GROUP_RIDING.wattsPerSpeedDifferenceMps*
       (targetV-o.ownSpeedMps)+
     R22_GROUP_RIDING.wattsPerGapMeter*
@@ -88,6 +98,7 @@ export function decideGroupRiding(o:GroupRidingObservation):GroupRidingDecision{
         o.frontGapM-R22_GROUP_RIDING.targetWheelGapM));
   const cap=o.criticalPowerW*
     (o.reserveFraction>.15?R22_GROUP_RIDING.maximumFollowingCpFraction:1);
-  return {powerW:Math.max(0,Math.min(cap,hold+response)),
+  return {powerW:Math.max(0,Math.min(cap,
+    hold+groupAccelerationPower+response)),
     reason:'follow_group'};
 }
