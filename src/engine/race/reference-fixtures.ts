@@ -1,0 +1,276 @@
+/**
+ * R-22A/B/C: versionierte, quellengestützte Referenzszenarien.
+ *
+ * "An echte Rennen angelehnt" != exakter GPS/GPX-Track.
+ * Die überprüfbaren Gesamtdistanzen und klassifizierten Anstiege stammen
+ * aus Rennunterlagen. Dazwischen sind ausdrücklich modellierte Übergänge,
+ * keine behaupteten Original-Höhen-/Wetterdaten.
+ *
+ * Fiktive Team- und Fahreridentitäten; Körpermasse, CdA, CP und W′
+ * orientieren sich an publizierten Typ-Mittelwerten (nicht Messwerten
+ * einzelner realer Profis). Kein heimlicher Zeit-/Positionierungsbonus.
+ */
+import type {RaceInput,RaceRider,RaceSegment,RaceStrategy}
+  from './race-simulator.ts';
+import {validateRace} from './race-simulator.ts';
+
+export type ReferenceRouteId=
+  'tdf25_lille'|'tdf25_boulogne'|'lbl25_liege'|'tdf25_hautacam';
+export interface ReferenceClimb {
+  name:string;endKm:number;lengthKm:number;averageGrade:number;
+}
+export interface ReferenceRoute {
+  id:ReferenceRouteId;name:string;kind:'flach'|'huegelig'|'klassiker'|'berg';
+  distanceKm:number;year:number;referenceAscentM?:number;
+  sources:readonly string[];
+  climbs:readonly ReferenceClimb[];
+  /** Alle nicht durch publizierte Anstiege definierten Übergänge sind
+   * synthetische Proxies. Keine vollständige GPX-Rekonstruktion. */
+  fidelity:'published-distance-and-climbs-approximated-transitions';
+}
+const route=(
+  id:ReferenceRouteId,name:string,kind:ReferenceRoute['kind'],
+  distanceKm:number,sources:string[],climbs:ReferenceClimb[],
+  referenceAscentM?:number,
+):ReferenceRoute=>({
+  id,name,kind,distanceKm,year:2025,sources,climbs,
+  referenceAscentM,
+  fidelity:'published-distance-and-climbs-approximated-transitions',
+});
+export const REFERENCE_ROUTES:Record<ReferenceRouteId,ReferenceRoute>={
+  tdf25_lille:route('tdf25_lille',
+    'Tour de France 2025 – Lille → Lille, 1. Etappe',
+    'flach',184.9,[
+      'https://www.letour.fr/en/the-race/grands-departs/grand-depart-2025',
+      'https://sanluca.cc/races/g5Vgvv7ZY',
+      'https://www.procyclingstats.com/race/tour-de-france/2025/stage-1/history/overview',
+    ],[
+      {name:'Notre-Dame-de-Lorette',endKm:41.1,lengthKm:1.0,averageGrade:0.076},
+      {name:'Mont Cassel',endKm:105.8,lengthKm:1.9,averageGrade:0.036},
+      {name:'Mont Noir',endKm:139.5,lengthKm:1.3,averageGrade:0.061},
+    ],1065),
+  tdf25_boulogne:route('tdf25_boulogne',
+    'Tour de France 2025 – Lauwin-Planque → Boulogne, 2. Etappe',
+    'huegelig',209.1,[
+      'https://www.letour.fr/de/aktuelles/2025/etappe-2/lang-und-schwer/1325323',
+      'https://www.procyclingstats.com/race/tour-de-france/2025/stage-2/live',
+      'https://www.cyclingstage.com/tour-de-france-2025-route/stage-2-tdf-2025/',
+    ],[
+      {name:'Côte de Cavron-Saint-Martin',endKm:104.6,lengthKm:1.2,averageGrade:0.05},
+      {name:'Côte du Haut Pichot',endKm:179.9,lengthKm:1.1,averageGrade:0.09},
+      {name:'Côte de Saint-Étienne-au-Mont',endKm:201.3,lengthKm:1.1,averageGrade:0.094},
+      {name:'Côte d’Outreau',endKm:204.5,lengthKm:0.8,averageGrade:0.08},
+      {name:'Zielanstieg Boulogne',endKm:209.1,lengthKm:1.2,averageGrade:0.038},
+    ],2164),
+  lbl25_liege:route('lbl25_liege',
+    'Liège–Bastogne–Liège 2025, Eintagesklassiker',
+    'klassiker',252,[
+      'https://www.cyclingnews.com/races/liege-bastogne-liege-2025/map/',
+      'https://www.procyclingstats.com/race/liege-bastogne-liege/2025/route/climbs',
+    ],[
+      {name:'Côte de Saint-Roch',endKm:70.7,lengthKm:1,averageGrade:0.112},
+      {name:'Col de Haussire',endKm:119.4,lengthKm:3.9,averageGrade:0.072},
+      {name:'Côte de Mont-le-Soie',endKm:158.7,lengthKm:1.8,averageGrade:0.075},
+      {name:'Côte de Wanne',endKm:167,lengthKm:2.8,averageGrade:0.046},
+      {name:'Côte de Stockeu',endKm:173.5,lengthKm:1,averageGrade:0.125},
+      {name:'Côte de Haute-Levée',endKm:177.7,lengthKm:3,averageGrade:0.063},
+      {name:'Col du Rosier',endKm:192,lengthKm:4.5,averageGrade:0.056},
+      {name:'Côte de Desnié',endKm:205.3,lengthKm:1.6,averageGrade:0.073},
+      {name:'Côte de la Redoute',endKm:218,lengthKm:1.6,averageGrade:0.088},
+      {name:'Côte des Forges',endKm:228.7,lengthKm:1.3,averageGrade:0.077},
+      {name:'Côte de la Roche-aux-Faucons',endKm:238.7,lengthKm:1.3,averageGrade:0.11},
+    ]),
+  tdf25_hautacam:route('tdf25_hautacam',
+    'Tour de France 2025 – Auch → Hautacam, 12. Etappe',
+    'berg',180.6,[
+      'https://www.velowire.com/article/1220/en/the-tour-de-france-2025-race-route-on-openstreetmap-maps-and-in-google-earth--stage-profiles-and-time--route-schedules.html',
+      'https://www.tour-magazin.de/en/professional-cycling/latest-news/the-tour-tech-briefing-for-stage-12-of-the-tour-de-france-2025/',
+      'https://www.procyclingstats.com/race/tour-de-france/2025/stage-12-gc/info/profiles',
+    ],[
+      {name:'Côte de Labatmale',endKm:91.4,lengthKm:1.3,averageGrade:0.063},
+      {name:'Col du Soulor',endKm:134.1,lengthKm:11.8,averageGrade:0.073},
+      {name:'Col de Bordères',endKm:145.7,lengthKm:3.1,averageGrade:0.077},
+      {name:'Hautacam – Bergankunft',endKm:180.6,lengthKm:13.5,averageGrade:0.078},
+    ],3850),
+};
+
+/** Originaldaten belegter Eckpunkte plus vollständig ausgewiesene
+ * Modellübergänge. Physikalische Strecke ohne unrealistisch lange
+ * Konstantsteigungen. Zwischenabschnitte sind bewusst NICHT GPX-genau. */
+export function createReferenceSegments(id:ReferenceRouteId):RaceSegment[]{
+  const spec=REFERENCE_ROUTES[id];
+  if(!spec)throw new RangeError('R-22A: Referenzstrecke unbekannt');
+  const segments:RaceSegment[]=[];
+  const climbs=[...spec.climbs].sort((a,b)=>a.endKm-b.endKm);
+  let cursor=0,backgroundIndex=0;
+  const bgGrades:Record<ReferenceRoute['kind'],number[]>={
+    flach:[0.002,-0.003,0.006,-0.004,0.004,-0.002],
+    huegelig:[0.009,-0.012,0.015,-0.011,0.007,-0.006],
+    klassiker:[0.015,-0.014,0.018,-0.013,0.011,-0.015],
+    berg:[0.013,-0.016,0.023,-0.020,0.017,-0.013],
+  };
+  const emit=(lengthKm:number,name:string,grade:number)=>{
+    const lengthM=Math.round(lengthKm*1000);
+    if(lengthM<100)throw new RangeError('R-22A: zu kurzer Abschnitt');
+    segments.push({
+      name,lengthM,gradeFraction:grade,
+      descentTechnicality:grade<-0.025?0.45:0.12,
+      rollingCoefficient:0.004,
+    });
+  };
+  const transitionTo=(endKm:number)=>{
+    const gap=Math.round((endKm-cursor)*1000)/1000;
+    if(gap<-0.000001)throw new RangeError('R-22A: sich überschneidende Anstiege');
+    if(gap<0.1&&gap>0)throw new RangeError('R-22A: Übergang <100 m');
+    if(gap<=0)return;
+    const count=Math.ceil(gap/9);
+    for(let i=0;i<count;i++){
+      const chunk=Math.round((gap/count)*1000)/1000;
+      const distance=i===count-1?gap-chunk*(count-1):chunk;
+      const bg=bgGrades[spec.kind][backgroundIndex++%bgGrades[spec.kind].length];
+      emit(distance,'Modellierter Übergang '+(backgroundIndex),bg);
+    }
+    cursor=endKm;
+  };
+  for(const climb of climbs){
+    const start=+(climb.endKm-climb.lengthKm).toFixed(3);
+    transitionTo(start);
+    emit(climb.lengthKm,climb.name,climb.averageGrade);
+    cursor=climb.endKm;
+  }
+  transitionTo(spec.distanceKm);
+  if(segments.length>60)throw new RangeError('R-22A: mehr als 60 Abschnitte');
+  const actual=segments.reduce((s,x)=>s+x.lengthM,0);
+  if(Math.abs(actual-spec.distanceKm*1000)>0.01)
+    throw new Error('R-22A: Streckendistanz nicht erhalten');
+  return segments;
+}
+
+// Literaturbasis: Model Table 1 (144 Profis, Mittelwerte geschätzt).
+// https://pmc.ncbi.nlm.nih.gov/articles/PMC12400862/
+// Kategorien "klassiker" und "gc" sind begründete Modellableitungen;
+// kein Zugriff auf individuelle Leistungs- oder Gesundheitsdaten.
+type Archetype='sprinter'|'kletterer'|'gc'|'klassiker'|'zeitfahrer'|'allrounder';
+export const PRO_REFERENCE=Object.freeze({
+  sprinter:{massKg:80.2,criticalPowerW:381.3,wPrimeJ:38600,dragAreaM2:.285},
+  kletterer:{massKg:63.2,criticalPowerW:354.1,wPrimeJ:23000,dragAreaM2:.264},
+  gc:{massKg:63.8,criticalPowerW:388.6,wPrimeJ:18100,dragAreaM2:.265},
+  klassiker:{massKg:71.0,criticalPowerW:368,wPrimeJ:30000,dragAreaM2:.274},
+  zeitfahrer:{massKg:72.6,criticalPowerW:395.3,wPrimeJ:22000,dragAreaM2:.276},
+  allrounder:{massKg:69.5,criticalPowerW:361.1,wPrimeJ:30100,dragAreaM2:.272},
+} satisfies Record<Archetype,{
+  massKg:number;criticalPowerW:number;wPrimeJ:number;dragAreaM2:number;
+}>);
+
+export type TeamFocus='sprint'|'berg'|'klassiker'|'ausreisser'|'ausgewogen';
+export interface ReferenceTeamComposition {
+  teamId:string;focus:TeamFocus;strategy:RaceStrategy;
+  riders:readonly Archetype[];
+}
+const compositions:Record<TeamFocus,{strategy:RaceStrategy;roles:Archetype[]}> = {
+  sprint:{strategy:'sprint',roles:[
+    'sprinter','sprinter','klassiker','allrounder',
+    'zeitfahrer','allrounder','allrounder']},
+  berg:{strategy:'kapitaen_schuetzen',roles:[
+    'gc','kletterer','kletterer','zeitfahrer','allrounder',
+    'allrounder','klassiker']},
+  klassiker:{strategy:'offensiv',roles:[
+    'klassiker','sprinter','klassiker','allrounder',
+    'zeitfahrer','allrounder','kletterer']},
+  ausreisser:{strategy:'offensiv',roles:[
+    'allrounder','klassiker','zeitfahrer','kletterer',
+    'allrounder','allrounder','klassiker']},
+  ausgewogen:{strategy:'ausgewogen',roles:[
+    'gc','sprinter','kletterer','allrounder',
+    'klassiker','zeitfahrer','allrounder']},
+};
+/** 22 Teams: 5 Sprinter-, 6 GC-, 4 Klassiker-, 3 Flucht- und
+ * 4 ausgewogene Mannschaften. Verteilung ist Simulation, nicht UCI-Startliste. */
+const teamFocuses:TeamFocus[]=[
+  ...Array<TeamFocus>(5).fill('sprint'),
+  ...Array<TeamFocus>(6).fill('berg'),
+  ...Array<TeamFocus>(4).fill('klassiker'),
+  ...Array<TeamFocus>(3).fill('ausreisser'),
+  ...Array<TeamFocus>(4).fill('ausgewogen'),
+];
+export const REFERENCE_TEAM_COMPOSITIONS:readonly ReferenceTeamComposition[]=
+  teamFocuses.map((focus,i)=>({
+    teamId:'T'+String(i+1).padStart(2,'0'),focus,
+    strategy:compositions[focus].strategy,
+    riders:[...compositions[focus].roles],
+  }));
+
+function hash(index:number,salt:number):number {
+  let n=Math.imul(index+19,2654435761)^Math.imul(salt+11,2246822507);
+  n=Math.imul(n^(n>>>16),2246822519);
+  return ((n^(n>>>13))>>>0)/4294967296;
+}
+function symmetric(index:number,salt:number):number{
+  // deterministisches, begrenztes Dreiecksprofil ohne
+  // versteckte Tagesform-Änderung zwischen Monte-Carlo-Seeds.
+  return hash(index,salt)+hash(index,salt+51)-1;
+}
+function buildRider(archetype:Archetype,teamId:string,
+  index:number,slot:number,focus:TeamFocus):RaceRider{
+  const model=PRO_REFERENCE[archetype];
+  const multiplier=1+symmetric(index,7)*0.085;
+  const cp=Math.round(model.criticalPowerW*multiplier*10)/10;
+  const isCaptain=slot===0;
+  const isSprinter=slot===1&&archetype==='sprinter'&&
+    (focus==='sprint'||focus==='klassiker'||focus==='ausgewogen');
+  const role=isCaptain?'kapitaen':isSprinter?'sprinter':'helfer';
+  const specialty=archetype==='gc'?'kletterer':
+    archetype==='klassiker'?'klassiker':archetype;
+  return {
+    id:'F'+String(index+1).padStart(3,'0'),
+    name:'Fiktiver Profi '+String(index+1).padStart(3,'0'),
+    teamId,role,specialty,
+    criticalPowerW:cp,
+    /** FTP ist aktuell nur Profilwert, nicht ein unabhängiger Motor. */
+    ftpW:+(cp*.97).toFixed(1),
+    wPrimeJ:Math.round(model.wPrimeJ*(1+symmetric(index,13)*.14)),
+    massKg:+(model.massKg+symmetric(index,17)*6).toFixed(1),
+    bikeMassKg:7.7,
+    dragAreaM2:+(model.dragAreaM2+symmetric(index,23)*.013).toFixed(4),
+    sprintSkill:archetype==='sprinter'?.95:archetype==='klassiker'?.73:.45,
+    descentSkill:+(.55+hash(index,31)*.4).toFixed(3),
+    aggression:+(.32+hash(index,37)*.55).toFixed(3),
+    carbsGPerHour:70+(index%3)*10,
+  };
+}
+export interface ReferenceFixture {
+  input:RaceInput;route:ReferenceRoute;
+  modelledAscentM:number;
+  teamFoci:Record<TeamFocus,number>;
+}
+export function createReferenceFixture(options:{
+  routeId:ReferenceRouteId;seed?:number;teamCount?:number;
+}):ReferenceFixture{
+  if(!options||!REFERENCE_ROUTES[options.routeId])
+    throw new RangeError('R-22A: Referenzstrecke ungültig');
+  const count=options.teamCount??22;
+  if(!Number.isInteger(count)||count<1||count>22)
+    throw new RangeError('R-22C: 1–22 Referenzteams');
+  const route=REFERENCE_ROUTES[options.routeId];
+  const segments=createReferenceSegments(options.routeId);
+  const chosen=REFERENCE_TEAM_COMPOSITIONS.slice(0,count);
+  const teams=chosen.map(c=>({
+    id:c.teamId,name:'Fiktives Profi-Team '+c.teamId,
+    strategy:c.strategy,
+  }));
+  const riders=chosen.flatMap((c,t)=>
+    c.riders.map((type,j)=>buildRider(type,c.teamId,t*7+j,j,c.focus)));
+  const input:RaceInput={
+    title:route.name+' – reproduzierbare R-22-Referenz',
+    segments,teams,riders,seed:options.seed??2026,
+    maxRaceTimeS:60000,stepSeconds:1,
+  };
+  validateRace(input);
+  const teamFoci={sprint:0,berg:0,klassiker:0,ausreisser:0,ausgewogen:0};
+  for(const c of chosen)teamFoci[c.focus]++;
+  return {
+    input,route,teamFoci,
+    modelledAscentM:Math.round(segments.reduce((s,x)=>
+      s+Math.max(0,x.gradeFraction)*x.lengthM,0)),
+  };
+}
