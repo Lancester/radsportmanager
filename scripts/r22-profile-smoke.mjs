@@ -76,6 +76,8 @@ for(const id of routes){
     actualChaseFrontS:r.diagnostics.mainFieldFrontWorkWithAssignedChaserS??0,
     chaseLeaderChanges:r.diagnostics.mainFieldChaserLeaderChanges??0,
     climbingTempoSeconds:r.diagnostics.climbingTempoSeconds??0,
+    sprintPositioningSeconds:r.diagnostics.sprintPositioningSeconds??0,
+    sprintEscortSeconds:r.diagnostics.sprintEscortSeconds??0,
     top10Types:r.classification.slice(0,10).map(x=>kindByRider.get(x.id)),
     runtimeS:n((performance.now()-start)/1000),
   };
@@ -181,6 +183,8 @@ for(const id of routes){
     console.log('R22-LILLE-SPRINTER-AUDIT '+JSON.stringify({
       route:id,seed,
       preRaceBestSprinter:sprinters.strongest.riderId,
+      sprintPositioningSeconds:r.diagnostics.sprintPositioningSeconds??0,
+      sprintEscortSeconds:r.diagnostics.sprintEscortSeconds??0,
       bestPlacedSprinter:bestActualSprinter?.id,
       winnerId:r.winnerId,
       watched:watch,
