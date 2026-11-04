@@ -306,6 +306,11 @@ export function simulateRace(x:RaceInput):RaceResult {
   let unprovokedBreakawayCount=0;
   let orderedRelayTeamSeconds=0;
   let mainFieldFrontWorkWithAssignedChaserS=0;
+  // Nur Diagnose: tatsächliche, ununterbrochene Führungsphasen an der Hauptfeldspitze.
+  let mainFieldChaserLeaderChanges=0;
+  let longestMainFieldChaserStintS=0;
+  let currentMainFieldChaserId:string|null=null;
+  let currentMainFieldChaserStintS=0;
   const counters={attacks:0,chases:0,sprints:0,groupSplits:0,
     breakaways:0,caughtBreakaways:0,paceSupportSteps:0,
     teamPaceStarts:0,teamChaseStarts:0,
@@ -543,7 +548,21 @@ export function simulateRace(x:RaceInput):RaceResult {
       if(chaseState.active.includes(frontTeam)&&
         front.intent==='verfolgung'){
         mainFieldFrontWorkWithAssignedChaserS+=dt;
+        if(currentMainFieldChaserId!==front.rider.id){
+          if(currentMainFieldChaserId!==null)mainFieldChaserLeaderChanges++;
+          currentMainFieldChaserId=front.rider.id;
+          currentMainFieldChaserStintS=0;
+        }
+        currentMainFieldChaserStintS+=dt;
+        longestMainFieldChaserStintS=Math.max(
+          longestMainFieldChaserStintS,currentMainFieldChaserStintS);
+      }else{
+        currentMainFieldChaserId=null;
+        currentMainFieldChaserStintS=0;
       }
+    }else{
+      currentMainFieldChaserId=null;
+      currentMainFieldChaserStintS=0;
     }
     for(const group of physicalGroups){
       const pacer=byId.get(group[0].id)!;
@@ -890,6 +909,8 @@ export function simulateRace(x:RaceInput):RaceResult {
       ...((x.groupRidingModel==='relays'||(x.groupRidingModel==='relay-paced'||x.groupRidingModel==='front-gated'))?{
         orderedRelayTeamSeconds,
         mainFieldFrontWorkWithAssignedChaserS,
+        mainFieldChaserLeaderChanges,
+        longestMainFieldChaserStintS,
         ...(x.groupRidingModel==='front-gated'?{unprovokedBreakawayCount}:{}),
       }:{}),teams:x.teams.length,
       participants:states.length,raceDistanceKm:totalM/1000,
