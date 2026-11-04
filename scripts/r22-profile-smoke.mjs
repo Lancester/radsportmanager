@@ -185,6 +185,7 @@ for(const id of routes){
       preRaceBestSprinter:sprinters.strongest.riderId,
       sprintPositioningSeconds:r.diagnostics.sprintPositioningSeconds??0,
       sprintEscortSeconds:r.diagnostics.sprintEscortSeconds??0,
+      sprintFinale:r.diagnostics.sprintFinale??[],
       bestPlacedSprinter:bestActualSprinter?.id,
       winnerId:r.winnerId,
       watched:watch,
