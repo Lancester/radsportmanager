@@ -1,6 +1,8 @@
 # Unabhängige Gesamtauditierung der Rennfahrer- und Team-KI – Work-Auftrag
 
 **Projekt:** öffentlicher Offline-Radsportmanager, Repository `Lancester/radsportmanager`, Branch **`main`**.
+
+**Abgeschlossener Code-Stand:** PR #78 ist inzwischen **nach `main` gemergt** (Commit `f7333421`). Die kombinierte Regression ist in [Actions #41904933020](https://github.com/Lancester/radsportmanager/actions/runs/41904933020) mit **330/330 Tests** erfolgreich. PR #75 blieb geschlossen und ungemergt.
 **Ziel:** Eine fachlich unabhängige, kritische zweite Prüfung des gesamten KI- und Rennsimulationssystems. Dies ist **keine** Bitte um Bestätigung der bisherigen Arbeit. Suche nach logischen Fehlern, systematischen Verzerrungen, falsch kombinierten Regeln, widersprüchlichen Prioritäten und unrealistischen Resultaten. Kennzeichne Unsicherheit und die Grenzen von Ein-Seed-Smoke-Tests.
 
 ## Projektkontext
