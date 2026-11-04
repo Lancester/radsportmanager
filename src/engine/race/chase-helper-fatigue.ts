@@ -143,5 +143,7 @@ export function decideCommittedChasePull(o:{
   // liegt nach dieser Begrenzung bei ~98–104% CP, sofern möglich.
   const requested=Math.min(o.cpW*1.20,
     o.cpW*sustainableFraction/o.enduranceAvailability);
-  return requested>o.originalRequestedW+1?requested:null;
+  // Auch ÜBERHÖHTE bisherige Mission-Wattanfragen aktiv abregeln:
+  // sonst bleibt der Leader bei 1.15 CP und zerreißt das Feld.
+  return Math.abs(requested-o.originalRequestedW)>1?requested:null;
 }
