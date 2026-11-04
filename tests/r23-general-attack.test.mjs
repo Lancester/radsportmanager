@@ -22,11 +22,12 @@ test('Allgemein: nach 88% darf auch ein Bergkapitaen an Schlussanstiegen angreif
 });
 test('Allgemein: spätes Flachrennen nur für fitte vordere Angreifer',()=>{
   const flat={...base,progress:.95,remainingM:9000,
-    gradeFraction:0,distanceFromGroupFrontM:12,
-    dayCpW:380,meanGroupCpW:365};
+    gradeFraction:0,distanceFromGroupFrontM:4,
+    reserveFraction:.92,lastAttackAgeS:2600,
+    dayCpW:420,meanGroupCpW:365};
   assert.equal(decideGeneralAttackOpportunity(flat),true);
   for(const change of [
-    {reserveFraction:.5},{lastAttackAgeS:900},
+    {reserveFraction:.5},{lastAttackAgeS:1200},
     {distanceFromGroupFrontM:18},{dayCpW:350},
     {remainingM:300},{distanceFromRaceFrontM:180}
   ])assert.equal(decideGeneralAttackOpportunity({...flat,...change}),false);

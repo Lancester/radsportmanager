@@ -312,7 +312,13 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
   assert.equal(lille.spentHelperTrace.length,lille.spentChaseHelpers);
   assert.ok(lille.spentHelperTrace.every(x=>
     x.message.includes('Führungsarbeit')&&x.km>0));
-  assert.ok(lille.watched.length>=4);
+  // Eine Person kann gleichzeitig Favorit, bestplatzierter Sprinter
+  // und Rennsieger sein; die Beobachtung dedupliziert absichtlich.
+  assert.ok(lille.watched.length>=3);
+  assert.equal(new Set(lille.watched.map(x=>x.id)).size,
+    lille.watched.length);
+  assert.ok(lille.watched.some(x=>
+    x.id===rows.find(r=>r.route==='tdf25_lille').winnerId));
   const best=lille.watched.find(x=>x.id===lille.preRaceBestSprinter);
   assert.ok(best?.sprintSkill>0);
   assert.ok(best?.baseCpW>0);

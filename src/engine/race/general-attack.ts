@@ -16,10 +16,10 @@ export const GENERAL_ATTACK=Object.freeze({
   defaultGroupFrontM:40,defaultRaceFrontM:120,
   flatFinishDistanceM:12000,
   flatFinishMaxGrade:.04,
-  flatFinishReserve:.65,
-  flatFinishMinAgeS:1500,
-  flatFinishGroupFrontM:16,
-  flatFinishCpGroupFactor:1.01,
+  flatFinishReserve:.85,
+  flatFinishMinAgeS:2400,
+  flatFinishGroupFrontM:6,
+  flatFinishCpGroupFactor:1.08,
   continueS:40,continueReserve:.18,
 });
 export interface GeneralAttackObservation {
