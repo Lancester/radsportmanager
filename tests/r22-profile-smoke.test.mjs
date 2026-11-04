@@ -59,6 +59,12 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
     }
     assert.equal(row.top10Types.length,10);
     assert.ok(row.individualSprintAttempts>=0);
+    assert.ok(row.hillyRampTempoSeconds>=0);
+    assert.ok(Array.isArray(row.hillyRampTempoRiders));
+    if(row.profile!=='huegelig'){
+      assert.equal(row.hillyRampTempoSeconds,0);
+      assert.deepEqual(row.hillyRampTempoRiders,[]);
+    }
     assert.ok(Array.isArray(row.top10SprintLaunchM));
     assert.equal(row.sprintersInTop10,
       row.top10Types.filter(x=>x==='sprinter').length);
@@ -92,6 +98,25 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
     'R22 Klassiker-KI muss zusammen mit dem Sprint-/Jagdcode aktiv bleiben');
   assert.equal(classicsIntegration.individualSprintAttempts,0);
   assert.equal(classicsIntegration.actualNamedChaseFrontS,0);
+  const hillyLines=log.split('\n').filter(line=>
+    line.startsWith('R23-HILLY-AUDIT '));
+  assert.equal(hillyLines.length,1,'Huegel-Attacken-Audit fehlt');
+  const hill=JSON.parse(hillyLines[0].slice('R23-HILLY-AUDIT '.length));
+  assert.equal(hill.route,'tdf25_boulogne');
+  assert.equal(hill.seed,2026);
+  assert.equal(hill.attacks,
+    rows.find(r=>r.route==='tdf25_boulogne').attacks);
+  assert.equal(hill.attacks,hill.earlyAttacks+
+    hill.midAttacks+hill.lateAttacks);
+  assert.ok(hill.uniqueAttackers>=1&&
+    hill.uniqueAttackers<=hill.attacks);
+  assert.ok(hill.lateRampAttacks<=hill.lateAttacks);
+  assert.ok(hill.checkpoints.length>=5&&
+    hill.checkpoints.every(x=>x.frontGroup>=1&&
+      x.largestGroup>=x.frontGroup));
+  assert.ok(hill.hillyRampTempoSeconds>=0);
+  assert.ok(Array.isArray(hill.hillyRampTempoRiders));
+  console.log(hillyLines[0]);
   // Die Zahlen sind ausdrücklich Diagnose, keine festen Soll-Sieger/Quoten.
   const summaryLine=log.split('\n').find(line=>
     line.startsWith('R22-PROFILES-SUMMARY '));
