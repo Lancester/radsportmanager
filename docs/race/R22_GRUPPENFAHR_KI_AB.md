@@ -40,16 +40,27 @@ setzt **nur Wattanforderungen**:
   aerodynamische Abschirmung, Gegen-/Seitenwind)
   berechnet. Dazu kommt eine begrenzte
   Wattkorrektur bei Tempodifferenz und Lücke.
-- Fahrer in den vorderen 14 m einer ausreichend
-  großen Gruppe vermeiden grundlos permanent
-  98 % ihrer eigenen CP als Führungsleistung
-  abzurufen. Als **experimenteller und noch
-  unkalibrierter Wert** werden
-  maximal 86 % CP für die gewöhnliche
-  Führung angefordert.
+- Ein einzelner tatsächlich vorn fahrender
+  **Pacesetter** bestimmt die physisch berechenbare
+  Gruppenbeschleunigung. Andere Fahrer
+  fordern die für dieselbe Beschleunigung
+  notwendige Leistung an, statt ihre eigene
+  CP-Prozentzahl unabhängig durchzuziehen.
+  Der Pacesetter ist durch seine reale CP
+  und die Leistungsfähigkeit der Gruppe begrenzt.
+  Die Wattanforderung kann im Grundtempo bis
+  zur aktuellen CP reichen; ein Wechsel der
+  Führungsposition entsteht nur durch Bewegung.
 - **Angriffe, aktive Teamverfolgung, Helferarbeit
   und Zielsprints haben Vorrang**; sie werden
   nicht durch den Gruppenfahrmodus ersetzt.
+  Der frühere künstliche Schutz, der Attacken
+  bis 18 % der Distanz verbot, wird **nur im
+  Experiment** teilweise aufgehoben:
+  Nach etwa 180 Sekunden und rund 1,5 %
+  Distanz sind offensive Angriffe grundsätzlich
+  möglich, sofern Position, CP und W′ dies
+  tatsächlich erlauben.
 - CP/W′, Langzeitermüdung, Bremsen,
   Bewegung, Windschattenfaktoren und
   Rennergebnisberechnung werden nicht verändert.
@@ -92,11 +103,49 @@ zusammenhängenden Hauptfeld bleiben.
 1D-Proxy und kann seitliches
 Vorbeifahren, echte Windschattenpositionen
 und komplexe Sprintzüge nicht exakt abbilden.
-Die 86-%-CP-Tempopriorität ist kein
-empirisch validierter WorldTour-Parameter.
+Die Gruppen-Pacesetter-Leistungsgrenzen
+und die Beschleunigungs-Wattregel sind
+noch nicht empirisch validierte WorldTour-Werte.
 Ein einzelner A/B-Lauf kann weder den
 optimalen Wert noch die allgemeine
 Realitätstauglichkeit beweisen.
 
 Das ist ein **experimenteller KI-Schritt**, nicht
 die finale Kalibrierung von R-22 oder R-23.
+
+## Iterationshistorie (nicht als endgültige Kalibrierung missverstehen)
+
+**Versuch 1:** Regelung anhand individueller
+Vordermann-Geschwindigkeit,
+Führung mit 86 % CP;
+[Lauf #41776176137](https://github.com/Lancester/radsportmanager/actions/runs/41776176137):
+154-Fahrer-Lille, Seed 2026,
+Sieger 49,2 km/h, **75 statt 50 Maximalgruppen**.
+Der Feldzerfall wurde schlimmer.
+
+**Versuch 2:** Einführung eines gemeinsamen
+physisch führenden Pacesetters
+mit eigener Beschleunigungsanforderung;
+[Lauf #41776572051](https://github.com/Lancester/radsportmanager/actions/runs/41776572051):
+Sieger nur 41,3 km/h, ein beinahe
+durchgehend geschlossenes Feld,
+keine Attacken, 2 Maximalgruppen.
+Der Feldzusammenhalt war zu stark
+und das Rennverhalten zu passiv.
+
+**Versuch 3 – derzeitiger experimenteller Branch:**
+Pacesetter darf im Grundtempo bis
+zur aktuellen CP arbeiten, statt starr
+auf 86 % CP begrenzt zu sein. Frühe
+Angriffsmöglichkeiten für offensive
+Fahrer werden geöffnet. **Der ursprüngliche
+Standard `legacy` bleibt unverändert**;
+erst nach kontrollierten Tests an
+mehreren Strecken wird eine
+Freigabeentscheidung getroffen.
+
+Es werden keine Speed-, Watt-, Zeit-
+oder Gruppenboni gewährt. Jede
+Differenz zwischen Varianten entsteht
+aus physischen Pedal-Wattanfragen
+und unverändertem Bewegungsintegrator.
