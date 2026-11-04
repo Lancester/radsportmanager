@@ -365,6 +365,7 @@ export function simulateRace(x:RaceInput):RaceResult {
   const dt=x.stepSeconds??1;
   let t=0,steps=0,nextTacticS=0,nextSnapshotM=5000;
   let previousLeaders=new Map<string,{riderId:string;sinceS:number}>();
+  let previousFieldChaseLeader:{riderId:string;sinceS:number}|undefined;
   let oldGroups=1,maximumGroups=1,lastSection=0;
   let lastGroupEventS=-Infinity;
   let breakawaySinceS:number|null=null,catchSinceS:number|null=null;
@@ -453,7 +454,7 @@ export function simulateRace(x:RaceInput):RaceResult {
         timeS:t,progress:Math.min(1,leader.positionM/totalM),
         remainingM:Math.max(0,totalM-leader.positionM),
         teams:teamRefs,riders:planningRiders,
-        previousLeaders,
+        previousLeaders,previousFieldChaseLeader,
         sprintFinaleMode:sprintFriendlyRace,
         ...(teamRefsAndChase?{
           chasingTeamIds:teamRefsAndChase.chasingTeamIds,
@@ -469,6 +470,7 @@ export function simulateRace(x:RaceInput):RaceResult {
         teams:teamRefs,riders:planningRiders,
       });
       if(planned){
+        previousFieldChaseLeader=planned.fieldChaseLeader;
         for(const [teamId,lead] of planned.leaderByTeam){
           const former=previousLeaders.get(teamId);
           if(former&&former.riderId!==lead.riderId)
@@ -907,13 +909,23 @@ export function simulateRace(x:RaceInput):RaceResult {
           drivetrainEfficiency:s.physical.drivetrainEfficiency,
           headwindMps:headwind,crosswindMps:crosswind,
         };
+        // Nur der nominierte Jäger erhält die begrenzten Extra-Watt
+        // zum echten Aufrücken. Andere Jagdhelfer halten das Tempo
+        // im Windschatten; sonst erzeugen mehrere Teams im 10-s-Takt
+        // ungewollt neue Führungsspitzen.
+        const shelteredChaseSupport=sprintFriendlyRace&&
+          s.positionM/totalM>=2/3&&s.crewMission==='jagd'&&
+          s.crewDuty==='unterstuetzung'&&
+          s.rider.id!==previousFieldChaseLeader?.riderId;
+        const groupObservation=shelteredChaseSupport?
+          {...observation,tacticalIntent:'windschatten'}:observation;
         const stableMission=x.groupRidingModel==='stable-pack'&&
           (s.intent==='verfolgung'||
             (actualGroupSize.get(s.rider.id)??1)<R22_GROUP_RIDING.minGroupSize);
         const group=stableMission?
-          decideStablePackRiding(observation,
+          decideStablePackRiding(groupObservation,
             groupPaceByRider.get(s.rider.id)?.pacerId===s.rider.id):
-          decideGroupRiding(observation);
+          decideGroupRiding(groupObservation);
         commanded=group.powerW;
         // R-22: Nur im experimentellen stable-pack-Modus darf ein
         // physisch stärkerer Kletterer am langen Anstieg selbst Tempo

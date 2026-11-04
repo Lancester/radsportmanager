@@ -234,3 +234,59 @@ test('R22: echte 7–12 Fahrer starke Flucht wird NUR im opt-in-Sprintmodus erka
     .leadingBreakaway,false,
     '13 Fahrer brauchen eigene taktische Bewertung');
 });
+
+test('R22: über zwei Sprintteams nur EIN gemeinsamer realer Feldführer statt ständig neuer Fronten',()=>{
+  const main=[
+    rider('A_LEAD','T1','helfer',12000),
+    rider('B_LEAD','T2','helfer',11998),
+    rider('A_HELP','T1','helfer',11980),
+    rider('B_HELP','T2','helfer',11978),
+    rider('A_TARGET','T1','sprinter',11960),
+    rider('B_TARGET','T2','sprinter',11958),
+    ...Array.from({length:27},(_,i)=>rider('F'+i,'T4',
+      'kapitaen',11950-3*i)),
+  ];
+  const teams=[{id:'T1',strategy:'sprint'},
+    {id:'T2',strategy:'sprint'},
+    {id:'T3',strategy:'offensiv'},
+    {id:'T4',strategy:'ausgewogen'}];
+  const firstInput={timeS:10000,progress:.77,remainingM:40000,
+    teams,riders:[rider('ESC','T3','kapitaen',12500),...main],
+    previousLeaders:new Map(),
+    chasingTeamIds:new Set(['T1','T2']),
+    restInPeloton:true,physicalRelayMode:true,sprintFinaleMode:true};
+  const first=decideIntelligentCrew(firstInput);
+  const leads=()=>[...first.orders.values()].filter(o=>
+    o.mission==='jagd'&&o.duty==='fuehrung');
+  assert.equal(leads().length,1,'nur ein Feldführer, selbst bei zwei Sprintteams');
+  assert.equal(first.fieldChaseLeader?.riderId,'A_LEAD');
+  assert.ok([...first.orders.values()].some(o=>o.riderId==='B_LEAD'&&
+    o.mission==='jagd'&&o.duty==='unterstuetzung'));
+
+  // Ein anderer Teamhelfer fährt kurzfristig wenige Meter vor.
+  // Der bisherige Jäger bleibt physisch in 18 m Frontnähe.
+  const second=decideIntelligentCrew({...firstInput,timeS:10500,
+    riders:firstInput.riders.map(r=>
+      r.id==='A_LEAD'?{...r,positionM:11988}:
+      r.id==='B_LEAD'?{...r,positionM:12001}:r),
+    previousLeaders:first.leaderByTeam,
+    previousFieldChaseLeader:first.fieldChaseLeader});
+  assert.equal(second.fieldChaseLeader?.riderId,'A_LEAD');
+  assert.equal(second.fieldChaseLeader?.sinceS,10000);
+  assert.equal([...second.orders.values()].filter(o=>
+    o.mission==='jagd'&&o.duty==='fuehrung').length,1);
+
+  // Physisch verausgabter Jäger wird nicht erneut beauftragt.
+  const third=decideIntelligentCrew({...firstInput,timeS:11000,
+    riders:firstInput.riders.map(r=>
+      r.id==='A_LEAD'?{...r,chaseSpent:true}:r),
+    previousLeaders:second.leaderByTeam,
+    previousFieldChaseLeader:second.fieldChaseLeader});
+  assert.ok(!third.orders.has('A_LEAD'));
+  assert.equal(third.fieldChaseLeader?.riderId,'B_LEAD');
+  assert.equal([...third.orders.values()].filter(o=>
+    o.mission==='jagd'&&o.duty==='fuehrung').length,1);
+  const legacy=decideIntelligentCrew({...firstInput,
+    sprintFinaleMode:false});
+  assert.equal(legacy.fieldChaseLeader,undefined);
+});
