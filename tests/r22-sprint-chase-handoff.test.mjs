@@ -261,7 +261,9 @@ test('R22: über zwei Sprintteams nur EIN gemeinsamer realer Feldführer statt s
   assert.equal(leads().length,1,'nur ein Feldführer, selbst bei zwei Sprintteams');
   assert.equal(first.fieldChaseLeader?.riderId,'A_LEAD');
   assert.ok([...first.orders.values()].some(o=>o.riderId==='B_LEAD'&&
-    o.mission==='jagd'&&o.duty==='unterstuetzung'));
+    o.mission==='jagd'&&o.duty==='unterstuetzung'&&
+    o.desiredPowerW<=350*1.046),
+    'zweiter Teamführer wird auf tatsächliche Unterstützung zurückgeregelt');
 
   // Ein anderer Teamhelfer fährt kurzfristig wenige Meter vor.
   // Der bisherige Jäger bleibt physisch in 18 m Frontnähe.

@@ -380,7 +380,12 @@ export function decideIntelligentCrew(input:{
         frontM-rider.positionM<=72)
       .sort((a,b)=>b.rider.positionM-a.rider.positionM||
         a.rider.id.localeCompare(b.rider.id));
-    const previous=input.previousFieldChaseLeader;
+    // Bestehende Auftragskontinuität aus älteren Team-API-Aufrufen
+    // bewahren: wenn noch kein globaler Führender übergeben wurde,
+    // kann die bisherige physische Teamführung fortgesetzt werden.
+    const previous=input.previousFieldChaseLeader??
+      [...(input.previousLeaders?.values()??[])].find(p=>
+        candidates.some(c=>c.rider.id===p.riderId));
     const kept=previous?candidates.find(c=>
       c.rider.id===previous.riderId):undefined;
     // Ohne bisherigen Leader nur wirklich an der Feldspitze stehende
@@ -403,6 +408,11 @@ export function decideIntelligentCrew(input:{
       const reallyLeading=order.riderId===fieldChaseLeader?.riderId&&
         frontDistance<=R15_R16.frontWorkRadiusM&&
         r.positionM>(protectedRider?.positionM??-Infinity)+.1;
+      // Nach dem Rollenwechsel darf kein konkurrierender Teamführer
+      // seine alten 1.15 CP als vermeintlicher Unterstützer behalten.
+      // Auch der Wattwunsch folgt der Gruppenrolle, nicht dem alten Titel.
+      if(!reallyLeading&&order.duty==='fuehrung')
+        order.desiredPowerW=r.criticalPowerW*1.045;
       order.duty=reallyLeading?'fuehrung':'unterstuetzung';
     }
     // Das historische teamweise Leader-Mapping darf keine zweiten
