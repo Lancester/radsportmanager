@@ -99,6 +99,8 @@ test('R22: Legacy bleibt exakt reproduzierbar bei deaktiviertem Gruppenmodell',(
   assert.equal(c.finisherCount,30);
   const d=simulateRace({...input,groupRidingModel:'coordinated'});
   assert.equal(d.finisherCount,30);
+  const e=simulateRace({...input,groupRidingModel:'relays'});
+  assert.equal(e.finisherCount,30);
   assert.ok(c.classification.every(r=>r.energyResidualJ<.05&&
     r.energyResidualJ>-.05&&r.finalWPrimeJ>=0));
 });
@@ -110,11 +112,14 @@ test('R22: echter Gruppen-A/B mit 2 × 154 Fahrern und Ergebnismessung',()=>{
     '--output',dir,
   ],{encoding:'utf8',timeout:240000,maxBuffer:10e6});
   const races=log.split('\n').filter(x=>x.startsWith('R22-GROUP-AI '));
-  assert.equal(races.length,3);
+  assert.equal(races.length,4);
   const report=JSON.parse(readFileSync(dir+'/report.json','utf8'));
-  assert.equal(report.variants.length,3);
+  assert.equal(report.variants.length,4);
   assert.deepEqual(report.variants.map(r=>r.model),
-    ['legacy','cohesive','coordinated']);
+    ['legacy','cohesive','coordinated','relays']);
+  assert.ok(report.variants[3].orderedRelayTeamSeconds>=
+    report.variants[3].mainFieldFrontWorkWithAssignedChaserS);
+  assert.ok(report.variants[3].largestFinishGroup>=1);
   assert.ok(report.variants.every(r=>r.winnerFinishGroup>=1&&
     r.largestFinishGroup>=r.winnerFinishGroup&&
     r.within60sOfWinner>=r.winnerFinishGroup));
@@ -122,6 +127,6 @@ test('R22: echter Gruppen-A/B mit 2 × 154 Fahrern und Ergebnismessung',()=>{
   assert.ok(Math.abs(report.variants[0].winnerTimeS-12619.2)<.3);
   const checkpoints=readFileSync(dir+'/checkpoints.csv','utf8').trim().split('\n');
   assert.ok(checkpoints.length>=60);
-  assert.equal(readFileSync(dir+'/finishers.csv','utf8').trim().split('\n').length,463);
+  assert.equal(readFileSync(dir+'/finishers.csv','utf8').trim().split('\n').length,617);
   console.log(log.split('\n').filter(x=>x.startsWith('R22-GROUP-AI-')).join('\n'));
 });
