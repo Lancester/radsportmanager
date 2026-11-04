@@ -22,8 +22,8 @@ export const SPRINT_POSITION=Object.freeze({
   // Das Hauptfeld hinten verlassen ist in der ersten Phase nicht das Ziel:
   // nur hinter dem letzten ~12 % vorsichtig Anschluss sichern.
   rearSafetyFraction:.88,
-  advanceFrontShare:.25,
-  leadoutFrontShare:.10,
+  advanceFrontShare:.20,
+  leadoutFrontShare:.08,
   minRankToPosition:12,
   safetyExtraW:18,
   advanceExtraW:65,
