@@ -52,3 +52,26 @@ Die **einzigen** vollständigen Rennläufe bleiben Lille, Boulogne, Lüttich und
 - `tests/r22-profile-smoke.test.mjs` – prüft die neuen Protokolle in allen vier ohnehin vorhandenen 154-Fahrer-Rennen.
 
 Die KI-Gesamtübersicht unter [RENNFAHR_KI_GESAMTUEBERSICHT.md](RENNFAHR_KI_GESAMTUEBERSICHT.md) wird von dieser Diagnose ergänzt, nicht ersetzt. `legacy` bleibt Default; `stable-pack` bleibt experimentell und R-22 offen.
+
+
+## Erster dokumentierter Referenzdurchlauf – nach integrierter Klassiker-KI (PR #69)
+
+**Technisch real gerechnet:** [GitHub Actions #41811008468](https://github.com/Lancester/radsportmanager/actions/runs/41811008468): **279/279 Tests erfolgreich**. Exakt vier Referenzrennen mit **je 154 fiktiven Fahrern** und Seed 2026. Die Favoriten wurden anhand ihrer *vor dem Start vorhandenen* Fähigkeitswerte ermittelt; danach wurden ihre Platzierungen aus der tatsächlichen Simulationsklassifikation ergänzt.
+
+| Strecke | Geeignete Spezialistenklasse | Vorab stärkster Spezialist | Teamrolle | Zielplatz | Zielrückstand |
+| --- | --- | --- | --- | ---: | ---: |
+| Lille (flach) | Sprinter | **F023** | Sprinter | **150** | 267,50 s |
+| Boulogne (hügelig) | Klassikerfahrer | **F003** | Helfer | **109** | 237,73 s |
+| Lüttich (Klassiker) | Klassikerfahrer | **F003** | Helfer | **120** | 1019,59 s |
+| Hautacam (Berg) | Kletterer/GC | **F078** | Kapitän | **1** | 0,00 s |
+
+**Unterscheidung vom rein körperlich stärksten Fahrer des gesamten Feldes:** Bei Boulogne und Lüttich ist nach dem einfachen 3-Minuten-Watt/kg-Index ein leichter Kletterhelfer F135 der nominelle Gesamtfavorit; er belegt Platz 37 bzw. 142. Das ist **kein** behaupteter realistischer Wettfavorit und kein Beweis, dass er beide Rennen gewinnen sollte. Der Index enthält weder Rennrollen noch Fünf-Stunden-Ermüdung, Streckenmikroprofil oder Mannschaftstaktik.
+
+**Erste sportliche Schlussfolgerungen (noch ein Seed, keine Statistik):**
+
+- **Berg:** F078 ist objektiv der stärkste 8-%-Kletterer im Feld und gewinnt Hautacam; die Top-4-Zielfahrer sind Kletterer. Das ist ein positiver Hinweis, aber kein allgemeiner Bergrealismusbeleg.
+- **Flach:** F023 ist nach dem vorhandenen Sprint-Wattanfrage-Index der stärkste Sprinter und belegt in Lille nur Platz 150. Das ist ein **ernstes Diagnoseproblem** für frühe Position, Rollen-/Feldverhalten, Renneinteilung und Sprintteam-Unterstützung – kein Anlass für einen Siegbonus.
+- **Klassiker/Hügel:** F003 ist in beiden Profilen der nach 3-Minuten-W/kg stärkste als `klassiker` bezeichnete Fahrer, jedoch ein **Helfer**. Seine Plätze 109/120 zeigen, warum Leistungsindex **und tatsächlich zugewiesene Rennrolle** getrennt ausgewertet werden müssen. Ein starker Helfer wird durch die bisherige Spezialattacken-KI möglicherweise taktisch unterschätzt; das ist die Hypothese des noch **ungetesteten** selektiven Team-Puncheur-Experiments PR #70.
+- **Liège insgesamt:** Die durch PR #69 getestete taktische Schonung hat die Zahl relevanter, vorn ansetzender Klassikerfahrer verbessert; trotzdem gewinnt ein Sprinter. Das dient als weitere Ursache für die getrennte Untersuchung von echter Attackenauswahl und Renntempo nach der Rampe.
+
+**Status:** Die oben dargestellten Zahlen sind **verifiziert aus PR #69** und gehören zum aktuellen `main`-Stand. Die alternative selektive Angriffssteuerung aus [PR #70](https://github.com/Lancester/radsportmanager/pull/70) ist noch **nicht** in `main` und darf nicht als gemessene Verbesserung ausgegeben werden. Spätere Iterationen müssen dieselben `R22-FAVORITES`-Datensätze fortführen, ohne die Rangliste vom Ergebnis abhängig zu machen.
