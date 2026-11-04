@@ -2,8 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
 import {readFileSync} from 'node:fs';
-import {REFERENCE_ROUTES,REFERENCE_TEAM_COMPOSITIONS,
-  createReferenceFixture,createReferenceSegments,PRO_REFERENCE}
+import {REFERENCE_ROUTES,createReferenceTeamCompositions,
+  REFERENCE_TEAM_COUNTS,createReferenceFixture,
+  createReferenceSegments,PRO_REFERENCE}
   from '../src/engine/race/reference-fixtures.ts';
 import {validateRace}
   from '../src/engine/race/race-simulator.ts';
@@ -44,8 +45,10 @@ test('R22B/C: 154 fiktive Profis auf 22 spezialisierten Siebenerteams',()=>{
   assert.equal(f.input.riders.length,154);
   assert.equal(f.input.teams.length,22);
   assert.deepEqual(f.teamFoci,
-    {sprint:5,berg:6,klassiker:4,ausreisser:3,ausgewogen:4});
-  assert.equal(REFERENCE_TEAM_COMPOSITIONS.length,22);
+    REFERENCE_TEAM_COUNTS.berg);
+  assert.equal(f.teamCompositions.length,22);
+  assert.deepEqual(f.teamCompositions,
+    createReferenceTeamCompositions('berg'));
   const ids=new Set(f.input.riders.map(r=>r.id));
   assert.equal(ids.size,154);
   assert.ok(f.input.riders.every(r=>r.criticalPowerW>=300&&
@@ -97,4 +100,19 @@ test('R22 Schnellwahl: 154 Fahrer/184,9 km, Run Summary und Datenmanifest',()=>{
   console.log('R22-REFERENCE-SMOKE',JSON.stringify({
     scenario:summary.scenario,run:JSON.parse(races[0].slice(9)),
   }));
+});
+
+test('R22C: vier Streckenprofile erhalten unterschiedliche Mannschaftsfoki',()=>{
+  const profiles=['flach','huegelig','klassiker','berg'];
+  for(const profile of profiles){
+    const roster=createReferenceTeamCompositions(profile);
+    assert.equal(roster.length,22);
+    for(const focus of ['sprint','berg','klassiker','ausreisser','ausgewogen'])
+      assert.equal(roster.filter(t=>t.focus===focus).length,
+        REFERENCE_TEAM_COUNTS[profile][focus]);
+  }
+  assert.ok(REFERENCE_TEAM_COUNTS.flach.sprint>
+    REFERENCE_TEAM_COUNTS.berg.sprint);
+  assert.ok(REFERENCE_TEAM_COUNTS.klassiker.klassiker>
+    REFERENCE_TEAM_COUNTS.flach.klassiker);
 });
