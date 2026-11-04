@@ -291,7 +291,7 @@ for(const id of routes){
       const lead=groups.get(Math.min(...groups.keys()))??[];
       const mainFront=Math.max(...main.map(r=>r.positionM));
       const leadRear=Math.min(...lead.map(r=>r.positionM));
-      const genuineBreak=lead!==main&&lead.length<=6&&main.length>=8;
+      const genuineBreak=lead!==main&&lead.length<=12&&main.length>=8;
       return {km:n(cp.km),mainSize:main.length,leadSize:lead.length,
         gapM:n(genuineBreak?Math.max(0,leadRear-mainFront):0),
         actualBreak:genuineBreak};
