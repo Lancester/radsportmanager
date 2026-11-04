@@ -179,3 +179,101 @@ Zum endgültigen Fit werden
 exakte Strecke, tatsächliche
 Windbedingungen, Zielgruppen
 und unabhängige Test-Profile benötigt.
+
+## Kausale Gruppen-Zeitreihe: Vollständiger echter Audit, Seed 2026
+
+[GitHub Actions PR-Test #41774943026](https://github.com/Lancester/radsportmanager/actions/runs/41774943026)
+hat **249/249 Tests bestanden**, inklusive Regression
+gegen die unveränderte Referenz-Ergebniszeit 12619,2 s
+und drei vollständiger 154-Fahrer-Sensitivitätsrennen.
+[PR #57](https://github.com/Lancester/radsportmanager/pull/57)
+wurde nach grüner CI in `main` übernommen.
+Der Code kann nun in GitHub unter
+**Actions → R-22 – Ursachen-Audit (154 Fahrer)**
+mit beliebiger der vier Referenzstrecken
+und eigenem Seed manuell gestartet werden.
+
+**Wesentliche Messung:** Die Gruppen entstehen
+bereits **vor** dem Einsetzen der zusätzlichen
+R-19-Langzeitermüdung, also kann diese
+den frühen Feldzerfall nicht verursachen:
+
+| Km an der Spitze | Gruppen | Größte Gruppe | Median-Abstand zur Spitze | Median-KH [kcal] | Median R-19-Strafe | Median Aero-Faktor |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 5 | 6 | 106 | 155 m | 1171 | 0 % | **0,400** |
+| 25 | 12 | 39 | 740 m | 1058 | **0 %** | **0,400** |
+| 50 | 29 | 26 | 2223 m | 907 | **0 %** | 0,501 |
+| 75 | 18 | 48 | 2333 m | 761 | **0 %** | **0,400** |
+| 100 | 18 | 31 | 3621 m | 629 | 4,1 % | **0,400** |
+| 125 | 34 | 30 | 3290 m | 497 | 9,9 % | 0,517 |
+| 150 | 42 | 28 | 6228 m | 365 | 15,8 % | 0,662 |
+| 175 | 39 | 24 | 7517 m | 255 | 20,7 % | 0,621 |
+| 180 | 40 | 23 | 7758 m | 235 | 21,8 % | 0,608 |
+
+**Aero-Faktor 0,40** entspricht im bestehenden
+Modell einer Reduktion des berechneten
+Luftwiderstandsanteils auf 40 % des
+ungeschützten Werts. Der momentan vielen
+Fahrern zugeteilte starke Windschatten
+erklärt plausibel einen Teil des
+hohen Tempos, aber nicht automatisch
+den gesamten Feldzerfall. Andere
+mögliche Ursachen: instabile
+Vordermann-/Positionsrückkopplung,
+Leistungsspreizung im fiktiven Feld
+und unzulänglich modelliertes
+Gruppenfahren im 1D-System.
+
+**Kontrollprobe zu R-19:** Ohne zusätzliche
+Langzeitermüdung nimmt die maximale
+Gruppenzahl von 50 auf 37 ab,
+der Sieger wird um 420,7 s schneller
+und Median- und Letztrückstand
+fallen um 146 bzw. 400 s.
+R-19 verschärft also die spätere
+Fragmentierung, verursacht aber
+nicht den frühen Feldzerfall.
+
+**Kontrollprobe zum Aero-Modus:** Bei Wechsel
+auf den alten Windschattenmodus
+steigt der über alle Fahrer-Sekunden
+gemittelte Aero-Faktor von 0,5897
+auf 0,8902; Siegerzeit verlängert
+sich um 2240,6 s. Die maximale
+Gruppenzahl **steigt** zugleich
+von 50 auf 60. Das zeigt:
+**Eine pauschale Aero-Abschwächung allein
+wäre keine ausreichende Korrektur
+der Feldkohäsion.**
+
+**Nebenbefund:** Der Median des
+W′-Füllstands liegt bei mehreren
+Messpunkten nahe 100 %. Daraus
+allein lässt sich keine
+CP/W′-Fehlkalibrierung ableiten,
+aber die W′-Erholung und effektive
+Leistungsanforderung gehören
+in den nächsten gezielten Audit.
+
+### Technische nächste Schritte, noch NICHT durchgeführt
+
+1. **Aero-Validierung** separat gegen
+   gemessene Windschattenstärken,
+   nach Position und gruppennaher
+   Fahreranzahl, mit 1D/2D-Grenzen.
+2. **Feldkohäsion** separat testen:
+   Watt-Anforderung bei Relativtempo
+   und Abständen, Verfolgen/Abreißen,
+   keine künstlichen Teleports oder
+   Ergebnisboni.
+3. **CP/W′-/R-19-Mechanismen** mit
+   physiologischen Labordaten
+   und einer wirklich zeitaufgelösten
+   Leistungsdiagnostik prüfen.
+4. Danach **realistischere GPX-Route,
+   mehrere Seeds und zurückgehaltene
+   Vergleichsrennen** für Abnahme.
+
+**Keine physiologischen oder aerodynamischen
+Kalibrierungsparameter wurden durch
+diesen Audit verändert.**
