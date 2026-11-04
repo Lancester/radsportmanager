@@ -34,8 +34,8 @@ export const R12_AERO_EXPERIMENT=Object.freeze({
 export function formationAeroFactors(
   positions:ReadonlyArray<FormationRiderPosition>,
 ):Map<string,number> {
-  if(!Array.isArray(positions)||positions.length<1||positions.length>60)
-    throw new RangeError('R-12 Windschatten: 1–60 Fahrer erforderlich');
+  if(!Array.isArray(positions)||positions.length<1||positions.length>210)
+    throw new RangeError('R-12 Windschatten: 1–210 Fahrer erforderlich');
   const seen=new Set<string>();
   for(const p of positions){
     if(!p||typeof p.id!=='string'||!p.id.trim()||seen.has(p.id)||

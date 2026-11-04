@@ -22,6 +22,8 @@ export interface CrewOrder {
 export interface RaceSituation {
   leadingBreakaway:boolean;gapM:number;breakawaySize:number;
   mainGroupSize:number;relativeSpeedMps:number;
+  /** Prognose über 120 s bei unverändert gemessenen Gruppentempi. */
+  projectedGapM:number;
   /** Sichtbare Lücke relativ zur verbleibenden Distanz. */
   gapFractionOfRemaining:number;
   /** Nicht jeder Rückstand ist automatisch eine erfolgversprechende Jagd. */
@@ -42,6 +44,8 @@ export const R15_R16=Object.freeze({
 });
 export interface CrewPlan {
   orders:Map<string,CrewOrder>;
+  /** Tatsächlich nominierter Führender; im nächsten Entscheid weiterführen. */
+  leaderByTeam:Map<string,{riderId:string;sinceS:number}>;
   situation:RaceSituation;
   /** Nur für Prüf- und Spielberichte, keine neue Renn-Geschwindigkeit. */
   missionByTeam:Map<string,CrewMission>;
@@ -70,7 +74,7 @@ export function analyzeRaceSituation(
   valid('remainingM',remainingM,remainingM>=0);
   if(riders.length<2)return {
     leadingBreakaway:false,gapM:0,breakawaySize:0,mainGroupSize:riders.length,
-    relativeSpeedMps:0,gapFractionOfRemaining:0,chaseViable:false,
+    relativeSpeedMps:0,projectedGapM:0,gapFractionOfRemaining:0,chaseViable:false,
   };
   const groups=sortGroups(riders);
   const lead=groups[0];
@@ -80,6 +84,7 @@ export function analyzeRaceSituation(
   const gap=smallLeader?lead.at(-1)!.positionM-main[0].positionM:0;
   const relativeSpeed=smallLeader?meanSpeed(lead)-meanSpeed(main):0;
   const gapFraction=gap/Math.max(1,remainingM);
+  const projectedGapM=Math.max(0,gap+relativeSpeed*120);
   // Die Jagd darf bei einer bereits uneinholbar weit voraus liegenden Gruppe
   // nicht allein aufgrund ihrer Existenz enorme Helferlast auslösen.
   // Positive Relativgeschwindigkeit macht sie gefährlicher; eine weit
@@ -90,12 +95,15 @@ export function analyzeRaceSituation(
   return {leadingBreakaway:smallLeader&&gap>=R15_R16.minimumBreakawayGapM,
     gapM:gap,breakawaySize:smallLeader?lead.length:0,
     mainGroupSize:main.length,relativeSpeedMps:relativeSpeed,
+    projectedGapM,
     gapFractionOfRemaining:gapFraction,chaseViable:plausible};
 }
 export function decideIntelligentCrew(input:{
   timeS:number;progress:number;remainingM:number;
   teams:readonly IntelligentTeam[];
   riders:readonly IntelligentRider[];
+  /** R-17: Zustandsübergabe für positions- und ermüdungsbewusste Ablösung. */
+  previousLeaders?:ReadonlyMap<string,{riderId:string;sinceS:number}>;
 }):CrewPlan{
   if(!input||!Array.isArray(input.teams)||!Array.isArray(input.riders))
     throw new RangeError('R-15/R-16: Team-/Fahrerfeld fehlt');
@@ -123,8 +131,9 @@ export function decideIntelligentCrew(input:{
   }
   const orders=new Map<string,CrewOrder>();
   const missionByTeam=new Map<string,CrewMission>();
+  const leaderByTeam=new Map<string,{riderId:string;sinceS:number}>();
   const situation=analyzeRaceSituation(input.riders,input.remainingM);
-  if(input.riders.length<2)return {orders,situation,missionByTeam};
+  if(input.riders.length<2)return {orders,situation,missionByTeam,leaderByTeam};
   const groups=sortGroups(input.riders);
   const main=groups.reduce((best,g)=>g.length>best.length?g:best,groups[0]);
   const rotation=Math.floor(input.timeS/R15_R16.relaySeconds);
@@ -137,7 +146,7 @@ export function decideIntelligentCrew(input:{
     main.some(r=>r.teamId===team.id&&r.role==='helfer'&&
       r.reserveFraction>=R15_R16.minimumChaseReserve));
   const urgentChase=situation.gapFractionOfRemaining>=0.025||
-    situation.relativeSpeedMps>=0.8;
+    situation.projectedGapM/Math.max(1,input.remainingM)>=0.035;
   for(const team of [...input.teams].sort((a,b)=>a.id.localeCompare(b.id))){
     const members=input.riders.filter(r=>r.teamId===team.id);
     const targetRole=team.strategy==='sprint'?'sprinter':'kapitaen';
@@ -167,7 +176,7 @@ export function decideIntelligentCrew(input:{
     // Einsatzes. Ein einzelner Verfolger ist nicht länger das Maximum.
     // Die restlichen Fahrer fahren danach weiterhin ganz normal ihr Rennen.
     const urgency=situation.gapFractionOfRemaining>0.04||
-      situation.relativeSpeedMps>0.6;
+      situation.projectedGapM/Math.max(1,input.remainingM)>0.05;
     let requested=1;
     if(chase)requested=team.strategy==='sprint'?
       (urgency?5:3):team.strategy==='kapitaen_schuetzen'?
@@ -184,19 +193,32 @@ export function decideIntelligentCrew(input:{
     // Zeitbasierter Wechsel beeinflusst nur die Bereitschaft zur aktiven
     // Führungsaufgabe; die Fahrposition bleibt physikalisch berechnet.
     const selected=[...sorted.slice(0,requested)];
+    // Führung nur wenn der Helfer tatsächlich VOR dem zu schützenden
+    // Kapitän/Sprinter fährt. Bei fehlender Frontposition müssen Helfer
+    // zunächst aus eigener Kurbelarbeit nach vorne gelangen.
     const frontEligible=selected.filter(r=>
-      gapToFront(r)<=R15_R16.frontWorkRadiusM);
-    const leader=frontEligible.length?
-      frontEligible[rotation%frontEligible.length]:null;
+      gapToFront(r)<=R15_R16.frontWorkRadiusM&&
+      r.positionM>target.positionM+0.1);
+    const previous=input.previousLeaders?.get(team.id);
+    const retained=previous&&input.timeS-previous.sinceS<
+      R15_R16.relaySeconds?
+      frontEligible.find(r=>r.id===previous.riderId):undefined;
+    const leader=retained??(frontEligible.length?
+      frontEligible[rotation%frontEligible.length]:null);
+    if(leader)leaderByTeam.set(team.id,{
+      riderId:leader.id,
+      sinceS:retained?previous!.sinceS:input.timeS,
+    });
     for(const rider of selected){
       const frontEligible=gapToFront(rider)<=R15_R16.frontWorkRadiusM;
       const duty:CrewDuty=leader!==null&&rider.id===leader.id&&frontEligible?
         'fuehrung':'unterstuetzung';
       const effort=mission==='jagd'?
-        (duty==='fuehrung'?1.12:1.035):
+        (duty==='fuehrung'?1.12:1.055):
         mission==='sprintzug'?
-        (duty==='fuehrung'?1.12:1.045):
-        (duty==='fuehrung'?1.065:0.98);
+        (duty==='fuehrung'?1.12:1.055):
+        (duty==='fuehrung'?1.065:
+          rider.positionM<=target.positionM?1.045:0.98);
       const reason=mission==='jagd'?
         (duty==='fuehrung'?'Team übernimmt Verfolgung an der Feldspitze':
           'Helfer unterstützt die organisierte Verfolgung'):
@@ -211,5 +233,5 @@ export function decideIntelligentCrew(input:{
     }
     missionByTeam.set(team.id,mission);
   }
-  return {orders,situation,missionByTeam};
+  return {orders,situation,missionByTeam,leaderByTeam};
 }

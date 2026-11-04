@@ -16,7 +16,8 @@
     "test:gruppe": "node --experimental-strip-types --test tests/drafting-group.test.mjs",
     "test:agent": "node --experimental-strip-types --test tests/gap-controller.test.mjs",
     "test:r05": "node --experimental-strip-types --test tests/r05-safety-cp.test.mjs",
-    "test:race": "node --experimental-strip-types --test tests/r09-race.test.mjs"
+    "test:race": "node --experimental-strip-types --test tests/r09-race.test.mjs",
+    "test:scale": "node --experimental-strip-types scripts/r21-scale-diagnostics.mjs"
   },
   "engines": {
     "node": ">=22.6.0"

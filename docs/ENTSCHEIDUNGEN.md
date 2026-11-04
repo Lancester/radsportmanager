@@ -270,3 +270,26 @@ Methodik, reale Runner-Abnahmen und Grenzen:
 | D-087 | **Technisch implementiert als R-16** | Flucht-/Verfolgungs-/Angriffsentscheidungen anhand gemessener Gruppengröße, Abstand, Reststrecke, Relativtempo, Rennposition, Strategie und W′; opportunistische statt starrer Angriffsfenster. | Kein Ergebnisbonus, keine Einholgarantie. Bestehende `tacticModel='r14'`-Variante bleibt für A/B reproduzierbar; neuer Standard `r15-r16`. |
 
 [Detailmodell und Prüfkonzept](race/R15_R16_MEHRHELFER_RENNINTELLIGENZ.md).
+
+
+## D-088 bis D-093 – verbindlicher Abschlussfahrplan der EINZELRENN-Rennengine (04.11.2026)
+
+| ID | Status | Verbindliche Entscheidung | Grenze |
+| --- | --- | --- | --- |
+| D-088 | **Nutzerbeschluss** | R-17 bis R-21 als **ein gemeinsames Umsetzungspaket** in GitHub und nicht nach jeder R-Nummer separat abstimmen. | R-22 und R-23 sind ausdrücklich **danach** und nicht automatisch im Funktionspaket enthalten. |
+| D-089 | **Technisch implementiert (R-17)** | Frontposition nur vor dem eigenen Kapitän/Sprinter und in tatsächlicher Gruppenfrontnähe anerkennen; Helferschichten über Zeit weiterführen und bei schlechter Position oder zu wenig W′ ablösen. | Keine 2D-Spur und kein künstliches Nach-vorne-Setzen. |
+| D-090 | **Technisch implementiert (R-18)** | Aktuelle und über 120 s fortgeschriebene Fluchtlücke bestimmt zusammen mit Reststrecke und Teaminteressen die Jagd. | Prognose keine Einholgarantie. |
+| D-091 | **Technisch implementiert als fiktive R-19-Heuristik** | Bilanzierte Kohlenhydratverfügbarkeit und Verpflegung sowie zusätzliche Langzeit-Ermüdung als reine Begrenzung der **Wattanforderung**; A/B `enduranceModel='off'`. | Kein neu kalibrierter physiologischer CP/W′-Kern; nie fiktive mechanische Energie. |
+| D-092 | **Technisch implementiert (R-20)** | Fahrertypen durch Masse, CP/W′ und CdA; Wind und Untergrund nur via Luft-/Rollwiderstand desselben physikalischen Integrators. | Keine Wettersieg-Boni, keine 2D-Windkante/Kopfsteinpflaster-Mikrophysik. |
+| D-093 | **Technisch implementiert, sportliche Kalibrierung offen (R-21)** | Feld bis 210 Fahrer, Testfelder 22 Teams × 7 Fahrer und vollständige **170–240-km-Einzelrennen**; reproduzierbare CPU-/Gruppen-/Energie-/Eventmessungen. | 154 × 200-km technisch erfolgreich ist **nicht** gleich sportlich realistisch. Erst R-22 massenhaft validieren/kalibrieren; R-23 anschließend Freigabe bewerten. |
+
+**Nutzergrenze erneut verbindlich:** Profiklassiker,
+Flach-/Hügel-/Bergrennen **als eigenständige
+Einzelrennen** gehören in Rennengine-Tests;
+Rundfahrten mit Etappen-/Gesamtwertung,
+Karrieremodus, Sponsoren, Verträge, Transfers,
+Trainingskalender und Mitarbeiterverwaltung
+gehören NICHT in die Rennengine.
+
+[Roadmap und spätere R-22/R-23-Gates](race/ROADMAP_R17_R23_VERBINDLICH.md).
+[Technische R-17–R-21-Umsetzung](race/R17_R21_ENGINE_ABSCHLUSS.md).

@@ -1026,3 +1026,73 @@ Personal, Training und Manageroberflächen sind
 ausdrücklich ein getrenntes späteres System.**
 Issue #42 offen.
 [Messungen und Methoden](race/R15_R16_MEHRHELFER_RENNINTELLIGENZ.md).
+
+
+## R-17 bis R-21 – gemeinsames abschließendes Funktionspaket vor der großen Kalibrierung (04.11.2026)
+
+Das gemeinsam vom Nutzer bestellte Rennengine-Paket
+ist in `feature/r17-r21-engine-abschluss` bearbeitet.
+[Verbindlicher Fahrplan](race/ROADMAP_R17_R23_VERBINDLICH.md),
+[technisches Gesamtdokument](race/R17_R21_ENGINE_ABSCHLUSS.md).
+
+Die fünf ausschließlich rennmechanischen Funktionsbereiche:
+
+1. **R-17: Führungsposition und Übergabe.**
+   Durch `previousLeaders` wird eine tatsächlich
+   frontnah fahrende Helferzuordnung 75 s lang
+   gehalten, es sei denn, reale Position/W′
+   sprechen dagegen. Ablösung nur bei erneut
+   geeigneter Position **vor Kapitän/Sprinter**.
+   Weiterhin 1D ohne Teleportation/Spurphysik.
+2. **R-18: Gegner- und Fluchtreaktion.**
+   120-s-Projektion der aus realen Fahrerabständen
+   und Geschwindigkeiten gemessenen Lücke,
+   zusammen mit Restdistanz und Teamstrategie.
+   Kein Ergebnisbonus/garantiertes Einholen.
+3. **R-19: Kohlenhydrat und Ausdauer.**
+   Transparenter Speicher, Zufuhr,
+   Verbrauch, nicht gedeckter Bedarf und
+   Energiespeicherüberlauf; Belastungsstrafe
+   erst ab ca. 90 min, optionaler `'off'`-A/B-Test.
+   CP/W′- und mechanische Energiebilanzen bleiben
+   nachweisbar unverändert.
+4. **R-20: Fahrerspezialisierung und Umgebung.**
+   Fahrertypen aus realen Körper-/Leistungsprofilen,
+   Wind und Untergrund per physikalischem
+   Aero-/Rollwiderstand. Keine Ergebnisfaktoren.
+5. **R-21: große Einzelrennen.**
+   2–210 Fahrer, 1–30 Teams, bis 300 km
+   per Einzelevent, 22×7=154 Tests mit
+   200-km-Flach-/Hügel-, 240-km-Klassiker-
+   und 170-km-Bergprofilen.
+   Technische Gruppe-/Event-/Energie-
+   und CPU-Stressproben.
+
+**Reale Pilotmessungen der Großfeldszenarien:**
+Vier volle 154-Fahrer-Rennen und eine 70er-
+Berg-Gegenprobe erfolgreich auf dem
+GitHub-Runner ausgeführt. Die Rennzeit-/Gruppen-
+Ausreißer sind noch **nicht empirisch kalibriert**.
+Der aktuelle positionsgeprüfte
+[GitHub-Actions-Lauf #41744546224](https://github.com/Lancester/radsportmanager/actions/runs/41744546224)
+ergab für 154 Fahrer/200 km flach:
+19 maximale Gruppen, Median-Zielrückstand
+ca. 14 min, letzter Fahrer ca. 43 min zurück.
+Für 154 Fahrer/170 km bergig:
+87 Gruppen, Median-Zielrückstand
+ca. 47 min, letzter Fahrer ca. 113 min zurück.
+Alle vier 154er-Profile liefen im CI-Runner
+in ca. 7,5–10,8 Sekunden je Einzelevent.
+Das sind **technische Messungen, keine
+behaupteten realistischen WorldTour-Verteilungen**.
+
+**Nach diesem Paket:** kein weiterer
+unbegrenzter Feature-Zyklus, sondern
+**R-22 Validierung/Monte Carlo/Endkalibrierung**
+mit verschiedenen Profilen, großen Feldern,
+realen Vergleichsdaten und unabhängigen
+Validation Sets; erst danach
+**R-23 Freigabe-Gate für Rennengine 1.0**.
+Die UCI-ähnlichen Einzelrennprofile gehören
+in die Rennengine, die Kombination
+zu Etappenrennen/Gesamtwertungen nicht.

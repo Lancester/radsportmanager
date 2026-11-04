@@ -756,3 +756,60 @@ wissenschaftlich kalibrierter Profi-Rennen.
 Keine Karriere-/Rundfahrt-Funktionen
 mit dieser Rennengine-Abnahme vermischen.
 Siehe [R-15/R-16-Methodik](race/R15_R16_MEHRHELFER_RENNINTELLIGENZ.md).
+
+
+## Gemeinsames R-17–R-21-Funktionspaket: Validierungsstand vor R-22 (04.11.2026)
+
+**Technischer Abnahmeumfang:** Regression aller
+bestehenden R-01–R-16-Physik-/Rennregeln,
+zusätzliche R-17–R-21-Tests für
+führende Helfer vor dem Kapitän/Sprinter,
+Schichthaltung, Ausreißer-Projektion,
+W′- und Kohlenhydrat-Bilanzen,
+Wind- und Rollwiderstand ohne Ergebnisboni,
+154er-Feldvalidierung und echte 50-km-Läufe.
+
+**Großfeld-Belastung:** das separate
+`scripts/r21-scale-diagnostics.mjs` rechnet
+vier komplette 154-Fahrer-Einzelrennen:
+Flach **200 km**, Hügel **200 km**,
+Klassiker **240 km**, Berg **170 km**;
+plus eine Berg-Gegenprobe mit 70 Fahrern.
+Die einmalige GitHub-Actions-Abnahme
+führt außerdem TypeScript-Browser-ESM und
+ein vollständiges 30er-Rennen aus.
+Alle Fahrer benötigen endliche, nichtnegative
+W′-/Kohlenhydratspeicher und eine
+korrekte mechanische Energie-Bilanz.
+Alle Resultate werden mit dem
+Renn-Audit auf vollständige
+Event-/Flucht-/Klassifikationskonsistenz
+und Gruppenklassifikation geprüft.
+
+**Pilotwerte:** Ein 154-Fahrer-/200-km-
+Flachlauf mit 22 Teams dauerte
+ca. 8–10 s Rechenzeit auf GitHub Actions,
+ein 170-km-Berglauf mit 154 Fahrern
+ca. 10–14 s. Die flotten
+CI-Ausführungen sind keine Zusage für
+Android-Browserperformance oder
+Monte-Carlo-Durchsatz bei Tausenden Seeds.
+
+**Noch keine sportwissenschaftliche Kalibrierung:**
+teils sehr große Zielrückstände
+in Bergen/Klassikern und
+hohe Ausdauer-Penalties bleiben
+offene Untersuchungsgegenstände.
+R-22 definiert und prüft
+Messkriterien an unabhängig
+ausgewählten echten Renndaten,
+bevor Werte fachlich endgültig
+festgelegt werden.
+**R-23 darf die Rennengine 1.0 erst
+bei tatsächlich erfolgreichen
+Qualitätskriterien freigeben.**
+
+Rennengine simuliert **nur Einzelrennen**;
+Karriere und Rundfahrten bleiben getrennt.
+[Umfang und Messungen](race/R17_R21_ENGINE_ABSCHLUSS.md),
+[verbindlicher Fahrplan](race/ROADMAP_R17_R23_VERBINDLICH.md).
