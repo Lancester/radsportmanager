@@ -26,7 +26,7 @@ if(!/^artifacts\/[\w/-]+$/.test(args.output)||args.output.includes('..'))
 const f=createReferenceFixture({routeId:args.route,seed});
 const runs=[],checkpoints=[],finishes=[];
 const rounded=n=>+n.toFixed(2);
-for(const model of ['legacy','cohesive','coordinated','relays','relay-paced']){
+for(const model of ['legacy','cohesive','coordinated','relays','relay-paced','front-gated']){
   const t=performance.now();
   const result=simulateRace({...f.input,
     groupRidingModel:model,diagnosticLevel:'checkpoints'});
@@ -43,6 +43,8 @@ for(const model of ['legacy','cohesive','coordinated','relays','relay-paced']){
     orderedRelayTeamSeconds:result.diagnostics.orderedRelayTeamSeconds??0,
     mainFieldFrontWorkWithAssignedChaserS:
       result.diagnostics.mainFieldFrontWorkWithAssignedChaserS??0,
+    breakawaysWithoutRecentAttack:
+      result.diagnostics.unprovokedBreakawayCount??0,
     within60sOfWinner:finishGroups.within60sOfWinner,
     finishGroupCount:finishGroups.groups.length,
     winner:result.winnerId,
@@ -87,7 +89,7 @@ for(const model of ['legacy','cohesive','coordinated','relays','relay-paced']){
       gapS:rounded(r.gapS),avgW:rounded(r.averageCrankPowerW)});
   }
 }
-const base=runs[0],experiment=runs[4];
+const base=runs[0],experiment=runs[5];
 const delta={winnerTimeS:rounded(experiment.winnerTimeS-base.winnerTimeS),
   medianGapS:rounded(experiment.medianGapS-base.medianGapS),
   lastGapS:rounded(experiment.lastGapS-base.lastGapS),
