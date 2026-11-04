@@ -79,6 +79,40 @@ for(const id of routes){
   };
   results.push(details);
   console.log('R22-PROFILE '+JSON.stringify(details));
+  // Nur Diagnose: keine zusätzliche Simulation. Wie kam der Sieger
+  // tatsächlich zu seiner Position vor der letzten Selektion?
+  const sampleKm=[.25,.5,.75,.9]
+    .map(f=>n(fixture.route.distanceKm*f));
+  const finalClimb=fixture.route.climbs.at(-1);
+  if(finalClimb){
+    sampleKm.push(n(finalClimb.endKm-finalClimb.lengthKm));
+    sampleKm.push(n(finalClimb.endKm-5));
+  }
+  const seen=new Set();
+  const trace=sampleKm.sort((a,b)=>a-b).map(km=>{
+    const cp=(r.checkpoints??[]).find(c=>c.km>=km);
+    if(!cp||seen.has(cp.km))return null;
+    seen.add(cp.km);
+    const sorted=[...cp.riders].sort((a,b)=>b.positionM-a.positionM);
+    const rider=cp.riders.find(x=>x.riderId===r.winnerId);
+    return {km:n(cp.km),leaderId:cp.leaderId,
+      leaderType:kindByRider.get(cp.leaderId),
+      winnerRank:sorted.findIndex(x=>x.riderId===r.winnerId)+1,
+      winnerGapM:n(rider.gapToLeaderM),
+      winnerWprimePct:n(rider.wPrimeRemainingPct),
+      winnerPowerW:n(rider.appliedPowerW),
+      winnerAero:n(rider.aeroFactor),
+      largestGroup:cp.largestGroup,groupCount:cp.groupCount};
+  }).filter(Boolean);
+  const winnerEvents=r.events.filter(e=>e.riderId===r.winnerId&&
+    ['attack','chase','team-chase','team-pace'].includes(e.type))
+    .slice(0,20).map(e=>({km:n(e.km),type:e.type,timeS:n(e.timeS)}));
+  console.log('R22-WINNER-TRACE '+JSON.stringify({route:id,
+    winnerId:r.winnerId,winnerType:details.winnerType,
+    trace,winnerEvents,
+    top10:r.classification.slice(0,10).map(x=>({
+      id:x.id,type:kindByRider.get(x.id),gapS:n(x.gapS)}))}));
+
 }
 console.log('R22-PROFILES-SUMMARY '+JSON.stringify({
   experimental:true,notRealismValidated:true,
