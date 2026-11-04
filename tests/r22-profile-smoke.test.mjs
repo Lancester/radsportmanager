@@ -30,6 +30,15 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
     assert.ok(row.medianWPrimeAt50Pct>=0&&row.medianWPrimeAt50Pct<=100);
     assert.ok(row.avgCrankW>0&&row.avgCrankW<1000);
     assert.ok(row.actualChaseFrontS>=0&&row.chaseLeaderChanges>=0);
+    assert.ok(row.sprintPositioningSeconds>=0&&row.sprintEscortSeconds>=0);
+    assert.ok(row.leadoutPaceCoordinationSeconds>=0&&
+      row.independentWheelFindingSeconds>=0);
+    if(row.profile!=='flach'){
+      assert.equal(row.sprintPositioningSeconds,0);
+      assert.equal(row.sprintEscortSeconds,0);
+      assert.equal(row.leadoutPaceCoordinationSeconds,0);
+      assert.equal(row.independentWheelFindingSeconds,0);
+    }
     assert.equal(row.top10Types.length,10);
   }
   // Die Zahlen sind ausdrücklich Diagnose, keine festen Soll-Sieger/Quoten.
@@ -87,6 +96,26 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
   assert.equal(lille.seed,2026);
   assert.equal(lille.preRaceBestSprinter,
     favorites[0].perCategory.find(x=>x.category==='sprinter').strongest.riderId);
+  assert.ok(lille.sprintPositioningSeconds>0,
+    'Im langen flachen Peloton muss echte Positionierungsarbeit stattfinden');
+  assert.ok(lille.sprintEscortSeconds>=0);
+  assert.ok(Array.isArray(lille.sprintFinale));
+  const targetFinale=lille.sprintFinale.find(x=>
+    x.riderId===lille.preRaceBestSprinter);
+  assert.ok(targetFinale,'F023-Sprintfinale-Position und Helferzahl fehlen');
+  assert.ok(targetFinale.groupSize>=1&&
+    targetFinale.rankInGroup>=1&&
+    targetFinale.rankInGroup<=targetFinale.groupSize);
+  assert.ok(targetFinale.helpersWithin30M>=0);
+  assert.ok(targetFinale.helpersAheadWithin30M>=0&&
+    targetFinale.helpersAheadWithin30M<=targetFinale.helpersWithin30M);
+  assert.ok(targetFinale.helpersOnSprintTrain>=0&&
+    targetFinale.helpersOnSprintTrain<=targetFinale.helpersWithin30M);
+  assert.ok(targetFinale.sprintSkill>0&&targetFinale.sprintSkill<=1);
+  assert.ok(targetFinale.wheelFindingSkill>=0&&
+    targetFinale.wheelFindingSkill<=1);
+  assert.ok(lille.independentWheelFindingSeconds>=0);
+  assert.ok(lille.leadoutPaceCoordinationSeconds>=0);
   assert.ok(lille.watched.length>=4);
   const best=lille.watched.find(x=>x.id===lille.preRaceBestSprinter);
   assert.ok(best?.sprintSkill>0);

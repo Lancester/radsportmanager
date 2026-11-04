@@ -76,6 +76,10 @@ for(const id of routes){
     actualChaseFrontS:r.diagnostics.mainFieldFrontWorkWithAssignedChaserS??0,
     chaseLeaderChanges:r.diagnostics.mainFieldChaserLeaderChanges??0,
     climbingTempoSeconds:r.diagnostics.climbingTempoSeconds??0,
+    sprintPositioningSeconds:r.diagnostics.sprintPositioningSeconds??0,
+    sprintEscortSeconds:r.diagnostics.sprintEscortSeconds??0,
+    leadoutPaceCoordinationSeconds:r.diagnostics.leadoutPaceCoordinationSeconds??0,
+    independentWheelFindingSeconds:r.diagnostics.independentWheelFindingSeconds??0,
     top10Types:r.classification.slice(0,10).map(x=>kindByRider.get(x.id)),
     runtimeS:n((performance.now()-start)/1000),
   };
@@ -159,6 +163,7 @@ for(const id of routes){
         strategy:fixture.input.teams.find(x=>x.id===rider?.teamId)?.strategy,
         baseCpW:rider?.criticalPowerW,wPrimeCapacityJ:rider?.wPrimeJ,
         massKg:rider?.massKg,sprintSkill:rider?.sprintSkill,
+        wheelFindingSkill:rider?.wheelFindingSkill??null,
         finishRank:classification?.rank,finishGapS:classification?
           n(classification.gapS):null,
         avgCrankW:classification?n(classification.averageCrankPowerW):null,
@@ -181,6 +186,36 @@ for(const id of routes){
     console.log('R22-LILLE-SPRINTER-AUDIT '+JSON.stringify({
       route:id,seed,
       preRaceBestSprinter:sprinters.strongest.riderId,
+      sprintPositioningSeconds:r.diagnostics.sprintPositioningSeconds??0,
+      sprintEscortSeconds:r.diagnostics.sprintEscortSeconds??0,
+    leadoutPaceCoordinationSeconds:r.diagnostics.leadoutPaceCoordinationSeconds??0,
+    independentWheelFindingSeconds:r.diagnostics.independentWheelFindingSeconds??0,
+      sprintFinale:r.diagnostics.sprintFinale??[],
+      // Warum fehlen vor dem Zielsprint Helfer? Kein weiterer Lauf,
+      // nur dieselben vorhandenen 5-km-Checkpoints beobachten.
+      helperTrace:(r.checkpoints??[]).filter(cp=>
+        cp.km>=110&&cp.km<=185).filter(cp=>
+          Math.round(cp.km)%10<=1||cp.km>=170)
+        .map(cp=>{
+          const target=cp.riders.find(z=>
+            z.riderId===sprinters.strongest.riderId);
+          const sprintTeam=fixture.input.riders.find(z=>
+            z.id===sprinters.strongest.riderId)?.teamId;
+          if(!target||!sprintTeam)return null;
+          const helperRows=cp.riders.filter(z=>
+            z.teamId===sprintTeam&&z.role==='helfer')
+            .map(h=>({id:h.riderId,
+              relativeToSprinterM:n(h.positionM-target.positionM),
+              groupSize:h.groupSize,groupIndex:h.groupIndex,
+              wPrimePct:n(h.wPrimeRemainingPct),
+              appliedW:n(h.appliedPowerW)}))
+            .sort((a,b)=>Math.abs(a.relativeToSprinterM)-
+              Math.abs(b.relativeToSprinterM));
+          return {km:n(cp.km),
+            targetGroupIndex:target.groupIndex,
+            targetGroupSize:target.groupSize,
+            nearestHelpers:helperRows.slice(0,5)};
+        }).filter(Boolean),
       bestPlacedSprinter:bestActualSprinter?.id,
       winnerId:r.winnerId,
       watched:watch,
