@@ -14,7 +14,7 @@ export const HILLY_RACECRAFT=Object.freeze({
   // Profil-Angriffe sind an jedem Streckenpunkt moeglich.
   earlyFromProgress:.015,earlyUntilTimeS:2700,
   earlyMinTimeS:180,earlyMinReserve:.53,
-  tacticalRampMinGrade:.05,
+  tacticalRampMinGrade:.075,
   reserveAtStart:.55,reserveAtFinish:.36,
   rampFromFraction:.12,rampUntilFraction:.92,
   continueMinReserve:.18,
