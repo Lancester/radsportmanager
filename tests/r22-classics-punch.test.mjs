@@ -37,7 +37,6 @@ test('R22 Klassiker: keine Spezialattacke im Flach-/Hügel-/Bergprofil und keine
     {...base,designatedRampRider:false},
     {...base,attackRankInGroup:2},
     {...base,gapToActualRaceFrontM:1400},
-    {...base,role:'helfer'},
     {...base,criticalPowerW:250},
     {...base,speedMps:9},
     {...base,lastAttackAgeS:30},
