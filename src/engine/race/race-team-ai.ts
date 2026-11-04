@@ -42,6 +42,8 @@ export const R15_R16=Object.freeze({
 });
 export interface CrewPlan {
   orders:Map<string,CrewOrder>;
+  /** Tatsächlich nominierter Führender; im nächsten Entscheid weiterführen. */
+  leaderByTeam:Map<string,{riderId:string;sinceS:number}>;
   situation:RaceSituation;
   /** Nur für Prüf- und Spielberichte, keine neue Renn-Geschwindigkeit. */
   missionByTeam:Map<string,CrewMission>;
@@ -96,6 +98,8 @@ export function decideIntelligentCrew(input:{
   timeS:number;progress:number;remainingM:number;
   teams:readonly IntelligentTeam[];
   riders:readonly IntelligentRider[];
+  /** R-17: Zustandsübergabe für positions- und ermüdungsbewusste Ablösung. */
+  previousLeaders?:ReadonlyMap<string,{riderId:string;sinceS:number}>;
 }):CrewPlan{
   if(!input||!Array.isArray(input.teams)||!Array.isArray(input.riders))
     throw new RangeError('R-15/R-16: Team-/Fahrerfeld fehlt');
@@ -123,8 +127,9 @@ export function decideIntelligentCrew(input:{
   }
   const orders=new Map<string,CrewOrder>();
   const missionByTeam=new Map<string,CrewMission>();
+  const leaderByTeam=new Map<string,{riderId:string;sinceS:number}>();
   const situation=analyzeRaceSituation(input.riders,input.remainingM);
-  if(input.riders.length<2)return {orders,situation,missionByTeam};
+  if(input.riders.length<2)return {orders,situation,missionByTeam,leaderByTeam};
   const groups=sortGroups(input.riders);
   const main=groups.reduce((best,g)=>g.length>best.length?g:best,groups[0]);
   const rotation=Math.floor(input.timeS/R15_R16.relaySeconds);
@@ -186,16 +191,24 @@ export function decideIntelligentCrew(input:{
     const selected=[...sorted.slice(0,requested)];
     const frontEligible=selected.filter(r=>
       gapToFront(r)<=R15_R16.frontWorkRadiusM);
-    const leader=frontEligible.length?
-      frontEligible[rotation%frontEligible.length]:null;
+    const previous=input.previousLeaders?.get(team.id);
+    const retained=previous&&input.timeS-previous.sinceS<
+      R15_R16.relaySeconds?
+      frontEligible.find(r=>r.id===previous.riderId):undefined;
+    const leader=retained??(frontEligible.length?
+      frontEligible[rotation%frontEligible.length]:null);
+    if(leader)leaderByTeam.set(team.id,{
+      riderId:leader.id,
+      sinceS:retained?previous!.sinceS:input.timeS,
+    });
     for(const rider of selected){
       const frontEligible=gapToFront(rider)<=R15_R16.frontWorkRadiusM;
       const duty:CrewDuty=leader!==null&&rider.id===leader.id&&frontEligible?
         'fuehrung':'unterstuetzung';
       const effort=mission==='jagd'?
-        (duty==='fuehrung'?1.12:1.035):
+        (duty==='fuehrung'?1.12:1.055):
         mission==='sprintzug'?
-        (duty==='fuehrung'?1.12:1.045):
+        (duty==='fuehrung'?1.12:1.055):
         (duty==='fuehrung'?1.065:0.98);
       const reason=mission==='jagd'?
         (duty==='fuehrung'?'Team übernimmt Verfolgung an der Feldspitze':
@@ -211,5 +224,5 @@ export function decideIntelligentCrew(input:{
     }
     missionByTeam.set(team.id,mission);
   }
-  return {orders,situation,missionByTeam};
+  return {orders,situation,missionByTeam,leaderByTeam};
 }
