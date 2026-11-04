@@ -291,6 +291,22 @@ export function simulateRace(x:RaceInput):RaceResult {
   const states=buildStates(x);
   const byId=new Map(states.map(s=>[s.rider.id,s]));
   const teams=new Map(x.teams.map(t=>[t.id,t]));
+  // Die sportliche Leitung nominiert bei langen Rampenklassikern den
+  // nach tatsächlich verfügbarer kurzzeitiger Leistung am besten
+  // geeigneten Klassikerspezialisten JEDES Teams: der kann bislang
+  // auch als Helfer eingetragen sein. Keine Änderung der Fahrerrolle
+  // oder seiner physikalischen Fähigkeiten.
+  const rampScore=(r:State)=>
+    (r.dayCpW+Math.min(r.physiology.remainingWPrimeJ/180,
+      r.dayCpW*0.25))*endurancePowerAvailability(r.endurance)/
+    (r.rider.massKg+r.rider.bikeMassKg);
+  const rampSpecialistByTeam=new Map(x.teams.map(team=>{
+    const candidates=states.filter(r=>
+      r.rider.teamId===team.id&&r.rider.specialty==='klassiker')
+      .sort((a,b)=>rampScore(b)-rampScore(a)||
+        a.rider.id.localeCompare(b.rider.id));
+    return [team.id,candidates[0]?.rider.id??null] as const;
+  }));
   const captainByTeam=new Map(x.teams.map(t=>[t.id,
     states.find(s=>s.rider.teamId===t.id&&s.rider.role==='kapitaen')]));
   const targetByTeam=new Map(x.teams.map(t=>[t.id,
@@ -477,6 +493,24 @@ export function simulateRace(x:RaceInput):RaceResult {
         const segmentId=segmentFor(s,boundaries);
         const stageSegment=x.segments[segmentId];
         const segmentStartM=segmentId>0?boundaries[segmentId-1]:0;
+        // Maximal ein neuer, nach aktueller 3-Minuten-Watt/kg-Stärke
+        // ausgewählter Puncheur pro tatsächlich zusammenhängender
+        // Gruppe. Bereits gestartete Angriffe dürfen unabhängig davon
+        // ihre physisch bezahlte Anstrengung fortsetzen.
+        const isRampLeader=rampSpecialistByTeam.get(s.rider.teamId)===
+          s.rider.id;
+        const nearbyRampLeaders=group&&isRampLeader?
+          group.filter(r=>rampSpecialistByTeam.get(r.rider.teamId)===
+            r.rider.id&&r.rider.specialty==='klassiker'&&
+            group[0].positionM-r.positionM<=
+              CLASSICS_PUNCH.maxFrontDistanceM&&
+            r.physiology.remainingWPrimeJ/r.profile.wPrimeCapacityJ>=
+              CLASSICS_PUNCH.minWprimeFraction&&
+            t-r.lastAttackS>=CLASSICS_PUNCH.minCooldownS)
+            .sort((a,b)=>rampScore(b)-rampScore(a)||
+              a.rider.id.localeCompare(b.rider.id)):[];
+        const attackRankInGroup=nearbyRampLeaders.findIndex(r=>
+          r.rider.id===s.rider.id)+1;
         const classics=x.groupRidingModel==='stable-pack'?
           decideClassicsPunch({
             specialty:s.rider.specialty,role:s.rider.role,
@@ -492,6 +526,8 @@ export function simulateRace(x:RaceInput):RaceResult {
             criticalPowerW:s.dayCpW,
             reserveFraction:obs.reserveFraction,
             lastAttackAgeS:t-s.lastAttackS,currentIntent:s.intent,
+            designatedRampRider:isRampLeader,attackRankInGroup,
+            gapToActualRaceFrontM:Math.max(0,leader.positionM-s.positionM),
             speedMps:group?.[0].speedMps??s.speedMps,
             riderMassKg:s.rider.massKg,bikeMassKg:s.rider.bikeMassKg,
             dragAreaM2:s.rider.dragAreaM2,
