@@ -19,6 +19,13 @@ test('R22A: vier quellenbelegte reale Renndistanzen und verankerte Anstiege',()=
     assert.equal(spec.fidelity,
       'published-distance-and-climbs-approximated-transitions');
     const segments=createReferenceSegments(id);
+    console.log('R22A-HEIGHT',JSON.stringify({id,
+      ascent:Math.round(segments.reduce((sum,s)=>sum+
+        Math.max(0,s.gradeFraction)*s.lengthM,0)),
+      net:Math.round(segments.reduce((sum,s)=>
+        sum+s.gradeFraction*s.lengthM,0)),
+      published:spec.referenceAscentM??null,
+      segments:segments.length}));
     assert.ok(segments.length>=15&&segments.length<=60);
     assert.equal(segments.reduce((n,s)=>n+s.lengthM,0),meters);
     for(const climb of spec.climbs){
