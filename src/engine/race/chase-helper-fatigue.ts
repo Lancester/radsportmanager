@@ -17,10 +17,10 @@ export const CHASE_HELPER_SPENT=Object.freeze({
   referenceCpFraction:.82,
   minimumRealFrontSeconds:95,
   highLoadTriggerJ:14000,
-  retreatSeconds:95,
-  initialFreewheelSeconds:24,
-  initialCpFraction:.14,
-  laterCpFraction:.48,
+  retreatSeconds:78,
+  initialFreewheelSeconds:18,
+  initialCpFraction:.36,
+  laterCpFraction:.50,
 });
 export interface ChaseHelperLoad {
   realFrontSeconds:number;
