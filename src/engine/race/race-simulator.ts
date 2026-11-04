@@ -134,6 +134,10 @@ export interface RaceResult {
     sprintTrainAssignments:number;actualFrontWorkSteps:number;
     relayChanges:number;maximumEndurancePenalty:number;
     sprintPositioningSeconds?:number;sprintEscortSeconds?:number;
+    /** Beobachtete Position/Helfer an der Sprintfreigabe (keine Sieggarantie). */
+    sprintFinale?:Array<{riderId:string;rankInGroup:number;
+      groupSize:number;helpersWithin30M:number;helpersAheadWithin30M:number;
+      helpersOnSprintTrain:number;sprintSkill:number;wPrimePct:number}>;
     participants:number;raceDistanceKm:number};
 }
 interface State {
@@ -340,6 +344,8 @@ export function simulateRace(x:RaceInput):RaceResult {
   let orderedRelayTeamSeconds=0;
   let climbingTempoSeconds=0;
   let sprintPositioningSeconds=0,sprintEscortSeconds=0;
+  const sprintFinale:NonNullable<RaceResult['diagnostics']['sprintFinale']>=[];
+  const sprintFinaleObserved=new Set<string>();
   let mainFieldFrontWorkWithAssignedChaserS=0;
   // Nur Diagnose: tatsächliche, ununterbrochene Führungsphasen an der Hauptfeldspitze.
   let mainFieldChaserLeaderChanges=0;
@@ -646,22 +652,28 @@ export function simulateRace(x:RaceInput):RaceResult {
       rankInPhysicalGroup.set(g.id,i+1);
       physicalGroupOf.set(g.id,group);
     });
-    // Je Sprintmannschaft höchstens EIN naher Helfer als Schutzbegleiter.
-    const escortByTeam=new Map<string,string>();
+    // Im letzten Viertel mehrere *wirklich nahe* Helfer koordinieren.
+    // Ohne reale 1D-Position in derselben Gruppe kann niemand helfen.
+    const escortByTeam=new Map<string,Set<string>>();
     if(sprintFriendlyRace){
       for(const team of x.teams.filter(team=>team.strategy==='sprint')){
         const target=targetByTeam.get(team.id);
         if(!target||target.rider.specialty!=='sprinter')continue;
         const group=physicalGroupOf.get(target.rider.id);
         if(!group||group.length<SPRINT_POSITION.minGroupSize)continue;
+        const phase=target.positionM/totalM;
+        if(phase<SPRINT_POSITION.advanceFromProgress)continue;
         const candidates=group.map(g=>byId.get(g.id)!).filter(r=>
           r.rider.teamId===team.id&&r.rider.role==='helfer'&&
-          r.positionM<=target.positionM&&
-          target.positionM-r.positionM<=SPRINT_POSITION.escortMaxDistanceM)
-          .sort((a,b)=>target.positionM-a.positionM-
-            (target.positionM-b.positionM)||
+          Math.abs(r.positionM-target.positionM)<=
+            SPRINT_POSITION.escortMaxDistanceM)
+          .sort((a,b)=>
+            Math.abs(a.positionM-target.positionM)-
+              Math.abs(b.positionM-target.positionM)||
             a.rider.id.localeCompare(b.rider.id));
-        if(candidates.length)escortByTeam.set(team.id,candidates[0].rider.id);
+        const wanted=phase>=SPRINT_POSITION.leadoutFromProgress?3:2;
+        escortByTeam.set(team.id,new Set(candidates.slice(0,wanted)
+          .map(r=>r.rider.id)));
       }
     }
     const largestPhysicalGroup=physicalGroups.reduce((best,g)=>
@@ -731,6 +743,36 @@ export function simulateRace(x:RaceInput):RaceResult {
       for(const member of group){
         actualGroupFront.set(member.id,group[0].positionM);
         actualGroupSize.set(member.id,group.length);
+      }
+    }
+    // Finale-Querschnitt: Position, tatsächlich nahe Helfer und
+    // Sprintskill vor der 250-m-Sprintentscheidung. Nur Diagnose, die
+    // Helfer müssen ihre reale physische Stellung vorher erarbeiten.
+    if(sprintFriendlyRace){
+      for(const team of x.teams.filter(q=>q.strategy==='sprint')){
+        const target=targetByTeam.get(team.id);
+        if(!target||target.finishTimeS!==null||
+          target.rider.specialty!=='sprinter'||
+          sprintFinaleObserved.has(target.rider.id)||
+          totalM-target.positionM>250)continue;
+        const ownGroup=physicalGroupOf.get(target.rider.id);
+        const nearby=active.filter(r=>r.rider.teamId===team.id&&
+          r.rider.role==='helfer'&&
+          Math.abs(r.positionM-target.positionM)<=30);
+        sprintFinale.push({
+          riderId:target.rider.id,
+          rankInGroup:rankInPhysicalGroup.get(target.rider.id)??1,
+          groupSize:ownGroup?.length??1,
+          helpersWithin30M:nearby.length,
+          helpersAheadWithin30M:nearby.filter(r=>
+            r.positionM>target.positionM).length,
+          helpersOnSprintTrain:nearby.filter(r=>
+            r.crewMission==='sprintzug').length,
+          sprintSkill:target.rider.sprintSkill,
+          wPrimePct:100*target.physiology.remainingWPrimeJ/
+            target.profile.wPrimeCapacityJ,
+        });
+        sprintFinaleObserved.add(target.rider.id);
       }
     }
     for(const s of active){
@@ -837,7 +879,7 @@ export function simulateRace(x:RaceInput):RaceResult {
           const target=targetByTeam.get(s.rider.teamId);
           const isTargetSprinter=target?.rider.id===s.rider.id&&
             s.rider.specialty==='sprinter';
-          const isEscort=escortByTeam.get(s.rider.teamId)===s.rider.id;
+          const isEscort=escortByTeam.get(s.rider.teamId)?.has(s.rider.id)??false;
           if(isTargetSprinter||isEscort){
             const ownGroup=physicalGroupOf.get(s.rider.id);
             const targetGroup=target?physicalGroupOf.get(target.rider.id):null;
@@ -1097,7 +1139,8 @@ export function simulateRace(x:RaceInput):RaceResult {
         mainFieldChaserLeaderChanges,
         longestMainFieldChaserStintS,
         ...(x.groupRidingModel==='stable-pack'?{
-          climbingTempoSeconds,sprintPositioningSeconds,sprintEscortSeconds}:{}),
+          climbingTempoSeconds,sprintPositioningSeconds,sprintEscortSeconds,
+          sprintFinale}:{}),
         ...((x.groupRidingModel==='front-gated'||x.groupRidingModel==='stable-pack')?
           {unprovokedBreakawayCount}:{}),
       }:{}),teams:x.teams.length,
