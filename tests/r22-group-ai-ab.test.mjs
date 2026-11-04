@@ -10,6 +10,8 @@ import {createRaceExample,simulateRace}
 const observation={
   groupSize:30,distanceFromGroupFrontM:20,
   frontGapM:8,frontSpeedMps:12,ownSpeedMps:12,
+  referenceSpeedMps:12,referenceAccelerationMps2:0.10,
+  groupPacerPowerW:300,isPacer:false,
   desiredPowerW:350,criticalPowerW:350,reserveFraction:.9,
   tacticalIntent:'windschatten',riderMassKg:70,bikeMassKg:8,
   dragAreaM2:.28,aeroFactor:.6,gradeFraction:0,
@@ -20,12 +22,12 @@ test('R22 Gruppen-KI: angepasste Wattanfrage statt eigener Maximalleistung',()=>
   const follow=decideGroupRiding(observation);
   assert.equal(follow.reason,'follow_group');
   assert.ok(follow.powerW<350&&follow.powerW>0);
-  const faster=decideGroupRiding({...observation,frontSpeedMps:13});
+  const faster=decideGroupRiding({...observation,referenceSpeedMps:13});
   assert.ok(faster.powerW>follow.powerW);
   const gap=decideGroupRiding({...observation,frontGapM:30});
   assert.ok(gap.powerW>follow.powerW);
   const front=decideGroupRiding({...observation,
-    distanceFromGroupFrontM:0,frontGapM:0});
+    distanceFromGroupFrontM:0,frontGapM:0,isPacer:true});
   assert.equal(front.reason,'front_rotation');
   assert.ok(front.powerW<=350*.86+.001);
   const attack=decideGroupRiding({...observation,tacticalIntent:'angriff'});
