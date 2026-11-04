@@ -76,7 +76,11 @@ function meanSpeed(g:readonly IntelligentRider[]):number{
 }
 export function analyzeRaceSituation(
   riders:readonly IntelligentRider[],remainingM:number,
+  maxBreakawaySize=R15_R16.maxBreakawaySize,
 ):RaceSituation{
+  valid('maximumBreakawaySize',maxBreakawaySize,
+    Number.isInteger(maxBreakawaySize)&&maxBreakawaySize>=1&&
+    maxBreakawaySize<=12);
   valid('remainingM',remainingM,remainingM>=0);
   if(riders.length<2)return {
     leadingBreakaway:false,gapM:0,breakawaySize:0,mainGroupSize:riders.length,
@@ -85,7 +89,7 @@ export function analyzeRaceSituation(
   const groups=sortGroups(riders);
   const lead=groups[0];
   const main=groups.reduce((best,g)=>g.length>best.length?g:best,groups[0]);
-  const smallLeader=lead!==main&&lead.length<=R15_R16.maxBreakawaySize&&
+  const smallLeader=lead!==main&&lead.length<=maxBreakawaySize&&
     main.length>=R15_R16.minimumMainGroupSize;
   const gap=smallLeader?lead.at(-1)!.positionM-main[0].positionM:0;
   const relativeSpeed=smallLeader?meanSpeed(lead)-meanSpeed(main):0;
@@ -150,7 +154,8 @@ export function decideIntelligentCrew(input:{
   const orders=new Map<string,CrewOrder>();
   const missionByTeam=new Map<string,CrewMission>();
   const leaderByTeam=new Map<string,{riderId:string;sinceS:number}>();
-  const situation=analyzeRaceSituation(input.riders,input.remainingM);
+  const situation=analyzeRaceSituation(input.riders,input.remainingM,
+    input.sprintFinaleMode?12:R15_R16.maxBreakawaySize);
   if(input.riders.length<2)return {orders,situation,missionByTeam,leaderByTeam};
   const groups=sortGroups(input.riders);
   const main=groups.reduce((best,g)=>g.length>best.length?g:best,groups[0]);
