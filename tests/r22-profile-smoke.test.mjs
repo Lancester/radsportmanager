@@ -95,6 +95,19 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
   assert.ok(lille.sprintPositioningSeconds>0,
     'Im langen flachen Peloton muss echte Positionierungsarbeit stattfinden');
   assert.ok(lille.sprintEscortSeconds>=0);
+  assert.ok(Array.isArray(lille.sprintFinale));
+  const targetFinale=lille.sprintFinale.find(x=>
+    x.riderId===lille.preRaceBestSprinter);
+  assert.ok(targetFinale,'F023-Sprintfinale-Position und Helferzahl fehlen');
+  assert.ok(targetFinale.groupSize>=1&&
+    targetFinale.rankInGroup>=1&&
+    targetFinale.rankInGroup<=targetFinale.groupSize);
+  assert.ok(targetFinale.helpersWithin30M>=0);
+  assert.ok(targetFinale.helpersAheadWithin30M>=0&&
+    targetFinale.helpersAheadWithin30M<=targetFinale.helpersWithin30M);
+  assert.ok(targetFinale.helpersOnSprintTrain>=0&&
+    targetFinale.helpersOnSprintTrain<=targetFinale.helpersWithin30M);
+  assert.ok(targetFinale.sprintSkill>0&&targetFinale.sprintSkill<=1);
   assert.ok(lille.watched.length>=4);
   const best=lille.watched.find(x=>x.id===lille.preRaceBestSprinter);
   assert.ok(best?.sprintSkill>0);
