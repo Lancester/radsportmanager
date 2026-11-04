@@ -4,6 +4,8 @@ import {decideStablePackRiding} from '../src/engine/race/stable-pack.ts';
 import {advanceMotionStep} from '../src/engine/physics/motion-core.ts';
 import {formationAeroFactors} from '../src/engine/race/formation-aero.ts';
 import {createRaceExample,simulateRace} from '../src/engine/race/race-simulator.ts';
+import {createReferenceFixture} from '../src/engine/race/reference-fixtures.ts';
+import {finishGroupMetrics} from '../src/engine/race/finish-groups.ts';
 
 const rider={riderMassKg:70,equipmentMassKg:8,dragAreaM2:.28,
   rollingCoefficient:.004,airDensityKgM3:1.2,drivetrainEfficiency:.975};
@@ -87,4 +89,34 @@ test('R22 Stabil: vollständiges 30-Fahrer-Flachrennen ohne Ergebnis-/Physikbonu
   assert.ok(result.classification.every(r=>r.energyResidualJ<.05&&
     r.energyResidualJ>-.05&&r.finalWPrimeJ>=0));
   assert.ok(result.diagnostics.maximumGroups>=1);
+});
+
+test('R22 Isolation: 154 verschiedene Profis auf 20 km flach, ohne offensive Teamleitlinie',()=>{
+  const fixture=createReferenceFixture({routeId:'tdf25_lille',seed:2026});
+  const input={...fixture.input,
+    title:'R22 154er-Konstantprofil ohne offensive Teamstrategie',
+    segments:[{name:'20 km flach ohne Wind',lengthM:20000,
+      gradeFraction:0,descentTechnicality:0}],
+    teams:fixture.input.teams.map(team=>({...team,strategy:'ausgewogen'})),
+    enduranceModel:'off',
+  };
+  const a=simulateRace({...input,groupRidingModel:'coordinated'});
+  const b=simulateRace({...input,groupRidingModel:'stable-pack'});
+  for(const r of [a,b]){
+    assert.equal(r.finisherCount,154);
+    assert.ok(r.classification.every(x=>Math.abs(x.energyResidualJ)<.05));
+    assert.equal(r.diagnostics.attacks,0,
+      'Kontrollprofil darf keine offensiven Angriffe enthalten');
+  }
+  const aFinish=finishGroupMetrics(a.classification);
+  const bFinish=finishGroupMetrics(b.classification);
+  console.log('R22-ISOLATION',JSON.stringify({
+    lengthKm:20,participants:154,seed:2026,offensiveTeams:0,
+    coordinated:{groups:a.diagnostics.maximumGroups,
+      largestFinishGroup:aFinish.largestGroupSize,
+      largestGroupGapS:aFinish.largestGroupGapToWinnerS},
+    stable:{groups:b.diagnostics.maximumGroups,
+      largestFinishGroup:bFinish.largestGroupSize,
+      largestGroupGapS:bFinish.largestGroupGapToWinnerS},
+  }));
 });
