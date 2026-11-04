@@ -186,6 +186,31 @@ for(const id of routes){
       sprintPositioningSeconds:r.diagnostics.sprintPositioningSeconds??0,
       sprintEscortSeconds:r.diagnostics.sprintEscortSeconds??0,
       sprintFinale:r.diagnostics.sprintFinale??[],
+      // Warum fehlen vor dem Zielsprint Helfer? Kein weiterer Lauf,
+      // nur dieselben vorhandenen 5-km-Checkpoints beobachten.
+      helperTrace:(r.checkpoints??[]).filter(cp=>
+        cp.km>=110&&cp.km<=185).filter(cp=>
+          Math.round(cp.km)%10<=1||cp.km>=170)
+        .map(cp=>{
+          const target=cp.riders.find(z=>
+            z.riderId===sprinters.strongest.riderId);
+          const sprintTeam=fixture.input.riders.find(z=>
+            z.id===sprinters.strongest.riderId)?.teamId;
+          if(!target||!sprintTeam)return null;
+          const helperRows=cp.riders.filter(z=>
+            z.teamId===sprintTeam&&z.role==='helfer')
+            .map(h=>({id:h.riderId,
+              relativeToSprinterM:n(h.positionM-target.positionM),
+              groupSize:h.groupSize,groupIndex:h.groupIndex,
+              wPrimePct:n(h.wPrimeRemainingPct),
+              appliedW:n(h.appliedPowerW)}))
+            .sort((a,b)=>Math.abs(a.relativeToSprinterM)-
+              Math.abs(b.relativeToSprinterM));
+          return {km:n(cp.km),
+            targetGroupIndex:target.groupIndex,
+            targetGroupSize:target.groupSize,
+            nearestHelpers:helperRows.slice(0,5)};
+        }).filter(Boolean),
       bestPlacedSprinter:bestActualSprinter?.id,
       winnerId:r.winnerId,
       watched:watch,
