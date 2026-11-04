@@ -132,6 +132,8 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
       cat.topThree.length>=1&&cat.topThree.length<=3));
   }
   console.log(lines.join('\n'));
+  console.log(finishLines.join('\n'));
+  console.log(leaderLine);
   console.log(traces.join('\n'));
   const classicAudits=log.split('\n').filter(line=>
     line.startsWith('R22-CLASSICS-PUNCH-AUDIT '));
