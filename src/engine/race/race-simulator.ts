@@ -85,6 +85,8 @@ export interface RaceClassification {
   carbohydrateRemainingKcal:number;
   carbohydrateConsumedKcal:number;
   carbohydrateIngestedKcal:number;
+  carbohydrateOverflowKcal:number;
+  carbohydrateUnmetDemandKcal:number;
   endurancePowerAvailability:number;
 }
 export interface RaceResult {
@@ -627,6 +629,8 @@ export function simulateRace(x:RaceInput):RaceResult {
     carbohydrateRemainingKcal:s.endurance.carbohydrateKcal,
     carbohydrateConsumedKcal:s.endurance.carbohydrateConsumedKcal,
     carbohydrateIngestedKcal:s.endurance.carbohydrateIngestedKcal,
+    carbohydrateOverflowKcal:s.endurance.carbohydrateOverflowKcal,
+    carbohydrateUnmetDemandKcal:s.endurance.carbohydrateUnmetDemandKcal,
     endurancePowerAvailability:x.enduranceModel==='off'?1:
       endurancePowerAvailability(s.endurance),
   }));
