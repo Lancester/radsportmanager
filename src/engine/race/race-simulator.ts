@@ -26,6 +26,9 @@ import {decideGroupRiding,decideChaseApproach,R22_GROUP_RIDING} from './group-ri
 import {decideTeamPace} from './team-pacing.ts';
 import {decideIntelligentCrew,analyzeRaceSituation} from './race-team-ai.ts';
 import {coordinatePelotonChase} from './peloton-chase.ts';
+import {initialChaseHelperLoad,advanceChaseHelperLoad,
+  spentHelperRetreatPower} from './chase-helper-fatigue.ts';
+import type {ChaseHelperLoad} from './chase-helper-fatigue.ts';
 import type {ChaseCoordinatorState} from './peloton-chase.ts';
 import {initialEnduranceState,advanceEndurance,endurancePowerAvailability}
   from './endurance.ts';
@@ -143,6 +146,10 @@ export interface RaceResult {
     actualSprintTrainRiderSeconds?:number;
     nearSprinterTrainRiderSeconds?:number;
     lateSprintChaseRiderSeconds?:number;
+    /** Physisch geleistete Jagdarbeit und dadurch absichtlich ausrollende Helfer. */
+    spentChaseHelpers?:number;
+    intentionalChaseRetreatSeconds?:number;
+    spentChaseHelperIds?:string[];
     /** Beobachtete Position/Helfer an der Sprintfreigabe (keine Sieggarantie). */
     sprintFinale?:Array<{riderId:string;rankInGroup:number;
       groupSize:number;helpersWithin30M:number;helpersAheadWithin30M:number;
@@ -161,6 +168,7 @@ interface State {
   crewMission:CrewMission|null;crewDuty:CrewDuty|null;
   lastAttackS:number;
   endurance:EnduranceState;
+  chaseLoad:ChaseHelperLoad;
 }
 const ensure=(label:string,n:number,condition:boolean)=>{
   if(!Number.isFinite(n)||!condition)throw new RangeError('Rennsimulation: '+label);
@@ -274,7 +282,8 @@ function buildStates(x:RaceInput):State[] {
       intent:'grundtempo',driveWorkJ:0,brakeLossJ:0,energyResidualJ:0,
       crankWorkJ:0,intentSinceS:0,lastChaseEndS:-1e9,
       teamPaceKind:null,crewMission:null,crewDuty:null,
-      lastAttackS:-1e9,endurance:initialEnduranceState()};
+      lastAttackS:-1e9,endurance:initialEnduranceState(),
+      chaseLoad:initialChaseHelperLoad()};
   });
 }
 function splitGroups(active:State[]):State[][] {
@@ -360,6 +369,8 @@ export function simulateRace(x:RaceInput):RaceResult {
   let leadoutPaceCoordinationSeconds=0,independentWheelFindingSeconds=0;
   let actualSprintTrainRiderSeconds=0,nearSprinterTrainRiderSeconds=0;
   let lateSprintChaseRiderSeconds=0;
+  let intentionalChaseRetreatSeconds=0;
+  const spentChaseHelperIds:string[]=[];
   const sprintFinale:NonNullable<RaceResult['diagnostics']['sprintFinale']>=[];
   const sprintFinaleObserved=new Set<string>();
   let mainFieldFrontWorkWithAssignedChaserS=0;
@@ -402,6 +413,7 @@ export function simulateRace(x:RaceInput):RaceResult {
         reserveFraction:s.physiology.remainingWPrimeJ/
           s.profile.wPrimeCapacityJ,
         aggression:s.rider.aggression,
+        chaseSpent:sprintFriendlyRace&&s.chaseLoad.spent,
       }));
       const teamRefs=x.teams.map(team=>({
         id:team.id,strategy:team.strategy,
@@ -1063,6 +1075,16 @@ export function simulateRace(x:RaceInput):RaceResult {
             Math.min(2.7,Math.max(0.1,(s.speedMps-limit)*1.8));
         }
       }
+      // Absichtlich ausrollen: erst NACH allen Gruppenreglern als
+      // Begrenzung, sonst würde die Feld-KI sofort wieder beschleunigen.
+      if(sprintFriendlyRace){
+        const retreat=spentHelperRetreatPower(s.chaseLoad,t,
+          s.dayCpW,commanded);
+        if(retreat!==null){
+          commanded=retreat;
+          intentionalChaseRetreatSeconds+=dt;
+        }
+      }
       // R-19: langfristige LeistungsVERFÜGBARKEIT vor CP/W′. Keine
       // Energie-/Positions- oder Geschwindigkeit-Gutschrift.
       if(x.enduranceModel!=='off'){
@@ -1079,6 +1101,34 @@ export function simulateRace(x:RaceInput):RaceResult {
         s.endurance=end.state;
         counters.maximumEndurancePenalty=Math.max(
           counters.maximumEndurancePenalty,1-end.powerAvailability);
+      }
+      // Ausschließlich wirklich abgerechnete Kurbelwatt am Feldkopf
+      // zählen als harter Helfereinsatz. Kein zusätzliches Ermüden der
+      // physikalischen Energiebilanz; diese Entscheidung ist taktisch.
+      if(sprintFriendlyRace){
+        const load=advanceChaseHelperLoad(s.chaseLoad,{
+          enabled:true,progress:s.positionM/totalM,timeS:t,dt,
+          teamStrategy:teams.get(s.rider.teamId)!.strategy,
+          role:s.rider.role,mission:s.crewMission,duty:s.crewDuty,
+          distanceFromRealGroupFrontM:Math.max(0,
+            (actualGroupFront.get(s.rider.id)??s.positionM)-s.positionM),
+          physicalGroupSize:actualGroupSize.get(s.rider.id)??1,
+          criticalPowerW:s.dayCpW,appliedCrankPowerW:cp.appliedPowerW,
+        });
+        s.chaseLoad=load.state;
+        if(load.retireNow){
+          spentChaseHelperIds.push(s.rider.id);
+          s.crewMission=null;s.crewDuty=null;s.teamPaceKind=null;
+          s.intent='erholung';s.intentSinceS=t+dt;
+          s.decision={intent:'erholung',
+            desiredPowerW:s.dayCpW*.50,
+            reason:'Jagdhelfer verausgabt: nach harter Führungsarbeit bewusst ausrollen'};
+          if(events.length<100000)events.push({
+            timeS:t+dt,km:s.positionM/1000,type:'recovery',
+            riderId:s.rider.id,teamId:s.rider.teamId,
+            description:`${s.rider.name}: nach ${Math.round(load.state.realFrontSeconds)} s realer Führungsarbeit und ${Math.round(load.state.highLoadJ)} J überschwelliger Arbeit ausrollen`,
+          });
+        }
       }
       powers.set(s.rider.id,cp.appliedPowerW);
       if(checkpoints){
@@ -1253,7 +1303,9 @@ export function simulateRace(x:RaceInput):RaceResult {
           climbingTempoSeconds,sprintPositioningSeconds,sprintEscortSeconds,
           leadoutPaceCoordinationSeconds,independentWheelFindingSeconds,
           actualSprintTrainRiderSeconds,nearSprinterTrainRiderSeconds,
-          lateSprintChaseRiderSeconds,sprintFinale}:{}),
+          lateSprintChaseRiderSeconds,sprintFinale,
+          spentChaseHelpers:spentChaseHelperIds.length,
+          spentChaseHelperIds,intentionalChaseRetreatSeconds}:{}),
         ...((x.groupRidingModel==='front-gated'||x.groupRidingModel==='stable-pack')?
           {unprovokedBreakawayCount}:{}),
       }:{}),teams:x.teams.length,
