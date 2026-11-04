@@ -1096,3 +1096,41 @@ Validation Sets; erst danach
 Die UCI-ähnlichen Einzelrennprofile gehören
 in die Rennengine, die Kombination
 zu Etappenrennen/Gesamtwertungen nicht.
+
+
+### R-17–R-21: finaler main-Stand und nächste Phase R-22 (04.11.2026)
+
+[PR #53](https://github.com/Lancester/radsportmanager/pull/53)
+ist mit Commit `9a8aeacf5e8afe3dfa6f8324229fea7cfd4529b7`
+in `main`. **Reguläre
+[main-CI #41745212283](https://github.com/Lancester/radsportmanager/actions/runs/41745212283)
+vollständig erfolgreich: 241/241 Tests, 0 Fehler,
+drei komplette 50-km-Vollrennen, TypeScript-/Browser-ESM
+und GitHub-Pages-Deployment.** Die separate
+[Langstrecken-Abnahme #41744830294](https://github.com/Lancester/radsportmanager/actions/runs/41744830294)
+bestätigt vier 154-Fahrer-Einzelrennen über
+170–240 km plus 70er-Berg-Gegenprobe
+(**686 klassifizierte Fahrer**), aus
+unveränderter mechanischer Physik.
+Das einmalige Stressworkflow ist entfernt;
+`npm run test:scale` bleibt.
+
+**Als technischer Engine-Funktionsumfang abgeschlossen:**
+R-17 tatsächliche Führungspositions-/Schichtprüfung,
+R-18 Prognose-/Teamverfolgung, R-19
+bilanzierte Verpflegung und Langzeitausdauer,
+R-20 Fahrertypen und physische Umwelt,
+R-21 154+ Fahrer und lange Einzelrennen.
+
+**NICHT abgeschlossen:** Empirische Kalibrierung
+auf echte Profi-Renndynamik.
+[**R-22 Issue #54**](https://github.com/Lancester/radsportmanager/issues/54)
+ist dafür der nächste eigenständige Schritt:
+Monte-Carlo-/Seed-Studie mit großen Starterfeldern,
+realen unabhängigen Referenzrennen,
+Plausibilitätsprüfung der teils sehr großen
+Zielabstände und dokumentierten A/B-Parametern.
+Erst nach erfolgreichem R-22 folgt
+**R-23 Freigabegate** für Engine 1.0.
+**Rundfahrten, Transfers, Karriere, Mitarbeiter
+und Saisons bleiben ausdrücklich andere Spielsysteme.**
