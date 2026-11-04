@@ -327,3 +327,8 @@ R-23 nicht begonnen.
 - **Offene Entscheidung:** Änderung der Standard-KI oder der Angriffs-/Verfolgungsparameter ist **nicht** beschlossen. Erst weitere manuelle A/B-Prüfung auf mehreren Seeds und unabhängigen Streckenprofilen samt Energie-/W′-/Windschnitt-/Zielgruppenbefunden. R-22 nicht fertig, R-23 gesperrt.
 
 [Technische und methodische Einzelheiten](race/R22_STABILES_PELOTON.md).
+
+
+### R-22 Integrationsstatus nach PR #63 (04.11.2026)
+
+**Nur technischer experimenteller Modus in main, keine neue Grundsatzentscheidung:** `groupRidingModel:'stable-pack'` ist nach 262 grünen Tests explizit auswählbar. `legacy` bleibt Standard; D-074 bis D-097 und die bestehende Physik bleiben gültig. Der Modus ist nicht als realistisch kalibrierte neue Standard-KI beschlossen. R-22 bleibt offen und R-23 ist nicht freigegeben. [PR #63](https://github.com/Lancester/radsportmanager/pull/63), [Ergebnisse](race/R22_STABILES_PELOTON.md).
