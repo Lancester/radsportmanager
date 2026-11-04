@@ -2,6 +2,14 @@
 
 **Projekt:** Radsportmanager. **Sprache:** Deutsch. **Verbindlicher Projektstand:** GitHub, nicht einzelne Chat-Unterhaltungen.
 
+## Aktuell integrierter R-22-Renn-KI-Stand (04.11.2026)
+
+**Verbindlicher Integrationsstand 04.11.2026:** PR [#74](https://github.com/Lancester/radsportmanager/pull/74) (Sprintteamjagd, realer Helfereinsatz, individueller Zielsprint, bessere Feldkohäsion) **und** PR [#76](https://github.com/Lancester/radsportmanager/pull/76) (Klassiker-KI) sind nacheinander **nach `main` gemergt**. Code-Merge-Commits `568f2341` und `8b478639`. Die *kombinierte* CI [#41890188739](https://github.com/Lancester/radsportmanager/actions/runs/41890188739) war mit **324/324 Tests erfolgreich, 0 Fehler**, inklusive vier 154-Fahrer-Referenzrennen, No-Attack-/30er-, Physik- und Integrationschecks.
+
+**Sportlicher Stand:** Lille, Seed 2026, 5 km vor Ziel **115 Fahrer** in der führenden physischen Gruppe statt zuvor 25; 8 Sprinter Top10, 26 Fahrer in 1-s-verknüpfter Siegerzeitgruppe, 2 Fluchten eingeholt, 1.425 s CP-nahe reale Feldjagd, 22 individuelle Sprintantritte. **Der konservative 30er-Massenprint-Proxy ist weiterhin false**, und aus einem Seed keine Massensprint-Häufigkeit ableiten. Liège: Klassiker F057 Sieger, **0 Sprinter in Top10**, gezielte Rampentempo-/Positionierungsarbeit; mögliche größere Zeitabstände später statistisch kalibrieren. Boulogne und Hautacam gegenüber ihrer Referenz unverändert. **Keine Änderungen** an `legacy`-Default, CP/W′, R-19, Motion-Core oder Aero. **PR #75 (Managerwahl 0–5 Jagdhelfer) bleibt offen und ungemergt.** Nächstes getrenntes KI-Thema: hügelige Etappen (Boulogne 108 Attacken im Seed 2026), danach PR #75 und Multi-Seed-Kalibrierung.
+
+**Wichtig bei älteren Notizen:** Frühere, weiter unten stehende Aussagen wie „PR #74/#76 noch offen“ beschreiben ihren historischen damaligen Zustand und sind **seit dieser Integration überholt**. Die KI wurde technisch integriert, **nicht** als wissenschaftlich/mehrseed-statistisch vollständig kalibriert deklariert.
+
 ## Neue verbindliche Priorität – Rennsimulation vor Detailphysik (03.11.2026)
 
 **Ausdrücklicher Nutzerbeschluss:** Keine weitere feinere Kurven-, Lenk-, Kollisions- und Überhol-Mikrophysik ohne nachgewiesenen Nutzen für das Managerspiel. Stattdessen zuerst **vollständig simulierbare Rennen mit echter Zielklassifikation**, Streckenprofilen, Teams, strategischen Leitlinien, autonomer Fahrer-KI und Berichten entwickeln. Die R-01–R-08-Physikmodule bleiben unangetastet und als isolierte Vergleichs-/Spezialbausteine verfügbar; die skalierende Rennsimulation nutzt **denselben Bewegungsintegrator und CP/W′-Kern**, jedoch eine **eigene, ausdrücklich vorläufige Gruppen-/Windschattenabstraktion**.
