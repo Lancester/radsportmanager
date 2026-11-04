@@ -24,8 +24,11 @@ export function coordinatePelotonChase(input:{
   mainGroupIds:ReadonlySet<string>;
   teams:readonly IntelligentTeam[];riders:readonly IntelligentRider[];
   situation:RaceSituation;previous:ChaseCoordinatorState;
+  /** Only the opt-in stable-pack model, only a genuine flat sprint route. */
+  sprintFinaleMode?:boolean;
 }):{state:ChaseCoordinatorState;chasingTeamIds:ReadonlySet<string>}{
   const {timeS,remainingM,progress,mainGroupIds,teams,riders,situation,previous}=input;
+  const sprintFinale=input.sprintFinaleMode===true;
   if(!Number.isFinite(timeS)||timeS<0||!Number.isFinite(remainingM)||
     !Number.isFinite(progress)||!previous||!
     Number.isFinite(previous.sinceS)||!
@@ -38,9 +41,11 @@ export function coordinatePelotonChase(input:{
   // physisch abgesetzte Spitze und ausreichend großes Hauptfeld.
   const breakaway=situation.leadingBreakaway&&
     situation.gapM>=R22_CHASE.minimumGapM&&
-    situation.gapFractionOfRemaining<R22_CHASE.maximumGapFraction&&
+    situation.gapFractionOfRemaining<(sprintFinale&&remainingM<=35000?
+      .18:R22_CHASE.maximumGapFraction)&&
     groupMembers.length>=R22_CHASE.minimumMainRiders&&
-    remainingM>1200&&progress<.94;
+    remainingM>(sprintFinale?1000:1200)&&
+    progress<(sprintFinale?.995:.94);
   // Ein begonnenes Teammandat läuft mindestens 150 s weiter,
   // sofern eine echte verfolgungswürdige Spitze besteht.
   if(previous.active.length&&breakaway&&
@@ -75,7 +80,8 @@ export function coordinatePelotonChase(input:{
   }).filter(x=>x.interested&&x.helpers>0)
     .sort((a,b)=>b.score-a.score||b.helpers-a.helpers||
       a.team.localeCompare(b.team))
-    .slice(0,R22_CHASE.maximumTeams).map(x=>x.team);
+    .slice(0,sprintFinale&&remainingM<35000?4:
+      R22_CHASE.maximumTeams).map(x=>x.team);
   const state={active:choices,sinceS:timeS,cooldownUntilS:previous.cooldownUntilS};
   return {state,chasingTeamIds:new Set(choices)};
 }
