@@ -29,6 +29,11 @@ test('R22A: vier quellenbelegte reale Renndistanzen und verankerte Anstiege',()=
       segments:segments.length}));
     assert.ok(segments.length>=15&&segments.length<=60);
     assert.equal(segments.reduce((n,s)=>n+s.lengthM,0),meters);
+    const ascent=segments.reduce((n,s)=>
+      n+Math.max(0,s.gradeFraction)*s.lengthM,0);
+    if(spec.referenceAscentM!==undefined)
+      assert.ok(Math.abs(ascent-spec.referenceAscentM)<0.01,
+        'veröffentlichte Gesamthöhenmeter verfehlt: '+id);
     for(const climb of spec.climbs){
       assert.ok(segments.some(s=>s.name===climb.name&&
         s.lengthM===Math.round(climb.lengthKm*1000)&&
