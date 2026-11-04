@@ -138,3 +138,70 @@ für einzelne Sieger einstellen.
   Keine Laufzeit- oder wissenschaftliche
   Zuverlässigkeitszusage für 100+
   Rennen ohne vorherige Messung.
+
+
+## Tatsächlich durchgeführter erster Pilotlauf (04.11.2026)
+
+[GitHub-PR-Regression #41763333125](https://github.com/Lancester/radsportmanager/actions/runs/41763333125):
+**242/242 Tests erfolgreich, null Fehler**.
+Darin wurde der echte Monte-Carlo-Treiber mit
+**zwei Seeds (2026, 2027)** und jeweils
+**zwei Verpflegungsvarianten** ausgeführt:
+**vier vollständige 170-km-Bergrennen**
+mit jeweils 5 Teams × 7 Fahrern,
+insgesamt **140 klassifizierte Zielankünfte**.
+Dauer der vier Rennen auf dem GitHub-Runner:
+**19,13 s**.
+
+| Messwert (Mittel aus zwei Seeds) | 20 g/h | 100 g/h |
+| --- | ---: | ---: |
+| Median-Zielrückstand | 2634,3 s | 1773,7 s |
+| Letzter Zielrückstand | 5596,7 s | 4057,4 s |
+| Maximale Abstandsgruppen | 22 | 25 |
+| Bestätigte Fluchten | 1 | 1 |
+| Tatsächliche Einholungen | 1 | 1 |
+| Maximale Ausdauerleistungseinbuße | 32,0 % | 25,3 % |
+
+**Gepaarter Vergleich bei identischen Seeds:**
+Die Siegerzeit unter 100 g/h war im Modell
+im Mittel **2932 s (48 min 52 s) kürzer**.
+Im Einzelnen: Seed 2026 −3066 s,
+Seed 2027 −2798 s.
+Der Median-Zielrückstand änderte sich
+im Mittel um **−860,6 s**.
+Die maximale modellierte Ausdauerstrafe
+sank im Mittel um rund 6,7 Prozentpunkte.
+
+**FACHLICHE WARNUNG:** Ein derart großer
+Effekt einer einzigen Ernährungsvariable
+ist ein starkes Signal für eine mögliche
+Überempfindlichkeit oder Fehlkalibrierung
+des vereinfachten R-19-Energiemodells.
+Er ist **kein** Beleg dafür, dass
+100 g/h in realen Profirennen die Siegerzeit
+um ~49 Minuten verkürzen.
+Erste konkrete R-22-Hypothesen zur Prüfung:
+(1) Sind 55 % Kohlenhydratzuordnung
+in jeder Leistungsphase plausibel?
+(2) Ist der 1200-kcal-Speicher angemessen?
+(3) Verstärkt die Strafe nach 90 Minuten
+den physiologischen Leistungseinbruch
+zu sehr oder zu früh?
+(4) Ist die direkte Skalierung der
+Wattanforderung über zu viele Stunden
+eine physiologisch geeignete Abbildung?
+(5) Gibt es in der 1D-Formationsdynamik
+Schwelleneffekte, die durch kleine
+Wattunterschiede zu außergewöhnlich
+großen Zeit-/Gruppendifferenzen führen?
+
+Keine automatischen Parameterverstellungen.
+Zum wissenschaftlich fundierten Vergleich
+brauchen wir unabhängige publizierte
+Radrenn-/Ernährungs-/Leistungsdaten
+und wesentlich mehr als zwei Seeds.
+Die 4-Rennen-Demo bestätigt lediglich,
+dass die manuell gestartbare Auswertung
+technisch funktioniert und tatsächlich
+ein kalibrierungsrelevantes Problem
+sichtbar macht.
