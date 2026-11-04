@@ -32,6 +32,22 @@ export function eligibleClassicsRiderType(specialty?:string):boolean{
   return ['klassiker','kletterer','allrounder','zeitfahrer']
     .includes(specialty??'');
 }
+/** Teamnominierung aus realen Profilwerten: bei nahezu gleichem
+ * Rampenvermögen darf der taktisch erfahrene Puncheur Vorrang haben.
+ * Ist ein Kletterer/Allrounder/TT-Fahrer physisch klar stärker,
+ * wird dieser gewählt. Kein Leistungs-, Ergebnis- oder Siegvorteil. */
+export function chooseClassicsNominee(
+  candidates:readonly {id:string;specialty?:string;score:number}[],
+):string|null{
+  const ranked=candidates.filter(c=>
+    !!c.id&&eligibleClassicsRiderType(c.specialty)&&
+    Number.isFinite(c.score)&&c.score>0)
+    .sort((a,b)=>b.score-a.score||a.id.localeCompare(b.id));
+  if(!ranked.length)return null;
+  const classic=ranked.find(c=>c.specialty==='klassiker');
+  return classic&&classic.score>=.92*ranked[0].score?
+    classic.id:ranked[0].id;
+}
 export interface ClassicsRacecraftObservation {
   enabled:boolean;specialty?:string;role:string;
   isDesignatedRider:boolean;isSelectedGroupPacer:boolean;

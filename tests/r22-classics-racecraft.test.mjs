@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {decideClassicsApproach,decideClassicsRampTempo,
-  CLASSICS_RACECRAFT} from '../src/engine/race/classics-racecraft.ts';
+  CLASSICS_RACECRAFT,chooseClassicsNominee}
+  from '../src/engine/race/classics-racecraft.ts';
 const o={enabled:true,specialty:'klassiker',role:'helfer',
   isDesignatedRider:true,isSelectedGroupPacer:true,
   progress:.84,segmentProgress:.43,
@@ -11,7 +12,7 @@ const o={enabled:true,specialty:'klassiker',role:'helfer',
   criticalPowerW:380,reserveFraction:.74,
   requestedPowerW:260,intent:'windschatten'};
 test('Klassiker: positioniert sich mit echten CP-nahen Watt, kein Vorziehen durch Positionsbonus',()=>{
-  const x=decideClassicsApproach({...o,progress:.55});
+  const x=decideClassicsApproach({...o,progress:.75});
   assert.ok(x>o.requestedPowerW);
   assert.ok(x<=o.criticalPowerW*CLASSICS_RACECRAFT.positioningMaxCp);
   for(const specialty of ['kletterer','allrounder','zeitfahrer'])
@@ -52,7 +53,7 @@ test('Klassiker-KI senkt niemals die Gruppenwatt ab und ignoriert ungültige Pos
     const x=decideClassicsRampTempo({...o,rankInPhysicalGroup:4,
       requestedPowerW:demand});
     if(x!==null)assert.ok(x>demand);
-    const ahead=decideClassicsApproach({...o,progress:.55,
+    const ahead=decideClassicsApproach({...o,progress:.75,
       requestedPowerW:demand});
     if(ahead!==null){
       assert.ok(ahead>demand);
@@ -70,3 +71,20 @@ test('Klassiker-KI senkt niemals die Gruppenwatt ab und ignoriert ungültige Pos
     assert.throws(()=>decideClassicsRampTempo({...o,...invalid}),RangeError);
   }
 });
+test('Klassiker: Team bevorzugt Puncheur nur bei fast gleicher physischer Rampenstärke',()=>{
+  const c=[
+    {id:'K',specialty:'klassiker',score:6.3},
+    {id:'B',specialty:'kletterer',score:6.7},
+    {id:'A',specialty:'allrounder',score:5.9},
+    {id:'S',specialty:'sprinter',score:9.0},
+  ];
+  assert.equal(chooseClassicsNominee(c),'K',
+    'ein körperlich fast gleich starker Klassikerspezialist wird nominiert');
+  assert.equal(chooseClassicsNominee(c.map(x=>
+    x.id==='K'?{...x,score:5.5}:x)),'B',
+    'klar stärkerer Kletterer darf den Klassiker ablösen');
+  assert.equal(chooseClassicsNominee([{id:'S',specialty:'sprinter',score:10}]),null);
+  assert.equal(chooseClassicsNominee([...c].reverse()),'K');
+  assert.equal(chooseClassicsNominee([]),null);
+});
+

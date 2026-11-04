@@ -25,7 +25,8 @@ import {decideSprintLeadoutPace,SPRINT_LEADOUT} from './sprint-leadout.ts';
 import {chooseIndependentSprintWheel,SPRINT_WHEEL} from './sprint-wheel-choice.ts';
 import {decideClassicsPunch,CLASSICS_PUNCH} from './classics-punch.ts';
 import {decideClassicsApproach,decideClassicsRampTempo,
-  CLASSICS_RACECRAFT,eligibleClassicsRiderType} from './classics-racecraft.ts';
+  CLASSICS_RACECRAFT,eligibleClassicsRiderType,
+  chooseClassicsNominee} from './classics-racecraft.ts';
 import {decideGroupRiding,decideChaseApproach,R22_GROUP_RIDING} from './group-riding.ts';
 import {decideTeamPace} from './team-pacing.ts';
 import {decideIntelligentCrew,analyzeRaceSituation} from './race-team-ai.ts';
@@ -393,12 +394,10 @@ export function simulateRace(x:RaceInput):RaceResult {
   // der physisch stärkste geeignete 3-Minuten-Rampenfahrer jedes Teams.
   // Die bereits vorhandenen Puncheur-Spezialattacken bleiben separat.
   const classicsContenderByTeam=new Map(x.teams.map(team=>{
-    const candidates=states.filter(r=>
-      r.rider.teamId===team.id&&
-      eligibleClassicsRiderType(r.rider.specialty))
-      .sort((a,b)=>rampScore(b)-rampScore(a)||
-        a.rider.id.localeCompare(b.rider.id));
-    return [team.id,candidates[0]?.rider.id??null] as const;
+    const candidates=states.filter(r=>r.rider.teamId===team.id)
+      .map(r=>({id:r.rider.id,specialty:r.rider.specialty,
+        score:rampScore(r)}));
+    return [team.id,chooseClassicsNominee(candidates)] as const;
   }));
   const captainByTeam=new Map(x.teams.map(t=>[t.id,
     states.find(s=>s.rider.teamId===t.id&&s.rider.role==='kapitaen')]));
