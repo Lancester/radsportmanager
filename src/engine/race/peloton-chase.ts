@@ -15,8 +15,8 @@ export const R22_CHASE=Object.freeze({
   cooldownSeconds:120,
   maximumTeams:3,
   minimumMainRiders:12,
-  minimumGapM:100,
-  maximumGapFraction:.055,
+  minimumGapM:65,
+  maximumGapFraction:.13,
   maximumRemainingMToStart:200000,
 });
 export function coordinatePelotonChase(input:{
@@ -32,8 +32,11 @@ export function coordinatePelotonChase(input:{
     Number.isFinite(previous.cooldownUntilS))
     throw new RangeError('R22: ungültiger Jagdkoordinator');
   const groupMembers=riders.filter(r=>mainGroupIds.has(r.id));
+  // Eine echte kleine Ausreißergruppe wird vom Sprint-Hauptfeld
+  // beobachtet, auch wenn der ältere Team-AI-Prognosefilter die
+  // Jagd als kurzfristig schwierig klassifiziert. Keine Jagd ohne
+  // physisch abgesetzte Spitze und ausreichend großes Hauptfeld.
   const breakaway=situation.leadingBreakaway&&
-    situation.chaseViable&&
     situation.gapM>=R22_CHASE.minimumGapM&&
     situation.gapFractionOfRemaining<R22_CHASE.maximumGapFraction&&
     groupMembers.length>=R22_CHASE.minimumMainRiders&&
@@ -56,7 +59,7 @@ export function coordinatePelotonChase(input:{
     return {state:previous,chasingTeamIds:new Set()};
   // Echte Mannschaftsinteressen: Sprintteams übernehmen zuerst Arbeit;
   // GC/ausgewogene Teams nur bei gefährlicher Flucht und freien Helfern.
-  const urgent=situation.gapFractionOfRemaining>.018||
+  const urgent=situation.gapFractionOfRemaining>.009||
     situation.projectedGapM>Math.max(400,remainingM*.025);
   const choices=teams.map(team=>{
     const members=groupMembers.filter(r=>r.teamId===team.id);
