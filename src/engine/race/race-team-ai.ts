@@ -193,8 +193,12 @@ export function decideIntelligentCrew(input:{
     // Zeitbasierter Wechsel beeinflusst nur die Bereitschaft zur aktiven
     // Führungsaufgabe; die Fahrposition bleibt physikalisch berechnet.
     const selected=[...sorted.slice(0,requested)];
+    // Führung nur wenn der Helfer tatsächlich VOR dem zu schützenden
+    // Kapitän/Sprinter fährt. Bei fehlender Frontposition müssen Helfer
+    // zunächst aus eigener Kurbelarbeit nach vorne gelangen.
     const frontEligible=selected.filter(r=>
-      gapToFront(r)<=R15_R16.frontWorkRadiusM);
+      gapToFront(r)<=R15_R16.frontWorkRadiusM&&
+      r.positionM>target.positionM+0.1);
     const previous=input.previousLeaders?.get(team.id);
     const retained=previous&&input.timeS-previous.sinceS<
       R15_R16.relaySeconds?
@@ -213,7 +217,8 @@ export function decideIntelligentCrew(input:{
         (duty==='fuehrung'?1.12:1.055):
         mission==='sprintzug'?
         (duty==='fuehrung'?1.12:1.055):
-        (duty==='fuehrung'?1.065:0.98);
+        (duty==='fuehrung'?1.065:
+          rider.positionM<=target.positionM?1.045:0.98);
       const reason=mission==='jagd'?
         (duty==='fuehrung'?'Team übernimmt Verfolgung an der Feldspitze':
           'Helfer unterstützt die organisierte Verfolgung'):
