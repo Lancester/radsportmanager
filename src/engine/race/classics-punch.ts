@@ -10,7 +10,9 @@ export const CLASSICS_PUNCH=Object.freeze({
   attackFromClimbProgress:.20,attackUntilClimbProgress:.82,
   minGroupSize:4,maxFrontDistanceM:115,
   minWprimeFraction:.38,
-  minCooldownS:540,continueAttackS:95,
+  // Drei Minuten hohe Kraftausdauerleistung: W′-Kosten werden physisch
+  // abgerechnet. Das ist eine KI-Entscheidungsdauer, keine neue Leistung.
+  minCooldownS:540,continueAttackS:180,
   minExposedSurplusW:22,
   maxAttackCpFraction:1.25,maxExtraW:145,
 });
