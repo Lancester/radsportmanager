@@ -1,0 +1,46 @@
+name: R-22 – Gruppen-KI A/B (154 Fahrer)
+
+# Experimenteller Einzelrennvergleich, nur manuell durch den Nutzer.
+on:
+  workflow_dispatch:
+    inputs:
+      route:
+        description: 'Referenzstrecke mit 22 × 7 Fahrern'
+        type: choice
+        options: [tdf25_lille, tdf25_boulogne, lbl25_liege, tdf25_hautacam]
+        required: true
+        default: tdf25_lille
+      seed:
+        description: 'Gleicher Seed für bisherige und experimentelle Fahrer-KI'
+        type: string
+        required: true
+        default: '2026'
+
+permissions:
+  contents: read
+jobs:
+  group-ai:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Zwei vollständige Einzelrennen mit identischem Feld
+        env:
+          R_ROUTE: ${{ inputs.route }}
+          R_SEED: ${{ inputs.seed }}
+        run: |
+          set -euo pipefail
+          node --experimental-strip-types scripts/r22-group-ai-ab.mjs \
+            --route "$R_ROUTE" --seed "$R_SEED" \
+            --output artifacts/r22-group-ai
+          cat artifacts/r22-group-ai/summary.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r22-group-ai-comparison
+          path: artifacts/r22-group-ai/
+          retention-days: 30
+          if-no-files-found: warn

@@ -16,6 +16,7 @@ import type {CpWprimeState,CpWprimeProfile} from '../physiology/critical-power.t
 import {chooseRacePower,stabilizeRaceDecision} from './race-tactics.ts';
 import {decidePackInstruction,pelotonGroups} from './peloton.ts';
 import {formationAeroFactors} from './formation-aero.ts';
+import {decideGroupRiding,R22_GROUP_RIDING} from './group-riding.ts';
 import {decideTeamPace} from './team-pacing.ts';
 import {decideIntelligentCrew} from './race-team-ai.ts';
 import {initialEnduranceState,advanceEndurance,endurancePowerAvailability}
@@ -60,6 +61,9 @@ export interface RaceInput {
   enduranceModel?:'long'|'off';
   /** Standard: R-15/R-16-Renn-KI. R-14 zum kontrollierten Vergleich. */
   tacticModel?:'r14'|'r15-r16';
+  /** R-22 experimentell: autonome Gruppenkoordination mit Wattsollwert,
+   * Legacy als bisheriger Standard bis vollständiger empirischer Abnahme. */
+  groupRidingModel?:'legacy'|'cohesive';
   stepSeconds?:number;
   maxRaceTimeS?:number;
   /** Nur Diagnostik: speichert alle aktiven Fahrer alle 5 km. */
@@ -211,6 +215,9 @@ export function validateRace(x:RaceInput):void {
   if(x.diagnosticLevel!==undefined&&
     x.diagnosticLevel!=='checkpoints')
     throw new RangeError('Rennsimulation: diagnosticLevel ungültig');
+  if(x.groupRidingModel!==undefined&&
+    !['legacy','cohesive'].includes(x.groupRidingModel))
+    throw new RangeError('Rennsimulation: groupRidingModel ungültig');
   if(x.tacticModel!==undefined&&
     x.tacticModel!=='r14'&&x.tacticModel!=='r15-r16')
     throw new RangeError('Rennsimulation: tacticModel ungültig');
@@ -385,10 +392,22 @@ export function simulateRace(x:RaceInput):RaceResult {
               const groupFront=group[0].positionM;
               const meanCp=group.reduce((n,r)=>n+r.dayCpW,0)/group.length;
               const grade=x.segments[segmentFor(s,boundaries)].gradeFraction;
+              // In Profirennen werden Fluchtversuche häufig schon in
+              // den ersten Kilometern gestartet. Das bisherige künstliche
+              // Mindestfenster ab 18 % der Strecke verhindert sie komplett.
+              // Nur im R-22-KI-Experiment die erste frühe Phase öffnen;
+              // Starter müssen noch physisch nach vorne fahren.
+              const early=x.groupRidingModel==='cohesive'&&
+                t>=180&&s.positionM/totalM>=0.015&&
+                s.positionM/totalM<0.13;
+              const nearFront=early?
+                s.positionM>=groupFront-150:
+                s.positionM>=groupFront-40;
               const opening=t-s.lastAttackS>=900&&t>=250&&
-                s.positionM/totalM>=0.18&&s.positionM/totalM<0.88&&
-                reserve>=0.42&&s.positionM>=groupFront-40&&
-                s.positionM>=leader.positionM-120&&
+                (early||s.positionM/totalM>=0.18)&&
+                s.positionM/totalM<0.88&&
+                reserve>=0.42&&nearFront&&
+                s.positionM>=leader.positionM-(early?220:120)&&
                 s.dayCpW>=meanCp*0.93&&grade>=-0.03;
               return opening;
             })(),
@@ -475,11 +494,52 @@ export function simulateRace(x:RaceInput):RaceResult {
     const powers=new Map<string,number>();
     // Gruppe nur einmal für alle Fahrer dieser Sekunde ermitteln.
     const actualGroupFront=new Map<string,number>();
+    const actualGroupSize=new Map<string,number>();
+    const groupPaceByRider=new Map<string,{
+      pacerId:string;speedMps:number;accelerationMps2:number;
+      pacerPowerW:number;
+    }>();
     for(const group of pelotonGroups(ordered.map(s=>({
       id:s.rider.id,positionM:s.positionM,
     })))){
-      for(const member of group)
+      const pacer=byId.get(group[0].id)!;
+      if(x.groupRidingModel==='cohesive'&&
+        group.length>=R22_GROUP_RIDING.minGroupSize){
+        const current=x.segments[segmentFor(pacer,boundaries)];
+        const mass=pacer.rider.massKg+pacer.rider.bikeMassKg;
+        const airV=Math.hypot(
+          Math.max(0,pacer.speedMps+(current.headwindMps??0)),
+          current.crosswindMps??0);
+        const aero=formationFactors?.get(pacer.rider.id)??1;
+        const resistance=.5*pacer.physical.airDensityKgM3*
+          pacer.rider.dragAreaM2*aero*airV*airV+
+          mass*9.80665*
+            ((current.rollingCoefficient??.004)*
+              Math.cos(Math.atan(current.gradeFraction))+
+            Math.sin(Math.atan(current.gradeFraction)));
+        const hasMission=['angriff','sprint','verfolgung','helferarbeit']
+          .includes(pacer.intent);
+        const cps=group.map(g=>byId.get(g.id)!.dayCpW)
+          .sort((a,b)=>a-b);
+        const referenceCp=cps[Math.floor(cps.length*.35)];
+        const pacerPower=hasMission?pacer.decision.desiredPowerW:
+          Math.min(pacer.decision.desiredPowerW,
+            pacer.dayCpW*R22_GROUP_RIDING.leaderCpFraction,
+            referenceCp*1.04);
+        const availablePacerPower=pacerPower*(x.enduranceModel==='off'?
+          1:endurancePowerAvailability(pacer.endurance));
+        const acc=Math.max(-.8,Math.min(.8,
+          (availablePacerPower*pacer.physical.drivetrainEfficiency/
+            Math.max(pacer.speedMps,3)-resistance)/mass));
+        for(const g of group)groupPaceByRider.set(g.id,{
+          pacerId:pacer.rider.id,speedMps:pacer.speedMps,
+          accelerationMps2:acc,pacerPowerW:pacerPower,
+        });
+      }
+      for(const member of group){
         actualGroupFront.set(member.id,group[0].positionM);
+        actualGroupSize.set(member.id,group.length);
+      }
     }
     for(const s of active){
       const index=segmentFor(s,boundaries);
@@ -528,6 +588,36 @@ export function simulateRace(x:RaceInput):RaceResult {
       aeroFactorSum+=aeroFactor;aeroFactorSamples++;
       minimumAeroFactor=Math.min(minimumAeroFactor,aeroFactor);
       let commanded=pack.requestedPowerW;
+      if(x.groupRidingModel==='cohesive'){
+        const group=decideGroupRiding({
+          groupSize:actualGroupSize.get(s.rider.id)??1,
+          distanceFromGroupFrontM:Math.max(0,
+            (actualGroupFront.get(s.rider.id)??s.positionM)-s.positionM),
+          frontGapM:frontGap.get(s.rider.id)??null,
+          frontSpeedMps:frontSpeed.get(s.rider.id)??null,
+          referenceSpeedMps:groupPaceByRider.get(s.rider.id)?.speedMps??
+            s.speedMps,
+          referenceAccelerationMps2:groupPaceByRider.get(s.rider.id)?.
+            accelerationMps2??0,
+          isPacer:groupPaceByRider.get(s.rider.id)?.pacerId===s.rider.id,
+          groupPacerPowerW:groupPaceByRider.get(s.rider.id)?.pacerPowerW??
+            commanded,
+          ownSpeedMps:s.speedMps,desiredPowerW:commanded,
+          criticalPowerW:s.dayCpW,
+          reserveFraction:s.physiology.remainingWPrimeJ/
+            s.profile.wPrimeCapacityJ,
+          tacticalIntent:s.intent,
+          riderMassKg:s.rider.massKg,bikeMassKg:s.rider.bikeMassKg,
+          dragAreaM2:s.rider.dragAreaM2,aeroFactor,
+          gradeFraction:segment.gradeFraction,
+          rollingCoefficient:segment.rollingCoefficient??
+            s.physical.rollingCoefficient,
+          airDensityKgM3:s.physical.airDensityKgM3,
+          drivetrainEfficiency:s.physical.drivetrainEfficiency,
+          headwindMps:headwind,crosswindMps:crosswind,
+        });
+        commanded=group.powerW;
+      }
       if(Math.abs(pack.addedPowerW)>0.5)counters.paceSupportSteps++;
       let brakeForceN=0;
       if(segment.gradeFraction<-0.012&&segment.descentTechnicality>0){
