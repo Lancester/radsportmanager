@@ -10,7 +10,7 @@ import type {GroupRidingObservation} from './group-riding.ts';
 
 export const CLIMB_TEMPO=Object.freeze({
   minimumGrade:0.055,
-  minimumClimbLengthM:3000,
+  minimumClimbLengthM:5000,
   maximumDistanceFromGroupFrontM:220,
   minimumGroupSize:4,
   minimumReserveFraction:0.12,
@@ -32,7 +32,8 @@ export function decideClimbTempo(
 ):number|null {
   // Nur Kletterer – inklusive der aus demselben Modell abgeleiteten
   // Klassementfahrer. Sprint und echte Angriffe bleiben unberührt.
-  if(o.specialty!=='kletterer'||o.gradeFraction<CLIMB_TEMPO.minimumGrade||
+  if(o.specialty!=='kletterer'||o.role!=='kapitaen'||
+    o.gradeFraction<CLIMB_TEMPO.minimumGrade||
     o.climbLengthM<CLIMB_TEMPO.minimumClimbLengthM||
     o.groupSize<CLIMB_TEMPO.minimumGroupSize||
     o.distanceFromGroupFrontM>CLIMB_TEMPO.maximumDistanceFromGroupFrontM||
