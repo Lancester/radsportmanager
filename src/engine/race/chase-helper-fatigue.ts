@@ -15,8 +15,11 @@ export const CHASE_HELPER_SPENT=Object.freeze({
   minMainGroupSize:8,
   frontRadiusM:18,
   referenceCpFraction:.82,
-  minimumRealFrontSeconds:95,
-  highLoadTriggerJ:14000,
+  minimumRealFrontSeconds:720,
+  // Ein langer Sprintteam-Zug darf 15–20 Minuten an der Front arbeiten.
+  longStintSeconds:1200,
+  highLoadTriggerJ:52000,
+  criticalWprimeFraction:.19,
   retreatSeconds:78,
   initialFreewheelSeconds:18,
   initialCpFraction:.36,
@@ -44,6 +47,8 @@ export interface ChaseHelperEffortSample {
   distanceFromRealGroupFrontM:number;
   physicalGroupSize:number;
   criticalPowerW:number;
+  reserveFraction?:number;
+  enduranceAvailability?:number;
   /** Only physically applied pedal watts, AFTER CP/W′ & endurance. */
   appliedCrankPowerW:number;
 }
@@ -70,8 +75,18 @@ export function advanceChaseHelperLoad(
   const highLoadJ=state.highLoadJ+Math.max(0,
     sample.appliedCrankPowerW-
       c.referenceCpFraction*sample.criticalPowerW)*sample.dt;
+  // Keine zeitgesteuerte 95-s-Pflichtablösung mehr. Bei genügend
+  // Reserve kann ein Fahrer bis ~20 min REAL an der Spitze arbeiten.
+  // Erst ab 12 min und erheblichem Hochlast-Einsatz ODER durch seine
+  // vorhandene W′-/Langzeit-Ermüdung beginnt ein Rückzug; spätestens
+  // nach 20 min echter, nachgewiesener Frontarbeit und hoher Last.
+  const lowReserve=(sample.reserveFraction??1)<=c.criticalWprimeFraction||
+    (sample.enduranceAvailability??1)<.70;
   const retireNow=realFrontSeconds>=c.minimumRealFrontSeconds&&
-    highLoadJ>=c.highLoadTriggerJ;
+    ((lowReserve&&highLoadJ>=c.highLoadTriggerJ*.42)||
+      (highLoadJ>=c.highLoadTriggerJ&&
+        realFrontSeconds>=c.longStintSeconds*.75)||
+      (realFrontSeconds>=c.longStintSeconds&&highLoadJ>=12000));
   return {retireNow,state:{
     realFrontSeconds,highLoadJ,spent:retireNow,
     retreatStartS:retireNow?sample.timeS+sample.dt:-1,
@@ -92,4 +107,41 @@ export function spentHelperRetreatPower(
     c.initialCpFraction:c.laterCpFraction;
   return Math.max(0,Math.min(originalRequestedW,
     criticalPowerW*fraction));
+}
+
+/**
+ * Nur ein real physisch führender, beauftragter Helfer kann über die
+ * Gruppen-Mitfahrleistung hinaus bewusst Tempo auf die Flucht machen.
+ * Die EINZIGE zusätzliche Größe ist der Wattwunsch. CP/W′ und R-19
+ * berechnen danach weiterhin die tatsächlich mögliche Kurbelarbeit.
+ * Der langsame Zielwert liegt nahe CP, nicht permanent weit darüber.
+ */
+export function decideCommittedChasePull(o:{
+  enabled:boolean;progress:number;
+  strategy:string;role:string;mission:string|null;duty:string|null;
+  groupSize:number;distanceFromGroupFrontM:number;
+  escapeGapM:number;remainingM:number;
+  cpW:number;reserveFraction:number;enduranceAvailability:number;
+  originalRequestedW:number;
+}):number|null{
+  const c=CHASE_HELPER_SPENT;
+  if(!o.enabled||o.progress<c.earliestProgress||
+    o.progress>=c.latestProgress||o.strategy!=='sprint'||
+    o.role!=='helfer'||o.mission!=='jagd'||o.duty!=='fuehrung'||
+    o.groupSize<c.minMainGroupSize||
+    o.distanceFromGroupFrontM<0||
+    o.distanceFromGroupFrontM>c.frontRadiusM||
+    o.escapeGapM<75||o.remainingM<1500||
+    o.cpW<=0||o.reserveFraction<.24||
+    o.enduranceAvailability<=.59||
+    !Object.values(o).filter(v=>typeof v==='number')
+      .every(v=>Number.isFinite(v)))
+    return null;
+  const urgent=o.escapeGapM/Math.max(1,o.remainingM)>.018;
+  const sustainableFraction=urgent&&o.reserveFraction>.52?1.035:.975;
+  // R-19 reduziert später die geforderten Watt; das physische Ziel
+  // liegt nach dieser Begrenzung bei ~98–104% CP, sofern möglich.
+  const requested=Math.min(o.cpW*1.20,
+    o.cpW*sustainableFraction/o.enduranceAvailability);
+  return requested>o.originalRequestedW+1?requested:null;
 }
