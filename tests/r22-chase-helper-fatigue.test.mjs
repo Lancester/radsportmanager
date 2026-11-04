@@ -25,7 +25,8 @@ test('R22: only REAL, late high-intensity group-front watts can retire a chase h
   assert.ok(state.realFrontSeconds>=CHASE_HELPER_SPENT.minimumRealFrontSeconds);
   assert.ok(state.realFrontSeconds>=1100,
     'kontrollierte Jagd darf rund 20 min an der Front dauern');
-  assert.ok(state.highLoadJ>=CHASE_HELPER_SPENT.highLoadTriggerJ);
+  assert.ok(state.highLoadJ>=12000,
+    'Nach 20 min echter Frontarbeit reicht die Dauer plus kumulierte Belastung zum Ablösen');
   assert.equal(state.retreatStartS,retireTime+1);
   assert.equal(state.retreatUntilS-state.retreatStartS,
     CHASE_HELPER_SPENT.retreatSeconds);
