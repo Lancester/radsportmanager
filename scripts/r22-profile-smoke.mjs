@@ -423,6 +423,8 @@ for(const id of routes){
       approachS:r.diagnostics.classicsApproachSeconds??0,
       rampTempoS:r.diagnostics.classicsRampTempoSeconds??0,
       rampRiders:r.diagnostics.classicsRampTempoRiderIds??[],
+      rampRiderTypes:(r.diagnostics.classicsRampTempoRiderIds??[])
+        .map(id=>({id,specialty:kindByRider.get(id)})),
       keyRiderTrace,
     }));
     console.log('R22-CLASSICS-PUNCH-AUDIT '+JSON.stringify({

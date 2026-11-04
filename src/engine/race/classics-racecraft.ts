@@ -14,7 +14,7 @@
 export const CLASSICS_RACECRAFT=Object.freeze({
   minRaceM:220000,minSteepClimbs:4,
   minRampGrade:.075,minRampLengthM:800,maxRampLengthM:2500,
-  positioningFromProgress:.40,positioningUntilProgress:.87,
+  positioningFromProgress:.65,positioningUntilProgress:.87,
   positioningGroupSize:12,positioningRankShare:.38,
   positioningMaxGapM:180,positioningMinReserve:.12,
   positioningMaxCp:1.025,positioningMaxExtraW:40,
@@ -25,6 +25,13 @@ export const CLASSICS_RACECRAFT=Object.freeze({
   selectionMinReserve:.22,
   selectionMaxCp:1.085,
 });
+/** Körperlich geeignete Klassikerspezialisten, Kletterer, Allrounder
+ * und Zeitfahrer dürfen mit realen Watt an späten Rampen agieren.
+ * Das Fahrertyp-Label bestimmt keinen Sieg. */
+export function eligibleClassicsRiderType(specialty?:string):boolean{
+  return ['klassiker','kletterer','allrounder','zeitfahrer']
+    .includes(specialty??'');
+}
 export interface ClassicsRacecraftObservation {
   enabled:boolean;specialty?:string;role:string;
   isDesignatedRider:boolean;isSelectedGroupPacer:boolean;
@@ -57,7 +64,8 @@ export function decideClassicsApproach(
 ):number|null{
   if(!valid(o))throw new RangeError('R22 Klassiker: ungültige Annäherung');
   const c=CLASSICS_RACECRAFT;
-  if(!o.enabled||o.specialty!=='klassiker'||!o.isDesignatedRider||
+  if(!o.enabled||!eligibleClassicsRiderType(o.specialty)||
+    !o.isDesignatedRider||
     o.progress<c.positioningFromProgress||
     o.progress>=c.positioningUntilProgress||
     o.physicalGroupSize<c.positioningGroupSize||
@@ -87,7 +95,8 @@ export function decideClassicsRampTempo(
 ):number|null{
   if(!valid(o))throw new RangeError('R22 Klassiker: ungültiges Rampentempo');
   const c=CLASSICS_RACECRAFT;
-  if(!o.enabled||o.specialty!=='klassiker'||!o.isDesignatedRider||
+  if(!o.enabled||!eligibleClassicsRiderType(o.specialty)||
+    !o.isDesignatedRider||
     !o.isSelectedGroupPacer||
     o.progress<c.selectionFromProgress||
     o.progress>c.selectionUntilProgress||

@@ -163,6 +163,10 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
   assert.ok(selection.approachS>0&&selection.rampTempoS>0,
     'Klassiker-KI muss im Liège-Referenzrennen echte Wattentscheidungen treffen');
   assert.ok(Array.isArray(selection.rampRiders));
+  assert.equal(selection.rampRiderTypes.length,selection.rampRiders.length);
+  assert.ok(selection.rampRiderTypes.every(r=>
+    ['klassiker','allrounder','kletterer','zeitfahrer']
+      .includes(r.specialty)));
   assert.equal(selection.keyRiderTrace.length,3);
   assert.equal(selection.groupTimeline.length,7);
   assert.ok(selection.groupTimeline.every(g=>

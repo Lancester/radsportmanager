@@ -14,6 +14,9 @@ test('Klassiker: positioniert sich mit echten CP-nahen Watt, kein Vorziehen durc
   const x=decideClassicsApproach({...o,progress:.55});
   assert.ok(x>o.requestedPowerW);
   assert.ok(x<=o.criticalPowerW*CLASSICS_RACECRAFT.positioningMaxCp);
+  for(const specialty of ['kletterer','allrounder','zeitfahrer'])
+    assert.ok(decideClassicsApproach({...o,specialty,
+      progress:.75})!==null);
   assert.ok(x-o.requestedPowerW<=CLASSICS_RACECRAFT.positioningMaxExtraW);
   assert.ok(decideClassicsApproach({...o,requestedPowerW:380})-380<=
     CLASSICS_RACECRAFT.positioningMaxExtraW);
@@ -29,6 +32,9 @@ test('Klassiker: nur echter vorderer Rampenfahrer darf kontinuierliches Tempo be
   const requested=decideClassicsRampTempo({...o,rankInPhysicalGroup:4});
   assert.ok(requested>o.criticalPowerW);
   assert.ok(requested<=o.criticalPowerW*CLASSICS_RACECRAFT.selectionMaxCp);
+  for(const specialty of ['klassiker','kletterer','allrounder',
+    'zeitfahrer'])assert.ok(decideClassicsRampTempo({
+      ...o,specialty,rankInPhysicalGroup:4})!==null);
   for(const changed of [
     {enabled:false},{specialty:'sprinter'},{isDesignatedRider:false},
     {isSelectedGroupPacer:false},{progress:.72},{progress:.99},
