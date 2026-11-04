@@ -1187,3 +1187,72 @@ manuell durchführen.
 bleibt offen, **R-23 noch nicht begonnen**.
 
 [Anleitung und Pilotreporte](race/R22_MONTE_CARLO_PILOT.md).
+
+
+## R-22A/B/C – neue Strecken-/Fahrer-/Teamreferenzen mit manueller Schnellwahl (04.11.2026)
+
+Gemeinsame Datengrundlage und Ablauf
+[Details](race/R22ABC_REFERENZSTRECKEN_PROFIFELDER.md).
+Die bisherigen 35er-Pilotfelder und
+künstlichen R-21-Strecken bleiben für
+**Funktionstests** erhalten, gelten aber
+ausdrücklich **nicht** als Endkalibrierungsmaßstab.
+
+Vier reale Renn-Anker: Lille 184,9 km,
+Boulogne 209,1 km, Liège–Bastogne–Liège
+252 km, Hautacam 180,6 km (alle 2025).
+Distanzen und wichtige Anstiegslängen/
+Mittelsteigungen sind quellenbelegt.
+**Keine Original-GPX-Datei**; Strecken-
+Übergänge sind explizite Näherungen.
+Bei Lille, Boulogne und Hautacam
+werden die publizierten Gesamt-
+Höhenmeter mathematisch erreicht
+(1065/2164/3850); Lüttich hat
+3346 **rein modellierte** Höhenmeter.
+GPS-/DEM-Verifikation bleibt offen.
+
+Physiologische Typmittel aus
+144 WorldTour/Pro-Continental-Fahrer-
+profilen sind die Basis für 154
+fiktive Fahrerwerte: CP/W′,
+Körpermasse und CdA differenziert
+nach Sprinter, Kletterer, GC,
+Allrounder und Zeitfahrer.
+Klassikerfahrer und FTP-Abbildung
+sind gesondert deklarierte Annahmen.
+Fahrerkader bleiben bei neuen Seeds
+identisch; der Seed verändert derzeit
+vor allem CP-Tagesform.
+
+**Szenarioabhängig** 22 Teams à
+7 Fahrer mit 5 taktischen Schwerpunkten;
+auf flachen Straßen mehr Sprintteams,
+im Hochgebirge mehr GC-/Kletterteams,
+im Ardennenklassiker mehr Klassikerteams.
+Kader- und Quellenmanifest wird
+mit dem Monte-Carlo-Artefakt exportiert.
+
+Die **manuell ausgelöste GitHub-Actions-Maske**
+fragt nur noch Szenario, Seed-Anzahl,
+optional Ernährungsvergleich und
+Startseed; Felder und km werden automatisch
+ausgewählt. Keine Rundfahrten und
+keine automatische Serie.
+
+**Pilotabnahme:** vier komplett
+simulierte historische Rennanker
+mit je 154 Startern, zusammen 616
+vollständige Klassifikationen,
+[CI #41768768694](https://github.com/Lancester/radsportmanager/actions/runs/41768768694)
+technisch erfolgreich. Die
+teilweise sehr großen Lücken und
+Kletterersiege auch bei Flachrennen
+werden ausdrücklich **nicht als
+physiologisch realistisch bestätigt**.
+Nächster eigentlicher R-22-Schritt
+sind GPX-/Höhenprofil-Datenqualität,
+unabhängiger Referenzvergleich
+und die CP/W′-/Ermüdungs- und
+Feld-Dynamik-Kalibrierung.
+R-23 bleibt ausstehend.
