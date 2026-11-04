@@ -72,3 +72,8 @@ Der tatsächliche [CI-Lauf #41789070378](https://github.com/Lancester/radsportma
 **Einordnung:** Eine konkurrenzfähige größere Zielgruppe ist jetzt erstmals vorhanden, ohne dass die restlichen Teilnehmer dorthin teleportiert oder physikalisch bevorzugt werden. Trotzdem sind 49 Attacken und 16 maximale Distanzgruppen Warnsignale für weitere taktische Abstimmung; nur ein Seed und ein Streckenprofil sind **keine Realitätsvalidierung**. Die sehr großen Rückstände älterer Varianten bleiben als reproduzierbare A/B-Referenz erhalten.
 
 **Nächster isolierter Schritt:** identische A/B-Vergleiche auf Boulogne/Hautacam und mindestens Seed 2027 nur im schon vorhandenen ausdrücklich **manuellen** Workflow; nicht automatisch 100/500/1000 Läufe starten. Danach Attacken-Häufigkeit, tatsächliche Jagdführerwechsel und Energieermüdung gegen Gruppen-Zielresultate abwägen. Ein Default-Wechsel und R-23-Engine-Freigabe bleiben offen.
+
+
+## Integrationsstatus
+
+[PR #63](https://github.com/Lancester/radsportmanager/pull/63) nach erfolgreicher finaler [PR-CI #41789684647](https://github.com/Lancester/radsportmanager/actions/runs/41789684647) (**262/262 Tests**) mit Squash `8112633bec9e958bd10de70765429809eaa832f6` auf `main` übernommen. Die Variante **bleibt opt-in** und ersetzt `legacy` nicht. Die beschriebenen frühen Fehlerexperimente sind historische Ursachenbefunde, nicht der aktuelle Code. Bestehende A/B-Workflow-Großläufe bleiben **ausschließlich manuell** startbar. Für die nächsten Arbeitsschritte die 49 Attacken und 16 physischen Maximalgruppen über mehrere Seeds und Profile prüfen, nicht nur auf Lille/2026 optimieren.
