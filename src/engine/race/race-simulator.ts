@@ -707,7 +707,8 @@ export function simulateRace(x:RaceInput):RaceResult {
         if(x.groupRidingModel==='stable-pack'){
           const climb=decideClimbTempo({...observation,
             specialty:s.rider.specialty,role:s.rider.role,
-            remainingM:Math.max(0,totalM-s.positionM)});
+            remainingM:Math.max(0,totalM-s.positionM),
+            climbLengthM:segment.lengthM});
           if(climb!==null&&climb>commanded+0.5){
             commanded=climb;
             climbingTempoSeconds+=dt;
