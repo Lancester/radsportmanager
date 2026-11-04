@@ -332,3 +332,17 @@ R-23 nicht begonnen.
 ### R-22 Integrationsstatus nach PR #63 (04.11.2026)
 
 **Nur technischer experimenteller Modus in main, keine neue Grundsatzentscheidung:** `groupRidingModel:'stable-pack'` ist nach 262 grünen Tests explizit auswählbar. `legacy` bleibt Standard; D-074 bis D-097 und die bestehende Physik bleiben gültig. Der Modus ist nicht als realistisch kalibrierte neue Standard-KI beschlossen. R-22 bleibt offen und R-23 ist nicht freigegeben. [PR #63](https://github.com/Lancester/radsportmanager/pull/63), [Ergebnisse](race/R22_STABILES_PELOTON.md).
+
+
+## D-098 bis D-101 – Profilweises Weiterentwickeln vor großer Validierung (04.11.2026)
+
+Der Nutzer hat den ersten größeren Mehrseed-Plan ausdrücklich **zurückgestellt**: keine 36/60 Rennen als Einstieg. Es werden zunächst die **bereits vorhandenen vier Etappenprofile** in kleinen Einzelprüfungen durch den Assistenten verglichen und die KI schrittweise verbessert. Erst **am Ende der KI-Kalibrierung** folgt die große statistische Validierung.
+
+| ID | Status | Vereinbartes Vorgehen | Grenze |
+| --- | --- | --- | --- |
+| D-098 | **Nutzerbeschluss** | `stable-pack` dient als Ausgangsbasis für weitere **gezielte** KI-Verbesserungen, nicht den Rennsimulator neu schreiben. | Der standardmäßig aktive Modus bleibt `legacy` bis zur gesonderten Abnahme. |
+| D-099 | **Nutzerbeschluss** | Bereits vorhandene Referenzstrecken **Lille (flach), Boulogne (hügelig), Lüttich (Klassiker), Hautacam (Berg)** verwenden. Zunächst pro Profil **ein** identischer Seed und **nur `stable-pack`**, ohne neue Strecken oder großes A/B-/Seedraster. Der Assistent führt die kleinen Tests im normalen GitHub-PR-Testlauf selbst aus. | Vier Einzelrennen, 154 Fahrer je Strecke. Die veröffentlichten Steigungen/Streckenanker enthalten modellierte Übergänge, keine exakten GPX-Daten. |
+| D-100 | **Nutzerbeschluss** | Nach jedem kleinen Profilvergleich Ursachen für auffällige Zielabstände, Feldzerfall, Attacken, Jagdführungswechsel oder Berg-/Sprinterverhalten bestimmen und gezielt **eine** KI-Ursache verbessern. Bestehende Physik und normale Mitfahrregelung bewahren. | Keine erfundenen Zeiten, Positionskorrekturen, Energiegutschriften oder unbegründeten Physikparameter-Änderungen. Test-Plausi ist nicht Realitätskalibrierung. |
+| D-101 | **Nutzerbeschluss** | Größere Mehrseed-/Monte-Carlo-Validierung **erst zum Abschluss**, wenn die grundlegenden Verhaltensprobleme der vier Profile behoben sind. | Große Reihen nur bewusst manuell und begrenzt via GitHub Actions, keine automatisch gestarteten 36/60-Rennen-Workflows. R-22 offen, R-23 nicht freigegeben. |
+
+Konkreter Ablauf: [R22_KLEINE_PROFILTESTS.md](race/R22_KLEINE_PROFILTESTS.md). Der erste kleine Vergleich läuft über `scripts/r22-profile-smoke.mjs` und `tests/r22-profile-smoke.test.mjs` direkt in der PR-CI, mit festen Eingaben `all / seed 2026`. Der frühere 36-/60-Rennen-Matrixvorschlag wurde **aus dem Branch entfernt**, nicht gestartet und **nicht beschlossen**.
