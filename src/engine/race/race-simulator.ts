@@ -18,7 +18,9 @@ import {decidePackInstruction,pelotonGroups} from './peloton.ts';
 import {formationAeroFactors} from './formation-aero.ts';
 import {decideGroupRiding,R22_GROUP_RIDING} from './group-riding.ts';
 import {decideTeamPace} from './team-pacing.ts';
-import {decideIntelligentCrew} from './race-team-ai.ts';
+import {decideIntelligentCrew,analyzeRaceSituation} from './race-team-ai.ts';
+import {coordinatePelotonChase} from './peloton-chase.ts';
+import type {ChaseCoordinatorState} from './peloton-chase.ts';
 import {initialEnduranceState,advanceEndurance,endurancePowerAvailability}
   from './endurance.ts';
 import type {EnduranceState} from './endurance.ts';
@@ -63,7 +65,7 @@ export interface RaceInput {
   tacticModel?:'r14'|'r15-r16';
   /** R-22 experimentell: autonome Gruppenkoordination mit Wattsollwert,
    * Legacy als bisheriger Standard bis vollständiger empirischer Abnahme. */
-  groupRidingModel?:'legacy'|'cohesive';
+  groupRidingModel?:'legacy'|'cohesive'|'coordinated';
   stepSeconds?:number;
   maxRaceTimeS?:number;
   /** Nur Diagnostik: speichert alle aktiven Fahrer alle 5 km. */
@@ -216,7 +218,7 @@ export function validateRace(x:RaceInput):void {
     x.diagnosticLevel!=='checkpoints')
     throw new RangeError('Rennsimulation: diagnosticLevel ungültig');
   if(x.groupRidingModel!==undefined&&
-    !['legacy','cohesive'].includes(x.groupRidingModel))
+    !['legacy','cohesive','coordinated'].includes(x.groupRidingModel))
     throw new RangeError('Rennsimulation: groupRidingModel ungültig');
   if(x.tacticModel!==undefined&&
     x.tacticModel!=='r14'&&x.tacticModel!=='r15-r16')
@@ -300,6 +302,7 @@ export function simulateRace(x:RaceInput):RaceResult {
   let breakawaySinceS:number|null=null,catchSinceS:number|null=null;
   let breakawayActive=false;
   let aeroFactorSum=0,aeroFactorSamples=0,minimumAeroFactor=1;
+  let chaseState:ChaseCoordinatorState={active:[],sinceS:0,cooldownUntilS:0};
   const counters={attacks:0,chases:0,sprints:0,groupSplits:0,
     breakaways:0,caughtBreakaways:0,paceSupportSteps:0,
     teamPaceStarts:0,teamChaseStarts:0,
@@ -338,11 +341,31 @@ export function simulateRace(x:RaceInput):RaceResult {
       const teamRefs=x.teams.map(team=>({
         id:team.id,strategy:team.strategy,
       }));
+      const teamRefsAndChase=x.groupRidingModel==='coordinated'?(()=>{
+        const grouped=pelotonGroups(planningRiders.map(r=>({
+          ...r,id:r.id,positionM:r.positionM,
+        })));
+        const main=grouped.reduce((best,g)=>g.length>best.length?g:best,grouped[0]);
+        const next=coordinatePelotonChase({
+          timeS:t,remainingM:Math.max(0,totalM-leader.positionM),
+          progress:Math.min(1,leader.positionM/totalM),
+          mainGroupIds:new Set(main.map(r=>r.id)),teams:teamRefs,
+          riders:planningRiders,situation:analyzeRaceSituation(
+            planningRiders,Math.max(0,totalM-leader.positionM)),
+          previous:chaseState,
+        });
+        chaseState=next.state;
+        return next;
+      })():null;
       const planned=coordinated?decideIntelligentCrew({
         timeS:t,progress:Math.min(1,leader.positionM/totalM),
         remainingM:Math.max(0,totalM-leader.positionM),
         teams:teamRefs,riders:planningRiders,
         previousLeaders,
+        ...(teamRefsAndChase?{
+          chasingTeamIds:teamRefsAndChase.chasingTeamIds,
+          restInPeloton:true,
+        }:{}),
       }):null;
       const orders=coordinated?null:decideTeamPace({
         timeS:t,progress:Math.min(1,leader.positionM/totalM),
@@ -397,7 +420,8 @@ export function simulateRace(x:RaceInput):RaceResult {
               // Mindestfenster ab 18 % der Strecke verhindert sie komplett.
               // Nur im R-22-KI-Experiment die erste frühe Phase öffnen;
               // Starter müssen noch physisch nach vorne fahren.
-              const early=x.groupRidingModel==='cohesive'&&
+              const early=(x.groupRidingModel==='cohesive'||
+                x.groupRidingModel==='coordinated')&&
                 t>=180&&s.positionM/totalM>=0.015&&
                 s.positionM/totalM<0.13;
               const nearFront=early?
@@ -503,7 +527,8 @@ export function simulateRace(x:RaceInput):RaceResult {
       id:s.rider.id,positionM:s.positionM,
     })))){
       const pacer=byId.get(group[0].id)!;
-      if(x.groupRidingModel==='cohesive'&&
+      if((x.groupRidingModel==='cohesive'||
+        x.groupRidingModel==='coordinated')&&
         group.length>=R22_GROUP_RIDING.minGroupSize){
         const current=x.segments[segmentFor(pacer,boundaries)];
         const mass=pacer.rider.massKg+pacer.rider.bikeMassKg;
@@ -588,7 +613,8 @@ export function simulateRace(x:RaceInput):RaceResult {
       aeroFactorSum+=aeroFactor;aeroFactorSamples++;
       minimumAeroFactor=Math.min(minimumAeroFactor,aeroFactor);
       let commanded=pack.requestedPowerW;
-      if(x.groupRidingModel==='cohesive'){
+      if(x.groupRidingModel==='cohesive'||
+        x.groupRidingModel==='coordinated'){
         const group=decideGroupRiding({
           groupSize:actualGroupSize.get(s.rider.id)??1,
           distanceFromGroupFrontM:Math.max(0,
