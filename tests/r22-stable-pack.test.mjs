@@ -110,6 +110,8 @@ test('R22 Isolation: 154 verschiedene Profis auf 20 km flach, ohne offensive Tea
   }
   const aFinish=finishGroupMetrics(a.classification);
   const bFinish=finishGroupMetrics(b.classification);
+  assert.equal(bFinish.largestGroupSize,154,
+    '154 Fahrer ohne Attacke sollen auf der kontrollierten Flachstrecke geschlossen ankommen');
   console.log('R22-ISOLATION',JSON.stringify({
     lengthKm:20,participants:154,seed:2026,offensiveTeams:0,
     coordinated:{groups:a.diagnostics.maximumGroups,
