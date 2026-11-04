@@ -75,6 +75,7 @@ for(const id of routes){
     catches:audit.actualCatches,
     actualChaseFrontS:r.diagnostics.mainFieldFrontWorkWithAssignedChaserS??0,
     chaseLeaderChanges:r.diagnostics.mainFieldChaserLeaderChanges??0,
+    longestPhysicalChaseFrontStintS:r.diagnostics.longestMainFieldChaserStintS??0,
     climbingTempoSeconds:r.diagnostics.climbingTempoSeconds??0,
     sprintPositioningSeconds:r.diagnostics.sprintPositioningSeconds??0,
     sprintEscortSeconds:r.diagnostics.sprintEscortSeconds??0,
@@ -296,6 +297,7 @@ for(const id of routes){
     console.log('R22-LILLE-CHASE-GAPS '+JSON.stringify({
       route:id,seed,gaps,
       measuredLongPullSeconds:r.diagnostics.committedChasePullSeconds??0,
+      longestPhysicalChaseFrontStintS:r.diagnostics.longestMainFieldChaserStintS??0,
       spentHelpers:r.diagnostics.spentChaseHelpers??0,
     }));
   }
