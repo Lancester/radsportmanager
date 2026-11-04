@@ -26,6 +26,10 @@ test('R22 Stabil: geschützter Mitfahrer passt tatsächliche Watt ans Tempo an',
     frontGapM:22,frontSpeedMps:12.5},false);
   assert.ok(closing.powerW>cruising.powerW);
   assert.ok(closing.powerW<=observation.criticalPowerW*1.12);
+  const acceleration=decideStablePackRiding({...observation,
+    referenceAccelerationMps2:.2},false);
+  assert.ok(acceleration.powerW>cruising.powerW,
+    'Mitfahrer müssen für gemeinsame Beschleunigung zusätzliche Watt anfordern');
 });
 test('R22 Stabil: echte Attacke frei, Jagdhelfer in Feldmitte begrenzt',()=>{
   const front=decideStablePackRiding({...observation,
