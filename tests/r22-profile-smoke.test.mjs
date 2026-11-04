@@ -44,8 +44,6 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
       row.realFrontChaseCpSeconds>=0);
     if(row.spentChaseHelpers===0)
       assert.equal(row.intentionalChaseRetreatSeconds,0);
-      assert.equal(row.committedChasePullSeconds,0);
-      assert.equal(row.realFrontChaseCpSeconds,0);
     if(row.profile!=='flach'){
       assert.equal(row.sprintPositioningSeconds,0);
       assert.equal(row.sprintEscortSeconds,0);
@@ -56,6 +54,8 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
       assert.equal(row.lateSprintChaseRiderSeconds,0);
       assert.equal(row.spentChaseHelpers,0);
       assert.equal(row.intentionalChaseRetreatSeconds,0);
+      assert.equal(row.committedChasePullSeconds,0);
+      assert.equal(row.realFrontChaseCpSeconds,0);
     }
     assert.equal(row.top10Types.length,10);
   }
