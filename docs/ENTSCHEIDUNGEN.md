@@ -346,3 +346,10 @@ Der Nutzer hat den ersten größeren Mehrseed-Plan ausdrücklich **zurückgestel
 | D-101 | **Nutzerbeschluss** | Größere Mehrseed-/Monte-Carlo-Validierung **erst zum Abschluss**, wenn die grundlegenden Verhaltensprobleme der vier Profile behoben sind. | Große Reihen nur bewusst manuell und begrenzt via GitHub Actions, keine automatisch gestarteten 36/60-Rennen-Workflows. R-22 offen, R-23 nicht freigegeben. |
 
 Konkreter Ablauf: [R22_KLEINE_PROFILTESTS.md](race/R22_KLEINE_PROFILTESTS.md). Der erste kleine Vergleich läuft über `scripts/r22-profile-smoke.mjs` und `tests/r22-profile-smoke.test.mjs` direkt in der PR-CI, mit festen Eingaben `all / seed 2026`. Der frühere 36-/60-Rennen-Matrixvorschlag wurde **aus dem Branch entfernt**, nicht gestartet und **nicht beschlossen**.
+
+
+## D-102 – Bergphysik zuerst prüfen, dann schrittweise Kletter-KI weiterentwickeln (04.11.2026)
+
+**Expliziter Nutzerbeschluss:** Vor weiteren Berg-KI-Korrekturen die physikalischen Steigungs-, Masse-, Roll-/Luftwiderstands-, Windschatten- und CP/W′-Zusammenhänge anhand unabhängiger Modell- und Dynamiktests prüfen. Nur wenn sie korrekt wirken, die **experimentelle** `stable-pack`-KI für Kletterer gezielt anpassen. Der Assistent darf mehrere kleine KI-Iterationen einschließlich vorhandener vier Profilrennen ohne weitere Rückfragen durchführen, dokumentiert aber Ergebnisse, verworfene Varianten und Grenzen. Große Mehrseed-Validierung bleibt wie in D-101 **auf die Schlussphase verschoben**.
+
+**Technischer Zwischenbefund:** Die unabhängige 13,5-km-/7,8%-Gegenprobe in [R22_BERGPHYSIK_UND_KLETTER_KI.md](race/R22_BERGPHYSIK_UND_KLETTER_KI.md) bestätigt im gemeinsamen Bewegungskern den erwarteten Bergvorteil leichter Kletterer und bessere Leistung von GC-Fahrern; [CI #41797896614](https://github.com/Lancester/radsportmanager/actions/runs/41797896614) 268/268. Der Kern bleibt unverändert; die untersuchte Ursache ist überwiegend die an einen Gruppenpacer gebundene KI-Leistungsanforderung. Kein neuer Default, keine Ergebnis- oder Positionsboni. R-22 weiter offen, R-23 nicht freigegeben.

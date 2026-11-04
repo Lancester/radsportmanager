@@ -17,6 +17,7 @@ import {chooseRacePower,stabilizeRaceDecision} from './race-tactics.ts';
 import {decidePackInstruction,pelotonGroups} from './peloton.ts';
 import {formationAeroFactors} from './formation-aero.ts';
 import {decideStablePackRiding} from './stable-pack.ts';
+import {decideClimbTempo} from './climb-tempo.ts';
 import {decideGroupRiding,decideChaseApproach,R22_GROUP_RIDING} from './group-riding.ts';
 import {decideTeamPace} from './team-pacing.ts';
 import {decideIntelligentCrew,analyzeRaceSituation} from './race-team-ai.ts';
@@ -306,6 +307,7 @@ export function simulateRace(x:RaceInput):RaceResult {
   let chaseState:ChaseCoordinatorState={active:[],sinceS:0,cooldownUntilS:0};
   let unprovokedBreakawayCount=0;
   let orderedRelayTeamSeconds=0;
+  let climbingTempoSeconds=0;
   let mainFieldFrontWorkWithAssignedChaserS=0;
   // Nur Diagnose: tatsächliche, ununterbrochene Führungsphasen an der Hauptfeldspitze.
   let mainFieldChaserLeaderChanges=0;
@@ -698,6 +700,20 @@ export function simulateRace(x:RaceInput):RaceResult {
             groupPaceByRider.get(s.rider.id)?.pacerId===s.rider.id):
           decideGroupRiding(observation);
         commanded=group.powerW;
+        // R-22: Nur im experimentellen stable-pack-Modus darf ein
+        // physisch stärkerer Kletterer am langen Anstieg selbst Tempo
+        // machen statt blind einem schwereren Pacesetter zu folgen.
+        // Ausschließlich Watt: keine Positions-/Zeitkorrektur.
+        if(x.groupRidingModel==='stable-pack'){
+          const climb=decideClimbTempo({...observation,
+            specialty:s.rider.specialty,role:s.rider.role,
+            remainingM:Math.max(0,totalM-s.positionM),
+            climbLengthM:segment.lengthM});
+          if(climb!==null&&climb>commanded+0.5){
+            commanded=climb;
+            climbingTempoSeconds+=dt;
+          }
+        }
         if((x.groupRidingModel==='relay-paced'||x.groupRidingModel==='front-gated')&&
           s.intent==='verfolgung'&&
           (x.groupRidingModel==='front-gated'?
@@ -926,6 +942,7 @@ export function simulateRace(x:RaceInput):RaceResult {
         mainFieldFrontWorkWithAssignedChaserS,
         mainFieldChaserLeaderChanges,
         longestMainFieldChaserStintS,
+        ...(x.groupRidingModel==='stable-pack'?{climbingTempoSeconds}:{}),
         ...((x.groupRidingModel==='front-gated'||x.groupRidingModel==='stable-pack')?
           {unprovokedBreakawayCount}:{}),
       }:{}),teams:x.teams.length,

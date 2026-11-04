@@ -74,6 +74,7 @@ for(const id of routes){
     catches:audit.actualCatches,
     actualChaseFrontS:r.diagnostics.mainFieldFrontWorkWithAssignedChaserS??0,
     chaseLeaderChanges:r.diagnostics.mainFieldChaserLeaderChanges??0,
+    climbingTempoSeconds:r.diagnostics.climbingTempoSeconds??0,
     top10Types:r.classification.slice(0,10).map(x=>kindByRider.get(x.id)),
     runtimeS:n((performance.now()-start)/1000),
   };
