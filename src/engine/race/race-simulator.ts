@@ -19,6 +19,8 @@ import {formationAeroFactors} from './formation-aero.ts';
 import {decideStablePackRiding} from './stable-pack.ts';
 import {decideClimbTempo} from './climb-tempo.ts';
 import {decideSprintPosition,SPRINT_POSITION} from './sprint-positioning.ts';
+import {decideSprintLaunch,inferredSprintPeakPowerW,sprintPowerDemand}
+  from './final-sprint.ts';
 import {decideSprintLeadoutPace,SPRINT_LEADOUT} from './sprint-leadout.ts';
 import {chooseIndependentSprintWheel,SPRINT_WHEEL} from './sprint-wheel-choice.ts';
 import {decideClassicsPunch,CLASSICS_PUNCH} from './classics-punch.ts';
@@ -65,6 +67,10 @@ export interface RaceRider {
   descentSkill:number;sprintSkill:number;aggression:number;
   /** 0..1: Taktisches Erkennen/Besetzen eines real vorausfahrenden Hinterrads. */
   wheelFindingSkill?:number;
+  /** Früh-/Spätstart-Vorliebe: 0 = eher abwarten, 1 = eher früh; keine Sieggarantie. */
+  sprintLaunchPreference?:number;
+  /** Kurzzeitig mögliche maximale Sprint-Kurbelwatt, nicht dauerhaft. */
+  sprintPeakPowerW?:number;
 }
 export interface RaceInput {
   title:string;
@@ -161,6 +167,10 @@ export interface RaceResult {
     namedChaseHandoffs?:Array<{km:number;from:string|null;
       to:string|null;reason:string;frontGapM:number|null;
       assignmentAgeS:number|null}>;
+    /** Nur in sprintfreundlichen stable-pack-Rennen aus echten Rennschritten. */
+    finalSprintAttempts?:Array<{riderId:string;launchRemainingM:number;
+      launchTimeS:number;peakAppliedW:number;sprintSeconds:number;
+      sprintCrankJ:number;finishRank:number;finishGapS:number}>;
     /** Beobachtete Position/Helfer an der Sprintfreigabe (keine Sieggarantie). */
     sprintFinale?:Array<{riderId:string;rankInGroup:number;
       groupSize:number;helpersWithin30M:number;helpersAheadWithin30M:number;
@@ -180,6 +190,11 @@ interface State {
   lastAttackS:number;
   endurance:EnduranceState;
   chaseLoad:ChaseHelperLoad;
+  sprintLaunchedAtS:number|null;
+  sprintLaunchRemainingM:number|null;
+  sprintPeakAppliedW:number;
+  sprintCrankJ:number;
+  sprintSeconds:number;
 }
 const ensure=(label:string,n:number,condition:boolean)=>{
   if(!Number.isFinite(n)||!condition)throw new RangeError('Rennsimulation: '+label);
@@ -255,6 +270,12 @@ export function validateRace(x:RaceInput):void {
     if(r.wheelFindingSkill!==undefined)
       ensure('wheelFindingSkill',r.wheelFindingSkill,
         r.wheelFindingSkill>=0&&r.wheelFindingSkill<=1);
+    if(r.sprintLaunchPreference!==undefined)
+      ensure('sprintLaunchPreference',r.sprintLaunchPreference,
+        r.sprintLaunchPreference>=0&&r.sprintLaunchPreference<=1);
+    if(r.sprintPeakPowerW!==undefined)
+      ensure('sprintPeakPowerW',r.sprintPeakPowerW,
+        r.sprintPeakPowerW>=600&&r.sprintPeakPowerW<=2000);
   }
   if(x.enduranceModel!==undefined&&
     x.enduranceModel!=='off'&&x.enduranceModel!=='long')
@@ -298,7 +319,9 @@ function buildStates(x:RaceInput):State[] {
       crankWorkJ:0,intentSinceS:0,lastChaseEndS:-1e9,
       teamPaceKind:null,crewMission:null,crewDuty:null,
       lastAttackS:-1e9,endurance:initialEnduranceState(),
-      chaseLoad:initialChaseHelperLoad()};
+      chaseLoad:initialChaseHelperLoad(),
+      sprintLaunchedAtS:null,sprintLaunchRemainingM:null,
+      sprintPeakAppliedW:0,sprintCrankJ:0,sprintSeconds:0};
   });
 }
 function splitGroups(active:State[]):State[][] {
@@ -1189,12 +1212,67 @@ export function simulateRace(x:RaceInput):RaceResult {
           intentionalChaseRetreatSeconds+=dt;
         }
       }
+      // Eigenständige, individuell gewählte Sprintauslösung bei
+      // sprintfreundlichen stable-pack-Rennen. NICHT ein gemeinsamer
+      // fester Startpunkt: Vorliebe, physische Position in DER eigenen
+      // Gruppe, echtes Hinterrad, Tempo und Wind beeinflussen den
+      // Start. Nur Sprinterspezialisten, nicht heimlich alle Fahrer.
+      if(sprintFriendlyRace&&s.rider.specialty==='sprinter'&&
+        s.sprintLaunchedAtS===null){
+        const g=physicalGroupOf.get(s.rider.id);
+        const frontState=g?.length?byId.get(g[0].id):undefined;
+        const start=decideSprintLaunch({
+          remainingM:Math.max(0,totalM-s.positionM),
+          launchPreference:s.rider.sprintLaunchPreference??.5,
+          sprintSkill:s.rider.sprintSkill,
+          groupSize:g?.length??1,
+          rankInGroup:rankInPhysicalGroup.get(s.rider.id)??1,
+          distanceFromGroupFrontM:Math.max(0,
+            (actualGroupFront.get(s.rider.id)??s.positionM)-s.positionM),
+          frontWheelGapM:frontGap.get(s.rider.id)??null,
+          aeroFactor,ownSpeedMps:s.speedMps,
+          groupFrontSpeedMps:frontState?.speedMps??s.speedMps,
+          headwindMps:headwind,
+          reserveFraction:s.physiology.remainingWPrimeJ/
+            s.profile.wPrimeCapacityJ,
+        });
+        if(start.shouldLaunch){
+          s.sprintLaunchedAtS=t;
+          s.sprintLaunchRemainingM=totalM-s.positionM;
+          if(events.length<100000)events.push({
+            timeS:t,km:s.positionM/1000,type:'sprint',
+            riderId:s.rider.id,teamId:s.rider.teamId,
+            description:`${s.rider.name}: individueller Sprintantritt ${Math.round(
+              s.sprintLaunchRemainingM)} m vor Ziel; ${start.reason}`,
+          });
+        }
+      }
+      if(sprintFriendlyRace&&s.sprintLaunchedAtS!==null){
+        // Fahrer kann in einer schlechten Position selbst entscheiden:
+        // Der Sprint beginnt nicht zwangsläufig erst bei 250/400 m.
+        // Eine einmal ausgelöste Aktion läuft bis zum Ziel, mit
+        // abnehmendem physiologisch angefordertem Sprintwatt.
+        commanded=sprintPowerDemand({
+          criticalPowerW:s.dayCpW,
+          sprintPeakPowerW:s.rider.sprintPeakPowerW??
+            inferredSprintPeakPowerW({
+              massKg:s.rider.massKg,sprintSkill:s.rider.sprintSkill}),
+          sprintSkill:s.rider.sprintSkill,
+          elapsedS:Math.max(0,t-s.sprintLaunchedAtS),
+        });
+      }
       // R-19: langfristige LeistungsVERFÜGBARKEIT vor CP/W′. Keine
       // Energie-/Positions- oder Geschwindigkeit-Gutschrift.
       if(x.enduranceModel!=='off'){
         commanded*=endurancePowerAvailability(s.endurance);
       }
       const cp=applyCpWprimeStep(s.profile,s.physiology,commanded,dt);
+      if(sprintFriendlyRace&&s.sprintLaunchedAtS!==null){
+        s.sprintPeakAppliedW=Math.max(s.sprintPeakAppliedW,
+          cp.appliedPowerW);
+        s.sprintCrankJ+=cp.appliedPowerW*dt;
+        s.sprintSeconds+=dt;
+      }
       if(pull!==null&&cp.appliedPowerW>=s.dayCpW*.86){
         committedChasePullSeconds+=dt;
       }
@@ -1438,7 +1516,18 @@ export function simulateRace(x:RaceInput):RaceResult {
           spentChaseHelperIds,intentionalChaseRetreatSeconds,
           committedChasePullSeconds,realFrontChaseCpSeconds,
           namedChaseLeader:namedLeaderAudit.report(),
-          namedChaseHandoffs}:{}),
+          namedChaseHandoffs,
+          finalSprintAttempts:sorted.filter(s=>
+            s.sprintLaunchedAtS!==null).map((s,i,arr)=>({
+              riderId:s.rider.id,
+              launchRemainingM:Math.round((s.sprintLaunchRemainingM??0)*10)/10,
+              launchTimeS:s.sprintLaunchedAtS!,
+              peakAppliedW:Math.round(s.sprintPeakAppliedW*10)/10,
+              sprintSeconds:s.sprintSeconds,
+              sprintCrankJ:Math.round(s.sprintCrankJ),
+              finishRank:sorted.indexOf(s)+1,
+              finishGapS:Math.round((s.finishTimeS!-winTime)*100)/100,
+            }))}:{}),
         ...((x.groupRidingModel==='front-gated'||x.groupRidingModel==='stable-pack')?
           {unprovokedBreakawayCount}:{}),
       }:{}),teams:x.teams.length,

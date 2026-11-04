@@ -58,6 +58,8 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
       assert.equal(row.realFrontChaseCpSeconds,0);
     }
     assert.equal(row.top10Types.length,10);
+    assert.ok(row.individualSprintAttempts>=0);
+    assert.ok(Array.isArray(row.top10SprintLaunchM));
     assert.equal(row.sprintersInTop10,
       row.top10Types.filter(x=>x==='sprinter').length);
     assert.ok(Number.isInteger(row.winnerGroupSprinters));
@@ -89,6 +91,21 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
     assert.ok(trace.trace.every(x=>x.winnerRank>=1&&x.winnerRank<=154&&
       x.winnerGapM>=0));
   }
+  const sprintLine=log.split('\n').find(line=>
+    line.startsWith('R22-FINAL-SPRINT '));
+  assert.ok(sprintLine,'Individuelle Sprint-Auditdaten fehlen');
+  const sprintAudit=JSON.parse(sprintLine.slice(
+    'R22-FINAL-SPRINT '.length));
+  assert.equal(sprintAudit.route,'tdf25_lille');
+  assert.ok(sprintAudit.allLaunches.length>0);
+  assert.ok(sprintAudit.allLaunches.every(x=>
+    x.launchRemainingM>0&&x.launchRemainingM<=540&&
+    x.peakAppliedW>=0&&x.sprintSeconds>0&&
+    x.sprintCrankJ>0));
+  const distinctStartDistances=new Set(sprintAudit.allLaunches
+    .map(x=>Math.round(x.launchRemainingM/5)));
+  assert.ok(distinctStartDistances.size>=2,
+    'kein fixer gleicher Sprintbeginn für alle');
   const finishLines=log.split('\n').filter(line=>
     line.startsWith('R22-SPRINT-FINISH '));
   assert.equal(finishLines.length,4);

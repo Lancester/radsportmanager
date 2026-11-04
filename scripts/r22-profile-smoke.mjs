@@ -90,6 +90,11 @@ for(const id of routes){
     intentionalChaseRetreatSeconds:r.diagnostics.intentionalChaseRetreatSeconds??0,
     committedChasePullSeconds:r.diagnostics.committedChasePullSeconds??0,
     realFrontChaseCpSeconds:r.diagnostics.realFrontChaseCpSeconds??0,
+    individualSprintAttempts:r.diagnostics.finalSprintAttempts?.length??0,
+    top10SprintLaunchM:r.diagnostics.finalSprintAttempts?.
+      filter(x=>r.classification.find(f=>f.id===x.riderId)?.rank<=10)
+      .map(x=>({id:x.riderId,launchM:x.launchRemainingM,
+        peakW:x.peakAppliedW}))??[],
     top10Types:r.classification.slice(0,10).map(x=>kindByRider.get(x.id)),
     sprintersInTop10:sprintFinish.sprintersInTop10,
     winnerGroupSprinters:sprintFinish.sprintersInWinnerGroup,
@@ -103,6 +108,15 @@ for(const id of routes){
   };
   results.push(details);
   console.log('R22-PROFILE '+JSON.stringify(details));
+  if(id==='tdf25_lille')
+    console.log('R22-FINAL-SPRINT '+JSON.stringify({
+      route:id,seed,
+      allLaunches:r.diagnostics.finalSprintAttempts??[],
+      launchDistancesM:(r.diagnostics.finalSprintAttempts??[])
+        .map(x=>x.launchRemainingM),
+      sprintWinner:r.winnerId,
+      top10Types:details.top10Types,
+    }));
   console.log('R22-SPRINT-FINISH '+JSON.stringify({
     route:id,seed,winningGroupFirst:true,
     ...sprintFinish,

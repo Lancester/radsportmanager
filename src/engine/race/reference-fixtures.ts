@@ -289,6 +289,13 @@ function buildRider(archetype:Archetype,teamId:string,
     bikeMassKg:7.7,
     dragAreaM2:+(model.dragAreaM2+symmetric(index,23)*.013).toFixed(4),
     sprintSkill:archetype==='sprinter'?.95:archetype==='klassiker'?.73:.45,
+    // Separates individuell unterschiedliches Sprint-Antrittsverhalten:
+    // frühe Antritte und Abwarten auf geschütztes Hinterrad koexistieren.
+    sprintLaunchPreference:+(.10+hash(index,71)*.80).toFixed(3),
+    sprintPeakPowerW:Math.round(model.massKg*
+      (7+10*(archetype==='sprinter'?.95:
+        archetype==='klassiker'?.73:.45))*
+      (1+symmetric(index,73)*.085)),
     // Von Endspurt-Kraft getrennt: eigenständiges taktisches Talent,
     // ein fremdes schnelles Hinterrad im realen Feld zu erkennen.
     wheelFindingSkill:+(archetype==='sprinter'?
