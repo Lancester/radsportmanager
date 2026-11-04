@@ -575,3 +575,28 @@ keine Veränderung am CP-/Physikkern eingeführt.
 [Technische Referenzdokumentation](race/R22ABC_REFERENZSTRECKEN_PROFIFELDER.md).
 **Weiterhin getrennt:** keine Etappen-/Gesamtwertung,
 Karriere, Verträge oder Teammitarbeiter.
+
+
+## Neu: R-22 Gruppen-KI als klar getrenntes A/B-Experiment
+
+[PR #58 erfolgreich zusammengeführt](https://github.com/Lancester/radsportmanager/pull/58).
+Der optionale `groupRidingModel:'cohesive'`
+berücksichtigt gemeinsames Gruppentempo,
+physisch berechnete Wattanforderungen
+und frühe offensive Attacken.
+Er ersetzt **nicht** die
+standardmäßig weiter geltende
+Legacy-KI: die 154-Fahrer-Tests
+zeigen eine große Verbesserung
+des Hauptfeld-Zusammenhalts,
+aber weiter auffällige
+Teamverfolgung und Medianrückstände.
+
+[Manueller Workflow: R-22 Gruppen-KI A/B](https://github.com/Lancester/radsportmanager/actions/workflows/r22-group-ai-ab.yml)
+startet auf Wunsch zwei 154-Fahrer-
+Rennen mit identischer Strecke/Seed
+(alt und experimentell),
+inklusive 5-km-CSV-Vergleich und
+GitHub Summary. Keine regelmäßigen
+oder automatischen Langstreckenläufe.
+[Ergebnisse/Begründung](race/R22_GRUPPENFAHR_KI_AB.md).
