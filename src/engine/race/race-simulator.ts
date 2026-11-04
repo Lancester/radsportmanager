@@ -62,6 +62,8 @@ export interface RaceInput {
   tacticModel?:'r14'|'r15-r16';
   stepSeconds?:number;
   maxRaceTimeS?:number;
+  /** Nur Diagnostik: speichert alle aktiven Fahrer alle 5 km. */
+  diagnosticLevel?:'checkpoints';
 }
 export type RaceEventType =
   'start'|'attack'|'chase'|'sprint'|'recovery'|'segment'|'group-split'|'breakaway'|'breakaway-caught'|'finish'|'team-pace'|'team-chase'|'sprint-train';
@@ -89,10 +91,28 @@ export interface RaceClassification {
   carbohydrateUnmetDemandKcal:number;
   endurancePowerAvailability:number;
 }
+export interface RaceRiderCheckpoint {
+  riderId:string;teamId:string;specialty:string;role:RaceRole;
+  km:number;timeS:number;positionM:number;
+  gapToLeaderM:number;groupIndex:number;groupSize:number;
+  speedKmh:number;appliedPowerW:number;
+  dayCpW:number;wPrimeRemainingPct:number;
+  carbohydrateKcal:number;carbohydrateUnmetKcal:number;
+  enduranceAvailabilityPct:number;aeroFactor:number;
+  segmentIndex:number;
+}
+export interface RaceCheckpoint {
+  km:number;timeS:number;leaderId:string;activeRiders:number;
+  groupCount:number;largestGroup:number;
+  frontToBackM:number;groupSizes:number[];
+  riders:RaceRiderCheckpoint[];
+}
 export interface RaceResult {
   title:string;distanceM:number;durationS:number;steps:number;seed:number;
   classification:RaceClassification[];
   events:RaceEvent[];snapshots:RaceSnapshot[];
+  /** Optionaler 5-km-Audit ohne Eingriff in die Rennmechanik. */
+  checkpoints?:RaceCheckpoint[];
   winnerId:string;finisherCount:number;
   /** Klein gehaltene, überprüfbare Testdiagnosen. */
   diagnostics:{attacks:number;chases:number;sprints:number;
@@ -188,6 +208,9 @@ export function validateRace(x:RaceInput):void {
   if(x.enduranceModel!==undefined&&
     x.enduranceModel!=='off'&&x.enduranceModel!=='long')
     throw new RangeError('Rennsimulation: enduranceModel ungültig');
+  if(x.diagnosticLevel!==undefined&&
+    x.diagnosticLevel!=='checkpoints')
+    throw new RangeError('Rennsimulation: diagnosticLevel ungültig');
   if(x.tacticModel!==undefined&&
     x.tacticModel!=='r14'&&x.tacticModel!=='r15-r16')
     throw new RangeError('Rennsimulation: tacticModel ungültig');
@@ -258,6 +281,10 @@ export function simulateRace(x:RaceInput):RaceResult {
   const events:RaceEvent[]=[{timeS:0,km:0,type:'start',
     description:`${states.length} Fahrer starten auf ${(totalM/1000).toFixed(1)} km`}];
   const snapshots:RaceSnapshot[]=[];
+  const checkpoints:RaceCheckpoint[]|undefined=
+    x.diagnosticLevel==='checkpoints'?[]:undefined;
+  const lastPower=new Map<string,number>();
+  const lastAero=new Map<string,number>();
   const dt=x.stepSeconds??1;
   let t=0,steps=0,nextTacticS=0,nextSnapshotM=5000;
   let previousLeaders=new Map<string,{riderId:string;sinceS:number}>();
@@ -529,6 +556,10 @@ export function simulateRace(x:RaceInput):RaceResult {
           counters.maximumEndurancePenalty,1-end.powerAvailability);
       }
       powers.set(s.rider.id,cp.appliedPowerW);
+      if(checkpoints){
+        lastPower.set(s.rider.id,cp.appliedPowerW);
+        lastAero.set(s.rider.id,aeroFactor);
+      }
       next.set(s.rider.id,advanceMotionStep({
         speedMps:s.speedMps,stepSeconds:dt,
         crankPowerW:cp.appliedPowerW,rider:roadPhysical,
@@ -607,6 +638,42 @@ export function simulateRace(x:RaceInput):RaceResult {
         }else catchSinceS=null;
       }
       if(best.positionM>=nextSnapshotM){
+        if(checkpoints){
+          const memberships=new Map<string,{index:number;size:number}>();
+          groups.forEach((group,index)=>group.forEach(r=>
+            memberships.set(r.rider.id,{index,size:group.length})));
+          const riderRows:RaceRiderCheckpoint[]=inRace.map(r=>{
+            const membership=memberships.get(r.rider.id)!;
+            return {
+              riderId:r.rider.id,teamId:r.rider.teamId,
+              specialty:r.rider.specialty??'unspecified',
+              role:r.rider.role,
+              km:best.positionM/1000,timeS:t,positionM:r.positionM,
+              gapToLeaderM:Math.max(0,best.positionM-r.positionM),
+              groupIndex:membership.index,groupSize:membership.size,
+              speedKmh:r.speedMps*3.6,
+              appliedPowerW:lastPower.get(r.rider.id)??0,
+              dayCpW:r.dayCpW,
+              wPrimeRemainingPct:100*r.physiology.remainingWPrimeJ/
+                r.profile.wPrimeCapacityJ,
+              carbohydrateKcal:r.endurance.carbohydrateKcal,
+              carbohydrateUnmetKcal:r.endurance.carbohydrateUnmetDemandKcal,
+              enduranceAvailabilityPct:100*(x.enduranceModel==='off'?1:
+                endurancePowerAvailability(r.endurance)),
+              aeroFactor:lastAero.get(r.rider.id)??1,
+              segmentIndex:r.segmentIndex,
+            };
+          });
+          const minPosition=Math.min(...inRace.map(r=>r.positionM));
+          checkpoints.push({
+            km:best.positionM/1000,timeS:t,leaderId:best.rider.id,
+            activeRiders:inRace.length,groupCount:groups.length,
+            largestGroup:Math.max(...groups.map(g=>g.length)),
+            frontToBackM:best.positionM-minPosition,
+            groupSizes:groups.map(g=>g.length),
+            riders:riderRows,
+          });
+        }
         snapshots.push({timeS:t,km:best.positionM/1000,leaderId:best.rider.id,
           activeRiders:inRace.length,
           groupSizes:groups.map(g=>g.length),
@@ -645,6 +712,7 @@ export function simulateRace(x:RaceInput):RaceResult {
   return {title:x.title,distanceM:totalM,
     durationS:Math.max(...sorted.map(s=>s.finishTimeS!)),
     steps,seed:x.seed,classification,events,snapshots,
+    ...(checkpoints?{checkpoints}:{}),
     winnerId:sorted[0].rider.id,finisherCount:sorted.length,
     diagnostics:{...counters,maximumGroups,teams:x.teams.length,
       participants:states.length,raceDistanceKm:totalM/1000,

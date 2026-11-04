@@ -1,0 +1,51 @@
+name: R-22 – Ursachen-Audit (154 Fahrer)
+
+# Nur manuell, 3 volle Rennen mit demselben Seed:
+# Ausgangsmodell, R19 ohne Langzeitermüdung, Legacy-Windschatten.
+on:
+  workflow_dispatch:
+    inputs:
+      route:
+        description: 'Referenzrennen (immer 22 Teams × 7 Fahrer)'
+        type: choice
+        options:
+          - tdf25_lille
+          - tdf25_boulogne
+          - lbl25_liege
+          - tdf25_hautacam
+        required: true
+        default: tdf25_lille
+      seed:
+        description: 'Gemeinsamer Seed (Standard 2026)'
+        type: string
+        default: '2026'
+        required: true
+
+permissions:
+  contents: read
+jobs:
+  causes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Drei komplette 154-Fahrer-Vergleichsrennen mit 5-km-Diagnostik
+        env:
+          ROUTE: ${{ inputs.route }}
+          SEED: ${{ inputs.seed }}
+        run: |
+          set -euo pipefail
+          node --experimental-strip-types scripts/r22-causal-audit.mjs \
+            --route "$ROUTE" --seed "$SEED" --output artifacts/r22-causal
+          cat artifacts/r22-causal/summary.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Komplette anonymisierte Messwerte als Artefakt
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r22-ursachen-audit
+          path: artifacts/r22-causal/
+          retention-days: 30
+          if-no-files-found: warn
