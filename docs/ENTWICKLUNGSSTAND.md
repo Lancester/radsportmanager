@@ -1415,3 +1415,60 @@ Neuer manueller Workflow
 (154 Fahrer)** mit vier Strecken
 und frei wählbarem Seed; keine
 automatischen Monte-Carlo-Kampagnen.
+
+
+## R-22 – physische Helfer-Aufrückarbeit und Relais-Jagd, 04.11.2026
+
+[PR #60](https://github.com/Lancester/radsportmanager/pull/60)
+**erfolgreich gemergt**; [PR-CI #41782295118](https://github.com/Lancester/radsportmanager/actions/runs/41782295118)
+**255/255 Tests erfolgreich**. Vollständiger Bericht:
+[docs/race/R22_RELAY_JAGD_EXPERIMENT.md](race/R22_RELAY_JAGD_EXPERIMENT.md).
+
+Zwei weitere **nicht-standardmäßig aktivierte** KI-Versuche
+erweitern die früheren Modelle, ohne CP/W′/R-19, Aero-Kern
+oder Bewegung zu verändern:
+- `groupRidingModel:'relays'`: physischer Aufstieg
+  nominierter Mannschaftshelfer nach vorn
+  (bis zu vier, maximal 300 m rückliegend,
+  nur bei echtem Team-Jagdmandat).
+- `groupRidingModel:'relay-paced'`: die unterstützenden
+  Helfer arbeiten sich mit physisch berechneter
+  Gruppen-Mitfahrleistung plus max. 42 W
+  und Deckel 102,5 % Tages-CP kontrolliert
+  zur Front, statt dauerhaft blind 110 % CP
+  anzufordern. Ein echter Fronthelfer kann
+  weiterhin seinen taktischen Jagdauftrag erfüllen.
+
+**Erstmalig messbare KPI:** beauftragte Jagdsekunden
+gegenüber Sekunden, in denen tatsächlich
+ein nominierter Verfolger an der Spitze
+der größten physischen Gruppe führt.
+Lille 184,9 km, 154 Fahrer, Seed 2026:
+- `relays`: 6.870 s Auftrag,
+  **109 s tatsächliche Frontjagd**;
+  größte Zielgruppe 116 Fahrer,
+  **12:55 min** hinter Sieger.
+- `relay-paced`: 11.430 s Auftrag,
+  **1.848 s tatsächliche Frontjagd**;
+  größte Zielgruppe 67 Fahrer,
+  **6:06 min** hinter Sieger.
+  464 individuelle Jagd-Intent-Wechsel,
+  24 maximale Gruppen und Mittelwatt ~208 W.
+
+Die gemessene Teamführungszeit steigt stark,
+aber **Jagd-/Führungsrotation ist noch NICHT
+realistisch**, die Gruppenkohäsion wird schlechter,
+und der Zielgruppen-Rückstand ist für ein
+echtes sprintdominiertes Flachrennen noch
+deutlich zu groß. Die Verbesserung darf
+nicht als Abschluß der Kalibrierung gelten.
+**Standard bleibt `legacy`; keine Freigabe R-23.**
+
+Neuer A/B/C/D/E-Vergleich läuft über den weiterhin
+**ausschließlich manuell startbaren**
+[Gruppen-KI-A/B-Workflow](https://github.com/Lancester/radsportmanager/actions/workflows/r22-group-ai-ab.yml).
+Nächster Schritt: physische Ablösung und
+Rückkehr von Helfern (nicht dauerhaftes
+W′-Aufbrauchen), Jagd-Auftragsdauer,
+Pelotonspitzen-Pacing, dann mehrere Seeds
+und voneinander unabhängige Rennprofile prüfen.
