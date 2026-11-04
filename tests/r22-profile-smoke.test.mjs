@@ -48,8 +48,28 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
     assert.ok(trace.trace.every(x=>x.winnerRank>=1&&x.winnerRank<=154&&
       x.winnerGapM>=0));
   }
+  const favoritesLines=log.split('\n').filter(line=>
+    line.startsWith('R22-FAVORITES '));
+  assert.equal(favoritesLines.length,4);
+  const favorites=favoritesLines.map(line=>JSON.parse(
+    line.slice('R22-FAVORITES '.length)));
+  assert.deepEqual(favorites.map(x=>x.route),Object.keys(REFERENCE_ROUTES));
+  for(const x of favorites){
+    assert.equal(x.seed,2026);
+    assert.equal(x.calibrated,false);
+    assert.equal(x.perCategory.length,5);
+    assert.equal(x.profileTopThree.length,3);
+    assert.equal(x.topTenProfileStrengthPositions.length,10);
+    assert.ok(x.winnerProfileStrengthRank>=1&&
+      x.winnerProfileStrengthRank<=154);
+    assert.ok(x.perCategory.every(cat=>
+      cat.participants>=1&&cat.strongest.strengthRank===1&&
+      cat.strongest.finishRank>=1&&cat.strongest.finishRank<=154&&
+      cat.topThree.length>=1&&cat.topThree.length<=3));
+  }
   console.log(lines.join('\n'));
   console.log(traces.join('\n'));
+  console.log(favoritesLines.join('\n'));
   console.log(summaryLine);
 });
 

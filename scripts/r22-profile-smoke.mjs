@@ -12,6 +12,7 @@ import {createReferenceFixture,REFERENCE_ROUTES}
 import {simulateRace} from '../src/engine/race/race-simulator.ts';
 import {finishGroupMetrics} from '../src/engine/race/finish-groups.ts';
 import {auditRace} from '../src/engine/race/race-audit.ts';
+import {buildRiderFavoritesAudit} from '../src/engine/race/rider-strength-audit.ts';
 
 const ids=Object.keys(REFERENCE_ROUTES);
 const args={route:'all',seed:'2026'};
@@ -80,6 +81,11 @@ for(const id of routes){
   };
   results.push(details);
   console.log('R22-PROFILE '+JSON.stringify(details));
+  const favorites=buildRiderFavoritesAudit(fixture.input.riders,
+    r.classification,fixture.route.kind);
+  console.log('R22-FAVORITES '+JSON.stringify({
+    route:id,seed,...favorites,
+  }));
   // Nur Diagnose: keine zusätzliche Simulation. Wie kam der Sieger
   // tatsächlich zu seiner Position vor der letzten Selektion?
   const sampleKm=[.25,.5,.75,.9]
