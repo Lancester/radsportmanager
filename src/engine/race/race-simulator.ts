@@ -27,7 +27,7 @@ import {decideTeamPace} from './team-pacing.ts';
 import {decideIntelligentCrew,analyzeRaceSituation} from './race-team-ai.ts';
 import {coordinatePelotonChase} from './peloton-chase.ts';
 import {initialChaseHelperLoad,advanceChaseHelperLoad,
-  spentHelperRetreatPower} from './chase-helper-fatigue.ts';
+  spentHelperRetreatPower,decideCommittedChasePull} from './chase-helper-fatigue.ts';
 import type {ChaseHelperLoad} from './chase-helper-fatigue.ts';
 import type {ChaseCoordinatorState} from './peloton-chase.ts';
 import {initialEnduranceState,advanceEndurance,endurancePowerAvailability}
@@ -150,6 +150,9 @@ export interface RaceResult {
     spentChaseHelpers?:number;
     intentionalChaseRetreatSeconds?:number;
     spentChaseHelperIds?:string[];
+    /** Mit wirklich anliegender Leistung physisch gefahrene Hochjagdzeit. */
+    committedChasePullSeconds?:number;
+    realFrontChaseCpSeconds?:number;
     /** Beobachtete Position/Helfer an der Sprintfreigabe (keine Sieggarantie). */
     sprintFinale?:Array<{riderId:string;rankInGroup:number;
       groupSize:number;helpersWithin30M:number;helpersAheadWithin30M:number;
@@ -370,6 +373,7 @@ export function simulateRace(x:RaceInput):RaceResult {
   let actualSprintTrainRiderSeconds=0,nearSprinterTrainRiderSeconds=0;
   let lateSprintChaseRiderSeconds=0;
   let intentionalChaseRetreatSeconds=0;
+  let committedChasePullSeconds=0,realFrontChaseCpSeconds=0;
   const spentChaseHelperIds:string[]=[];
   const sprintFinale:NonNullable<RaceResult['diagnostics']['sprintFinale']>=[];
   const sprintFinaleObserved=new Set<string>();
@@ -1075,6 +1079,28 @@ export function simulateRace(x:RaceInput):RaceResult {
             Math.min(2.7,Math.max(0.1,(s.speedMps-limit)*1.8));
         }
       }
+      // Lange, reale Jagd auf eine noch abgesetzte Spitzengruppe:
+      // ein HELFER an der ECHTEN Gruppenfront darf 12–20 Minuten
+      // bewusst hoch, aber CP-/W′-/R-19-gedeckelt nachführen.
+      // Im geschützten Feld dahinter KEIN kostenloses Vollgas.
+      const pull=sprintFriendlyRace&&!s.chaseLoad.spent?
+        decideCommittedChasePull({
+          enabled:true,progress:s.positionM/totalM,
+          strategy:teams.get(s.rider.teamId)!.strategy,
+          role:s.rider.role,mission:s.crewMission,duty:s.crewDuty,
+          groupSize:actualGroupSize.get(s.rider.id)??1,
+          distanceFromGroupFrontM:Math.max(0,
+            (actualGroupFront.get(s.rider.id)??s.positionM)-s.positionM),
+          escapeGapM:Math.max(0,leader.positionM-
+            (actualGroupFront.get(s.rider.id)??s.positionM)),
+          remainingM:Math.max(0,totalM-s.positionM),
+          cpW:s.dayCpW,reserveFraction:
+            s.physiology.remainingWPrimeJ/s.profile.wPrimeCapacityJ,
+          enduranceAvailability:x.enduranceModel==='off'?1:
+            endurancePowerAvailability(s.endurance),
+          originalRequestedW:commanded,
+        }):null;
+      if(pull!==null&&pull>commanded+1)commanded=pull;
       // Absichtlich ausrollen: erst NACH allen Gruppenreglern als
       // Begrenzung, sonst würde die Feld-KI sofort wieder beschleunigen.
       if(sprintFriendlyRace){
@@ -1091,6 +1117,15 @@ export function simulateRace(x:RaceInput):RaceResult {
         commanded*=endurancePowerAvailability(s.endurance);
       }
       const cp=applyCpWprimeStep(s.profile,s.physiology,commanded,dt);
+      if(pull!==null&&cp.appliedPowerW>=s.dayCpW*.86){
+        committedChasePullSeconds+=dt;
+      }
+      if(sprintFriendlyRace&&s.crewMission==='jagd'&&
+        s.crewDuty==='fuehrung'&&
+        (actualGroupFront.get(s.rider.id)??s.positionM)-s.positionM<=18&&
+        (actualGroupSize.get(s.rider.id)??1)>=8&&
+        cp.appliedPowerW>=s.dayCpW*.86&&
+        s.positionM/totalM>=2/3)realFrontChaseCpSeconds+=dt;
       s.physiology=cp.state;
       if(x.enduranceModel!=='off'){
         const end=advanceEndurance({
@@ -1114,6 +1149,10 @@ export function simulateRace(x:RaceInput):RaceResult {
             (actualGroupFront.get(s.rider.id)??s.positionM)-s.positionM),
           physicalGroupSize:actualGroupSize.get(s.rider.id)??1,
           criticalPowerW:s.dayCpW,appliedCrankPowerW:cp.appliedPowerW,
+          reserveFraction:s.physiology.remainingWPrimeJ/
+            s.profile.wPrimeCapacityJ,
+          enduranceAvailability:x.enduranceModel==='off'?1:
+            endurancePowerAvailability(s.endurance),
         });
         s.chaseLoad=load.state;
         if(load.retireNow){
@@ -1305,7 +1344,8 @@ export function simulateRace(x:RaceInput):RaceResult {
           actualSprintTrainRiderSeconds,nearSprinterTrainRiderSeconds,
           lateSprintChaseRiderSeconds,sprintFinale,
           spentChaseHelpers:spentChaseHelperIds.length,
-          spentChaseHelperIds,intentionalChaseRetreatSeconds}:{}),
+          spentChaseHelperIds,intentionalChaseRetreatSeconds,
+          committedChasePullSeconds,realFrontChaseCpSeconds}:{}),
         ...((x.groupRidingModel==='front-gated'||x.groupRidingModel==='stable-pack')?
           {unprovokedBreakawayCount}:{}),
       }:{}),teams:x.teams.length,
