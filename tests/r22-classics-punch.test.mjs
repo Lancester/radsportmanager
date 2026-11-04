@@ -9,7 +9,8 @@ const base={
   segmentLengthM:1600,segmentProgress:.45,gradeFraction:.088,
   groupSize:26,distanceFromGroupFrontM:14,
   criticalPowerW:368,reserveFraction:.93,lastAttackAgeS:1500,
-  currentIntent:'windschatten',speedMps:5.2,
+  currentIntent:'windschatten',designatedRampRider:true,
+  attackRankInGroup:1,gapToActualRaceFrontM:30,speedMps:5.2,
   riderMassKg:71,bikeMassKg:7.7,dragAreaM2:.274,
   airDensityKgM3:1.2,rollingCoefficient:.004,
   drivetrainEfficiency:.975,headwindMps:0,crosswindMps:0,
@@ -33,6 +34,9 @@ test('R22 Klassiker: keine Spezialattacke im Flach-/Hügel-/Bergprofil und keine
     {...base,distanceFromGroupFrontM:116},
     {...base,reserveFraction:.2},
     {...base,specialty:'sprinter'},
+    {...base,designatedRampRider:false},
+    {...base,attackRankInGroup:2},
+    {...base,gapToActualRaceFrontM:1400},
     {...base,role:'helfer'},
     {...base,criticalPowerW:250},
     {...base,speedMps:9},
@@ -53,4 +57,17 @@ test('R22 Klassiker: kurzer entschlossener Ausreißversuch, danach bewusste Erho
     lastAttackAgeS:190}),null);
   assert.equal(decideClassicsPunch({...base,lastAttackAgeS:350}),null);
   assert.ok(decideClassicsPunch({...base,lastAttackAgeS:700}));
+});
+
+
+test('R22 Klassiker: stärkster vorgesehener Helfer darf selektiv attackieren, normale Helfer nicht',()=>{
+  const helper={...base,role:'helfer',designatedRampRider:true};
+  assert.ok(decideClassicsPunch(helper),
+    'sportlich nominierter starker Helfer darf mit echter Wprime-Leistung attackieren');
+  assert.equal(decideClassicsPunch({...helper,attackRankInGroup:3}),null);
+  assert.equal(decideClassicsPunch({...helper,designatedRampRider:false}),null);
+  // Auch nach echter Ablösung darf die begonnene Attacke weitergehen.
+  assert.ok(decideClassicsPunch({...helper,currentIntent:'angriff',
+    attackRankInGroup:0,groupSize:1,gapToActualRaceFrontM:1500,
+    lastAttackAgeS:80}));
 });
