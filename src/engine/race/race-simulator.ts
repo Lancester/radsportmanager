@@ -140,6 +140,9 @@ export interface RaceResult {
     sprintPositioningSeconds?:number;sprintEscortSeconds?:number;
     leadoutPaceCoordinationSeconds?:number;
     independentWheelFindingSeconds?:number;
+    actualSprintTrainRiderSeconds?:number;
+    nearSprinterTrainRiderSeconds?:number;
+    lateSprintChaseRiderSeconds?:number;
     /** Beobachtete Position/Helfer an der Sprintfreigabe (keine Sieggarantie). */
     sprintFinale?:Array<{riderId:string;rankInGroup:number;
       groupSize:number;helpersWithin30M:number;helpersAheadWithin30M:number;
@@ -355,6 +358,8 @@ export function simulateRace(x:RaceInput):RaceResult {
   let climbingTempoSeconds=0;
   let sprintPositioningSeconds=0,sprintEscortSeconds=0;
   let leadoutPaceCoordinationSeconds=0,independentWheelFindingSeconds=0;
+  let actualSprintTrainRiderSeconds=0,nearSprinterTrainRiderSeconds=0;
+  let lateSprintChaseRiderSeconds=0;
   const sprintFinale:NonNullable<RaceResult['diagnostics']['sprintFinale']>=[];
   const sprintFinaleObserved=new Set<string>();
   let mainFieldFrontWorkWithAssignedChaserS=0;
@@ -415,6 +420,7 @@ export function simulateRace(x:RaceInput):RaceResult {
           riders:planningRiders,situation:analyzeRaceSituation(
             planningRiders,Math.max(0,totalM-leader.positionM)),
           previous:chaseState,
+          sprintFinaleMode:sprintFriendlyRace,
         });
         chaseState=next.state;
         return next;
@@ -424,6 +430,7 @@ export function simulateRace(x:RaceInput):RaceResult {
         remainingM:Math.max(0,totalM-leader.positionM),
         teams:teamRefs,riders:planningRiders,
         previousLeaders,
+        sprintFinaleMode:sprintFriendlyRace,
         ...(teamRefsAndChase?{
           chasingTeamIds:teamRefsAndChase.chasingTeamIds,
           restInPeloton:true,
@@ -788,6 +795,17 @@ export function simulateRace(x:RaceInput):RaceResult {
       }
     }
     for(const s of active){
+      if(sprintFriendlyRace){
+        const protectedSprinter=targetByTeam.get(s.rider.teamId);
+        if(s.crewMission==='sprintzug'){
+          actualSprintTrainRiderSeconds+=dt;
+          if(protectedSprinter&&
+            Math.abs(s.positionM-protectedSprinter.positionM)<=30)
+            nearSprinterTrainRiderSeconds+=dt;
+        }else if(s.crewMission==='jagd'&&
+          leader.positionM/totalM>=.75)
+          lateSprintChaseRiderSeconds+=dt;
+      }
       const index=segmentFor(s,boundaries);
       const segment=x.segments[index];
       const pack=decidePackInstruction({
@@ -1234,7 +1252,8 @@ export function simulateRace(x:RaceInput):RaceResult {
         ...(x.groupRidingModel==='stable-pack'?{
           climbingTempoSeconds,sprintPositioningSeconds,sprintEscortSeconds,
           leadoutPaceCoordinationSeconds,independentWheelFindingSeconds,
-          sprintFinale}:{}),
+          actualSprintTrainRiderSeconds,nearSprinterTrainRiderSeconds,
+          lateSprintChaseRiderSeconds,sprintFinale}:{}),
         ...((x.groupRidingModel==='front-gated'||x.groupRidingModel==='stable-pack')?
           {unprovokedBreakawayCount}:{}),
       }:{}),teams:x.teams.length,
