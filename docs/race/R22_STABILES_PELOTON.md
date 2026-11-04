@@ -23,3 +23,26 @@ Der vorhandene `group-riding.ts`-Regler ist erst ab acht Fahrern aktiv, schaltet
 ## Nächster Schritt
 
 Nach grüner Regression zunächst eigenständig A/B mit realen Referenzstrecken (Lille und Boulogne) und mehr als einem Seed in manuell ausgelösten Vergleichsläufen. Nur bei konsistent besseren Zielgruppen und Verfolgungsdaten einen späteren Default-Wechsel vorschlagen – **nicht automatisch aktivieren**. Physische Fehler in CP/W′, R-19 oder Wind würden separat mit eigenem Gegenversuch geprüft.
+
+
+## Erste reale 154-Fahrer-Befunde (Lille 184,9 km; Seed 2026)
+
+### Versuch A: nur lokale Mitfahrwatt-Regelung
+[GitHub Actions #41787319242](https://github.com/Lancester/radsportmanager/actions/runs/41787319242) bestand **261/261 Tests**. Im identischen A/B-Rennen ergab `stable-pack` eine **größte Zielgruppe von 27 Fahrern** mit **576,48 s** Rückstand; maximal **30** Abstandsgruppen und **0** registrierte Attacken. Das war keine ausreichende Verbesserung. Der Test deckte auf, dass das bloße Halten der aktuellen Vordermanngeschwindigkeit zu spät auf gemeinsame Beschleunigungsphasen reagiert.
+
+### Versuch B: Leistungsbedarf für Gruppenbeschleunigung ergänzt
+Der Regler fordert nun zusätzlich die mechanisch erforderliche Beschleunigungsarbeit aus der **berechneten Pacesetter-Beschleunigung** an, weiterhin über denselben CP/W′-/Bewegungskern. Nur der tatsächliche `isPacer`-Fahrer an der Gruppenfront erhält unmittelbar volle Jagd-Wattwünsche.
+
+[GitHub Actions #41787836473](https://github.com/Lancester/radsportmanager/actions/runs/41787836473) hat **260/261 Tests** bestanden; der eine Fehltest verlangte irrtümlich volle Führung von einem als `isPacer:false` gekennzeichneten Fahrer und wurde als Testaufbaufehler korrigiert. Die in diesem Lauf **tatsächlich vollständig gerechnete** siebenfache 154-Fahrer-Diagnose ergab für die neue Variante:
+
+| Kriterium | Versuch A | Versuch B |
+| --- | ---: | ---: |
+| Größte Zielgruppe | 27 | **88** |
+| Rückstand dieser Zielgruppe | 576,48 s | **569,96 s** |
+| Maximale Abstandsgruppen | 30 | **26** |
+| Tatsächliche Jagd-Führungszeit | 762 s | **892 s** |
+| Registrierte Attacken | 0 | **2** |
+
+**Bewertung:** Der separate Physik-/KI-Beschleunigungsfix verbessert die Anfangskohäsion deutlich (bei Kilometer 5 in Versuch B zwei statt elf Abstandsgruppen). Aber selbst 88 Fahrer kommen **9:30 min** hinter dem Sieger an. So ist die KI für einen glaubwürdigen Massensprint **nicht freigegeben**. Die Folge-CI für den korrigierten Testaufbau ist separat abzuwarten. Keine Änderung des Defaults und keine Freigabe von R-23.
+
+Die Ursache ist wahrscheinlich **nicht nur** die Nachfahrregelung. Zu prüfen sind, ohne heimliche Ergebnis-Boni: die Stärke der frühen Führungsbeschleunigung, tatsächliche Feldführungsposition, die reale Fahrerleistungsverteilung und die Reaktionsschwellen der jagenden Mannschaften. Der 600-s-Kontrolltest muss durch gestaffelte Fahrerprofile und längere, aber noch reproduzierbare Fahrgruppen ergänzt werden. Ein günstiger Einzelfall ist keine Validierung.
