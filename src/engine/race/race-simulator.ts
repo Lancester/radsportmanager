@@ -219,6 +219,10 @@ export function validateRace(x:RaceInput):void {
        typeof t.name!=='string'||!t.name.trim()||
        !['ausgewogen','offensiv','sprint','kapitaen_schuetzen'].includes(t.strategy))
       throw new RangeError('Rennsimulation: Team oder Leitlinie ungültig');
+    if(t.chaseHelperCount!==undefined&&(
+      !Number.isInteger(t.chaseHelperCount)||
+      t.chaseHelperCount<0||t.chaseHelperCount>5))
+      throw new RangeError('R-22: Jagdhelferanzahl 0–5');
     teamIds.add(t.id);
   }
   const riderIds=new Set<string>();
