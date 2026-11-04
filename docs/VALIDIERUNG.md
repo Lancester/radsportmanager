@@ -813,3 +813,49 @@ Rennengine simuliert **nur Einzelrennen**;
 Karriere und Rundfahrten bleiben getrennt.
 [Umfang und Messungen](race/R17_R21_ENGINE_ABSCHLUSS.md),
 [verbindlicher Fahrplan](race/ROADMAP_R17_R23_VERBINDLICH.md).
+
+
+## R-22A/B/C – verifizierte neue Referenzfelder (04.11.2026)
+
+- Vier **quellenbasierte** historische Rennanker
+  (Lille 184,9 km/1065 hm,
+  Boulogne 209,1 km/2164 hm,
+  Liège–Bastogne–Liège 252 km/
+  3346 nur modellierte hm,
+  Hautacam 180,6 km/3850 hm).
+- Verifizierte Gesamtdistanzen;
+  eindeutige Anstiegslängen/
+  Mittelsteigungen; alle
+  Abschnitte innerhalb der
+  bestehenden Physik-/Eingabegrenzen;
+  modellierte Auf-/Abstiege und
+  keine frei erfundenen Original-GPX-Aussagen.
+- 22 unterschiedliche
+  taktische Mannschaften à sieben
+  fiktive Fahrer, leistungsbasierte
+  Typfelder und unterschiedliche
+  Sprint-/Berg-/Klassiker-/Flucht-
+  und Allrounder-Verteilungen
+  je Rennprofil.
+- [Vier durchgerechnete 154er-Vollrennen #41768768694](https://github.com/Lancester/radsportmanager/actions/runs/41768768694)
+  **616 vollständige Zielankünfte**,
+  CP/W′, mechanische Energiebilanz,
+  Kohlenhydrat- und Fluchtaudits grün;
+  anschließender Einmal-Workflow entfernt.
+- Einfache Monte-Carlo-Schnellwahl
+  (vier Parameter), Fahrer-/Team-
+  und Streckenquellenmanifest
+  `reference-scenario.json`;
+  alte kleine Tests funktionieren
+  mit `--scenario legacy` weiter.
+
+**Abgrenzung:** technische Referenz-Datenabnahme
+ist noch keine sportliche Endkalibrierung.
+Nicht mit einem realen Höhenmeter- und
+Gruppenverlauf verwechseln. Künftige
+R-22-Tests brauchen echte Höhenprofile
+mit geeigneter Lizenz, unabhängige
+Profi-Ergebnisdaten, GPX-Fehleranalyse
+und gezielte Kalibrierung von
+Langzeitausdauer/CP/W′/Aero/Gruppe.
+R-23 Freigabe erst danach.
