@@ -243,3 +243,38 @@ Kohlenhydrat-Bilanzkorrektur und dem
 verbindlichen Projektfahrplan wird erst
 nach separater PR-/main-CI als
 endgültig technisch freigegeben.
+
+
+## Finale GitHub-Hauptzweigfreigabe für R-17–R-21 (04.11.2026)
+
+[PR #53](https://github.com/Lancester/radsportmanager/pull/53)
+ist mit Squash-Commit `9a8aeacf5e8afe3dfa6f8324229fea7cfd4529b7`
+auf `main` übernommen.
+
+**Verifizierte vollständige reguläre Main-CI**
+[GitHub Actions #41745212283](https://github.com/Lancester/radsportmanager/actions/runs/41745212283):
+**241/241 Tests, 0 Fehler**, drei komplette
+30-Fahrer-Referenzrennen, TypeScript-ESM-Browserbuild,
+Smoketest und erfolgreiche GitHub-Pages-Veröffentlichung.
+Die fünf vollständigen Langstrecken- und Großfeldläufe
+mit insgesamt **686 Zielankünften** sind zusätzlich
+erfolgreich in
+[Actions #41744830294](https://github.com/Lancester/radsportmanager/actions/runs/41744830294)
+geprüft worden (einschließlich Browser-ESM-Test).
+Der einmalige Stressworkflow ist wieder entfernt;
+`npm run test:scale` bleibt zur Reproduktion.
+
+**Fachliches Urteil:** R-17 bis R-21 sind
+**technisch implementiert und getestet**,
+die Rennengine ist jedoch **noch nicht
+abschließend auf Profi-Rennrealismus kalibriert**.
+Lange Einzelrennen mit 154 Fahrern sind
+nun möglich, aber die gruppen- und profilabhängigen
+großen Rückstände, die Langzeitausdauerparameter
+und Wind-/Formationsheuristiken sind ausdrücklich
+Gegenstand des separat vereinbarten
+**[R-22-Issues #54](https://github.com/Lancester/radsportmanager/issues/54)**.
+Erst danach folgt das **R-23-Freigabegate**.
+
+Keine Rundfahrten, Karrieremodus, Transfers,
+Mitarbeiter oder Saisons in diesem Paket.
