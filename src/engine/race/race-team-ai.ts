@@ -275,8 +275,17 @@ export function decideIntelligentCrew(input:{
     if(chase&&input.sprintFinaleMode&&input.progress>=2/3&&
       fieldPrior&&requested>0){
       const established=sorted.find(r=>
-        r.id===fieldPrior.riderId&&gapToFront(r)<=72);
-      if(established&&!selected.some(r=>r.id===established.id))
+        r.id===fieldPrior.riderId&&
+        (gapToFront(r)<=72||
+          (input.timeS-fieldPrior.sinceS<180&&gapToFront(r)<=300)));
+      // Neuen Nachrückern tatsächlich mehrere KI-Takte zum physischen
+      // Aufschließen geben. Sonst gewinnt bei jeder 10-s-Entscheidung
+      // der nächste beliebige Helfer 5 m weiter vorn; niemand kommt an.
+      // Einen bereits wirklich vorne verfügbaren Helfer nicht blockieren.
+      const realReplacement=selected.some(r=>
+        gapToFront(r)<=R15_R16.frontWorkRadiusM);
+      if(established&&!selected.some(r=>r.id===established.id)&&
+        (gapToFront(established)<=72||!realReplacement))
         selected[selected.length-1]=established;
     }
     // Führung nur wenn der Helfer tatsächlich VOR dem zu schützenden
@@ -386,16 +395,17 @@ export function decideIntelligentCrew(input:{
     const previous=input.previousFieldChaseLeader??
       [...(input.previousLeaders?.values()??[])].find(p=>
         candidates.some(c=>c.rider.id===p.riderId));
+    const ready=candidates.find(c=>
+      frontM-c.rider.positionM<=R15_R16.frontWorkRadiusM);
     const kept=previous?candidates.find(c=>
       c.rider.id===previous.riderId&&
-      frontM-c.rider.positionM<=72):undefined;
+      (frontM-c.rider.positionM<=72||
+        (input.timeS-previous.sinceS<180&&!ready))):undefined;
     // Ein frischer Helfer muss nicht magisch schon an der 18-m-Front
     // stehen. Ist keiner vorne, wird der nächstplatzierte TATSÄCHLICH
     // im Hauptfeld vorhandene Jäger als Nachrücker nominiert. Er hat
     // bis zur wirklichen Feldspitze nur Unterstützungspflicht; seinen
     // Abstand muss er mit eigenen Watt nach und nach schließen.
-    const ready=candidates.find(c=>
-      frontM-c.rider.positionM<=R15_R16.frontWorkRadiusM);
     const fresh=candidates.find(c=>
       c.rider.id!==previous?.riderId);
     const chosen=kept??ready??fresh??candidates[0];
