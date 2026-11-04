@@ -14,6 +14,7 @@ const observation={
   gradeFraction:.078,rollingCoefficient:.004,airDensityKgM3:1.2,
   drivetrainEfficiency:.975,headwindMps:0,crosswindMps:0,
   specialty:'kletterer',role:'kapitaen',remainingM:13500,
+  climbLengthM:13500,
 };
 test('R22 Kletter-KI: nur echte nachhaltige Pedalwatt, niemals Zeit-/Positionsbonus',()=>{
   const p=decideClimbTempo(observation);
@@ -26,6 +27,7 @@ test('R22 Kletter-KI: kein Berg-Privileg auf Ebene, für schwere Sprinter oder b
   for(const obs of [
     {...observation,gradeFraction:0},
     {...observation,gradeFraction:0.045},
+    {...observation,climbLengthM:1100},
     {...observation,specialty:'sprinter'},
     {...observation,tacticalIntent:'sprint'},
     {...observation,tacticalIntent:'angriff'},
