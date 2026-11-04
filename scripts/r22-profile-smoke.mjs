@@ -83,6 +83,8 @@ for(const id of routes){
     actualSprintTrainRiderSeconds:r.diagnostics.actualSprintTrainRiderSeconds??0,
     nearSprinterTrainRiderSeconds:r.diagnostics.nearSprinterTrainRiderSeconds??0,
     lateSprintChaseRiderSeconds:r.diagnostics.lateSprintChaseRiderSeconds??0,
+    spentChaseHelpers:r.diagnostics.spentChaseHelpers??0,
+    intentionalChaseRetreatSeconds:r.diagnostics.intentionalChaseRetreatSeconds??0,
     top10Types:r.classification.slice(0,10).map(x=>kindByRider.get(x.id)),
     runtimeS:n((performance.now()-start)/1000),
   };
@@ -196,7 +198,27 @@ for(const id of routes){
     actualSprintTrainRiderSeconds:r.diagnostics.actualSprintTrainRiderSeconds??0,
     nearSprinterTrainRiderSeconds:r.diagnostics.nearSprinterTrainRiderSeconds??0,
     lateSprintChaseRiderSeconds:r.diagnostics.lateSprintChaseRiderSeconds??0,
+    spentChaseHelpers:r.diagnostics.spentChaseHelpers??0,
+    intentionalChaseRetreatSeconds:r.diagnostics.intentionalChaseRetreatSeconds??0,
       sprintFinale:r.diagnostics.sprintFinale??[],
+      // Physisch im Wind verausgabte Jagdhelfer: nur EIN Lauf,
+      // Checkpointabstand vor/nach den realen zurücknehmenden Watt.
+      spentHelperTrace:r.events.filter(e=>
+        e.type==='recovery'&&e.description.includes('Führungsarbeit'))
+        .map(e=>{
+          const before=(r.checkpoints??[]).filter(cp=>cp.km<=e.km).at(-1);
+          const after=(r.checkpoints??[]).find(cp=>cp.km>=e.km+5);
+          const data=cp=>cp?.riders.find(row=>row.riderId===e.riderId);
+          const prev=data(before),next=data(after);
+          return {id:e.riderId,teamId:e.teamId,km:n(e.km),
+            message:e.description,
+            before:prev?{km:n(before.km),gapM:n(prev.gapToLeaderM),
+              groupSize:prev.groupSize,
+              wprimePct:n(prev.wPrimeRemainingPct)}:null,
+            after5km:next?{km:n(after.km),gapM:n(next.gapToLeaderM),
+              groupSize:next.groupSize,
+              wprimePct:n(next.wPrimeRemainingPct)}:null};
+        }).slice(0,40),
       // Warum fehlen vor dem Zielsprint Helfer? Kein weiterer Lauf,
       // nur dieselben vorhandenen 5-km-Checkpoints beobachten.
       helperTrace:(r.checkpoints??[]).filter(cp=>
