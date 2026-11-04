@@ -94,6 +94,9 @@ export function decideHillyAttackOpportunity(
   if(o.currentIntent==='angriff'&&
     o.lastAttackAgeS>=0&&o.lastAttackAgeS<c.continueAttackSeconds)
     return o.reserveFraction>=c.continueMinReserve;
+  // In den ersten drei Rennminuten keine Attacken aus dem
+  // noch nicht etablierten Startfeld heraus erzwingen.
+  if(o.timeS<c.earlyMinTimeS)return false;
   if(!o.isGroupNominee||
     o.lastAttackAgeS<c.minimumRepeatAttackAgeS||
     o.groupSize<c.minimumGroupSize||
