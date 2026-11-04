@@ -1353,3 +1353,65 @@ Pelotonspitzen-Teamführung,
 Ausreißerjagd, Chase-Hysterese
 und mehrprofilige Validierung.
 R-23 ausdrücklich noch nicht freigegeben.
+
+
+## R-22 koordinierte Peloton-KI, Energiesparen und Zielgruppen (04.11.2026)
+
+[PR #59](https://github.com/Lancester/radsportmanager/pull/59)
+nach grüner CI mit **254/254 Tests** gemergt.
+Neue zusätzliche Einzelrenn-Option
+`groupRidingModel:'coordinated'`
+vereint gruppenbewusstes Energiesparen,
+Teams mit eigenem Verfolgungsinteresse
+und zeitlich stabilen Jagdmandaten.
+**Default bleibt legacy; cohesive und
+coordinated bleiben Experimente.**
+Die Mechanik erzwingt weder
+Geschwindigkeiten noch Positionen
+noch Zielplatzierungen.
+
+Mit `finishGroupMetrics` werden bei
+Flachetappen ausdrücklich **Größe der
+Siegergruppe, größte Zielgruppe,
+deren Rückstand auf die Siegerzeit
+und Fahrer binnen 60 Sekunden**
+gemessen, als 1-s-Zeitgruppenproxy
+(nicht UCI-offiziell).
+[Auswertung und Einschränkungen](race/R22_HAUPTFELD_JAGD_ZIELGRUPPEN.md).
+
+**Echte 154-Fahrer-Lille-Kontrollprobe
+(Seed 2026, 184,9 km):**
+- Legacy: 52,75 km/h, größte Zielgruppe
+  23 Fahrer, deren Rückstand 239 s,
+  Siegergruppe 9 Fahrer, 307,8 W
+  durchschnittliche Kurbelarbeit pro
+  Fahrsekunde.
+- Cohesive: 46,01 km/h,
+  größte Zielgruppe 57 Fahrer,
+  deren Rückstand 810 s,
+  Siegergruppe 3, 207,2 W.
+- Coordinated: 44,76 km/h,
+  größte Zielgruppe **133 Fahrer**,
+  deren Rückstand **929 s (15:29 min)**,
+  Siegergruppe **nur 3 Fahrer**,
+  167,8 W. Maximal 5 statt 50
+  Abstandsgruppen, 123 statt 390
+  Wechsel in die Verfolgungsabsicht
+  gegenüber `cohesive`.
+
+**Kritischer Befund:** Ein riesiges
+Hauptfeld mit über 15 min Rückstand ist
+KEIN realistisch erreichter Massensprint!
+Das geringere Tempo erklärt einen Teil
+des niedrigeren Wattbedarfs.
+Der Vergleich zeigt Verbesserungen beim
+Zusammenhalt und Energiesparen,
+aber die Jagd-/Führungsmechanik bleibt
+deutlich unzureichend. Keine
+R-22-Gesamtkalibrierung oder
+R-23-Freigabe.
+Neuer manueller Workflow
+**R-22 – Gruppen-KI + Zielgruppen
+(154 Fahrer)** mit vier Strecken
+und frei wählbarem Seed; keine
+automatischen Monte-Carlo-Kampagnen.
