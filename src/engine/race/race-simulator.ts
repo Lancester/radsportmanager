@@ -50,6 +50,8 @@ export interface RaceSegment {
 }
 export interface RaceTeam {
   id:string;name:string;strategy:RaceStrategy;
+  /** Manager-Vorgabe: Anzahl Helfer für die Fluchtjagd, 0..5; fehlend = autonome KI. */
+  chaseHelperCount?:number;
 }
 export interface RaceRider {
   id:string;name:string;teamId:string;role:RaceRole;
@@ -421,6 +423,7 @@ export function simulateRace(x:RaceInput):RaceResult {
       }));
       const teamRefs=x.teams.map(team=>({
         id:team.id,strategy:team.strategy,
+        ...(sprintFriendlyRace?{chaseHelperCount:team.chaseHelperCount}:{}),
       }));
       const teamRefsAndChase=(x.groupRidingModel==='coordinated'||
         (x.groupRidingModel==='relays'||x.groupRidingModel==='relay-paced'||
