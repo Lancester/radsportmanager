@@ -65,7 +65,7 @@ export interface RaceInput {
   tacticModel?:'r14'|'r15-r16';
   /** R-22 experimentell: autonome Gruppenkoordination mit Wattsollwert,
    * Legacy als bisheriger Standard bis vollständiger empirischer Abnahme. */
-  groupRidingModel?:'legacy'|'cohesive'|'coordinated'|'relays'|'relay-paced';
+  groupRidingModel?:'legacy'|'cohesive'|'coordinated'|'relays'|'relay-paced'|'front-gated';
   stepSeconds?:number;
   maxRaceTimeS?:number;
   /** Nur Diagnostik: speichert alle aktiven Fahrer alle 5 km. */
@@ -218,7 +218,7 @@ export function validateRace(x:RaceInput):void {
     x.diagnosticLevel!=='checkpoints')
     throw new RangeError('Rennsimulation: diagnosticLevel ungültig');
   if(x.groupRidingModel!==undefined&&
-    !['legacy','cohesive','coordinated','relays','relay-paced'].includes(x.groupRidingModel))
+    !['legacy','cohesive','coordinated','relays','relay-paced','front-gated'].includes(x.groupRidingModel))
     throw new RangeError('Rennsimulation: groupRidingModel ungültig');
   if(x.tacticModel!==undefined&&
     x.tacticModel!=='r14'&&x.tacticModel!=='r15-r16')
@@ -344,7 +344,7 @@ export function simulateRace(x:RaceInput):RaceResult {
         id:team.id,strategy:team.strategy,
       }));
       const teamRefsAndChase=(x.groupRidingModel==='coordinated'||
-        (x.groupRidingModel==='relays'||x.groupRidingModel==='relay-paced'))?(()=>{
+        (x.groupRidingModel==='relays'||(x.groupRidingModel==='relay-paced'||x.groupRidingModel==='front-gated')))?(()=>{
         const grouped=pelotonGroups(planningRiders.map(r=>({
           ...r,id:r.id,positionM:r.positionM,
         })));
@@ -368,7 +368,7 @@ export function simulateRace(x:RaceInput):RaceResult {
         ...(teamRefsAndChase?{
           chasingTeamIds:teamRefsAndChase.chasingTeamIds,
           restInPeloton:true,
-          ...((x.groupRidingModel==='relays'||x.groupRidingModel==='relay-paced')?{
+          ...((x.groupRidingModel==='relays'||(x.groupRidingModel==='relay-paced'||x.groupRidingModel==='front-gated'))?{
             physicalRelayMode:true,
           }:{}),
         }:{}),
@@ -428,7 +428,7 @@ export function simulateRace(x:RaceInput):RaceResult {
               // Starter müssen noch physisch nach vorne fahren.
               const early=(x.groupRidingModel==='cohesive'||
                 x.groupRidingModel==='coordinated'||
-                (x.groupRidingModel==='relays'||x.groupRidingModel==='relay-paced'))&&
+                (x.groupRidingModel==='relays'||(x.groupRidingModel==='relay-paced'||x.groupRidingModel==='front-gated')))&&
                 t>=180&&s.positionM/totalM>=0.015&&
                 s.positionM/totalM<0.13;
               const nearFront=early?
@@ -535,7 +535,7 @@ export function simulateRace(x:RaceInput):RaceResult {
     })));
     const largestPhysicalGroup=physicalGroups.reduce((best,g)=>
       g.length>best.length?g:best,physicalGroups[0]);
-    if((x.groupRidingModel==='relays'||x.groupRidingModel==='relay-paced')&&chaseState.active.length){
+    if((x.groupRidingModel==='relays'||(x.groupRidingModel==='relay-paced'||x.groupRidingModel==='front-gated'))&&chaseState.active.length){
       orderedRelayTeamSeconds+=dt;
       const front=byId.get(largestPhysicalGroup[0].id)!;
       const frontTeam=front.rider.teamId;
@@ -548,7 +548,7 @@ export function simulateRace(x:RaceInput):RaceResult {
       const pacer=byId.get(group[0].id)!;
       if((x.groupRidingModel==='cohesive'||
         x.groupRidingModel==='coordinated'||
-        (x.groupRidingModel==='relays'||x.groupRidingModel==='relay-paced'))&&
+        (x.groupRidingModel==='relays'||(x.groupRidingModel==='relay-paced'||x.groupRidingModel==='front-gated')))&&
         group.length>=R22_GROUP_RIDING.minGroupSize){
         const current=x.segments[segmentFor(pacer,boundaries)];
         const mass=pacer.rider.massKg+pacer.rider.bikeMassKg;
@@ -635,7 +635,7 @@ export function simulateRace(x:RaceInput):RaceResult {
       let commanded=pack.requestedPowerW;
       if(x.groupRidingModel==='cohesive'||
         x.groupRidingModel==='coordinated'||
-        (x.groupRidingModel==='relays'||x.groupRidingModel==='relay-paced')){
+        (x.groupRidingModel==='relays'||(x.groupRidingModel==='relay-paced'||x.groupRidingModel==='front-gated'))){
         const group=decideGroupRiding({
           groupSize:actualGroupSize.get(s.rider.id)??1,
           distanceFromGroupFrontM:Math.max(0,
@@ -664,8 +664,11 @@ export function simulateRace(x:RaceInput):RaceResult {
           headwindMps:headwind,crosswindMps:crosswind,
         });
         commanded=group.powerW;
-        if(x.groupRidingModel==='relay-paced'&&
-          s.intent==='verfolgung'&&s.crewDuty==='unterstuetzung'&&
+        if((x.groupRidingModel==='relay-paced'||x.groupRidingModel==='front-gated')&&
+          s.intent==='verfolgung'&&
+          (x.groupRidingModel==='front-gated'?
+            (actualGroupFront.get(s.rider.id)??s.positionM)-s.positionM>18:
+            s.crewDuty==='unterstuetzung')&&
           (actualGroupSize.get(s.rider.id)??1)>=8){
           const approach=decideChaseApproach({
             groupSize:actualGroupSize.get(s.rider.id)!,
@@ -880,7 +883,7 @@ export function simulateRace(x:RaceInput):RaceResult {
     ...(checkpoints?{checkpoints}:{}),
     winnerId:sorted[0].rider.id,finisherCount:sorted.length,
     diagnostics:{...counters,maximumGroups,
-      ...((x.groupRidingModel==='relays'||x.groupRidingModel==='relay-paced')?{
+      ...((x.groupRidingModel==='relays'||(x.groupRidingModel==='relay-paced'||x.groupRidingModel==='front-gated'))?{
         orderedRelayTeamSeconds,
         mainFieldFrontWorkWithAssignedChaserS,
       }:{}),teams:x.teams.length,
