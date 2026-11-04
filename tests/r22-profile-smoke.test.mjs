@@ -48,8 +48,17 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
     assert.ok(trace.trace.every(x=>x.winnerRank>=1&&x.winnerRank<=154&&
       x.winnerGapM>=0));
   }
+  const classicAudits=log.split('\n').filter(line=>
+    line.startsWith('R22-CLASSICS-PUNCH-AUDIT '));
+  assert.equal(classicAudits.length,1,'Klassiker-Rampen-Audit muss existieren');
+  const audit=JSON.parse(classicAudits[0].slice('R22-CLASSICS-PUNCH-AUDIT '.length));
+  assert.equal(audit.route,'lbl25_liege');
+  assert.equal(audit.seed,2026);
+  assert.ok(audit.climbEvents.length>=4);
+  assert.ok(audit.totalPunchEvents>=0);
   console.log(lines.join('\n'));
   console.log(traces.join('\n'));
+  console.log(classicAudits.join('\n'));
   console.log(summaryLine);
 });
 
