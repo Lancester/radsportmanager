@@ -80,8 +80,8 @@ test('R22: coordinated chase reserves one nearby sprinter protector',()=>{
   assert.ok(orders.length>=1);
   assert.ok(orders.every(x=>x.mission==='jagd'),
     'real breakaway still takes priority over sprint train');
-  assert.ok(orders.length<4,
-    'at least one actual nearby helper kept for sprinter');
+  assert.ok(orders.length<5,
+    'at least one of five actual nearby helpers kept for sprinter');
 });
 
 test('R22: no sprint chasing for no escape, exhausted helpers or impossible gap',()=>{
