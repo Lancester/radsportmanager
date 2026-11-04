@@ -33,3 +33,35 @@ Ausschließlich auf langen, überwiegend flachen Strecken mit `groupRidingModel:
 Eine frühe Zwischenvariante mit **entweder Jagd oder Sprintzug**, aber späterem Jagdende, hatte zwar **real 13.570 Sprintzug-Helfersekunden** und 21.970 späte Jagdhelfersekunden, jedoch Lille F023 nur Platz **27 (+10,65 s)** statt Baseline 5 (+8,18 s), und keine erkennbare bessere Einholung. Sie war sportlich **nicht gut genug**. Der parallele Jagd-und-Zug-Ansatz ist die nachfolgende gezielte Korrektur; er darf erst nach seinem eigenen vollständigen CI-Lauf bewertet werden.
 
 **Status:** experimenteller PR #74, `legacy` weiterhin Standard, `stable-pack` opt-in, R-22 offen. Der endgültige Ergebnisvergleich muss nach dem tatsächlich geprüften Merge als weiterer Abschnitt ergänzt werden. R-23 weiterhin nicht freigegeben.
+
+
+## 5. Vier Varianten – tatsächlich gegengeprüft (ein Seed, je 154 Fahrer)
+
+Die folgenden **vier** kleinen Varianten wurden als nacheinander isolierte Hypothesen über die bestehende feste Vierprofil-CI verglichen. Die Zahlen sind **keine statistisch kalibrierte Siegwahrscheinlichkeit**.
+
+| Lille, Seed 2026 | PR #73 Baseline | A: längere Jagd, noch kein paralleler Sprintzug | **B: parallele Jagd UND Sprintzug (ausgewählt)** | C: zusätzlich aggressiveres Sprinter-Aufrücken | D: schon von Beginn an vier Sprintteams auf Jagd |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Gewinner | F036 (Klassiker) | F036 | **F036** | F036 | F079 (**Sprinter**) |
+| Bester Sprinter F023 | Rang **5**, +8,18 s | Rang 27, +10,65 s | **Rang 17, +5,82 s** | Rang 25, +5,54 s | Rang 24, +2,90 s |
+| Größte Zielzeitgruppe | 81 | 53 | **80** | 65 | 65 |
+| Rückstand größte Zielgruppe | +25,94 s | +41,98 s | **+19,04 s** | +35,38 s | +72,90 s |
+| Fahrer binnen 60 Sekunden | 130 | 128 | **128** | 128 | **43 – deutlich schlechter** |
+| Maximum 42-m-Abstandsgruppen unterwegs | 14 | 12 | **11** | 13 | 11 |
+| Tatsächlich mit Sprintzug beauftragte Helfer-Sekunden | 0 | 13.570 | **15.100** | 13.970 | 14.930 |
+| Davon tatsächlich in 30 m Nähe zum eigenen Sprinter | 0 | 12.793 | **14.372** | 12.899 | 14.271 |
+| Späte Jagdhelfer-Sekunden | nicht separat erhoben | 21.970 | **20.710** | 20.310 | 0 |
+| Nachweisbare Frontarbeit an der Hauptfeldspitze | 2.930 s | 2.963 s | **2.934 s** | 2.921 s | 2.216 s |
+
+**CI-Belege:**
+- A: [Actions #41825375164](https://github.com/Lancester/radsportmanager/actions/runs/41825375164): 298/299 bestanden; ein ausschließlich neues Testassert zählte fünf vorhandene Helfer fälschlich als vier. **Keine physikalischen Fehler**, aber vor allem sportlich schlechtere Positionierung.
+- **B: [Actions #41826062511](https://github.com/Lancester/radsportmanager/actions/runs/41826062511), 299/299 Tests bestanden.** Die reparierte, tatsächlich kombinierte Sprintzug- und Jagdplanung ist **die Auswahl**.
+- C: [Actions #41826797724](https://github.com/Lancester/radsportmanager/actions/runs/41826797724): 299/299 bestanden, aber aggressiveres Vorrücken führte zu kleineren Zielgruppen und schlechterem F023-Rang. Daher wieder zurück zu `advanceFrontShare=.25`, `leadoutFrontShare=.10`.
+- D: [Actions #41827371327](https://github.com/Lancester/radsportmanager/actions/runs/41827371327): 299/299 bestanden, aber mehr unnatürliche Zielzeitverteilung (nur 43 binnen 60 s) und weniger echte Hauptfeld-Frontarbeit. **Ein Sprintersieg allein darf kein Tuningziel sein.** Deshalb vier jagende Sprintteams **erst im späten Abschnitt bis 35 km vor Ziel**, davor maximal drei.
+
+**Fachliche Bewertung:** Variante B verbessert gegenüber der Baseline die zeitliche Nähe der größten Zielgruppe und die physische Gruppenstabilität etwas, dokumentiert vor dem Zielsprint bei **F023 vier reale Teamhelfer innerhalb 30 m, davon drei mit Sprintzugauftrag** (zuvor drei nahe Helfer, aber **null** Crew-Sprintzugmissionen). F023 bleibt ein echtes Rennergebnis, obwohl er im einzigen Seed nach Platz 5 auf Rang 17 zurückgeht: **5,82 Sekunden statt 8,18 Sekunden** Rückstand – eine wesentlich aussagekräftigere Mehrfachzielabwägung als „Sprinter muss gewinnen“.
+
+Die Feldjagd wurde durch die neue Planung **nicht eindeutig erfolgreicher**: Der Sieger F036 bleibt diesmal vor dem Feld, und `mainFieldFrontWorkWithAssignedChaserS` steigt nur unwesentlich von 2.930 auf 2.934 s. Daher ist die Phase **echte taktische Missionsteilung/Sprintzug-Funktion, noch keine vollständig realistisch kalibrierte Einholwahrscheinlichkeit**.
+
+**Isolationskontrolle:** Lille ist das einzige Profil mit dieser Zusatzfunktion. Boulogne, Liège und Hautacam sind bei Seed 2026 gegenüber PR #73 numerisch unverändert. Die 154er-20km-No-Attack-Gruppe bleibt vollständig zusammen, 30er-Konstanttempo ebenso. `legacy` bleibt unverändert Standard, `stable-pack` opt-in, großer Seed-Test erst am Ende.
+
+**Status:** Die Version B ist wiederhergestellt und muss vor der endgültigen Zusammenführung noch einmal gegen den letzten Branch-Head in CI bestätigt werden. R-22 bleibt offen; Sprintteam-Überholung/Einholen der Flucht wird als nachgelagerte, separate KI-Frage weiterentwickelt, nicht durch künstliches Abwerten früher Ausreißer.
