@@ -465,9 +465,32 @@ export function simulateRace(x:RaceInput):RaceResult {
         actualGroupFront.has(s.rider.id)&&
         actualGroupFront.get(s.rider.id)!-s.positionM<=18)
         counters.actualFrontWorkSteps++;
-      const aeroFactor=formationFactors?
+      // R-20: Seitenwind schwächt die rein längsgerichtete
+      // Windschatten-Proxywirkung. Wind und Untergrund wirken nur über
+      // Luft-/Rollwiderstand des identischen Bewegungsintegrators.
+      const baseAero=formationFactors?
         Math.min(pack.aeroFactor,formationFactors.get(s.rider.id)!):
         pack.aeroFactor;
+      const crosswind=segment.crosswindMps??0;
+      const headwind=segment.headwindMps??0;
+      const shelterShare=s.speedMps/Math.max(1,
+        Math.hypot(s.speedMps,crosswind));
+      const aeroFactor=1-(1-baseAero)*shelterShare;
+      // Effektive Luftdichte setzt F_luft ~ |v_rel|² um.
+      // Bei Windstille genau der alte Luftwiderstand. Ein
+      // Rückenwind schneller als die Fahrgeschwindigkeit erzeugt
+      // hier keinen künstlichen Antrieb, höchstens null Luftdrag.
+      const relativeAirMps=Math.hypot(
+        Math.max(0,s.speedMps+headwind),crosswind);
+      const effectiveAirDensity=s.physical.airDensityKgM3*
+        Math.max(0.0001,relativeAirMps**2/
+          Math.max(1,s.speedMps**2));
+      const roadPhysical=(crosswind!==0||headwind!==0||
+        segment.rollingCoefficient!==undefined)?{
+        ...s.physical,airDensityKgM3:effectiveAirDensity,
+        rollingCoefficient:segment.rollingCoefficient??
+          s.physical.rollingCoefficient,
+      }:s.physical;
       aeroFactorSum+=aeroFactor;aeroFactorSamples++;
       minimumAeroFactor=Math.min(minimumAeroFactor,aeroFactor);
       let commanded=pack.requestedPowerW;
@@ -501,7 +524,7 @@ export function simulateRace(x:RaceInput):RaceResult {
       powers.set(s.rider.id,cp.appliedPowerW);
       next.set(s.rider.id,advanceMotionStep({
         speedMps:s.speedMps,stepSeconds:dt,
-        crankPowerW:cp.appliedPowerW,rider:s.physical,
+        crankPowerW:cp.appliedPowerW,rider:roadPhysical,
         gradeFraction:segment.gradeFraction,aeroFactor,brakeForceN,
       }));
     }
