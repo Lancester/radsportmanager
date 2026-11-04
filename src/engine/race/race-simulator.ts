@@ -55,6 +55,8 @@ export interface RaceRider {
   criticalPowerW:number;ftpW:number;wPrimeJ:number;
   massKg:number;bikeMassKg:number;dragAreaM2:number;
   descentSkill:number;sprintSkill:number;aggression:number;
+  /** 0..1: Taktisches Erkennen/Besetzen eines real vorausfahrenden Hinterrads. */
+  wheelFindingSkill?:number;
 }
 export interface RaceInput {
   title:string;
@@ -219,6 +221,9 @@ export function validateRace(x:RaceInput):void {
         r.carbsGPerHour>=0&&r.carbsGPerHour<=110);
     for(const k of ['descentSkill','sprintSkill','aggression'] as const)
       ensure(k,r[k],r[k]>=0&&r[k]<=1);
+    if(r.wheelFindingSkill!==undefined)
+      ensure('wheelFindingSkill',r.wheelFindingSkill,
+        r.wheelFindingSkill>=0&&r.wheelFindingSkill<=1);
   }
   if(x.enduranceModel!==undefined&&
     x.enduranceModel!=='off'&&x.enduranceModel!=='long')
