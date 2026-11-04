@@ -13,10 +13,12 @@ import {mkdir,writeFile} from 'node:fs/promises';
 import {performance} from 'node:perf_hooks';
 import {createLongRaceFixture}
   from '../src/engine/race/long-race-fixtures.ts';
+import {createReferenceFixture,REFERENCE_ROUTES}
+  from '../src/engine/race/reference-fixtures.ts';
 import {simulateRace} from '../src/engine/race/race-simulator.ts';
 import {auditRace} from '../src/engine/race/race-audit.ts';
 
-const args={profile:'flach',runs:'3',teams:'10',roster:'7',
+const args={scenario:'legacy',profile:'flach',runs:'3',teams:'10',roster:'7',
   distance:'60',seed:'2026',output:'artifacts/r22',comparison:'none'};
 const accepted=new Set(Object.keys(args));
 for(let i=2;i<process.argv.length;i+=2){
@@ -31,8 +33,13 @@ const int=(name,min,max)=>{
     throw new RangeError('R22 '+name+' muss zwischen '+min+' und '+max+' liegen');
   return v;
 };
-const runs=int('runs',1,100),teams=int('teams',1,30);
-const roster=int('roster',1,8),distanceKm=int('distance',10,300);
+const runs=int('runs',1,100);
+if(args.scenario!=='legacy'&&!REFERENCE_ROUTES[args.scenario])
+  throw new RangeError('R-22: Referenzszenario unbekannt');
+const preset=args.scenario==='legacy'?null:REFERENCE_ROUTES[args.scenario];
+const teams=preset?22:int('teams',1,30);
+const roster=preset?7:int('roster',1,8);
+const distanceKm=preset?preset.distanceKm:int('distance',10,300);
 const firstSeed=int('seed',0,2147483647-runs);
 if(teams*roster<2||teams*roster>210)
   throw new RangeError('R22: 2–210 Fahrer');
@@ -51,8 +58,10 @@ for(let offset=0;offset<runs;offset++){
   const seed=firstSeed+offset;
   for(const variant of args.comparison==='carbs'?
     ['low_carbs','high_carbs']:['baseline']){
-    const input=createLongRaceFixture({profile:args.profile,seed,
-      teams,rosterSize:roster,distanceKm});
+    const input=preset?
+      createReferenceFixture({routeId:preset.id,seed}).input:
+      createLongRaceFixture({profile:args.profile,seed,
+        teams,rosterSize:roster,distanceKm});
     if(variant!=='baseline'){
       for(const rider of input.riders)
         rider.carbsGPerHour=variant==='low_carbs'?20:100;
@@ -71,7 +80,8 @@ for(let offset=0;offset<runs;offset++){
           r.carbohydrateRemainingKcal)>.1))
       throw new Error('R22: ungültige Renn-/Energiebilanz '+seed+' '+variant);
     const row={
-      profile:args.profile,variant,seed,
+      profile:preset?.kind??args.profile,scenario:preset?.id??'legacy',
+      variant,seed,
       distanceKm,teams,rosterSize:roster,participants:cohort,
       winner:result.winnerId,
       winnerTimeS:+result.classification[0].finishTimeS.toFixed(1),
@@ -119,7 +129,10 @@ const group=variant=>{
   return summary;
 };
 const variants=[...new Set(metrics.map(r=>r.variant))];
-const summary={scenario:{profile:args.profile,distanceKm,teams,
+const summary={scenario:{profile:preset?.kind??args.profile,
+  fixture:preset?.id??'legacy',routeName:preset?.name??null,
+  fidelity:preset?.fidelity??'old-fictitious-fixture',
+  sources:preset?.sources??[],distanceKm,teams,
   rosterSize:roster,participants:cohort,firstSeed,
   runs,comparison:args.comparison},
   fullRaceSimulations:planned,
@@ -152,12 +165,27 @@ const csv=[keys.join(','),...metrics.map(row=>
 await Promise.all([
   writeFile(args.output+'/races.csv',csv),
   writeFile(args.output+'/summary.json',JSON.stringify(summary,null,2)+'\n'),
+  ...(preset?[writeFile(args.output+'/reference-scenario.json',JSON.stringify((()=>{
+    const fixture=createReferenceFixture({routeId:preset.id,seed:firstSeed});
+    return {route:fixture.route,modelledAscentM:fixture.modelledAscentM,
+      exactElevationReconstruction:false,
+      segmentCount:fixture.input.segments.length,
+      segments:fixture.input.segments,
+      teams:fixture.teamFoci,
+      teamCompositions:fixture.teamCompositions,
+      riders:fixture.input.riders,
+      riderSource:'https://pmc.ncbi.nlm.nih.gov/articles/PMC12400862/',
+      warning:'Fiktive literaturbasierte CP/Wprime/CdA-Verteilungen; kein realer Fahrerdatensatz, keine GPX-genauen Übergänge.',
+    };
+  })(),null,2)+'\n')]:[]),
   writeFile(args.output+'/summary.md',[
     '# R-22 Monte-Carlo-Pilot',
     '',
     '**Status: technische Stichprobe, keine Realismusfreigabe.**',
     '',
-    `- Profil: ${args.profile}; ${distanceKm} km; ${teams} Teams × ${roster} Fahrer.`,
+    `- Rennszenario: ${preset?.name??args.profile}; ${distanceKm} km; ${teams} Teams × ${roster} Fahrer.`,
+    `- Streckendaten: ${preset?'Publizierte Strecke/Anstiege mit ausdrücklich modellierten Zwischenabschnitten (KEIN Original-GPX)':'historische rein fiktive Teststrecke'}.`,
+    `- Fahrerkader: ${preset?'Literaturbasierte fiktive Profi-Typen und 22 aufgabenspezifische Teams':'historischer vereinfachter Testkader'}.`,
     `- Starts: ${planned} vollständige Rennen, ${planned*cohort} klassifizierte Fahrer.`,
     `- Seed: ${firstSeed} bis ${firstSeed+runs-1}.`,
     `- Berechnungszeit: ${summary.wallClockSeconds} s im ausgeführten CI-Runner.`,

@@ -293,3 +293,25 @@ gehören NICHT in die Rennengine.
 
 [Roadmap und spätere R-22/R-23-Gates](race/ROADMAP_R17_R23_VERBINDLICH.md).
 [Technische R-17–R-21-Umsetzung](race/R17_R21_ENGINE_ABSCHLUSS.md).
+
+
+## D-094 bis D-097 – R-22A/B/C und verkürzte Monte-Carlo-Maske (04.11.2026)
+
+| ID | Entscheidung | Grenze |
+| --- | --- | --- |
+| D-094 – historische Streckenanker | Vier belegte 2025-Rennstrecken mit echten Distanzen und klassifizierten Anstiegen statt willkürlicher 6×28-km-Blöcke; Gesamthöhenmeter bei drei Strecken als Makro-Anker. | **Keine echte GPX-/DEM-Rekonstruktion**: gekennzeichnete Modellübergänge und keine Behauptung exakter Steigungskurven. |
+| D-095 – wissenschaftlich basierte Profitypen | CP, W′, Gewicht und CdA aus einer publizierten 144er-Profikohorten-Auswertung für stabile **fiktive** Fahrer mit expliziter Streuung. | Individuelle Profidaten nicht verfügbar; Klassiker/FTP/Verpflegungsannahmen separat und nicht als gemessen deklarieren. |
+| D-096 – rennabhängige Siebenerteams | 22 Teams mit Sprinter-, Berg-/GC-, Klassiker-, Ausreißer- und Allrounder-Fokus; der Anteil wird von Flach/Hügel/Klassiker/Berg abhängig gesetzt. | Fiktive Kader und Rennziele, **keine echten historischen Starterlisten** und keine Karrieretransfers. |
+| D-097 – schlanke manuelle Maske | Workflow verlangt nur Referenzszenario, Zahl der Seeds, optionalen A/B-Vergleich und Start-Seed. Rennlänge und **154 Starter** automatisch. Vollständiges Quellen-/Kader-/Streckenmanifest zum Bericht. | Ausschließlich manuell (`workflow_dispatch`), alte CLI-Legacy-Tests bleiben; keine automatische Monte-Carlo-Zeitplanung. |
+
+**Technische Vollrennen-Abnahme:** vier
+Referenz-Szenarien 2025 mit je 154
+Fahrern und 616 klassifizierten Zielankünften,
+[GitHub Actions #41768768694](https://github.com/Lancester/radsportmanager/actions/runs/41768768694)
+vollständig erfolgreich. Die
+teils hohen Gruppen-/Zielabstände
+und Sieger nach Fahrertyp bleiben
+**offene R-22-Kalibrierungsbefunde**,
+keine fertige Profi-Realismusfreigabe.
+R-23 nicht begonnen.
+[Gesamtdokumentation](race/R22ABC_REFERENZSTRECKEN_PROFIFELDER.md).

@@ -1,40 +1,34 @@
 name: R-22 – Monte-Carlo-Test manuell starten
 
+# R-22A/B/C: Nur manuell; vier Versionierte Referenzszenarien
+# jeweils 22 unterschiedliche Teams × 7 fiktive, literaturbasierte Profis.
 on:
   workflow_dispatch:
     inputs:
-      profile:
-        description: 'Rennprofil (einzelnes Rennen)'
+      scenario:
+        description: 'Rennvorlage (Strecke UND 154 Profi-Fahrer automatisch)'
         type: choice
-        options: [flach, huegelig, klassiker, berg]
+        options:
+          - 'Flach · Lille 2025 (184,9 km)'
+          - 'Hügelig · Boulogne 2025 (209,1 km)'
+          - 'Klassiker · Lüttich 2025 (252 km)'
+          - 'Berg · Hautacam 2025 (180,6 km)'
         required: true
-        default: flach
+        default: 'Flach · Lille 2025 (184,9 km)'
       runs:
-        description: 'Anzahl Seeds (bei Verpflegungsvergleich je 2 Rennen)'
+        description: 'Anzahl Seeds – für den Einstieg 3'
         type: choice
         options: ['3', '10', '25', '50', '100']
         required: true
         default: '3'
-      teams:
-        description: 'Anzahl Mannschaften'
-        type: choice
-        options: ['5', '10', '22']
-        required: true
-        default: '10'
-      distance:
-        description: 'Strecke in km'
-        type: choice
-        options: ['50', '60', '170', '200', '240']
-        required: true
-        default: '60'
       comparison:
-        description: 'Gleiches Feld und Seeds gepaart mit 20 und 100 g/h vergleichen?'
+        description: 'Optional: zwei Verpflegungsvarianten je Seed (doppelte Rennen)'
         type: choice
         options: [none, carbs]
         required: true
         default: none
       seed:
-        description: 'Erster Seed (ganze Zahl zwischen 0 und 2147483547)'
+        description: 'Erster Seed (z. B. 2026)'
         type: string
         required: true
         default: '2026'
@@ -50,21 +44,25 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Reproduzierbare Monte-Carlo-Serie ohne Kalibrierungsboni
+      - name: R-22 Referenzrennen mit 22x7 Fahrern reproduzierbar simulieren
         env:
-          R_PROFILE: ${{ inputs.profile }}
+          R_SCENARIO: ${{ inputs.scenario }}
           R_RUNS: ${{ inputs.runs }}
-          R_TEAMS: ${{ inputs.teams }}
-          R_DISTANCE: ${{ inputs.distance }}
           R_COMPARISON: ${{ inputs.comparison }}
           R_SEED: ${{ inputs.seed }}
         run: |
           set -euo pipefail
+          case "$R_SCENARIO" in
+            'Flach · Lille 2025 (184,9 km)') ROUTE=tdf25_lille ;;
+            'Hügelig · Boulogne 2025 (209,1 km)') ROUTE=tdf25_boulogne ;;
+            'Klassiker · Lüttich 2025 (252 km)') ROUTE=lbl25_liege ;;
+            'Berg · Hautacam 2025 (180,6 km)') ROUTE=tdf25_hautacam ;;
+            *) echo "Unbekannte Vorlage"; exit 1 ;;
+          esac
           node --experimental-strip-types scripts/r22-monte-carlo.mjs \
-            --profile "$R_PROFILE" --runs "$R_RUNS" \
-            --teams "$R_TEAMS" --roster 7 \
-            --distance "$R_DISTANCE" --comparison "$R_COMPARISON" \
-            --seed "$R_SEED" --output artifacts/r22
+            --scenario "$ROUTE" --runs "$R_RUNS" \
+            --comparison "$R_COMPARISON" --seed "$R_SEED" \
+            --output artifacts/r22
           cat artifacts/r22/summary.md >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         if: always()
