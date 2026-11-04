@@ -1,0 +1,61 @@
+name: R-22 – stable-pack auf vier Profilen und mehreren Seeds (manuell)
+
+# R-22: ausschließlich vom Nutzer bewusst gestartet. Keine Push-/Zeitplan-Läufe.
+on:
+  workflow_dispatch:
+    inputs:
+      route:
+        description: 'Vorhandene Referenzstrecke / alle vier Profile'
+        type: choice
+        options: [all, tdf25_lille, tdf25_boulogne, lbl25_liege, tdf25_hautacam]
+        default: all
+        required: true
+      seed_count:
+        description: 'Anzahl aufeinanderfolgender Seeds (maximal 5)'
+        type: choice
+        options: ['1', '2', '3', '4', '5']
+        default: '3'
+        required: true
+      start_seed:
+        description: 'Erster Seed (z. B. 2026)'
+        type: string
+        default: '2026'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+      - name: Node.js 22 einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Maximal 60 Rennen planen und explizit rechnen
+        env:
+          R_ROUTE: ${{ inputs.route }}
+          R_COUNT: ${{ inputs.seed_count }}
+          R_START: ${{ inputs.start_seed }}
+        run: |
+          set -euo pipefail
+          node --experimental-strip-types scripts/r22-validation-matrix.mjs \
+            --route "$R_ROUTE" --seed-count "$R_COUNT" \
+            --start-seed "$R_START" --plan
+          node --experimental-strip-types scripts/r22-validation-matrix.mjs \
+            --route "$R_ROUTE" --seed-count "$R_COUNT" \
+            --start-seed "$R_START" \
+            --output artifacts/r22-multiroute-validation
+          cat artifacts/r22-multiroute-validation/summary.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Alle Diagnoseberichte sichern
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r22-mehrprofil-seeds
+          path: artifacts/r22-multiroute-validation/
+          retention-days: 30
+          if-no-files-found: warn
