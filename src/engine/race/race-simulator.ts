@@ -565,6 +565,8 @@ export function simulateRace(x:RaceInput):RaceResult {
           deficitToLeaderM:Math.max(0,leader.positionM-s.positionM),
           reserveFraction:s.physiology.remainingWPrimeJ/s.profile.wPrimeCapacityJ,
           coordinatedTeamPace:true,
+          suppressAutomaticSprint:sprintFriendlyRace&&
+            s.rider.specialty==='sprinter',
           ...(coordinated?{
             attackOpportunity:(()=>{
               // Für lange Ardennenklassiker die knappe W′-Reserve der

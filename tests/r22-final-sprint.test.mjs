@@ -4,6 +4,8 @@ import {decideSprintLaunch,inferredSprintPeakPowerW,sprintPowerDemand,
   FINAL_SPRINT} from '../src/engine/race/final-sprint.ts';
 import {initialCpState,applyCpWprimeStep}
   from '../src/engine/physiology/critical-power.ts';
+import {chooseRacePower}
+  from '../src/engine/race/race-tactics.ts';
 
 const situation={remainingM:330,launchPreference:.75,
   sprintSkill:.95,groupSize:65,rankInGroup:14,
@@ -74,4 +76,16 @@ test('R22 Sprintleistung unabhängig vom Radius, Eingaben werden geprüft',()=>{
   assert.ok(inferredSprintPeakPowerW({massKg:65,
     sprintSkill:.4})<
     inferredSprintPeakPowerW({massKg:80,sprintSkill:.95}));
+});
+
+test('R22: Sprinter darf nach 250 m noch ABWARTEN; Altmodell unverändert',()=>{
+  const base={role:'sprinter',strategy:'sprint',criticalPowerW:385,
+    aggression:.5,sprintSkill:.95,progress:.999,
+    remainingM:210,frontGapM:2,teamCaptainGapM:null,
+    deficitToLeaderM:15,reserveFraction:.8};
+  const legacy=chooseRacePower(base);
+  assert.equal(legacy.intent,'sprint');
+  const free=chooseRacePower({...base,suppressAutomaticSprint:true});
+  assert.notEqual(free.intent,'sprint');
+  assert.ok(free.desiredPowerW<legacy.desiredPowerW);
 });
