@@ -24,8 +24,11 @@ export function coordinatePelotonChase(input:{
   mainGroupIds:ReadonlySet<string>;
   teams:readonly IntelligentTeam[];riders:readonly IntelligentRider[];
   situation:RaceSituation;previous:ChaseCoordinatorState;
+  /** Only the opt-in stable-pack model, only a genuine flat sprint route. */
+  sprintFinaleMode?:boolean;
 }):{state:ChaseCoordinatorState;chasingTeamIds:ReadonlySet<string>}{
   const {timeS,remainingM,progress,mainGroupIds,teams,riders,situation,previous}=input;
+  const sprintFinale=input.sprintFinaleMode===true;
   if(!Number.isFinite(timeS)||timeS<0||!Number.isFinite(remainingM)||
     !Number.isFinite(progress)||!previous||!
     Number.isFinite(previous.sinceS)||!
@@ -38,9 +41,11 @@ export function coordinatePelotonChase(input:{
   // physisch abgesetzte Spitze und ausreichend großes Hauptfeld.
   const breakaway=situation.leadingBreakaway&&
     situation.gapM>=R22_CHASE.minimumGapM&&
-    situation.gapFractionOfRemaining<R22_CHASE.maximumGapFraction&&
+    situation.gapFractionOfRemaining<(sprintFinale&&remainingM<=35000?
+      .18:R22_CHASE.maximumGapFraction)&&
     groupMembers.length>=R22_CHASE.minimumMainRiders&&
-    remainingM>1200&&progress<.94;
+    remainingM>(sprintFinale?1000:1200)&&
+    progress<(sprintFinale?.995:.94);
   // Ein begonnenes Teammandat läuft mindestens 150 s weiter,
   // sofern eine echte verfolgungswürdige Spitze besteht.
   if(previous.active.length&&breakaway&&
@@ -63,19 +68,23 @@ export function coordinatePelotonChase(input:{
     situation.projectedGapM>Math.max(400,remainingM*.025);
   const choices=teams.map(team=>{
     const members=groupMembers.filter(r=>r.teamId===team.id);
-    const helpers=members.filter(r=>r.role==='helfer'&&r.reserveFraction>.32);
+    const helpers=members.filter(r=>r.role==='helfer'&&
+      !(sprintFinale&&r.chaseSpent)&&r.reserveFraction>.32);
     const hasSprinter=members.some(r=>r.role==='sprinter');
     const hasCaptain=members.some(r=>r.role==='kapitaen');
-    const interested=team.strategy==='sprint'&&hasSprinter||
+    const optedOut=sprintFinale&&team.chaseHelperCount===0;
+    const interested=!optedOut&&(
+      team.strategy==='sprint'&&hasSprinter||
       urgent&&team.strategy==='kapitaen_schuetzen'&&hasCaptain||
-      urgent&&team.strategy==='ausgewogen'&&hasCaptain;
+      urgent&&team.strategy==='ausgewogen'&&hasCaptain);
     return {team:team.id,helpers:helpers.length,
       score:team.strategy==='sprint'?3:
         team.strategy==='kapitaen_schuetzen'?2:1,interested};
   }).filter(x=>x.interested&&x.helpers>0)
     .sort((a,b)=>b.score-a.score||b.helpers-a.helpers||
       a.team.localeCompare(b.team))
-    .slice(0,R22_CHASE.maximumTeams).map(x=>x.team);
+    .slice(0,sprintFinale&&remainingM<35000?4:
+      R22_CHASE.maximumTeams).map(x=>x.team);
   const state={active:choices,sinceS:timeS,cooldownUntilS:previous.cooldownUntilS};
   return {state,chasingTeamIds:new Set(choices)};
 }

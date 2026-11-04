@@ -33,13 +33,47 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
     assert.ok(row.sprintPositioningSeconds>=0&&row.sprintEscortSeconds>=0);
     assert.ok(row.leadoutPaceCoordinationSeconds>=0&&
       row.independentWheelFindingSeconds>=0);
+    assert.ok(row.actualSprintTrainRiderSeconds>=0&&
+      row.nearSprinterTrainRiderSeconds>=0&&
+      row.lateSprintChaseRiderSeconds>=0);
+    assert.ok(row.nearSprinterTrainRiderSeconds<=
+      row.actualSprintTrainRiderSeconds);
+    assert.ok(row.spentChaseHelpers>=0&&
+      row.intentionalChaseRetreatSeconds>=0);
+    assert.ok(row.committedChasePullSeconds>=0&&
+      row.realFrontChaseCpSeconds>=0);
+    if(row.spentChaseHelpers===0)
+      assert.equal(row.intentionalChaseRetreatSeconds,0);
     if(row.profile!=='flach'){
       assert.equal(row.sprintPositioningSeconds,0);
       assert.equal(row.sprintEscortSeconds,0);
       assert.equal(row.leadoutPaceCoordinationSeconds,0);
       assert.equal(row.independentWheelFindingSeconds,0);
+      assert.equal(row.actualSprintTrainRiderSeconds,0);
+      assert.equal(row.nearSprinterTrainRiderSeconds,0);
+      assert.equal(row.lateSprintChaseRiderSeconds,0);
+      assert.equal(row.spentChaseHelpers,0);
+      assert.equal(row.intentionalChaseRetreatSeconds,0);
+      assert.equal(row.committedChasePullSeconds,0);
+      assert.equal(row.realFrontChaseCpSeconds,0);
     }
     assert.equal(row.top10Types.length,10);
+    assert.ok(row.individualSprintAttempts>=0);
+    assert.ok(Array.isArray(row.top10SprintLaunchM));
+    assert.equal(row.sprintersInTop10,
+      row.top10Types.filter(x=>x==='sprinter').length);
+    assert.ok(Number.isInteger(row.winnerGroupSprinters));
+    assert.ok(row.winnerGroupSprinters<=row.winnerGroup);
+    assert.equal(row.massSprintThreshold,30);
+    assert.equal(row.massSprintProxy,
+      row.winnerGroup>=30&&row.sprintersInTop10>=2);
+    assert.ok(row.actualNamedChaseFrontS>=0&&
+      row.longestNamedChaseFrontS>=0&&
+      row.longestNamedChaseCpFrontS>=0);
+    assert.ok(row.longestNamedChaseCpFrontS<=
+      row.longestNamedChaseFrontS);
+    assert.ok(row.longestNamedChaseFrontS<=
+      row.actualNamedChaseFrontS);
   }
   // Die Zahlen sind ausdrücklich Diagnose, keine festen Soll-Sieger/Quoten.
   const summaryLine=log.split('\n').find(line=>
@@ -57,6 +91,44 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
     assert.ok(trace.trace.every(x=>x.winnerRank>=1&&x.winnerRank<=154&&
       x.winnerGapM>=0));
   }
+  const sprintLine=log.split('\n').find(line=>
+    line.startsWith('R22-FINAL-SPRINT '));
+  assert.ok(sprintLine,'Individuelle Sprint-Auditdaten fehlen');
+  const sprintAudit=JSON.parse(sprintLine.slice(
+    'R22-FINAL-SPRINT '.length));
+  assert.equal(sprintAudit.route,'tdf25_lille');
+  assert.ok(sprintAudit.allLaunches.length>0);
+  assert.ok(sprintAudit.allLaunches.every(x=>
+    x.launchRemainingM>0&&x.launchRemainingM<=540&&
+    x.peakAppliedW>=0&&x.sprintSeconds>0&&
+    x.sprintCrankJ>0));
+  const distinctStartDistances=new Set(sprintAudit.allLaunches
+    .map(x=>Math.round(x.launchRemainingM/5)));
+  assert.ok(distinctStartDistances.size>=2,
+    'kein fixer gleicher Sprintbeginn für alle');
+  const finishLines=log.split('\n').filter(line=>
+    line.startsWith('R22-SPRINT-FINISH '));
+  assert.equal(finishLines.length,4);
+  for(const line of finishLines){
+    const result=JSON.parse(line.slice('R22-SPRINT-FINISH '.length));
+    const row=rows.find(x=>x.route===result.route);
+    assert.equal(result.winnerGroupSize,row.winnerGroup);
+    assert.equal(result.sprintersInTop10,row.sprintersInTop10);
+    assert.equal(result.massSprintProxy,row.massSprintProxy);
+    assert.equal(result.notCalibrated,true);
+  }
+  const leaderLine=log.split('\n').find(line=>
+    line.startsWith('R22-NAMED-CHASE-LEADER '));
+  assert.ok(leaderLine,'namentliche Frontdiagnose fehlt');
+  const leader=JSON.parse(leaderLine.slice(
+    'R22-NAMED-CHASE-LEADER '.length));
+  assert.equal(leader.route,'tdf25_lille');
+  assert.ok(leader.frontSeconds<=leader.assignedSeconds);
+  assert.ok(leader.cpNearFrontSeconds<=leader.frontSeconds);
+  assert.ok(leader.longestCpNearSeconds<=leader.longestFrontSeconds);
+  assert.ok(leader.riders.every(r=>
+    r.frontSeconds<=r.assignedSeconds&&
+    r.cpNearFrontSeconds<=r.frontSeconds));
   const favoritesLines=log.split('\n').filter(line=>
     line.startsWith('R22-FAVORITES '));
   assert.equal(favoritesLines.length,4);
@@ -77,6 +149,8 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
       cat.topThree.length>=1&&cat.topThree.length<=3));
   }
   console.log(lines.join('\n'));
+  console.log(finishLines.join('\n'));
+  console.log(leaderLine);
   console.log(traces.join('\n'));
   const classicAudits=log.split('\n').filter(line=>
     line.startsWith('R22-CLASSICS-PUNCH-AUDIT '));
@@ -116,6 +190,49 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
     targetFinale.wheelFindingSkill<=1);
   assert.ok(lille.independentWheelFindingSeconds>=0);
   assert.ok(lille.leadoutPaceCoordinationSeconds>=0);
+  assert.ok(lille.actualSprintTrainRiderSeconds>=0);
+  assert.ok(lille.nearSprinterTrainRiderSeconds>=0);
+  assert.ok(lille.lateSprintChaseRiderSeconds>=0);
+  assert.ok(lille.spentChaseHelpers>=0);
+  assert.ok(lille.intentionalChaseRetreatSeconds>=0);
+  const finaleLines=log.split('\n').filter(row=>
+    row.startsWith('R22-LILLE-FINALE-FIELD '));
+  assert.equal(finaleLines.length,1,'Feldzerfall vor Sprintfinale muss messbar sein');
+  const finaleField=JSON.parse(finaleLines[0].slice(
+    'R22-LILLE-FINALE-FIELD '.length));
+  assert.equal(finaleField.route,'tdf25_lille');
+  assert.ok(finaleField.finaleField.length>=3);
+  assert.ok(finaleField.finaleField.every(x=>
+    x.firstSize>=1&&x.largestSize>=x.firstSize&&
+    x.largestSize<=154&&x.sprinterGroupSize>=1&&
+    x.firstToMainGapM>=0&&x.sprinterRankInRace>=1));
+  // Szenariospezifische, KEINE allgemeine Sieg-/Massenprintquote:
+  // nach Einholen der Flucht soll Lille 5 km vor Schluss nicht mehr
+  // aus einer 25er-Spitzengruppe und 90er-Feld bestehen.
+  const lastFiveKm=finaleField.finaleField.find(x=>
+    Math.abs(x.km-180)<.08);
+  assert.ok(lastFiveKm,
+    'R22: letzter flacher 5-km-Feldcheckpoint fehlt');
+  assert.ok(lastFiveKm.firstSize>=80,
+    'R22: Sprintfinale darf das bis km 175 verbundene Hauptfeld '+
+    'nicht bereits 5 km vor Ziel in eine kleine 25er-Gruppe zerlegen');
+  assert.equal(lastFiveKm.firstToMainGapM,0,
+    'R22: die 5-km-Spitzengruppe soll noch das groesste Hauptfeld sein');
+  console.log(finaleLines[0]);
+  const gapLines=log.split('\n').filter(row=>
+    row.startsWith('R22-LILLE-CHASE-GAPS '));
+  assert.equal(gapLines.length,1);
+  const gapAudit=JSON.parse(gapLines[0].slice(
+    'R22-LILLE-CHASE-GAPS '.length));
+  assert.equal(gapAudit.route,'tdf25_lille');
+  assert.equal(gapAudit.gaps.length,8);
+  assert.ok(gapAudit.gaps.every(x=>x&&x.gapM>=0&&
+    x.leadSize>=1&&x.mainSize>=1));
+  console.log(gapLines.join('\n'));
+  assert.ok(Array.isArray(lille.spentHelperTrace));
+  assert.equal(lille.spentHelperTrace.length,lille.spentChaseHelpers);
+  assert.ok(lille.spentHelperTrace.every(x=>
+    x.message.includes('Führungsarbeit')&&x.km>0));
   assert.ok(lille.watched.length>=4);
   const best=lille.watched.find(x=>x.id===lille.preRaceBestSprinter);
   assert.ok(best?.sprintSkill>0);

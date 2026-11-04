@@ -11,8 +11,14 @@ export interface IntelligentRider {
   id:string;teamId:string;role:RaceRole;
   positionM:number;speedMps:number;
   criticalPowerW:number;reserveFraction:number;aggression:number;
+  /** Opt-in: Helfer hat physisch viel Jagdarbeit geleistet und wird abgelöst. */
+  chaseSpent?:boolean;
 }
-export interface IntelligentTeam {id:string;strategy:RaceStrategy}
+export interface IntelligentTeam {
+  id:string;strategy:RaceStrategy;
+  /** Später via Teammanager auswählbar. 0 = kein Jagdhelfer. */
+  chaseHelperCount?:number;
+}
 export type CrewMission='jagd'|'sprintzug'|'schutz';
 export type CrewDuty='fuehrung'|'unterstuetzung';
 export interface CrewOrder {
@@ -49,6 +55,8 @@ export interface CrewPlan {
   situation:RaceSituation;
   /** Nur für Prüf- und Spielberichte, keine neue Renn-Geschwindigkeit. */
   missionByTeam:Map<string,CrewMission>;
+  /** Ein einziger nominierter Feldjagd-Führender; keine Positionsgarantie. */
+  fieldChaseLeader?:{riderId:string;sinceS:number};
 }
 const valid=(name:string,x:number,check:boolean)=>{
   if(!Number.isFinite(x)||!check)throw new RangeError('R-15/R-16: '+name);
@@ -70,7 +78,11 @@ function meanSpeed(g:readonly IntelligentRider[]):number{
 }
 export function analyzeRaceSituation(
   riders:readonly IntelligentRider[],remainingM:number,
+  maxBreakawaySize=R15_R16.maxBreakawaySize,
 ):RaceSituation{
+  valid('maximumBreakawaySize',maxBreakawaySize,
+    Number.isInteger(maxBreakawaySize)&&maxBreakawaySize>=1&&
+    maxBreakawaySize<=12);
   valid('remainingM',remainingM,remainingM>=0);
   if(riders.length<2)return {
     leadingBreakaway:false,gapM:0,breakawaySize:0,mainGroupSize:riders.length,
@@ -79,7 +91,7 @@ export function analyzeRaceSituation(
   const groups=sortGroups(riders);
   const lead=groups[0];
   const main=groups.reduce((best,g)=>g.length>best.length?g:best,groups[0]);
-  const smallLeader=lead!==main&&lead.length<=R15_R16.maxBreakawaySize&&
+  const smallLeader=lead!==main&&lead.length<=maxBreakawaySize&&
     main.length>=R15_R16.minimumMainGroupSize;
   const gap=smallLeader?lead.at(-1)!.positionM-main[0].positionM:0;
   const relativeSpeed=smallLeader?meanSpeed(lead)-meanSpeed(main):0;
@@ -104,12 +116,16 @@ export function decideIntelligentCrew(input:{
   riders:readonly IntelligentRider[];
   /** R-17: Zustandsübergabe für positions- und ermüdungsbewusste Ablösung. */
   previousLeaders?:ReadonlyMap<string,{riderId:string;sinceS:number}>;
+  /** R-22: alter gemeinsamer Feldjagd-Führender, nur opt-in. */
+  previousFieldChaseLeader?:{riderId:string;sinceS:number};
   /** Nur R22 koordinierte Teams: Wer darf tatsächlich jagen? */
   chasingTeamIds?:ReadonlySet<string>;
   /** Im großen Feld schützen unbeschäftigte Helfer ihre Reserven. */
   restInPeloton?:boolean;
   /** R22: größerer Einordnungsbereich, um Helfern echte Aufrückarbeit zu ermöglichen. */
   physicalRelayMode?:boolean;
+  /** Experimenteller R-22-Sprint: Jagd/Sprintzug getrennt planen. */
+  sprintFinaleMode?:boolean;
 }):CrewPlan{
   if(!input||!Array.isArray(input.teams)||!Array.isArray(input.riders))
     throw new RangeError('R-15/R-16: Team-/Fahrerfeld fehlt');
@@ -122,6 +138,10 @@ export function decideIntelligentCrew(input:{
       teamIds.has(team.id)||!
       ['ausgewogen','offensiv','sprint','kapitaen_schuetzen'].includes(team.strategy))
       throw new RangeError('R-15/R-16: ungültiges Team');
+    if(team.chaseHelperCount!==undefined&&(
+      !Number.isInteger(team.chaseHelperCount)||
+      team.chaseHelperCount<0||team.chaseHelperCount>5))
+      throw new RangeError('R-22: Anzahl Jagdhelfer muss 0..5 sein');
     teamIds.add(team.id);
   }
   for(const r of input.riders){
@@ -138,7 +158,8 @@ export function decideIntelligentCrew(input:{
   const orders=new Map<string,CrewOrder>();
   const missionByTeam=new Map<string,CrewMission>();
   const leaderByTeam=new Map<string,{riderId:string;sinceS:number}>();
-  const situation=analyzeRaceSituation(input.riders,input.remainingM);
+  const situation=analyzeRaceSituation(input.riders,input.remainingM,
+    input.sprintFinaleMode?12:R15_R16.maxBreakawaySize);
   if(input.riders.length<2)return {orders,situation,missionByTeam,leaderByTeam};
   const groups=sortGroups(input.riders);
   const main=groups.reduce((best,g)=>g.length>best.length?g:best,groups[0]);
@@ -162,27 +183,62 @@ export function decideIntelligentCrew(input:{
     const group=groups.find(g=>g.includes(target));
     if(!group)continue;
     const isMain=group===main;
+    const raceFrontM=groups[0][0].positionM;
+    const targetRemainingM=input.remainingM+Math.max(0,
+      raceFrontM-target.positionM);
+    // Sprintzugstart am EIGENEN Sprinter, nicht am Ausreißer vorne.
     const sprintTrain=team.strategy==='sprint'&&
-      input.progress>=0.82&&input.remainingM>250&&
-      input.remainingM<=10000&&group.length>=3;
+      input.progress>=0.82&&
+      (input.sprintFinaleMode?
+        targetRemainingM>250&&targetRemainingM<=10000:
+        input.remainingM>250&&input.remainingM<=10000)&&
+      group.length>=3;
     const chase=(input.chasingTeamIds!==undefined?
       situation.leadingBreakaway:situation.chaseViable)&&
-      isMain&&input.progress<0.94&&
+      isMain&&
+      input.progress<(input.sprintFinaleMode?.995:.94)&&
       (input.chasingTeamIds===undefined||input.chasingTeamIds.has(team.id))&&
-      !sprintTrain&&team.strategy!=='offensiv'&&
+      !(input.sprintFinaleMode&&team.chaseHelperCount===0)&&
+      (!sprintTrain||input.sprintFinaleMode===true)&&
+      team.strategy!=='offensiv'&&
       (team.strategy!=='ausgewogen'||!sprintTeamReady||urgentChase);
     const mission:CrewMission=chase?'jagd':
       sprintTrain?'sprintzug':'schutz';
     if(input.restInPeloton&&mission==='schutz')continue;
-    if(input.progress>=0.97&&!sprintTrain)continue;
+    if(input.progress>=0.97&&!sprintTrain&&
+      !(input.sprintFinaleMode&&chase))continue;
     const gapToFront=(r:IntelligentRider)=>group[0].positionM-r.positionM;
     const helpers=members.filter(r=>r.role==='helfer'&&group.includes(r)&&
+      !(input.sprintFinaleMode&&r.chaseSpent)&&
       r.reserveFraction>=(chase?R15_R16.minimumChaseReserve:R15_R16.minimumReserve)&&
-      gapToFront(r)<=(input.physicalRelayMode?300:
-        R15_R16.maximumCrewDistanceFromGroupFrontM)&&
-      (chase||Math.abs(r.positionM-target.positionM)<=
-        R15_R16.maximumSupportDistanceToTargetM));
+      (input.sprintFinaleMode&&mission==='sprintzug'?
+        Math.abs(r.positionM-target.positionM)<=85:
+        gapToFront(r)<=(input.physicalRelayMode?300:
+          R15_R16.maximumCrewDistanceFromGroupFrontM)&&
+        (chase||Math.abs(r.positionM-target.positionM)<=
+          R15_R16.maximumSupportDistanceToTargetM)));
     if(helpers.length===0)continue;
+    // Im Finale einen echten Helfer unmittelbar beim Sprinter
+    // zurückhalten, während andere das Peloton vorne jagen.
+    const nearbyTeamProtectors=input.sprintFinaleMode&&mission==='jagd'&&
+      team.strategy==='sprint'&&targetRemainingM<=25000?
+      members.filter(r=>r.role==='helfer'&&group.includes(r)&&
+        !r.chaseSpent&&
+        r.reserveFraction>=R15_R16.minimumReserve&&
+        Math.abs(r.positionM-target.positionM)<=85)
+        .sort((a,b)=>
+          Math.abs(a.positionM-target.positionM)-
+            Math.abs(b.positionM-target.positionM)||
+          b.reserveFraction-a.reserveFraction||
+          a.id.localeCompare(b.id)):[];
+    // Etwa 10 km vor dem Ziel beginnt die ECHTE Sprintzug-Arbeit
+    // gleichzeitig mit der Verfolgung. Hintere Begleiter müssen
+    // nicht in Reichweite des absoluten Peloton-Pacesetters sein.
+    const protectCount=sprintTrain?3:1;
+    const reserve=nearbyTeamProtectors.slice(0,protectCount);
+    const reservedIds=new Set(reserve.map(r=>r.id));
+    const available=helpers.filter(r=>!reservedIds.has(r.id));
+    if(!available.length&&!reserve.length)continue;
     // Gefährliche/nahe Ausreißer und Teamstrategie bestimmen die Größe des
     // Einsatzes. Ein einzelner Verfolger ist nicht länger das Maximum.
     // Die restlichen Fahrer fahren danach weiterhin ganz normal ihr Rennen.
@@ -190,32 +246,74 @@ export function decideIntelligentCrew(input:{
       situation.projectedGapM/Math.max(1,input.remainingM)>0.05;
     let requested=1;
     if(chase)requested=input.physicalRelayMode?
-      Math.min(4,helpers.length):input.restInPeloton?
-      Math.min(3,helpers.length):
+      Math.min(input.sprintFinaleMode&&input.progress>=2/3?1:4,
+        available.length):input.restInPeloton?
+      Math.min(3,available.length):
       team.strategy==='sprint'? (urgency?5:3):
       team.strategy==='kapitaen_schuetzen'?(urgency?4:2):(urgency?3:2);
     else if(sprintTrain)requested=input.progress>=0.94?3:4;
     else if(team.strategy==='kapitaen_schuetzen'&&input.progress<0.82)
       requested=2;
-    requested=Math.min(R15_R16.maximumCrew,requested,helpers.length);
+    if(chase&&input.sprintFinaleMode&&team.chaseHelperCount!==undefined)
+      requested=team.chaseHelperCount;
+    requested=Math.min(R15_R16.maximumCrew,requested,available.length);
     // Teammitglieder werden nach tatsächlichem Abstand zur Front und
     // Energiereserve berücksichtigt, nicht alphabetisch als Phantomführer.
-    const sorted=helpers.sort((a,b)=>
-      gapToFront(a)-gapToFront(b)||
+    const sorted=available.sort((a,b)=>
+      (input.sprintFinaleMode&&mission==='sprintzug'?
+        Math.abs(a.positionM-target.positionM)-
+          Math.abs(b.positionM-target.positionM):
+        gapToFront(a)-gapToFront(b))||
       b.reserveFraction-a.reserveFraction||a.id.localeCompare(b.id));
     // Zeitbasierter Wechsel beeinflusst nur die Bereitschaft zur aktiven
     // Führungsaufgabe; die Fahrposition bleibt physikalisch berechnet.
     const selected=[...sorted.slice(0,requested)];
+    // Der globale Nachführende wird nicht bei jedem 10-s-Takt von einem
+    // wenige Meter weiter vorn fahrenden Teamkameraden ersetzt. Er muss
+    // aber körperlich verfügbar und real in Feldspitzennähe bleiben.
+    const fieldPrior=input.previousFieldChaseLeader;
+    if(chase&&input.sprintFinaleMode&&input.progress>=2/3&&
+      fieldPrior&&requested>0){
+      const established=sorted.find(r=>
+        r.id===fieldPrior.riderId&&
+        (gapToFront(r)<=72||
+          (input.timeS-fieldPrior.sinceS<50&&gapToFront(r)<=300)));
+      // Neuen Nachrückern tatsächlich mehrere KI-Takte zum physischen
+      // Aufschließen geben. Sonst gewinnt bei jeder 10-s-Entscheidung
+      // der nächste beliebige Helfer 5 m weiter vorn; niemand kommt an.
+      // Einen bereits wirklich vorne verfügbaren Helfer nicht blockieren.
+      const realReplacement=selected.some(r=>
+        gapToFront(r)<=R15_R16.frontWorkRadiusM);
+      if(established&&!selected.some(r=>r.id===established.id)&&
+        (gapToFront(established)<=72||!realReplacement))
+        selected[selected.length-1]=established;
+    }
     // Führung nur wenn der Helfer tatsächlich VOR dem zu schützenden
     // Kapitän/Sprinter fährt. Bei fehlender Frontposition müssen Helfer
     // zunächst aus eigener Kurbelarbeit nach vorne gelangen.
     const frontEligible=selected.filter(r=>
-      gapToFront(r)<=R15_R16.frontWorkRadiusM&&
+      (input.sprintFinaleMode&&mission==='sprintzug'?
+        r.positionM-target.positionM<=35:
+        gapToFront(r)<=R15_R16.frontWorkRadiusM)&&
       r.positionM>target.positionM+0.1);
     const previous=input.previousLeaders?.get(team.id);
+    // Lange kontrollierte Nachführarbeit: Ein freiwillig führender
+    // Helfer kann 15–20 min an der echten Feldfront bleiben, solange
+    // er dort physisch noch erreichbar ist und Reserven besitzt.
+    // Auf anderen Strecken bleibt die 75-s-Rotation unverändert.
+    const allowedStintSeconds=input.sprintFinaleMode&&mission==='jagd'&&
+      input.progress>=2/3?1200:R15_R16.relaySeconds;
+    const eligibleForLongStint=input.sprintFinaleMode&&
+      mission==='jagd'&&input.progress>=2/3;
     const retained=previous&&input.timeS-previous.sinceS<
-      R15_R16.relaySeconds?
-      frontEligible.find(r=>r.id===previous.riderId):undefined;
+      allowedStintSeconds?
+      (eligibleForLongStint?
+        selected.find(r=>r.id===previous.riderId):
+        frontEligible.find(r=>r.id===previous.riderId)):undefined;
+    // Bleibt der nominierte Helfer kurz hinter dem Führenden,
+    // behält er seinen Auftrag und muss sich wieder *real* nach
+    // vorne fahren. Er erhält dort nur dann Führungswatt, wenn
+    // er die 18-m-Zone physisch tatsächlich erreicht hat.
     const leader=retained??(frontEligible.length?
       frontEligible[rotation%frontEligible.length]:null);
     if(leader)leaderByTeam.set(team.id,{
@@ -223,7 +321,10 @@ export function decideIntelligentCrew(input:{
       sinceS:retained?previous!.sinceS:input.timeS,
     });
     for(const rider of selected){
-      const frontEligible=gapToFront(rider)<=R15_R16.frontWorkRadiusM;
+      const frontEligible=input.sprintFinaleMode&&mission==='sprintzug'?
+        rider.positionM>target.positionM+0.1&&
+          rider.positionM-target.positionM<=35:
+        gapToFront(rider)<=R15_R16.frontWorkRadiusM;
       const duty:CrewDuty=leader!==null&&rider.id===leader.id&&frontEligible?
         'fuehrung':'unterstuetzung';
       const effort=mission==='jagd'?
@@ -247,7 +348,119 @@ export function decideIntelligentCrew(input:{
         desiredPowerW:rider.criticalPowerW*effort,reason,
         groupFrontM:group[0].positionM});
     }
+    // Mixed sprint mission: one or more HELPER riders still chase at
+    // real pack front, while local helpers close to the protected
+    // sprinter form the train at the SAME decision step. No teleport.
+    if(chase&&sprintTrain&&input.sprintFinaleMode&&reserve.length){
+      const leadCandidates=reserve.filter(r=>
+        r.positionM>target.positionM+0.1&&
+        r.positionM-target.positionM<=35);
+      const localLead=leadCandidates[0]?.id;
+      for(const rider of reserve){
+        const duty:CrewDuty=rider.id===localLead?'fuehrung':'unterstuetzung';
+        orders.set(rider.id,{
+          riderId:rider.id,mission:'sprintzug',duty,
+          desiredPowerW:rider.criticalPowerW*
+            (duty==='fuehrung'?1.085:1.025),
+          reason:duty==='fuehrung'?
+            'Sprintzug trotz laufender Feldjagd: echter naher Führender':
+            'Sprintzug trotz Feldjagd: geschützten Sprinter begleiten',
+          groupFrontM:group[0].positionM,
+        });
+      }
+    }
     missionByTeam.set(team.id,mission);
   }
-  return {orders,situation,missionByTeam,leaderByTeam};
+  // R-22: EIN gemeinsamer Feldkopf für die Sprintteam-Jagd.
+  // Andere Teamhelfer unterstützen im Windschatten und können erst
+  // nach physisch möglicher Übernahme selbst zum Führenden werden.
+  // Kein Fahrer wird im Raum versetzt und kein Wattlimit aufgehoben.
+  let fieldChaseLeader:CrewPlan['fieldChaseLeader'];
+  if(input.sprintFinaleMode&&input.progress>=2/3&&
+    input.chasingTeamIds!==undefined){
+    const mainIds=new Set(main.map(r=>r.id));
+    const frontM=main[0].positionM;
+    const candidates=[...orders.values()]
+      .filter(order=>order.mission==='jagd'&&mainIds.has(order.riderId))
+      .map(order=>({order,rider:input.riders.find(r=>
+        r.id===order.riderId)!}))
+      .filter(({rider})=>!rider.chaseSpent&&
+        rider.reserveFraction>=R15_R16.minimumChaseReserve&&
+        frontM-rider.positionM<=300)
+      .sort((a,b)=>b.rider.positionM-a.rider.positionM||
+        a.rider.id.localeCompare(b.rider.id));
+    // Bestehende Auftragskontinuität aus älteren Team-API-Aufrufen
+    // bewahren: wenn noch kein globaler Führender übergeben wurde,
+    // kann die bisherige physische Teamführung fortgesetzt werden.
+    const previous=input.previousFieldChaseLeader??
+      [...(input.previousLeaders?.values()??[])].find(p=>
+        candidates.some(c=>c.rider.id===p.riderId));
+    const ready=candidates.find(c=>
+      frontM-c.rider.positionM<=R15_R16.frontWorkRadiusM);
+    const kept=previous?candidates.find(c=>
+      c.rider.id===previous.riderId&&
+      (frontM-c.rider.positionM<=72||
+        (input.timeS-previous.sinceS<50&&!ready))):undefined;
+    // Ein frischer Helfer muss nicht magisch schon an der 18-m-Front
+    // stehen. Ist keiner vorne, wird der nächstplatzierte TATSÄCHLICH
+    // im Hauptfeld vorhandene Jäger als Nachrücker nominiert. Er hat
+    // bis zur wirklichen Feldspitze nur Unterstützungspflicht; seinen
+    // Abstand muss er mit eigenen Watt nach und nach schließen.
+    const fresh=candidates.find(c=>
+      c.rider.id!==previous?.riderId);
+    // Bei real nebeneinander an der Hauptfeldspitze fahrenden Jägern
+    // darf die Führung im späten Finale auch nach nur 10 s wechseln.
+    // Ein Wechsel ist hier KEIN Auftragsspringen im Feld: der neue
+    // Fahrer muss bereits physisch vorne und mind. 2 m VOR dem alten
+    // liegen. Seine tatsächlich anliegenden Watt werden normal bezahlt.
+    const oldRider=previous?candidates.find(c=>
+      c.rider.id===previous.riderId):undefined;
+    const physicalFrontRelay=input.progress>=.90&&oldRider&&
+      input.timeS-previous!.sinceS>=10&&
+      frontM-oldRider.rider.positionM<=R15_R16.frontWorkRadiusM?
+      candidates.find(c=>
+        c.rider.id!==previous!.riderId&&
+        frontM-c.rider.positionM<=R15_R16.frontWorkRadiusM&&
+        c.rider.positionM>=oldRider.rider.positionM+2):
+      undefined;
+    const chosen=physicalFrontRelay??kept??ready??fresh??candidates[0];
+    if(chosen)fieldChaseLeader={
+      riderId:chosen.rider.id,
+      sinceS:kept?previous!.sinceS:input.timeS,
+    };
+    for(const order of orders.values()){
+      if(order.mission!=='jagd')continue;
+      const r=input.riders.find(r=>r.id===order.riderId)!;
+      const frontDistance=frontM-r.positionM;
+      const targetRole=input.teams.find(t=>t.id===r.teamId)!.
+        strategy==='sprint'?'sprinter':'kapitaen';
+      const protectedRider=input.riders.find(x=>
+        x.teamId===r.teamId&&x.role===targetRole);
+      const reallyLeading=order.riderId===fieldChaseLeader?.riderId&&
+        frontDistance<=R15_R16.frontWorkRadiusM&&
+        r.positionM>(protectedRider?.positionM??-Infinity)+.1;
+      // Nach dem Rollenwechsel darf kein konkurrierender Teamführer
+      // seine alten 1.15 CP als vermeintlicher Unterstützer behalten.
+      // Auch der Wattwunsch folgt der Gruppenrolle, nicht dem alten Titel.
+      if(!reallyLeading&&order.duty==='fuehrung')
+        order.desiredPowerW=r.criticalPowerW*1.045;
+      order.duty=reallyLeading?'fuehrung':'unterstuetzung';
+      if(order.riderId===fieldChaseLeader?.riderId&&!reallyLeading)
+        order.reason='Nächster Jagdhelfer fährt physisch zur Feldspitze auf';
+    }
+    // Das historische Leader-Mapping darf keine zweiten
+    // gleichzeitigen Feldführer künstlich konservieren.
+    for(const [teamId] of leaderByTeam){
+      if(missionByTeam.get(teamId)==='jagd'&&
+        (!fieldChaseLeader||input.riders.find(r=>
+          r.id===fieldChaseLeader!.riderId)?.teamId!==teamId))
+        leaderByTeam.delete(teamId);
+    }
+    if(fieldChaseLeader){
+      const r=input.riders.find(r=>r.id===fieldChaseLeader!.riderId)!;
+      leaderByTeam.set(r.teamId,fieldChaseLeader);
+    }
+  }
+  return {orders,situation,missionByTeam,leaderByTeam,
+    ...(fieldChaseLeader?{fieldChaseLeader}:{})};
 }

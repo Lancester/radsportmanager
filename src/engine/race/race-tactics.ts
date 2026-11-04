@@ -24,6 +24,8 @@ export interface TacticObservation {
   coordinatedTeamPace?:boolean;
   /** R-16: opportunistische Angriffsentscheidung statt fixer Streckenfenster. */
   attackOpportunity?:boolean;
+  /** Nur R-22-Flach-Sprint: alter gemeinsamer 250-m-Automat AUS. */
+  suppressAutomaticSprint?:boolean;
 }
 export interface TacticDecision {
   desiredPowerW:number;
@@ -50,7 +52,8 @@ export function chooseRacePower(o:TacticObservation):TacticDecision {
   const cp=o.criticalPowerW;
   const protectedFromWind=o.frontGapM!==null&&o.frontGapM<16;
   const base=cp*(protectedFromWind?0.88:0.98);
-  if(o.remainingM<=250 && (o.role==='sprinter'||o.role==='kapitaen') &&
+  if(!o.suppressAutomaticSprint&&o.remainingM<=250 &&
+     (o.role==='sprinter'||o.role==='kapitaen') &&
      o.reserveFraction>0.025){
     return {intent:'sprint',desiredPowerW:cp+180+210*o.sprintSkill,
       reason:'Zielsprint nur aus verfügbarer W′-Reserve'};

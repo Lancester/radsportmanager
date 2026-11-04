@@ -11,6 +11,7 @@ import {createReferenceFixture,REFERENCE_ROUTES}
   from '../src/engine/race/reference-fixtures.ts';
 import {simulateRace} from '../src/engine/race/race-simulator.ts';
 import {finishGroupMetrics} from '../src/engine/race/finish-groups.ts';
+import {auditSprintFinish} from '../src/engine/race/sprint-finish-audit.ts';
 import {auditRace} from '../src/engine/race/race-audit.ts';
 import {buildRiderFavoritesAudit} from '../src/engine/race/rider-strength-audit.ts';
 
@@ -48,6 +49,7 @@ for(const id of routes){
     throw new Error('R-22 Profil-Smoke: physikalische Invariante '+id);
   const groups=finishGroupMetrics(r.classification);
   const audit=auditRace(r);
+  const sprintFinish=auditSprintFinish(r.classification,kindByRider);
   const checkpoint=progress=>(r.checkpoints??[]).find(x=>
     x.km>=fixture.route.distanceKm*progress)??r.checkpoints?.at(-1);
   const c25=checkpoint(.25),c50=checkpoint(.5),c75=checkpoint(.75);
@@ -75,16 +77,63 @@ for(const id of routes){
     catches:audit.actualCatches,
     actualChaseFrontS:r.diagnostics.mainFieldFrontWorkWithAssignedChaserS??0,
     chaseLeaderChanges:r.diagnostics.mainFieldChaserLeaderChanges??0,
+    longestPhysicalChaseFrontStintS:r.diagnostics.longestMainFieldChaserStintS??0,
     climbingTempoSeconds:r.diagnostics.climbingTempoSeconds??0,
     sprintPositioningSeconds:r.diagnostics.sprintPositioningSeconds??0,
     sprintEscortSeconds:r.diagnostics.sprintEscortSeconds??0,
     leadoutPaceCoordinationSeconds:r.diagnostics.leadoutPaceCoordinationSeconds??0,
     independentWheelFindingSeconds:r.diagnostics.independentWheelFindingSeconds??0,
+    actualSprintTrainRiderSeconds:r.diagnostics.actualSprintTrainRiderSeconds??0,
+    nearSprinterTrainRiderSeconds:r.diagnostics.nearSprinterTrainRiderSeconds??0,
+    lateSprintChaseRiderSeconds:r.diagnostics.lateSprintChaseRiderSeconds??0,
+    spentChaseHelpers:r.diagnostics.spentChaseHelpers??0,
+    intentionalChaseRetreatSeconds:r.diagnostics.intentionalChaseRetreatSeconds??0,
+    committedChasePullSeconds:r.diagnostics.committedChasePullSeconds??0,
+    realFrontChaseCpSeconds:r.diagnostics.realFrontChaseCpSeconds??0,
+    individualSprintAttempts:r.diagnostics.finalSprintAttempts?.length??0,
+    top10SprintLaunchM:r.diagnostics.finalSprintAttempts?.
+      filter(x=>r.classification.find(f=>f.id===x.riderId)?.rank<=10)
+      .map(x=>({id:x.riderId,launchM:x.launchRemainingM,
+        peakW:x.peakAppliedW}))??[],
     top10Types:r.classification.slice(0,10).map(x=>kindByRider.get(x.id)),
+    sprintersInTop10:sprintFinish.sprintersInTop10,
+    winnerGroupSprinters:sprintFinish.sprintersInWinnerGroup,
+    massSprintProxy:sprintFinish.massSprintProxy,
+    massSprintThreshold:sprintFinish.massSprintThreshold,
+    actualNamedChaseFrontS:r.diagnostics.namedChaseLeader?.frontSeconds??0,
+    longestNamedChaseFrontS:r.diagnostics.namedChaseLeader?.longestFrontSeconds??0,
+    longestNamedChaseCpFrontS:r.diagnostics.namedChaseLeader?.
+      longestCpNearSeconds??0,
     runtimeS:n((performance.now()-start)/1000),
   };
   results.push(details);
   console.log('R22-PROFILE '+JSON.stringify(details));
+  if(id==='tdf25_lille')
+    console.log('R22-FINAL-SPRINT '+JSON.stringify({
+      route:id,seed,
+      allLaunches:r.diagnostics.finalSprintAttempts??[],
+      launchDistancesM:(r.diagnostics.finalSprintAttempts??[])
+        .map(x=>x.launchRemainingM),
+      sprintWinner:r.winnerId,
+      top10Types:details.top10Types,
+    }));
+  console.log('R22-SPRINT-FINISH '+JSON.stringify({
+    route:id,seed,winningGroupFirst:true,
+    ...sprintFinish,
+    winnerId:r.winnerId,
+    winnerType:details.winnerType,
+    largestFinishGroup:groups.largestGroupSize,
+    largestFinishGroupGapS:groups.largestGroupGapToWinnerS,
+    massSprintDefinition:'Siegerzeitgruppe >= 30 UND >= 2 Sprinterspezialisten in Top 10, 1-s-Nachbargruppenmodell',
+    notCalibrated:true,
+  }));
+  if(id==='tdf25_lille'){
+    console.log('R22-NAMED-CHASE-LEADER '+JSON.stringify({
+      route:id,seed,
+      ...r.diagnostics.namedChaseLeader,
+      handoffs:r.diagnostics.namedChaseHandoffs??[],
+    }));
+  }
   const favorites=buildRiderFavoritesAudit(fixture.input.riders,
     r.classification,fixture.route.kind);
   console.log('R22-FAVORITES '+JSON.stringify({
@@ -190,7 +239,45 @@ for(const id of routes){
       sprintEscortSeconds:r.diagnostics.sprintEscortSeconds??0,
     leadoutPaceCoordinationSeconds:r.diagnostics.leadoutPaceCoordinationSeconds??0,
     independentWheelFindingSeconds:r.diagnostics.independentWheelFindingSeconds??0,
+    actualSprintTrainRiderSeconds:r.diagnostics.actualSprintTrainRiderSeconds??0,
+    nearSprinterTrainRiderSeconds:r.diagnostics.nearSprinterTrainRiderSeconds??0,
+    lateSprintChaseRiderSeconds:r.diagnostics.lateSprintChaseRiderSeconds??0,
+    spentChaseHelpers:r.diagnostics.spentChaseHelpers??0,
+    intentionalChaseRetreatSeconds:r.diagnostics.intentionalChaseRetreatSeconds??0,
+    committedChasePullSeconds:r.diagnostics.committedChasePullSeconds??0,
+    realFrontChaseCpSeconds:r.diagnostics.realFrontChaseCpSeconds??0,
       sprintFinale:r.diagnostics.sprintFinale??[],
+      // Physisch im Wind verausgabte Jagdhelfer: nur EIN Lauf,
+      // Checkpointabstand vor/nach den realen zurücknehmenden Watt.
+      spentHelperTrace:r.events.filter(e=>
+        e.type==='recovery'&&e.description.includes('Führungsarbeit'))
+        .map(e=>{
+          const before=(r.checkpoints??[]).filter(cp=>cp.km<=e.km).at(-1);
+          const after=(r.checkpoints??[]).find(cp=>cp.km>=e.km+5);
+          const data=cp=>cp?.riders.find(row=>row.riderId===e.riderId);
+          const prev=data(before),next=data(after);
+          // Das Zurückfallen muss IN der physischen Hauptgruppe
+          // erkennbar sein. Abstand zur absoluten Flucht allein reicht
+          // nicht als Beleg, weil das Feld die Flucht einholen kann.
+          const local=cp=>{
+            const r=data(cp);
+            if(!r)return null;
+            const members=cp.riders.filter(x=>
+              x.groupIndex===r.groupIndex).sort((x,y)=>
+                y.positionM-x.positionM||
+                x.riderId.localeCompare(y.riderId));
+            return {km:n(cp.km),gapM:n(r.gapToLeaderM),
+              groupSize:r.groupSize,
+              groupRank:members.findIndex(x=>
+                x.riderId===r.riderId)+1,
+              gapToOwnGroupFrontM:n(members[0].positionM-r.positionM),
+              wprimePct:n(r.wPrimeRemainingPct)};
+          };
+          return {id:e.riderId,teamId:e.teamId,km:n(e.km),
+            message:e.description,
+            before:prev?local(before):null,
+            after5km:next?local(after):null};
+        }).slice(0,40),
       // Warum fehlen vor dem Zielsprint Helfer? Kein weiterer Lauf,
       // nur dieselben vorhandenen 5-km-Checkpoints beobachten.
       helperTrace:(r.checkpoints??[]).filter(cp=>
@@ -219,6 +306,70 @@ for(const id of routes){
       bestPlacedSprinter:bestActualSprinter?.id,
       winnerId:r.winnerId,
       watched:watch,
+    }));
+  }
+  // Die Lücke der tatsächlich gefahrenen Flucht zum Hauptfeld vor /
+  // während der Hochjagd, NICHT bloß ein Sprint- oder Ergebnislabel.
+  if(id==='tdf25_lille'){
+    const distanceKm=fixture.input.segments.reduce((v,seg)=>
+      v+seg.lengthM,0)/1000;
+    const gapAt=progress=>{
+      const checkpoints=r.checkpoints??[];
+      const cp=checkpoints.find(x=>
+        x.km>=distanceKm*progress)??checkpoints.at(-1);
+      if(!cp)return null;
+      const groups=new Map();
+      for(const row of cp.riders){
+        const entries=groups.get(row.groupIndex)??[];
+        entries.push(row);
+        groups.set(row.groupIndex,entries);
+      }
+      const ordered=[...groups.entries()].sort((a,b)=>
+        b[1].length-a[1].length||
+        Math.min(...a[1].map(r=>r.groupIndex))-
+          Math.min(...b[1].map(r=>r.groupIndex)));
+      const main=ordered[0]?.[1]??[];
+      const lead=groups.get(Math.min(...groups.keys()))??[];
+      const mainFront=Math.max(...main.map(r=>r.positionM));
+      const leadRear=Math.min(...lead.map(r=>r.positionM));
+      const genuineBreak=lead!==main&&lead.length<=12&&main.length>=8;
+      return {km:n(cp.km),mainSize:main.length,leadSize:lead.length,
+        gapM:n(genuineBreak?Math.max(0,leadRear-mainFront):0),
+        actualBreak:genuineBreak};
+    };
+    const gaps=[.65,.70,.75,.80,.85,.90,.95,.98].map(gapAt);
+    const finaleField=(r.checkpoints??[]).filter(cp=>
+      cp.km>=165&&cp.km<=185&&
+      [165,170,175,180].some(target=>Math.abs(cp.km-target)<.08))
+      .map(cp=>{
+        const sorted=[...cp.riders].sort((a,b)=>
+          b.positionM-a.positionM||a.riderId.localeCompare(b.riderId));
+        const groupMap=new Map();
+        for(const row of sorted){
+          const items=groupMap.get(row.groupIndex)??[];
+          items.push(row);groupMap.set(row.groupIndex,items);
+        }
+        const groups=[...groupMap.values()].sort((a,b)=>b.length-a.length);
+        const first=groupMap.get(sorted[0].groupIndex)??[];
+        const main=groups[0]??[];
+        const bestSprinter=cp.riders.find(x=>x.riderId==='F023');
+        return {km:n(cp.km),firstSize:first.length,
+          largestSize:main.length,groupCount:groupMap.size,
+          firstToMainGapM:n(Math.max(0,
+            Math.min(...first.map(x=>x.positionM))-
+            Math.max(...main.map(x=>x.positionM)))),
+          sprinterGroupSize:bestSprinter?.groupSize??0,
+          sprinterRankInRace:sorted.findIndex(x=>x.riderId==='F023')+1,
+          sprinterGapM:bestSprinter?n(bestSprinter.gapToLeaderM):null};
+      });
+    console.log('R22-LILLE-FINALE-FIELD '+JSON.stringify({
+      route:id,seed,finaleField,
+    }));
+    console.log('R22-LILLE-CHASE-GAPS '+JSON.stringify({
+      route:id,seed,gaps,
+      measuredLongPullSeconds:r.diagnostics.committedChasePullSeconds??0,
+      longestPhysicalChaseFrontStintS:r.diagnostics.longestMainFieldChaserStintS??0,
+      spentHelpers:r.diagnostics.spentChaseHelpers??0,
     }));
   }
   // Keine neue Simulation: zeigt, ob Puncheure an den real modellierten
