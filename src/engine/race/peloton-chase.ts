@@ -72,9 +72,11 @@ export function coordinatePelotonChase(input:{
       !(sprintFinale&&r.chaseSpent)&&r.reserveFraction>.32);
     const hasSprinter=members.some(r=>r.role==='sprinter');
     const hasCaptain=members.some(r=>r.role==='kapitaen');
-    const interested=team.strategy==='sprint'&&hasSprinter||
+    const optedOut=sprintFinale&&team.chaseHelperCount===0;
+    const interested=!optedOut&&(
+      team.strategy==='sprint'&&hasSprinter||
       urgent&&team.strategy==='kapitaen_schuetzen'&&hasCaptain||
-      urgent&&team.strategy==='ausgewogen'&&hasCaptain;
+      urgent&&team.strategy==='ausgewogen'&&hasCaptain);
     return {team:team.id,helpers:helpers.length,
       score:team.strategy==='sprint'?3:
         team.strategy==='kapitaen_schuetzen'?2:1,interested};
