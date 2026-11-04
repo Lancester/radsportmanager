@@ -43,6 +43,8 @@ for(const model of ['legacy','cohesive','coordinated','relays','relay-paced','fr
     orderedRelayTeamSeconds:result.diagnostics.orderedRelayTeamSeconds??0,
     mainFieldFrontWorkWithAssignedChaserS:
       result.diagnostics.mainFieldFrontWorkWithAssignedChaserS??0,
+    breakawaysWithoutRecentAttack:
+      result.diagnostics.unprovokedBreakawayCount??0,
     within60sOfWinner:finishGroups.within60sOfWinner,
     finishGroupCount:finishGroups.groups.length,
     winner:result.winnerId,
