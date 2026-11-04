@@ -28,6 +28,8 @@ test('R22 Kletter-KI: kein Berg-Privileg auf Ebene, für schwere Sprinter oder b
     {...observation,gradeFraction:0},
     {...observation,gradeFraction:0.045},
     {...observation,climbLengthM:1100},
+    {...observation,climbLengthM:4500},
+    {...observation,role:'helfer'},
     {...observation,specialty:'sprinter'},
     {...observation,tacticalIntent:'sprint'},
     {...observation,tacticalIntent:'angriff'},
