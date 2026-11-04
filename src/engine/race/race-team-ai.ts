@@ -273,9 +273,17 @@ export function decideIntelligentCrew(input:{
     // Auf anderen Strecken bleibt die 75-s-Rotation unverändert.
     const allowedStintSeconds=input.sprintFinaleMode&&mission==='jagd'&&
       input.progress>=2/3?1200:R15_R16.relaySeconds;
+    const eligibleForLongStint=input.sprintFinaleMode&&
+      mission==='jagd'&&input.progress>=2/3;
     const retained=previous&&input.timeS-previous.sinceS<
       allowedStintSeconds?
-      frontEligible.find(r=>r.id===previous.riderId):undefined;
+      (eligibleForLongStint?
+        selected.find(r=>r.id===previous.riderId):
+        frontEligible.find(r=>r.id===previous.riderId)):undefined;
+    // Bleibt der nominierte Helfer kurz hinter dem Führenden,
+    // behält er seinen Auftrag und muss sich wieder *real* nach
+    // vorne fahren. Er erhält dort nur dann Führungswatt, wenn
+    // er die 18-m-Zone physisch tatsächlich erreicht hat.
     const leader=retained??(frontEligible.length?
       frontEligible[rotation%frontEligible.length]:null);
     if(leader)leaderByTeam.set(team.id,{
