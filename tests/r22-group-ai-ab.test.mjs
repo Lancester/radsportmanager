@@ -4,6 +4,7 @@ import {execFileSync} from 'node:child_process';
 import {readFileSync} from 'node:fs';
 import {finishGroupMetrics} from '../src/engine/race/finish-groups.ts';
 import {coordinatePelotonChase} from '../src/engine/race/peloton-chase.ts';
+import {decideChaseApproach} from '../src/engine/race/group-riding.ts';
 import {decideGroupRiding}
   from '../src/engine/race/group-riding.ts';
 import {createRaceExample,simulateRace}
@@ -38,6 +39,15 @@ test('R22 Zielgruppe: zusammenhängende Zeiten statt Renn-Positionsgruppen',()=>
   assert.equal(isolatedWinner.largestGroupSize,3);
   assert.equal(isolatedWinner.largestGroupGapToWinnerS,100);
   assert.equal(isolatedWinner.within60sOfWinner,1);
+});
+
+test('R22: Jagdhelfer rückt mit kontrollierter Mehrleistung statt blindem 110%-CP-Solo auf',()=>{
+  const before=decideGroupRiding(observation);
+  const after=decideChaseApproach(observation);
+  assert.ok(after.powerW>before.powerW);
+  assert.ok(after.powerW-before.powerW<=42.0001);
+  assert.ok(after.powerW<=observation.criticalPowerW*1.025);
+  assert.equal(after.reason,'follow_group');
 });
 
 test('R22 Mannschaftsjagd: nur Interessenten, keine Phantombewegung, 150s Mandat',()=>{
@@ -101,6 +111,8 @@ test('R22: Legacy bleibt exakt reproduzierbar bei deaktiviertem Gruppenmodell',(
   assert.equal(d.finisherCount,30);
   const e=simulateRace({...input,groupRidingModel:'relays'});
   assert.equal(e.finisherCount,30);
+  const paced=simulateRace({...input,groupRidingModel:'relay-paced'});
+  assert.equal(paced.finisherCount,30);
   assert.ok(c.classification.every(r=>r.energyResidualJ<.05&&
     r.energyResidualJ>-.05&&r.finalWPrimeJ>=0));
 });
@@ -112,14 +124,16 @@ test('R22: echter Gruppen-A/B mit 2 × 154 Fahrern und Ergebnismessung',()=>{
     '--output',dir,
   ],{encoding:'utf8',timeout:240000,maxBuffer:10e6});
   const races=log.split('\n').filter(x=>x.startsWith('R22-GROUP-AI '));
-  assert.equal(races.length,4);
+  assert.equal(races.length,5);
   const report=JSON.parse(readFileSync(dir+'/report.json','utf8'));
-  assert.equal(report.variants.length,4);
+  assert.equal(report.variants.length,5);
   assert.deepEqual(report.variants.map(r=>r.model),
-    ['legacy','cohesive','coordinated','relays']);
+    ['legacy','cohesive','coordinated','relays','relay-paced']);
   assert.ok(report.variants[3].orderedRelayTeamSeconds>=
     report.variants[3].mainFieldFrontWorkWithAssignedChaserS);
   assert.ok(report.variants[3].largestFinishGroup>=1);
+  assert.ok(report.variants[4].orderedRelayTeamSeconds>=
+    report.variants[4].mainFieldFrontWorkWithAssignedChaserS);
   assert.ok(report.variants.every(r=>r.winnerFinishGroup>=1&&
     r.largestFinishGroup>=r.winnerFinishGroup&&
     r.within60sOfWinner>=r.winnerFinishGroup));
@@ -127,6 +141,6 @@ test('R22: echter Gruppen-A/B mit 2 × 154 Fahrern und Ergebnismessung',()=>{
   assert.ok(Math.abs(report.variants[0].winnerTimeS-12619.2)<.3);
   const checkpoints=readFileSync(dir+'/checkpoints.csv','utf8').trim().split('\n');
   assert.ok(checkpoints.length>=60);
-  assert.equal(readFileSync(dir+'/finishers.csv','utf8').trim().split('\n').length,617);
+  assert.equal(readFileSync(dir+'/finishers.csv','utf8').trim().split('\n').length,771);
   console.log(log.split('\n').filter(x=>x.startsWith('R22-GROUP-AI-')).join('\n'));
 });
