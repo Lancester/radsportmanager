@@ -163,7 +163,9 @@ export function decideIntelligentCrew(input:{
     const sprintTrain=team.strategy==='sprint'&&
       input.progress>=0.82&&input.remainingM>250&&
       input.remainingM<=10000&&group.length>=3;
-    const chase=situation.chaseViable&&isMain&&input.progress<0.94&&
+    const chase=(input.chasingTeamIds!==undefined?
+      situation.leadingBreakaway:situation.chaseViable)&&
+      isMain&&input.progress<0.94&&
       (input.chasingTeamIds===undefined||input.chasingTeamIds.has(team.id))&&
       !sprintTrain&&team.strategy!=='offensiv'&&
       (team.strategy!=='ausgewogen'||!sprintTeamReady||urgentChase);
@@ -184,7 +186,7 @@ export function decideIntelligentCrew(input:{
     const urgency=situation.gapFractionOfRemaining>0.04||
       situation.projectedGapM/Math.max(1,input.remainingM)>0.05;
     let requested=1;
-    if(chase)requested=input.restInPeloton?Math.min(2,helpers.length):
+    if(chase)requested=input.restInPeloton?Math.min(3,helpers.length):
       team.strategy==='sprint'? (urgency?5:3):
       team.strategy==='kapitaen_schuetzen'?(urgency?4:2):(urgency?3:2);
     else if(sprintTrain)requested=input.progress>=0.94?3:4;
