@@ -600,3 +600,37 @@ inklusive 5-km-CSV-Vergleich und
 GitHub Summary. Keine regelmäßigen
 oder automatischen Langstreckenläufe.
 [Ergebnisse/Begründung](race/R22_GRUPPENFAHR_KI_AB.md).
+
+
+## R-22: Ergänzung zu Gruppen-KI (04.11.2026)
+
+[PR #59](https://github.com/Lancester/radsportmanager/pull/59)
+ergänzt `groupRidingModel:'coordinated'`
+als **experimentelle** Variante
+neben Legacy/Cohesive. Die
+Fahrer ordnen sich einer
+gemeinsamen Gruppenfahrt unter,
+sparen dabei Pedalenergie und
+ausgewählte interessierte Teams
+koordinieren ihre echte Ausreißerjagd,
+statt ziellos allesamt zu reagieren.
+Der unveränderte **Standard bleibt
+`legacy`** bis zur fachlichen Abnahme.
+
+Das wichtige neue Kriterium für
+flache Rennen sind **nicht nur
+Zwischengruppen**, sondern Zielgruppen:
+Siegergruppe, größte Zielgruppe
+und deren Rückstand auf den Sieger,
+Fahrer innerhalb 60 Sekunden.
+Der erste 154er-Lille-Test
+mit koordinierter KI hielt
+**133 Fahrer** im Zielpulk,
+aber **15:29 min hinter der
+Siegergruppe**. Deshalb ist die
+Ausreißerjagd noch nicht
+realistisch kalibriert.
+[Auswertung](race/R22_HAUPTFELD_JAGD_ZIELGRUPPEN.md).
+
+[GitHub Actions: drei KI-Varianten
+manuell vergleichen](https://github.com/Lancester/radsportmanager/actions/workflows/r22-group-ai-ab.yml).
