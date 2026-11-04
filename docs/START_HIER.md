@@ -512,3 +512,66 @@ Held-out-Tests stehen noch aus.
 bleibt offen. **R-23 Freigabe unzulässig vor R-22-Abnahme.**
 Weiterhin ausschließlich **Einzelrenn-Engine**;
 keine Rundfahrten oder Karriere.
+
+
+## R-22A/B/C – historische Referenzstrecken, neue Profi-Testfelder und GitHub-Schnellwahl (04.11.2026)
+
+**R-22A:** vier **einzelne Straßenrennen** als neue Version-1-Testvorlagen:
+TdF 2025 Lille–Lille (184,9 km/1065 modellierte hm),
+TdF 2025 Lauwin-Planque–Boulogne (209,1 km/2164 hm),
+Liège–Bastogne–Liège 2025 (252 km/3346 **modellierte,
+nicht unabhängig belegte** hm) und TdF 2025 Auch–Hautacam
+(180,6 km/3850 hm). Die Distanzen und benannten
+Anstiege sind publiziert; die Übergänge wurden
+ausdrücklich **als Proxies modelliert**.
+Veröffentlichte Gesamthöhenmeter bei Lille,
+Boulogne und Hautacam werden im Übergangsmodell
+reproduziert; **kein exakter Original-GPX/DEM-Track**
+oder empirisch verifiziertes gesamtes Höhenprofil.
+
+**R-22B:** 154 reproduzierbare fiktive Profis,
+physiologische Typmittel für Masse/CP/W′/CdA
+aus publizierter Open-Access-Studie über
+144 professionelle Radsportfahrer. Fiktive
+Rider-ID-basierte Streuung statt realer
+Fahreridentitäten. Abgeleitete Klassiker-
+und FTP-/Fähigkeits-/Verpflegungsannahmen
+werden eindeutig als Hypothesen geführt.
+
+**R-22C:** 22 fiktive Profiteams à 7 Fahrer;
+szenarioabhängig unterschiedliche Anteile von
+Sprint-, GC-/Berg-, Klassiker-, Ausreißer-
+und ausgewogenen Mannschaften; real
+unterschiedliche Spezialistenprofile
+statt überall ein identischer
+Kletterer/Sprinter/fünf-Helfer-Kader.
+
+**GitHub-Maske:** `Actions → R-22 – Monte-Carlo-Test manuell starten`:
+**nur vier Angaben**: (1) eines der vier
+lesbar beschrifteten Szenarien, (2) 3/10/25/50/100
+Seeds, (3) optional none/carbs als
+Vergleich, (4) Start-Seed.
+Die Streckenlänge, 22 Mannschaften und
+154 Fahrer werden automatisch gewählt.
+Keine automatischen Monte-Carlo-Durchläufe;
+nur `workflow_dispatch` durch den Nutzer.
+Bei jedem Lauf zusätzlich `reference-scenario.json`
+mit Segmenten, Quellen, Fahrerwerten
+und vollständiger Teamzusammenstellung.
+
+**Verifizierter technischer Smoke-/Stresstest:**
+[vier echte 154-Fahrer-Einzelrennen, 616 Klassifikationen](https://github.com/Lancester/radsportmanager/actions/runs/41768768694)
+mit Flucht-/Energie-/CP/W′-Audits vollständig
+erfolgreich; dazu bestehende Regressionen.
+Sportliche Realismusabweichungen bleiben
+weiter Gegenstand von **R-22**:
+u. a. einzelne Kletterer als Gewinner
+aller vier Referenzrennen, weiterhin
+viele Gruppen und teils große Rückstände.
+Es wurde **kein** neuer Rennzeitbonus,
+kein „automatisches Balancing“ und
+keine Veränderung am CP-/Physikkern eingeführt.
+
+[Technische Referenzdokumentation](race/R22ABC_REFERENZSTRECKEN_PROFIFELDER.md).
+**Weiterhin getrennt:** keine Etappen-/Gesamtwertung,
+Karriere, Verträge oder Teammitarbeiter.
