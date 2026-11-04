@@ -181,8 +181,28 @@ for(const id of routes){
       return {km:n(cp.km),frontGroup:cp.groupSizes[0],
         largestGroup:groups[0],numberGroups:cp.groupCount};
     }).filter(Boolean);
+    // Jede Attacke gegen den naechsten existierenden 5-km-Checkpoint
+    // vergleichen. Das sind grobe Beobachtungen, keine sekunden-
+    // genauen Start- und Nachher-Messungen und kein Erfolgsbonus.
+    const attackTraces=attacks.map(e=>{
+      const cpBefore=(r.checkpoints??[]).filter(cp=>cp.km<=e.km).at(-1);
+      const cpAfter=(r.checkpoints??[]).find(cp=>cp.km>=e.km+5);
+      const sample=cp=>{
+        const z=cp?.riders.find(z=>z.riderId===e.riderId);
+        return z?{km:n(cp.km),gapM:n(z.gapToLeaderM),
+          wPrimePct:n(z.wPrimeRemainingPct),groupSize:z.groupSize}:null;
+      };
+      const f=r.classification.find(z=>z.id===e.riderId);
+      return {id:e.riderId,kind:kindByRider.get(e.riderId),
+        km:n(e.km),description:e.description,
+        beforeCheckpoint:sample(cpBefore),
+        atLeast5KmLater:sample(cpAfter),
+        finishRank:f?.rank??null,
+        finishGapS:f?n(f.gapS):null};
+    });
     console.log('R23-HILLY-AUDIT '+JSON.stringify({
       route:id,seed,attacks:attacks.length,
+      attackTraces,
       earlyAttacks:early.length,midAttacks:mid.length,
       lateAttacks:late.length,lateRampAttacks:lateRamp.length,
       uniqueAttackers:byRider.size,

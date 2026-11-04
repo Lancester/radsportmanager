@@ -116,6 +116,27 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
       x.largestGroup>=x.frontGroup));
   assert.ok(hill.hillyRampTempoSeconds>=0);
   assert.ok(Array.isArray(hill.hillyRampTempoRiders));
+  assert.ok(hill.attacks>=10&&hill.attacks<=60,
+    'R23: 154er-Huegelrennen darf nicht erneut in 108 Attacken ausarten');
+  assert.ok(hill.lateRampAttacks>0,
+    'R23: am spaeten Schluesselanstieg muss Angriff moeglich bleiben');
+  assert.equal(hill.attackTraces.length,hill.attacks);
+  assert.ok(hill.attackTraces.every(x=>
+    x.id&&x.km>=0&&x.finishRank>=1&&x.finishRank<=154&&
+    (!x.beforeCheckpoint||
+      x.beforeCheckpoint.wPrimePct>=0&&
+      x.beforeCheckpoint.wPrimePct<=100&&
+      x.beforeCheckpoint.groupSize>=1)&&
+    (!x.atLeast5KmLater||
+      x.atLeast5KmLater.wPrimePct>=0&&
+      x.atLeast5KmLater.wPrimePct<=100&&
+      x.atLeast5KmLater.groupSize>=1)));
+  // Eine negative sportliche Regression (Median +7 bis +11 Minuten)
+  // muss im konkreten Boulogne-Seed statt mit gruenem Unit-Test
+  // sichtbar mit einer Begründung geprüft werden.
+  const hillyProfile=rows.find(x=>x.route==='tdf25_boulogne');
+  assert.ok(hillyProfile.medianFinishGapS<200,
+    'R23: starke, ungeklärte Zeitabstands-Regression im Huegelrennen');
   console.log(hillyLines[0]);
   // Die Zahlen sind ausdrücklich Diagnose, keine festen Soll-Sieger/Quoten.
   const summaryLine=log.split('\n').find(line=>
