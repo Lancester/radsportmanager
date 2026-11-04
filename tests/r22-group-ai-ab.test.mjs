@@ -50,7 +50,7 @@ test('R22 Mannschaftsjagd: nur Interessenten, keine Phantombewegung, 150s Mandat
     gapFractionOfRemaining:.004,chaseViable:true};
   const initial={active:[],sinceS:0,cooldownUntilS:0};
   const params={timeS:300,remainingM:90000,progress:.3,
-    mainGroupIds:new Set(['s','h']),teams,riders,situation,previous:initial};
+    mainGroupIds:new Set(riders.map(r=>r.id)),teams,riders,situation,previous:initial};
   const first=coordinatePelotonChase(params);
   assert.deepEqual([...first.chasingTeamIds],['T01']);
   const continued=coordinatePelotonChase({...params,timeS:320,
