@@ -345,12 +345,51 @@ test('R22: neuer physischer Jagdnachrücker wechselt nicht alle 10 s mit anderem
   assert.equal(follow.fieldChaseLeader?.riderId,'NEW',
     '140 m weg und jung: nicht alle zehn Sekunden austauschen');
   assert.equal(follow.orders.get('NEW')?.duty,'unterstuetzung');
-  const oldEnough=decideIntelligentCrew({...args,timeS:10200,
+  const oldEnough=decideIntelligentCrew({...args,timeS:10060,
     previousFieldChaseLeader:first.fieldChaseLeader,
     previousLeaders:follow.leaderByTeam,
     riders:[...firstRiders.map(r=>r.id==='NEW'?
       {...r,positionM:11860}:r),
       rider('ALT','T1','helfer',11945)]});
   assert.equal(oldEnough.fieldChaseLeader?.riderId,'ALT',
-    'nach 180 s gescheitertem Aufrücken darf näherer Helfer übernehmen');
+    'nach 50 s gescheitertem Aufrücken darf näherer Helfer übernehmen');
+});
+
+test('R22: zehnsekündige Ablösung ist erlaubt, aber nur wenn beide real vorne fahren',()=>{
+  const others=Array.from({length:28},(_,i)=>
+    rider('PACK'+i,'T4','kapitaen',12000-i*5));
+  const teams=[{id:'T1',strategy:'sprint'},
+    {id:'T2',strategy:'sprint'},
+    {id:'T3',strategy:'offensiv'},
+    {id:'T4',strategy:'ausgewogen'}];
+  const sprint1=rider('SPR1','T1','sprinter',11942);
+  const sprint2=rider('SPR2','T2','sprinter',11943);
+  const old=rider('OLD','T1','helfer',11997);
+  const next=rider('NEXT','T2','helfer',12001);
+  const args={timeS:10010,progress:.94,remainingM:11000,
+    teams,riders:[rider('ESC','T3','kapitaen',12500),
+      ...others,sprint1,sprint2,old,next],
+    chasingTeamIds:new Set(['T1','T2']),restInPeloton:true,
+    physicalRelayMode:true,sprintFinaleMode:true,
+    previousLeaders:new Map([['T1',{riderId:'OLD',sinceS:10000}]]),
+    previousFieldChaseLeader:{riderId:'OLD',sinceS:10000}};
+  const short=decideIntelligentCrew(args);
+  assert.equal(short.fieldChaseLeader?.riderId,'NEXT',
+    'neuer Jäger bereits 4 m real voraus: kurze echte Übergabe');
+  assert.equal(short.orders.get('NEXT')?.duty,'fuehrung');
+  assert.equal(short.orders.get('OLD')?.duty,'unterstuetzung');
+  assert.ok(short.orders.get('NEXT').desiredPowerW>
+    short.orders.get('OLD').desiredPowerW,
+    'Führender verlangt Watt, vorheriger spart im Windschatten');
+
+  const far=decideIntelligentCrew({...args,
+    riders:args.riders.map(r=>r.id==='NEXT'?
+      {...r,positionM:11897}:r)});
+  assert.equal(far.fieldChaseLeader?.riderId,'OLD',
+    'neuer Helfer 103 m hinter Feldspitze: KEINE Phantomrotation');
+  assert.equal(far.orders.get('OLD')?.duty,'fuehrung');
+
+  const early=decideIntelligentCrew({...args,progress:.82});
+  assert.equal(early.fieldChaseLeader?.riderId,'OLD',
+    'im frühen Nachführabschnitt sind zehnsekündige Rotationen keine Pflicht');
 });

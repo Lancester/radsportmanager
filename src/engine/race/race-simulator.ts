@@ -495,7 +495,15 @@ export function simulateRace(x:RaceInput):RaceResult {
             prior?.chaseLoad.spent?'Helfer verausgabt':
             !inMain?'außerhalb des Hauptfeldes':
             frontGapM!==null&&frontGapM>72?'hinter der 72-m-Führungszone':
-            'Teamauftrag oder Sprinter-Schutz umgestellt';
+            (planned.fieldChaseLeader&&prior&&
+              planned.fieldChaseLeader.riderId!==old!.riderId&&
+              frontGapM!==null&&frontGapM>=0&&frontGapM<=18&&
+              (()=>{const next=byId.get(planned.fieldChaseLeader!.riderId);
+                return !!next&&main.some(g=>g.id===next.rider.id)&&
+                  main[0].positionM-next.positionM<=18&&
+                  next.positionM>=prior.positionM+2;
+              })())?'echte physische Frontablösung':
+              'Teamauftrag oder Sprinter-Schutz umgestellt';
           namedChaseHandoffs.push({km:leader.positionM/1000,
             from:old?.riderId??null,
             to:planned.fieldChaseLeader?.riderId??null,

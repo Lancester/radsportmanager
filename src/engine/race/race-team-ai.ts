@@ -277,7 +277,7 @@ export function decideIntelligentCrew(input:{
       const established=sorted.find(r=>
         r.id===fieldPrior.riderId&&
         (gapToFront(r)<=72||
-          (input.timeS-fieldPrior.sinceS<180&&gapToFront(r)<=300)));
+          (input.timeS-fieldPrior.sinceS<50&&gapToFront(r)<=300)));
       // Neuen Nachrückern tatsächlich mehrere KI-Takte zum physischen
       // Aufschließen geben. Sonst gewinnt bei jeder 10-s-Entscheidung
       // der nächste beliebige Helfer 5 m weiter vorn; niemand kommt an.
@@ -400,7 +400,7 @@ export function decideIntelligentCrew(input:{
     const kept=previous?candidates.find(c=>
       c.rider.id===previous.riderId&&
       (frontM-c.rider.positionM<=72||
-        (input.timeS-previous.sinceS<180&&!ready))):undefined;
+        (input.timeS-previous.sinceS<50&&!ready))):undefined;
     // Ein frischer Helfer muss nicht magisch schon an der 18-m-Front
     // stehen. Ist keiner vorne, wird der nächstplatzierte TATSÄCHLICH
     // im Hauptfeld vorhandene Jäger als Nachrücker nominiert. Er hat
@@ -408,7 +408,22 @@ export function decideIntelligentCrew(input:{
     // Abstand muss er mit eigenen Watt nach und nach schließen.
     const fresh=candidates.find(c=>
       c.rider.id!==previous?.riderId);
-    const chosen=kept??ready??fresh??candidates[0];
+    // Bei real nebeneinander an der Hauptfeldspitze fahrenden Jägern
+    // darf die Führung im späten Finale auch nach nur 10 s wechseln.
+    // Ein Wechsel ist hier KEIN Auftragsspringen im Feld: der neue
+    // Fahrer muss bereits physisch vorne und mind. 2 m VOR dem alten
+    // liegen. Seine tatsächlich anliegenden Watt werden normal bezahlt.
+    const oldRider=previous?candidates.find(c=>
+      c.rider.id===previous.riderId):undefined;
+    const physicalFrontRelay=input.progress>=.90&&oldRider&&
+      input.timeS-previous!.sinceS>=10&&
+      frontM-oldRider.rider.positionM<=R15_R16.frontWorkRadiusM?
+      candidates.find(c=>
+        c.rider.id!==previous!.riderId&&
+        frontM-c.rider.positionM<=R15_R16.frontWorkRadiusM&&
+        c.rider.positionM>=oldRider.rider.positionM+2):
+      undefined;
+    const chosen=physicalFrontRelay??kept??ready??fresh??candidates[0];
     if(chosen)fieldChaseLeader={
       riderId:chosen.rider.id,
       sinceS:kept?previous!.sinceS:input.timeS,
