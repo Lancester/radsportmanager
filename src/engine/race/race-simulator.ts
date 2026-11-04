@@ -303,6 +303,7 @@ export function simulateRace(x:RaceInput):RaceResult {
   let breakawayActive=false;
   let aeroFactorSum=0,aeroFactorSamples=0,minimumAeroFactor=1;
   let chaseState:ChaseCoordinatorState={active:[],sinceS:0,cooldownUntilS:0};
+  let unprovokedBreakawayCount=0;
   let orderedRelayTeamSeconds=0;
   let mainFieldFrontWorkWithAssignedChaserS=0;
   const counters={attacks:0,chases:0,sprints:0,groupSplits:0,
@@ -788,6 +789,9 @@ export function simulateRace(x:RaceInput):RaceResult {
           if(breakawaySinceS===null)breakawaySinceS=t;
           if(t-breakawaySinceS>=40){
             breakawayActive=true;catchSinceS=null;counters.breakaways++;
+            if(x.groupRidingModel==='front-gated'&&
+              groups[0].every(r=>t-r.lastAttackS>180))
+              unprovokedBreakawayCount++;
             if(events.length<100000)events.push({timeS:t,
               km:best.positionM/1000,type:'breakaway',
               gapM:leadGap,description:`Fluchtgruppe (${groups[0].length} Fahrer) hat ${leadGap.toFixed(0)} m Vorsprung`});
@@ -886,6 +890,7 @@ export function simulateRace(x:RaceInput):RaceResult {
       ...((x.groupRidingModel==='relays'||(x.groupRidingModel==='relay-paced'||x.groupRidingModel==='front-gated'))?{
         orderedRelayTeamSeconds,
         mainFieldFrontWorkWithAssignedChaserS,
+        ...(x.groupRidingModel==='front-gated'?{unprovokedBreakawayCount}:{}),
       }:{}),teams:x.teams.length,
       participants:states.length,raceDistanceKm:totalM/1000,
       meanAeroFactor:aeroFactorSum/aeroFactorSamples,
