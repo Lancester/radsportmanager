@@ -166,7 +166,6 @@ test('R22: Manager kann null, zwei oder vier Jagdhelfer je Sprintteam vorgeben',
   }
 });
 test('R22: physischer Langjagdführer behält seinen Auftrag nach kurzen Positionswechseln',()=>{
-  const ids=['LEAD','TARGET','H1','H2','H3'];
   const group=Array.from({length:31},(_,i)=>rider('OTHER'+i,'T2',
     'helfer',12000-i*3));
   group.push(rider('TARGET','T1','sprinter',11960));
@@ -175,16 +174,18 @@ test('R22: physischer Langjagdführer behält seinen Auftrag nach kurzen Positio
   group.push(rider('H2','T1','helfer',11970));
   group.push(rider('H3','T1','helfer',11965));
   const teams=[{id:'T1',strategy:'sprint'},
-    {id:'T2',strategy:'ausgewogen'}];
+    {id:'T2',strategy:'ausgewogen'},
+    {id:'T3',strategy:'offensiv'}];
+  const field=[rider('BREAK','T3','kapitaen',12450),...group];
   const first=decideIntelligentCrew({
-    timeS:10000,progress:.75,remainingM:45000,teams,riders:group,
+    timeS:10000,progress:.75,remainingM:45000,teams,riders:field,
     previousLeaders:new Map(),chasingTeamIds:new Set(['T1']),
     restInPeloton:true,physicalRelayMode:true,sprintFinaleMode:true,
   });
   const initial=first.leaderByTeam.get('T1');
   assert.ok(initial,'real helper first assigned to front');
   const second=decideIntelligentCrew({
-    timeS:10400,progress:.79,remainingM:37000,teams,riders:group.map(r=>
+    timeS:10400,progress:.79,remainingM:37000,teams,riders:field.map(r=>
       r.id===initial.riderId?{...r,positionM:r.positionM-24}:r),
     previousLeaders:first.leaderByTeam,
     chasingTeamIds:new Set(['T1']),restInPeloton:true,
