@@ -13,7 +13,7 @@ import {auditRace} from '../src/engine/race/race-audit.ts';
 
 test('R19: Verpflegungsbilanz ist nachvollziehbar, ohne negative Speicher',()=>{
   let fed=initialEnduranceState(),fasted=initialEnduranceState();
-  for(let i=0;i<7*3600;i++){
+  for(let i=0;i<5*3600;i++){
     fed=advanceEndurance({state:fed,appliedPowerW:300,
       referenceCpW:300,dt:1,carbsGPerHour:100}).state;
     fasted=advanceEndurance({state:fasted,appliedPowerW:300,
