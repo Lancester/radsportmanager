@@ -44,3 +44,17 @@ Die Zeitgrenze `continueAttackS` ist **eine heuristische KI-Entscheidungsdauer**
 ## 5. Nächste Diagnose aus demselben Einzelrennen
 
 Im vorhandenen `scripts/r22-profile-smoke.mjs` wird nun zusätzlich `R22-CLASSICS-PUNCH-AUDIT` für Liège ausgegeben (kein weiteres Experiment und kein weiterer Seed): **je modelliertem Anstieg** Zahl der tatsächlich ausgelösten speziellen Puncheur-Attacken; für einzelne Fahrer Abstand zur Spitze, Gruppengröße und W′-Reserve unmittelbar vor sowie etwa **5 km nach** der Attacke; außerdem spätere Zielplatzierung. Vor einer weiteren Modifikation soll aus diesen Messwerten getrennt werden: zu geringe Ausgangsdifferenz der Fahrerprofile, zu hohe energetische Kosten oder zu wirksame/zu einfache Gegenverfolgung. Ein eventuell zusätzlicher Kraftausdauer-Parameter darf nur kontrolliert, explizit und mit Energieabbuchung eingeführt werden.
+
+
+## 6. Neue entscheidende Ursache: Attacken aus bereits abgehängten Gruppen
+
+Die zusätzliche **reale** 154er-Lüttich-Diagnose aus [CI #41806132151](https://github.com/Lancester/radsportmanager/actions/runs/41806132151), **274/274 Tests**, zeigt:
+
+- **26 spezielle Klassiker-Attacken** von **9 unterschiedlichen Fahrern**, tatsächlich an den späten Schlüsselrampen: **9 × La Redoute**, **8 × Côte des Forges**, **9 × Roche-aux-Faucons**; keine solchen Spezialangriffe auf frühen Rampen.
+- Ein großer Teil der Spezialangriffe wird bei Kilometer ~216,7 von Fahrern gestartet, die am Checkpoint km 215 bereits **über 5 km hinter der absoluten Rennspitze** liegen. Beispiel F008: vor La Redoute ~5.127 m hinter Spitze, danach bei km 225 ~5.985 m; Zielrang 41, +468,65 s. Er attackiert also in der falschen, bereits abgehängten Gruppe – **kein Defizit in der externen Schwerkraftformel**.
+- F141 lag vor La Redoute ~832 m zurück, 5 km danach ~1.285 m zurück, Zielrang 27. Das zeigt: Der Attackenzeitpunkt stimmt, aber die Positionierung/Vorbelastung der Fahrer vorher nicht.
+- W′ der meisten gemessenen Fahrer lag bei km 215 wieder bei 100 %; die mangelnde Anschlusslage ist **nicht** allein durch aktuell leeres W′ erklärbar. Frühere Überbelastung, fehlende Gruppenkohäsion und taktische Soloentscheidungen müssen getrennt geprüft werden.
+
+**Neue kleine Hypothese zur Widerlegung:** Offensiv fahrende Klassiker-Kapitäne attackieren zu oft früh beziehungsweise an ungeeigneten Orten und verlieren damit eine konkurrenzfähige Gruppe, ehe sie die entscheidenden Rampen erreichen. Statt den Watt-/W′-Bonus weiter aufzudrehen, wird in `stable-pack` bei einem langen, von mehreren kurzen Rampen geprägten Klassiker die **allgemeine frühzeitige `attackOpportunity` für diese Kapitäne deaktiviert**. Ihre spezielle **späte**, physisch durch CP/W′ begrenzte `decideClassicsPunch`-Attacke bleibt erhalten. Die übrigen Fahrer/Teamstrategien, normale Gruppenregelung und andere Referenzprofile bleiben unverändert. Der neue Vierprofil-Vergleich ist in CI zu prüfen; bei unverändertem Fehlverhalten keine automatische Freigabe.
+
+**Entscheidendes Kriterium:** Nicht „ein Klassiker muss gewinnen“, sondern die geeigneten Klassikerfahrer sollen möglichst **noch im relevanten Vorderfeld** zur Schlüsselrampe gelangen, und erst dann eigenständig nachweisbare physische Lücken fahren. Eine triviale Sonderregel, die mehrere Kilometer Rückstand einfach entfernt, ist ausdrücklich ausgeschlossen.
