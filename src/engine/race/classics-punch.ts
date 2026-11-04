@@ -10,9 +10,9 @@ export const CLASSICS_PUNCH=Object.freeze({
   attackFromClimbProgress:.20,attackUntilClimbProgress:.82,
   minGroupSize:4,maxFrontDistanceM:115,
   minWprimeFraction:.38,
-  minCooldownS:540,continueAttackS:40,
-  minExposedSurplusW:30,
-  maxAttackCpFraction:1.18,maxExtraW:120,
+  minCooldownS:540,continueAttackS:95,
+  minExposedSurplusW:22,
+  maxAttackCpFraction:1.25,maxExtraW:145,
 });
 export interface ClassicsPunchObservation {
   specialty?:string;role:string;strategy:string;
@@ -28,20 +28,27 @@ export interface ClassicsPunchObservation {
 export function decideClassicsPunch(o:ClassicsPunchObservation):
   {powerW:number;reason:string}|null {
   const c=CLASSICS_PUNCH;
+  // Eine begonnene physische Attacke darf kurzfristig fortgesetzt
+  // werden, auch wenn der Fahrer die Gruppe bereits verlassen hat.
+  // Andernfalls bricht der erste erfolgreiche Soloversuch nach 10 s
+  // wegen groupSize<4 ungewollt ab.
+  const continuing=o.currentIntent==='angriff'&&
+    o.lastAttackAgeS>=0&&o.lastAttackAgeS<c.continueAttackS;
   if(o.specialty!=='klassiker'||o.role!=='kapitaen'||
     o.raceLengthM<c.minRaceM||
     o.shortSteepClimbs<c.minShortSteepClimbs||
     o.progress<c.minProgress||o.progress>c.maxProgress||
     o.segmentLengthM<c.minClimbM||o.segmentLengthM>c.maxClimbM||
-    o.gradeFraction<c.minGrade||o.groupSize<c.minGroupSize||
-    o.distanceFromGroupFrontM>c.maxFrontDistanceM||
-    o.reserveFraction<c.minWprimeFraction||
+    o.gradeFraction<c.minGrade||
+    o.reserveFraction<(continuing?.20:c.minWprimeFraction)||
     ['sprint','erholung','verfolgung','helferarbeit'].includes(o.currentIntent)||
-    o.segmentProgress<c.attackFromClimbProgress||
-    o.segmentProgress>c.attackUntilClimbProgress||
-    (o.lastAttackAgeS<c.minCooldownS&&
-      !(o.currentIntent==='angriff'&&
-        o.lastAttackAgeS<c.continueAttackS)))
+    (!continuing&&(
+      o.groupSize<c.minGroupSize||
+      o.distanceFromGroupFrontM>c.maxFrontDistanceM||
+      o.segmentProgress<c.attackFromClimbProgress||
+      o.segmentProgress>c.attackUntilClimbProgress||
+      o.lastAttackAgeS<c.minCooldownS
+    )))
     return null;
   if(o.speedMps<=0||!Number.isFinite(o.speedMps)||
     !Number.isFinite(o.criticalPowerW)||o.criticalPowerW<=0)
