@@ -17,7 +17,7 @@ export const CLASSICS_RACECRAFT=Object.freeze({
   positioningFromProgress:.40,positioningUntilProgress:.87,
   positioningGroupSize:12,positioningRankShare:.38,
   positioningMaxGapM:180,positioningMinReserve:.12,
-  positioningMaxCp:1.025,
+  positioningMaxCp:1.025,positioningMaxExtraW:40,
   selectionFromProgress:.78,selectionUntilProgress:.96,
   selectionFromSegment:.12,selectionUntilSegment:.92,
   selectionMaxGapFromRaceFrontM:240,
@@ -70,10 +70,15 @@ export function decideClassicsApproach(
       .includes(o.intent))
     return null;
   // Keine neue künstliche Maximalleistung. Watt zum eigenständigen
-  // Aufrücken (bis etwa CP); bei schnellem Feld kann er scheitern.
+  // Aufrücken; bei schnellem Feld kann er scheitern.
+  // Die tatsächliche bereits ermittelte Gruppen-Folgeleistung ist
+  // der Ausgangspunkt. Max. 20–40 zusätzliche W statt schlagartig
+  // ~100 W vom geschützten Mitfahrer auf volle CP zu springen.
+  // Es ist in einem 1D-Modell keine durchgehende freie Überholspur.
+  const extraW=Math.min(c.positioningMaxExtraW,
+    20+o.gapToGroupFrontM*.16);
   const demanded=Math.min(o.criticalPowerW*c.positioningMaxCp,
-    o.criticalPowerW*(.95+.05*Math.min(1,
-      o.gapToGroupFrontM/70)));
+    o.requestedPowerW+extraW);
   return demanded>o.requestedPowerW+1?demanded:null;
 }
 /** Echte Selektion: EIN vorderer Klassiker macht länger Tempo bergauf. */

@@ -24,8 +24,8 @@ import {decideSprintLaunch,inferredSprintPeakPowerW,sprintPowerDemand}
 import {decideSprintLeadoutPace,SPRINT_LEADOUT} from './sprint-leadout.ts';
 import {chooseIndependentSprintWheel,SPRINT_WHEEL} from './sprint-wheel-choice.ts';
 import {decideClassicsPunch,CLASSICS_PUNCH} from './classics-punch.ts';
-import {decideClassicsApproach,decideClassicsRampTempo}
-  from './classics-racecraft.ts';
+import {decideClassicsApproach,decideClassicsRampTempo,
+  CLASSICS_RACECRAFT} from './classics-racecraft.ts';
 import {decideGroupRiding,decideChaseApproach,R22_GROUP_RIDING} from './group-riding.ts';
 import {decideTeamPace} from './team-pacing.ts';
 import {decideIntelligentCrew,analyzeRaceSituation} from './race-team-ai.ts';
@@ -829,7 +829,8 @@ export function simulateRace(x:RaceInput):RaceResult {
     // Tempo halten; die Auswahl richtet sich nicht am Ergebnis aus.
     const classicRampPacerByGroup=new Map<string,string>();
     const classicsEnabled=x.groupRidingModel==='stable-pack'&&
-      totalM>=220000&&shortSteepClimbs>=4;
+      totalM>=CLASSICS_RACECRAFT.minRaceM&&
+      shortSteepClimbs>=CLASSICS_RACECRAFT.minSteepClimbs;
     if(classicsEnabled){
       for(const group of physicalGroups){
         if(group.length<4||leader.positionM-group[0].positionM>240)

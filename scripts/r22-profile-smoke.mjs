@@ -399,8 +399,27 @@ for(const id of routes){
       return {id,finishRank:fin?.rank,finishGapS:n(fin?.gapS??0),
         samples:samples.filter((x,i)=>i%2===0||x.km>=215)};
     });
+    const groupTimeline=[190,205,215,220,230,240,245].map(target=>{
+      const cp=(r.checkpoints??[]).find(row=>row.km>=target);
+      if(!cp)return null;
+      const sorted=[...cp.riders].sort((a,b)=>b.positionM-a.positionM);
+      const gaps=sorted.map(row=>row.gapToLeaderM)
+        .sort((a,b)=>a-b);
+      const groups=new Map();
+      for(const row of sorted)groups.set(row.groupIndex,
+        (groups.get(row.groupIndex)??0)+1);
+      const topGroupSize=groups.get(sorted[0].groupIndex)??1;
+      return {km:n(cp.km),leaderType:kindByRider.get(sorted[0].riderId),
+        firstGroupSize:topGroupSize,
+        largestGroupSize:Math.max(...groups.values()),
+        groupCount:groups.size,
+        gapAtRank40M:n(gaps[Math.min(39,gaps.length-1)]),
+        gapAtRank77M:n(gaps[Math.min(76,gaps.length-1)]),
+        medianWPrimePct:n(median(cp.riders.map(v=>v.wPrimeRemainingPct))),
+      };
+    }).filter(Boolean);
     console.log('R22-CLASSICS-SELECTION '+JSON.stringify({
-      route:id,seed,
+      route:id,seed,groupTimeline,
       approachS:r.diagnostics.classicsApproachSeconds??0,
       rampTempoS:r.diagnostics.classicsRampTempoSeconds??0,
       rampRiders:r.diagnostics.classicsRampTempoRiderIds??[],

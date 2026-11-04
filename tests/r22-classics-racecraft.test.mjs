@@ -14,6 +14,10 @@ test('Klassiker: positioniert sich mit echten CP-nahen Watt, kein Vorziehen durc
   const x=decideClassicsApproach({...o,progress:.55});
   assert.ok(x>o.requestedPowerW);
   assert.ok(x<=o.criticalPowerW*CLASSICS_RACECRAFT.positioningMaxCp);
+  assert.ok(x-o.requestedPowerW<=CLASSICS_RACECRAFT.positioningMaxExtraW);
+  assert.ok(decideClassicsApproach({...o,requestedPowerW:380})-380<=
+    CLASSICS_RACECRAFT.positioningMaxExtraW);
+  assert.equal(decideClassicsApproach({...o,requestedPowerW:450}),null);
   for(const changed of [
     {enabled:false},{specialty:'sprinter'},{isDesignatedRider:false},
     {progress:.99},{progress:.1},{physicalGroupSize:8,rankInPhysicalGroup:5},
