@@ -33,11 +33,19 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
     assert.ok(row.sprintPositioningSeconds>=0&&row.sprintEscortSeconds>=0);
     assert.ok(row.leadoutPaceCoordinationSeconds>=0&&
       row.independentWheelFindingSeconds>=0);
+    assert.ok(row.actualSprintTrainRiderSeconds>=0&&
+      row.nearSprinterTrainRiderSeconds>=0&&
+      row.lateSprintChaseRiderSeconds>=0);
+    assert.ok(row.nearSprinterTrainRiderSeconds<=
+      row.actualSprintTrainRiderSeconds);
     if(row.profile!=='flach'){
       assert.equal(row.sprintPositioningSeconds,0);
       assert.equal(row.sprintEscortSeconds,0);
       assert.equal(row.leadoutPaceCoordinationSeconds,0);
       assert.equal(row.independentWheelFindingSeconds,0);
+      assert.equal(row.actualSprintTrainRiderSeconds,0);
+      assert.equal(row.nearSprinterTrainRiderSeconds,0);
+      assert.equal(row.lateSprintChaseRiderSeconds,0);
     }
     assert.equal(row.top10Types.length,10);
   }
@@ -116,6 +124,9 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
     targetFinale.wheelFindingSkill<=1);
   assert.ok(lille.independentWheelFindingSeconds>=0);
   assert.ok(lille.leadoutPaceCoordinationSeconds>=0);
+  assert.ok(lille.actualSprintTrainRiderSeconds>=0);
+  assert.ok(lille.nearSprinterTrainRiderSeconds>=0);
+  assert.ok(lille.lateSprintChaseRiderSeconds>=0);
   assert.ok(lille.watched.length>=4);
   const best=lille.watched.find(x=>x.id===lille.preRaceBestSprinter);
   assert.ok(best?.sprintSkill>0);
