@@ -18,6 +18,7 @@ import {decidePackInstruction,pelotonGroups} from './peloton.ts';
 import {formationAeroFactors} from './formation-aero.ts';
 import {decideStablePackRiding} from './stable-pack.ts';
 import {decideClimbTempo} from './climb-tempo.ts';
+import {decideSprintPosition,SPRINT_POSITION} from './sprint-positioning.ts';
 import {decideClassicsPunch,CLASSICS_PUNCH} from './classics-punch.ts';
 import {decideGroupRiding,decideChaseApproach,R22_GROUP_RIDING} from './group-riding.ts';
 import {decideTeamPace} from './team-pacing.ts';
@@ -132,6 +133,7 @@ export interface RaceResult {
     multiHelperAssignments:number;maxSimultaneousTeamHelpers:number;
     sprintTrainAssignments:number;actualFrontWorkSteps:number;
     relayChanges:number;maximumEndurancePenalty:number;
+    sprintPositioningSeconds?:number;sprintEscortSeconds?:number;
     participants:number;raceDistanceKm:number};
 }
 interface State {
@@ -279,6 +281,12 @@ export function descentSafeSpeedMps(technicality:number,skill:number):number {
 export function simulateRace(x:RaceInput):RaceResult {
   validateRace(x);
   const totalM=x.segments.reduce((v,s)=>v+s.lengthM,0);
+  const ascentM=x.segments.reduce((v,s)=>
+    v+Math.max(0,s.gradeFraction)*s.lengthM,0);
+  // Rennphysikalisch abgeleiteter Etappencharakter, nicht Streckenname.
+  const sprintFriendlyRace=x.groupRidingModel==='stable-pack'&&
+    totalM>=SPRINT_POSITION.minRaceM&&
+    ascentM<=SPRINT_POSITION.maxAscentM;
   const boundaries:number[]=[];
   // Nicht der Rennname, sondern ein langes Profil mit mehreren
   // kurzen Steilrampen aktiviert die separate Puncheur-Entscheidung.
@@ -331,6 +339,7 @@ export function simulateRace(x:RaceInput):RaceResult {
   let unprovokedBreakawayCount=0;
   let orderedRelayTeamSeconds=0;
   let climbingTempoSeconds=0;
+  let sprintPositioningSeconds=0,sprintEscortSeconds=0;
   let mainFieldFrontWorkWithAssignedChaserS=0;
   // Nur Diagnose: tatsächliche, ununterbrochene Führungsphasen an der Hauptfeldspitze.
   let mainFieldChaserLeaderChanges=0;
@@ -630,6 +639,31 @@ export function simulateRace(x:RaceInput):RaceResult {
     const physicalGroups=pelotonGroups(ordered.map(s=>({
       id:s.rider.id,positionM:s.positionM,
     })));
+    // Echte relative Position in der eigenen 42-m-Abstandsgruppe.
+    const rankInPhysicalGroup=new Map<string,number>();
+    const physicalGroupOf=new Map<string,typeof physicalGroups[number]>();
+    for(const group of physicalGroups)group.forEach((g,i)=>{
+      rankInPhysicalGroup.set(g.id,i+1);
+      physicalGroupOf.set(g.id,group);
+    });
+    // Je Sprintmannschaft höchstens EIN naher Helfer als Schutzbegleiter.
+    const escortByTeam=new Map<string,string>();
+    if(sprintFriendlyRace){
+      for(const team of x.teams.filter(team=>team.strategy==='sprint')){
+        const target=targetByTeam.get(team.id);
+        if(!target||target.rider.specialty!=='sprinter')continue;
+        const group=physicalGroupOf.get(target.rider.id);
+        if(!group||group.length<SPRINT_POSITION.minGroupSize)continue;
+        const candidates=group.map(g=>byId.get(g.id)!).filter(r=>
+          r.rider.teamId===team.id&&r.rider.role==='helfer'&&
+          r.positionM<=target.positionM&&
+          target.positionM-r.positionM<=SPRINT_POSITION.escortMaxDistanceM)
+          .sort((a,b)=>target.positionM-a.positionM-
+            (target.positionM-b.positionM)||
+            a.rider.id.localeCompare(b.rider.id));
+        if(candidates.length)escortByTeam.set(team.id,candidates[0].rider.id);
+      }
+    }
     const largestPhysicalGroup=physicalGroups.reduce((best,g)=>
       g.length>best.length?g:best,physicalGroups[0]);
     if((x.groupRidingModel==='relays'||x.groupRidingModel==='relay-paced'||
@@ -797,6 +831,41 @@ export function simulateRace(x:RaceInput):RaceResult {
           if(climb!==null&&climb>commanded+0.5){
             commanded=climb;
             climbingTempoSeconds+=dt;
+          }
+        }
+        if(sprintFriendlyRace){
+          const target=targetByTeam.get(s.rider.teamId);
+          const isTargetSprinter=target?.rider.id===s.rider.id&&
+            s.rider.specialty==='sprinter';
+          const isEscort=escortByTeam.get(s.rider.teamId)===s.rider.id;
+          if(isTargetSprinter||isEscort){
+            const ownGroup=physicalGroupOf.get(s.rider.id);
+            const targetGroup=target?physicalGroupOf.get(target.rider.id):null;
+            const sameGroup=ownGroup!==undefined&&ownGroup===targetGroup;
+            const position=decideSprintPosition({
+              sprintFriendlyRace,strategy:teams.get(s.rider.teamId)!.strategy,
+              specialty:s.rider.specialty,
+              isTargetSprinter,isEscort:isEscort&&sameGroup,
+              progress:s.positionM/totalM,
+              groupSize:ownGroup?.length??1,
+              rankInGroup:rankInPhysicalGroup.get(s.rider.id)??1,
+              distanceFromGroupFrontM:Math.max(0,
+                (actualGroupFront.get(s.rider.id)??s.positionM)-s.positionM),
+              targetRankInGroup:target&&sameGroup?
+                rankInPhysicalGroup.get(target.rider.id)??null:null,
+              distanceToTargetM:target&&sameGroup?
+                s.positionM-target.positionM:null,
+              frontGapM:frontGap.get(s.rider.id)??null,
+              currentIntent:s.intent,
+              reserveFraction:s.physiology.remainingWPrimeJ/
+                s.profile.wPrimeCapacityJ,
+              criticalPowerW:s.dayCpW,followPowerW:commanded,
+            });
+            if(position&&position.powerW>commanded+1){
+              commanded=position.powerW;
+              if(isTargetSprinter)sprintPositioningSeconds+=dt;
+              else sprintEscortSeconds+=dt;
+            }
           }
         }
         if((x.groupRidingModel==='relay-paced'||x.groupRidingModel==='front-gated')&&
@@ -1027,7 +1096,8 @@ export function simulateRace(x:RaceInput):RaceResult {
         mainFieldFrontWorkWithAssignedChaserS,
         mainFieldChaserLeaderChanges,
         longestMainFieldChaserStintS,
-        ...(x.groupRidingModel==='stable-pack'?{climbingTempoSeconds}:{}),
+        ...(x.groupRidingModel==='stable-pack'?{
+          climbingTempoSeconds,sprintPositioningSeconds,sprintEscortSeconds}:{}),
         ...((x.groupRidingModel==='front-gated'||x.groupRidingModel==='stable-pack')?
           {unprovokedBreakawayCount}:{}),
       }:{}),teams:x.teams.length,
