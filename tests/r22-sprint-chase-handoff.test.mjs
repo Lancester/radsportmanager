@@ -169,7 +169,7 @@ test('R22: physischer Langjagdführer behält seinen Auftrag nach kurzen Positio
   const group=Array.from({length:31},(_,i)=>rider('OTHER'+i,'T2',
     'helfer',12000-i*3));
   group.push(rider('TARGET','T1','sprinter',11960));
-  group.push(rider('LEAD','T1','helfer',11982));
+  group.push(rider('LEAD','T1','helfer',12005));
   group.push(rider('H1','T1','helfer',11976));
   group.push(rider('H2','T1','helfer',11970));
   group.push(rider('H3','T1','helfer',11965));
