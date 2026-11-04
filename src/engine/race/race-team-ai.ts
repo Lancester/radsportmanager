@@ -12,7 +12,11 @@ export interface IntelligentRider {
   positionM:number;speedMps:number;
   criticalPowerW:number;reserveFraction:number;aggression:number;
 }
-export interface IntelligentTeam {id:string;strategy:RaceStrategy}
+export interface IntelligentTeam {
+  id:string;strategy:RaceStrategy;
+  /** Auf Wunsch 0–5 Jagdhelfer statt autonomer Einteilung. */
+  chaseHelperCount?:number;
+}
 export type CrewMission='jagd'|'sprintzug'|'schutz';
 export type CrewDuty='fuehrung'|'unterstuetzung';
 export interface CrewOrder {
@@ -110,6 +114,8 @@ export function decideIntelligentCrew(input:{
   restInPeloton?:boolean;
   /** R22: größerer Einordnungsbereich, um Helfern echte Aufrückarbeit zu ermöglichen. */
   physicalRelayMode?:boolean;
+  /** Optionaler Eingriff nur in langen flachen stable-pack-Rennen. */
+  sprintFinaleMode?:boolean;
 }):CrewPlan{
   if(!input||!Array.isArray(input.teams)||!Array.isArray(input.riders))
     throw new RangeError('R-15/R-16: Team-/Fahrerfeld fehlt');
@@ -122,6 +128,10 @@ export function decideIntelligentCrew(input:{
       teamIds.has(team.id)||!
       ['ausgewogen','offensiv','sprint','kapitaen_schuetzen'].includes(team.strategy))
       throw new RangeError('R-15/R-16: ungültiges Team');
+    if(team.chaseHelperCount!==undefined&&(
+      !Number.isInteger(team.chaseHelperCount)||
+      team.chaseHelperCount<0||team.chaseHelperCount>5))
+      throw new RangeError('R-22: Jagdhelferzahl muss 0–5 sein');
     teamIds.add(team.id);
   }
   for(const r of input.riders){
@@ -169,6 +179,7 @@ export function decideIntelligentCrew(input:{
       situation.leadingBreakaway:situation.chaseViable)&&
       isMain&&input.progress<0.94&&
       (input.chasingTeamIds===undefined||input.chasingTeamIds.has(team.id))&&
+      !(input.sprintFinaleMode&&team.chaseHelperCount===0)&&
       !sprintTrain&&team.strategy!=='offensiv'&&
       (team.strategy!=='ausgewogen'||!sprintTeamReady||urgentChase);
     const mission:CrewMission=chase?'jagd':
@@ -197,6 +208,8 @@ export function decideIntelligentCrew(input:{
     else if(sprintTrain)requested=input.progress>=0.94?3:4;
     else if(team.strategy==='kapitaen_schuetzen'&&input.progress<0.82)
       requested=2;
+    if(chase&&input.sprintFinaleMode&&team.chaseHelperCount!==undefined)
+      requested=team.chaseHelperCount;
     requested=Math.min(R15_R16.maximumCrew,requested,helpers.length);
     // Teammitglieder werden nach tatsächlichem Abstand zur Front und
     // Energiereserve berücksichtigt, nicht alphabetisch als Phantomführer.
