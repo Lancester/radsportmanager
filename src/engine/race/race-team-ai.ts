@@ -104,6 +104,10 @@ export function decideIntelligentCrew(input:{
   riders:readonly IntelligentRider[];
   /** R-17: Zustandsübergabe für positions- und ermüdungsbewusste Ablösung. */
   previousLeaders?:ReadonlyMap<string,{riderId:string;sinceS:number}>;
+  /** Nur R22 koordinierte Teams: Wer darf tatsächlich jagen? */
+  chasingTeamIds?:ReadonlySet<string>;
+  /** Im großen Feld schützen unbeschäftigte Helfer ihre Reserven. */
+  restInPeloton?:boolean;
 }):CrewPlan{
   if(!input||!Array.isArray(input.teams)||!Array.isArray(input.riders))
     throw new RangeError('R-15/R-16: Team-/Fahrerfeld fehlt');
@@ -160,10 +164,12 @@ export function decideIntelligentCrew(input:{
       input.progress>=0.82&&input.remainingM>250&&
       input.remainingM<=10000&&group.length>=3;
     const chase=situation.chaseViable&&isMain&&input.progress<0.94&&
+      (input.chasingTeamIds===undefined||input.chasingTeamIds.has(team.id))&&
       !sprintTrain&&team.strategy!=='offensiv'&&
       (team.strategy!=='ausgewogen'||!sprintTeamReady||urgentChase);
     const mission:CrewMission=chase?'jagd':
       sprintTrain?'sprintzug':'schutz';
+    if(input.restInPeloton&&mission==='schutz')continue;
     if(input.progress>=0.97&&!sprintTrain)continue;
     const gapToFront=(r:IntelligentRider)=>group[0].positionM-r.positionM;
     const helpers=members.filter(r=>r.role==='helfer'&&group.includes(r)&&
@@ -178,9 +184,9 @@ export function decideIntelligentCrew(input:{
     const urgency=situation.gapFractionOfRemaining>0.04||
       situation.projectedGapM/Math.max(1,input.remainingM)>0.05;
     let requested=1;
-    if(chase)requested=team.strategy==='sprint'?
-      (urgency?5:3):team.strategy==='kapitaen_schuetzen'?
-      (urgency?4:2):(urgency?3:2);
+    if(chase)requested=input.restInPeloton?Math.min(2,helpers.length):
+      team.strategy==='sprint'? (urgency?5:3):
+      team.strategy==='kapitaen_schuetzen'?(urgency?4:2):(urgency?3:2);
     else if(sprintTrain)requested=input.progress>=0.94?3:4;
     else if(team.strategy==='kapitaen_schuetzen'&&input.progress<0.82)
       requested=2;
