@@ -22,6 +22,8 @@ export interface CrewOrder {
 export interface RaceSituation {
   leadingBreakaway:boolean;gapM:number;breakawaySize:number;
   mainGroupSize:number;relativeSpeedMps:number;
+  /** Prognose über 120 s bei unverändert gemessenen Gruppentempi. */
+  projectedGapM:number;
   /** Sichtbare Lücke relativ zur verbleibenden Distanz. */
   gapFractionOfRemaining:number;
   /** Nicht jeder Rückstand ist automatisch eine erfolgversprechende Jagd. */
@@ -72,7 +74,7 @@ export function analyzeRaceSituation(
   valid('remainingM',remainingM,remainingM>=0);
   if(riders.length<2)return {
     leadingBreakaway:false,gapM:0,breakawaySize:0,mainGroupSize:riders.length,
-    relativeSpeedMps:0,gapFractionOfRemaining:0,chaseViable:false,
+    relativeSpeedMps:0,projectedGapM:0,gapFractionOfRemaining:0,chaseViable:false,
   };
   const groups=sortGroups(riders);
   const lead=groups[0];
@@ -82,6 +84,7 @@ export function analyzeRaceSituation(
   const gap=smallLeader?lead.at(-1)!.positionM-main[0].positionM:0;
   const relativeSpeed=smallLeader?meanSpeed(lead)-meanSpeed(main):0;
   const gapFraction=gap/Math.max(1,remainingM);
+  const projectedGapM=Math.max(0,gap+relativeSpeed*120);
   // Die Jagd darf bei einer bereits uneinholbar weit voraus liegenden Gruppe
   // nicht allein aufgrund ihrer Existenz enorme Helferlast auslösen.
   // Positive Relativgeschwindigkeit macht sie gefährlicher; eine weit
@@ -92,6 +95,7 @@ export function analyzeRaceSituation(
   return {leadingBreakaway:smallLeader&&gap>=R15_R16.minimumBreakawayGapM,
     gapM:gap,breakawaySize:smallLeader?lead.length:0,
     mainGroupSize:main.length,relativeSpeedMps:relativeSpeed,
+    projectedGapM,
     gapFractionOfRemaining:gapFraction,chaseViable:plausible};
 }
 export function decideIntelligentCrew(input:{
@@ -142,7 +146,7 @@ export function decideIntelligentCrew(input:{
     main.some(r=>r.teamId===team.id&&r.role==='helfer'&&
       r.reserveFraction>=R15_R16.minimumChaseReserve));
   const urgentChase=situation.gapFractionOfRemaining>=0.025||
-    situation.relativeSpeedMps>=0.8;
+    situation.projectedGapM/Math.max(1,input.remainingM)>=0.035;
   for(const team of [...input.teams].sort((a,b)=>a.id.localeCompare(b.id))){
     const members=input.riders.filter(r=>r.teamId===team.id);
     const targetRole=team.strategy==='sprint'?'sprinter':'kapitaen';
@@ -172,7 +176,7 @@ export function decideIntelligentCrew(input:{
     // Einsatzes. Ein einzelner Verfolger ist nicht länger das Maximum.
     // Die restlichen Fahrer fahren danach weiterhin ganz normal ihr Rennen.
     const urgency=situation.gapFractionOfRemaining>0.04||
-      situation.relativeSpeedMps>0.6;
+      situation.projectedGapM/Math.max(1,input.remainingM)>0.05;
     let requested=1;
     if(chase)requested=team.strategy==='sprint'?
       (urgency?5:3):team.strategy==='kapitaen_schuetzen'?
