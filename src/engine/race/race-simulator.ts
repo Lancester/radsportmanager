@@ -690,9 +690,12 @@ export function simulateRace(x:RaceInput):RaceResult {
           drivetrainEfficiency:s.physical.drivetrainEfficiency,
           headwindMps:headwind,crosswindMps:crosswind,
         };
-        const group=x.groupRidingModel==='stable-pack'?
+        const stableMission=x.groupRidingModel==='stable-pack'&&
+          (s.intent==='verfolgung'||
+            (actualGroupSize.get(s.rider.id)??1)<R22_GROUP_RIDING.minGroupSize);
+        const group=stableMission?
           decideStablePackRiding(observation,
-            (actualGroupFront.get(s.rider.id)??s.positionM)-s.positionM<=0.1):
+            groupPaceByRider.get(s.rider.id)?.pacerId===s.rider.id):
           decideGroupRiding(observation);
         commanded=group.powerW;
         if((x.groupRidingModel==='relay-paced'||x.groupRidingModel==='front-gated')&&
