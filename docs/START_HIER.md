@@ -440,3 +440,33 @@ technische Stabilität nachweist.
 Karriere-, Vertrags-, Transfer-, Saison-, Trainingskalender-
 oder Managerpersonalentwicklung vor dem späteren
 separaten Karrieremodus.
+
+
+### R-17–R-21: vollständig erfolgreich gemergt und veröffentlicht (04.11.2026)
+
+**[PR #53](https://github.com/Lancester/radsportmanager/pull/53)**
+ist in `main`, Squash-Commit
+`9a8aeacf5e8afe3dfa6f8324229fea7cfd4529b7`.
+**[Reguläre main-CI #41745212283](https://github.com/Lancester/radsportmanager/actions/runs/41745212283):
+241/241 Tests bestanden, 0 Fehler; drei
+30er-50-km-Vollrennen, Browser-/TypeScript-ESM,
+Smoke-Test und GitHub-Pages erfolgreich.**
+**[Einmalige Langstreckenabnahme #41744830294](https://github.com/Lancester/radsportmanager/actions/runs/41744830294):**
+Flach 200, Hügel 200, Klassiker 240, Berg 170 km
+jeweils mit **154 Fahrern** sowie Berg 170 km
+mit 70 Fahrern, **686 echte Zielankünfte**, vollständige
+CP/W′-/Mechanik-/Kohlenhydrat- und Event-Audits.
+Der einmalige Workflow ist entfernt;
+`npm run test:scale` bleibt dauerhaft nutzbar.
+
+**Aktueller fachlicher Stand:** R-17–R-21 als
+gemeinsamer Funktionsumfang fertig, **keine finale
+sportwissenschaftliche Kalibrierung behaupten**.
+**Nächster beauftragter Schritt ausschließlich
+Rennengine = [R-22 Issue #54](https://github.com/Lancester/radsportmanager/issues/54):
+Monte-Carlo-Testmatrix, 100/500/1000+ Seeds, unabhängige
+Realrenn-Vergleichsdaten, ursächliche Korrektur
+der teils großen Gruppen-/Zielabstände.**
+**R-23** bleibt gesonderte Freigabeprüfung für
+Rennengine 1.0. **Keine Rundfahrten und
+kein Karrieremodus in R-22.**
