@@ -33,3 +33,23 @@
 **Erste feste Referenz aus PR #63:** Lille, Seed 2026, `stable-pack`: 86 in der größten Zielgruppe, deren Rückstand 15,77 s, 118 Fahrer innerhalb 60 s – aber 49 Attacken. Das ist nur ein einzelner Referenzpunkt, keine Realitätsabnahme.
 
 **Nächster Schritt nach diesem PR:** Die gemessenen vier Profile vergleichen und dann gezielt die erste nachgewiesene Unplausibilität der neuen KI beheben. Keine Kosten-/CI-Ausweitung oder große Validierung vorher.
+
+
+## Erster tatsächlich geprüfter Vierprofil-Durchlauf – 04.11.2026
+
+**[PR #64](https://github.com/Lancester/radsportmanager/pull/64)** mit Commit `5bf802e978513af94a0456f7e5cb0d7d84be3795` in `main` übernommen. **[GitHub Actions #41796481506](https://github.com/Lancester/radsportmanager/actions/runs/41796481506): 264/264 Tests bestanden**. Der Probeumfang war genau **vier vollständige 154-Fahrer-Rennen**, je Profil ein fester Seed 2026 und ausschließlich `stable-pack` – keine Monte-Carlo-Serie.
+
+| Rennprofil | Sieger | Sieger-Typ | Größte Zielgruppe / 154 | Rückstand größte Gruppe | Binnen 60 s | Attacken | Max. Abstandsgruppen | Gemessene nominierte Jagdfront (s) |
+| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Lille/flach | F057 | Allrounder | 86 | 15,77 s | 118 | 49 | 16 | 2639 |
+| Boulogne/hügelig | F036 | Klassiker | 32 | 63,24 s | 31 | **108** | 17 | 976 |
+| Lüttich/Klassiker | F093 | **Sprinter** | 46 | **706,93 s** | 21 | 41 | **36** | 0 |
+| Hautacam/Berg | F093 | **Sprinter** | 12 | **1351,80 s** | 17 | 18 | 25 | 0 |
+
+**Winner-Trace-Diagnose aus denselben vier Rennen (kein weiterer Lauf):** F093 registrierte bei Lüttich und Hautacam **keinen eigenen Angriff**. In Lüttich ist er bei Kilometer ~240 unter den ersten sechs; vier Sprinter kommen auf die Plätze 1 bis 4. Auf Hautacam liegt F093 bereits bei km 165 an Rang 1; der Schlussanstieg mit 13,5 km Länge beginnt bei ~167,1 km, bei 170 und 180 km ist F093 weiterhin vorne. Ein Wert von null für `mainFieldFrontWorkWithAssignedChaserS` heißt ausschließlich: keine positive Zeit für **nominierte Jagdhelfer als tatsächlich vorne fahrende Fahrer des größten physischen Feldes** nach dieser speziellen Metrik, nicht: niemand fährt vorne oder verfolgt.
+
+**Interpretation (Hypothese, noch unbewiesen):** Die breite Gruppe passt sich wahrscheinlich zu stark an das reale Tempo ihres jeweiligen Pacesetters an; reine Mitfahrt kann verhindern, dass besser geeignete Fahrer bei längeren Steigungen selbstständig eine vordere Position einnehmen. Gleichzeitig könnte fehlende koordinierte Mannschaftsjagd im späteren, bereits fragmentierten Rennen ihre sportlichen Vorteile verdecken. Die gerade bestehenden Werte **beweisen keinen Fehler im mechanischen Rechenkern**. Ein einzelner Seed rechtfertigt auch keine belastbaren Siegerquoten.
+
+**Exakter nächster kleiner Schritt:** Berg-/Klassikerfahrer im Anfangs-, Schlüsselanstiegs- und Zielbereich anhand vorhandener Checkpoints, W′/CP, physischer Position und Leitlinie gegen F093 prüfen; dann eine **isolierte** experimentelle Verbesserung formulieren und wieder denselben Vierprofil-Test samt 154er-No-Attack-Kontrolle durchlaufen lassen. Für Lille dürfen die Fortschritte aus PR #63 nicht unbemerkt verloren gehen. Boulognes **108 Attacken** separat behandeln; nicht jetzt zugleich sämtliche KI-Parameter ändern.
+
+**Dokumentationsregel:** Dies sind **technisch verifizierte Messwerte**, aber weiterhin **keine allgemeine Realitätsfreigabe**. Der große Multi-Seed-Check bleibt explizit auf die Schlussphase verschoben.
