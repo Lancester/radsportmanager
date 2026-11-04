@@ -78,8 +78,26 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
   assert.equal(classics.seed,2026);
   assert.ok(classics.climbEvents.length>=4);
   assert.ok(classics.totalPunchEvents>=0);
+  const lilleLines=log.split('\n').filter(line=>
+    line.startsWith('R22-LILLE-SPRINTER-AUDIT '));
+  assert.equal(lilleLines.length,1);
+  const lille=JSON.parse(lilleLines[0].slice(
+    'R22-LILLE-SPRINTER-AUDIT '.length));
+  assert.equal(lille.route,'tdf25_lille');
+  assert.equal(lille.seed,2026);
+  assert.equal(lille.preRaceBestSprinter,
+    favorites[0].perCategory.find(x=>x.category==='sprinter').strongest.riderId);
+  assert.ok(lille.watched.length>=4);
+  const best=lille.watched.find(x=>x.id===lille.preRaceBestSprinter);
+  assert.ok(best?.sprintSkill>0);
+  assert.ok(best?.baseCpW>0);
+  assert.ok(best?.finishRank>=1&&best.finishRank<=154);
+  assert.ok(best?.timeline.length>=5);
+  assert.ok(best?.timeline.every(x=>x.rank>=1&&x.rank<=154&&
+    x.gapM>=0&&x.groupSize>=1&&x.wPrimePct>=0&&x.wPrimePct<=100));
   console.log(favoritesLines.join('\n'));
   console.log(classicAudits.join('\n'));
+  console.log(lilleLines.join('\n'));
   console.log(summaryLine);
 });
 

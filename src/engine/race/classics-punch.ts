@@ -9,6 +9,7 @@ export const CLASSICS_PUNCH=Object.freeze({
   minProgress:.70,maxProgress:.965,
   attackFromClimbProgress:.20,attackUntilClimbProgress:.82,
   minGroupSize:4,maxFrontDistanceM:115,
+  maxGapToActualRaceFrontM:1000,
   minWprimeFraction:.38,
   // Drei Minuten hohe Kraftausdauerleistung: W′-Kosten werden physisch
   // abgerechnet. Das ist eine KI-Entscheidungsdauer, keine neue Leistung.
@@ -23,6 +24,11 @@ export interface ClassicsPunchObservation {
   groupSize:number;distanceFromGroupFrontM:number;
   criticalPowerW:number;reserveFraction:number;lastAttackAgeS:number;
   currentIntent:string;
+  /** Vor dem Start sportlich geeignetster Puncheur dieses Teams. */
+  designatedRampRider:boolean;
+  /** Aktuell nach Watt/kg bester verfügbarer Puncheur der physischen Gruppe. */
+  attackRankInGroup:number;
+  gapToActualRaceFrontM:number;
   speedMps:number;riderMassKg:number;bikeMassKg:number;
   dragAreaM2:number;airDensityKgM3:number;rollingCoefficient:number;
   drivetrainEfficiency:number;headwindMps:number;crosswindMps:number;
@@ -30,13 +36,17 @@ export interface ClassicsPunchObservation {
 export function decideClassicsPunch(o:ClassicsPunchObservation):
   {powerW:number;reason:string}|null {
   const c=CLASSICS_PUNCH;
+  // Ein geeigneter Klassikerspezialist kann unabhängig von seiner
+  // bisherigen Helfer-Rolle auf das anspruchsvolle Streckenprofil
+  // gesetzt werden. Nur der stärkste verfügbare Puncheur einer
+  // tatsächlichen Abstandsgruppe beginnt einen neuen Angriff.
   // Eine begonnene physische Attacke darf kurzfristig fortgesetzt
   // werden, auch wenn der Fahrer die Gruppe bereits verlassen hat.
   // Andernfalls bricht der erste erfolgreiche Soloversuch nach 10 s
   // wegen groupSize<4 ungewollt ab.
   const continuing=o.currentIntent==='angriff'&&
     o.lastAttackAgeS>=0&&o.lastAttackAgeS<c.continueAttackS;
-  if(o.specialty!=='klassiker'||o.role!=='kapitaen'||
+  if(o.specialty!=='klassiker'||!o.designatedRampRider||
     o.raceLengthM<c.minRaceM||
     o.shortSteepClimbs<c.minShortSteepClimbs||
     o.progress<c.minProgress||o.progress>c.maxProgress||
@@ -45,6 +55,8 @@ export function decideClassicsPunch(o:ClassicsPunchObservation):
     o.reserveFraction<(continuing?.20:c.minWprimeFraction)||
     ['sprint','erholung','verfolgung','helferarbeit'].includes(o.currentIntent)||
     (!continuing&&(
+      o.attackRankInGroup!==1||
+      o.gapToActualRaceFrontM>c.maxGapToActualRaceFrontM||
       o.groupSize<c.minGroupSize||
       o.distanceFromGroupFrontM>c.maxFrontDistanceM||
       o.segmentProgress<c.attackFromClimbProgress||
