@@ -1472,3 +1472,14 @@ Rückkehr von Helfern (nicht dauerhaftes
 W′-Aufbrauchen), Jagd-Auftragsdauer,
 Pelotonspitzen-Pacing, dann mehrere Seeds
 und voneinander unabhängige Rennprofile prüfen.
+
+
+## R-22: Relais-Führungsdiagnose als nächster kleiner Schritt (04.11.2026)
+
+**Arbeitsbranch:** `feature/r22-relais-fuehrungsdiagnose`. Nach [PR #61](https://github.com/Lancester/radsportmanager/pull/61) und der Front-Gating-Ursachenprüfung folgt bewusst **zunächst nur bessere Messung statt erneuter KI-/Physik-Parameteränderung**.
+
+Die Rennsimulation protokolliert nun für die drei experimentellen physischen Relaismodi zusätzlich `mainFieldChaserLeaderChanges` (direkte Wechsel zwischen tatsächlich jagend führenden Fahrern an der Front der größten physischen Gruppe) und `longestMainFieldChaserStintS` (längste kontinuierliche persönliche Jagdführung). Beide Kennzahlen stehen in `scripts/r22-group-ai-ab.mjs` (JSON/Markdown) und sind über den bestehenden Sechs-Varianten-Vollrenntest auf Konsistenz prüfbar.
+
+**Abnahmestand:** Quelländerungen und Regressionstest geschrieben, aber GitHub-Actions-Ergebnis und tatsächliche neue Messwerte **noch nicht bestätigt**. Keine neue sportliche Realismusfreigabe. Standard-KI bleibt `legacy`; R-22 Issue #54 und Peloton-Issue #42 bleiben offen. Keine Anpassung von CP/W′, R-19, Aero, Integrator, Strecken, Fahrertypen oder Spielsystemen. Keine automatische Großtest-Serie.
+
+**Exakter nächster Schritt:** CI prüfen; danach mit vom Nutzer manuell ausgelösten A/B-Läufen mehrere Seeds und Rennprofile vergleichen. Die Häufigkeit echter Ablösungen, längste Frontphasen, Dauer von Jagdmandaten, physische Zielgruppengrößen und Rückstände gemeinsam beurteilen. Erst danach einen isolierten, schaltbaren KI-Versuch für Ablösung/Rückkehr vorsehen. Details: [R22_RELAIS_FUEHRUNGSDIAGNOSE.md](race/R22_RELAIS_FUEHRUNGSDIAGNOSE.md).

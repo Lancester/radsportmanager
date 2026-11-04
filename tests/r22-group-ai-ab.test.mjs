@@ -134,6 +134,14 @@ test('R22: echter Gruppen-A/B mit 2 × 154 Fahrern und Ergebnismessung',()=>{
   assert.ok(report.variants[3].orderedRelayTeamSeconds>=
     report.variants[3].mainFieldFrontWorkWithAssignedChaserS);
   assert.ok(report.variants[3].largestFinishGroup>=1);
+  for(const r of report.variants.slice(3)){
+    assert.ok(Number.isInteger(r.mainFieldChaserLeaderChanges));
+    assert.ok(r.mainFieldChaserLeaderChanges>=0);
+    assert.ok(r.longestMainFieldChaserStintS>=0);
+    assert.ok(r.longestMainFieldChaserStintS<=r.mainFieldFrontWorkWithAssignedChaserS);
+    if(r.mainFieldFrontWorkWithAssignedChaserS>0)
+      assert.ok(r.longestMainFieldChaserStintS>0);
+  }
   assert.ok(report.variants[4].orderedRelayTeamSeconds>=
     report.variants[4].mainFieldFrontWorkWithAssignedChaserS);
   assert.ok(report.variants.every(r=>r.winnerFinishGroup>=1&&
