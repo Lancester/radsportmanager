@@ -13,8 +13,7 @@ import {mkdir,writeFile} from 'node:fs/promises';
 import {performance} from 'node:perf_hooks';
 import {createLongRaceFixture}
   from '../src/engine/race/long-race-fixtures.ts';
-import {createReferenceFixture,REFERENCE_ROUTES,
-  REFERENCE_TEAM_COMPOSITIONS}
+import {createReferenceFixture,REFERENCE_ROUTES}
   from '../src/engine/race/reference-fixtures.ts';
 import {simulateRace} from '../src/engine/race/race-simulator.ts';
 import {auditRace} from '../src/engine/race/race-audit.ts';
@@ -173,7 +172,7 @@ await Promise.all([
       segmentCount:fixture.input.segments.length,
       segments:fixture.input.segments,
       teams:fixture.teamFoci,
-      teamCompositions:REFERENCE_TEAM_COMPOSITIONS,
+      teamCompositions:fixture.teamCompositions,
       riders:fixture.input.riders,
       riderSource:'https://pmc.ncbi.nlm.nih.gov/articles/PMC12400862/',
       warning:'Fiktive literaturbasierte CP/Wprime/CdA-Verteilungen; kein realer Fahrerdatensatz, keine GPX-genauen Übergänge.',
