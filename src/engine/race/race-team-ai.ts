@@ -110,6 +110,8 @@ export function decideIntelligentCrew(input:{
   restInPeloton?:boolean;
   /** R22: größerer Einordnungsbereich, um Helfern echte Aufrückarbeit zu ermöglichen. */
   physicalRelayMode?:boolean;
+  /** Experimenteller R-22-Sprint: Jagd/Sprintzug getrennt planen. */
+  sprintFinaleMode?:boolean;
 }):CrewPlan{
   if(!input||!Array.isArray(input.teams)||!Array.isArray(input.riders))
     throw new RangeError('R-15/R-16: Team-/Fahrerfeld fehlt');
@@ -162,27 +164,53 @@ export function decideIntelligentCrew(input:{
     const group=groups.find(g=>g.includes(target));
     if(!group)continue;
     const isMain=group===main;
+    const raceFrontM=groups[0][0].positionM;
+    const targetRemainingM=input.remainingM+Math.max(0,
+      raceFrontM-target.positionM);
+    // Sprintzugstart am EIGENEN Sprinter, nicht am Ausreißer vorne.
     const sprintTrain=team.strategy==='sprint'&&
-      input.progress>=0.82&&input.remainingM>250&&
-      input.remainingM<=10000&&group.length>=3;
+      input.progress>=0.82&&
+      (input.sprintFinaleMode?
+        targetRemainingM>250&&targetRemainingM<=10000:
+        input.remainingM>250&&input.remainingM<=10000)&&
+      group.length>=3;
     const chase=(input.chasingTeamIds!==undefined?
       situation.leadingBreakaway:situation.chaseViable)&&
-      isMain&&input.progress<0.94&&
+      isMain&&
+      input.progress<(input.sprintFinaleMode?.995:.94)&&
       (input.chasingTeamIds===undefined||input.chasingTeamIds.has(team.id))&&
-      !sprintTrain&&team.strategy!=='offensiv'&&
+      (!sprintTrain||input.sprintFinaleMode===true)&&
+      team.strategy!=='offensiv'&&
       (team.strategy!=='ausgewogen'||!sprintTeamReady||urgentChase);
     const mission:CrewMission=chase?'jagd':
       sprintTrain?'sprintzug':'schutz';
     if(input.restInPeloton&&mission==='schutz')continue;
-    if(input.progress>=0.97&&!sprintTrain)continue;
+    if(input.progress>=0.97&&!sprintTrain&&
+      !(input.sprintFinaleMode&&chase))continue;
     const gapToFront=(r:IntelligentRider)=>group[0].positionM-r.positionM;
     const helpers=members.filter(r=>r.role==='helfer'&&group.includes(r)&&
       r.reserveFraction>=(chase?R15_R16.minimumChaseReserve:R15_R16.minimumReserve)&&
-      gapToFront(r)<=(input.physicalRelayMode?300:
-        R15_R16.maximumCrewDistanceFromGroupFrontM)&&
-      (chase||Math.abs(r.positionM-target.positionM)<=
-        R15_R16.maximumSupportDistanceToTargetM));
+      (input.sprintFinaleMode&&mission==='sprintzug'?
+        Math.abs(r.positionM-target.positionM)<=85:
+        gapToFront(r)<=(input.physicalRelayMode?300:
+          R15_R16.maximumCrewDistanceFromGroupFrontM)&&
+        (chase||Math.abs(r.positionM-target.positionM)<=
+          R15_R16.maximumSupportDistanceToTargetM)));
     if(helpers.length===0)continue;
+    // Im Finale einen echten Helfer unmittelbar beim Sprinter
+    // zurückhalten, während andere das Peloton vorne jagen.
+    const reserve=input.sprintFinaleMode&&mission==='jagd'&&
+      team.strategy==='sprint'&&targetRemainingM<=25000&&
+      helpers.length>=2?
+      [...helpers].filter(r=>
+        Math.abs(r.positionM-target.positionM)<=65)
+        .sort((a,b)=>
+          Math.abs(a.positionM-target.positionM)-
+            Math.abs(b.positionM-target.positionM)||
+          b.reserveFraction-a.reserveFraction||
+          a.id.localeCompare(b.id))[0]:undefined;
+    const available=reserve?helpers.filter(r=>r.id!==reserve.id):helpers;
+    if(!available.length)continue;
     // Gefährliche/nahe Ausreißer und Teamstrategie bestimmen die Größe des
     // Einsatzes. Ein einzelner Verfolger ist nicht länger das Maximum.
     // Die restlichen Fahrer fahren danach weiterhin ganz normal ihr Rennen.
@@ -190,18 +218,21 @@ export function decideIntelligentCrew(input:{
       situation.projectedGapM/Math.max(1,input.remainingM)>0.05;
     let requested=1;
     if(chase)requested=input.physicalRelayMode?
-      Math.min(4,helpers.length):input.restInPeloton?
-      Math.min(3,helpers.length):
+      Math.min(4,available.length):input.restInPeloton?
+      Math.min(3,available.length):
       team.strategy==='sprint'? (urgency?5:3):
       team.strategy==='kapitaen_schuetzen'?(urgency?4:2):(urgency?3:2);
     else if(sprintTrain)requested=input.progress>=0.94?3:4;
     else if(team.strategy==='kapitaen_schuetzen'&&input.progress<0.82)
       requested=2;
-    requested=Math.min(R15_R16.maximumCrew,requested,helpers.length);
+    requested=Math.min(R15_R16.maximumCrew,requested,available.length);
     // Teammitglieder werden nach tatsächlichem Abstand zur Front und
     // Energiereserve berücksichtigt, nicht alphabetisch als Phantomführer.
-    const sorted=helpers.sort((a,b)=>
-      gapToFront(a)-gapToFront(b)||
+    const sorted=available.sort((a,b)=>
+      (input.sprintFinaleMode&&mission==='sprintzug'?
+        Math.abs(a.positionM-target.positionM)-
+          Math.abs(b.positionM-target.positionM):
+        gapToFront(a)-gapToFront(b))||
       b.reserveFraction-a.reserveFraction||a.id.localeCompare(b.id));
     // Zeitbasierter Wechsel beeinflusst nur die Bereitschaft zur aktiven
     // Führungsaufgabe; die Fahrposition bleibt physikalisch berechnet.
@@ -210,7 +241,9 @@ export function decideIntelligentCrew(input:{
     // Kapitän/Sprinter fährt. Bei fehlender Frontposition müssen Helfer
     // zunächst aus eigener Kurbelarbeit nach vorne gelangen.
     const frontEligible=selected.filter(r=>
-      gapToFront(r)<=R15_R16.frontWorkRadiusM&&
+      (input.sprintFinaleMode&&mission==='sprintzug'?
+        r.positionM-target.positionM<=35:
+        gapToFront(r)<=R15_R16.frontWorkRadiusM)&&
       r.positionM>target.positionM+0.1);
     const previous=input.previousLeaders?.get(team.id);
     const retained=previous&&input.timeS-previous.sinceS<
@@ -223,7 +256,10 @@ export function decideIntelligentCrew(input:{
       sinceS:retained?previous!.sinceS:input.timeS,
     });
     for(const rider of selected){
-      const frontEligible=gapToFront(rider)<=R15_R16.frontWorkRadiusM;
+      const frontEligible=input.sprintFinaleMode&&mission==='sprintzug'?
+        rider.positionM>target.positionM+0.1&&
+          rider.positionM-target.positionM<=35:
+        gapToFront(rider)<=R15_R16.frontWorkRadiusM;
       const duty:CrewDuty=leader!==null&&rider.id===leader.id&&frontEligible?
         'fuehrung':'unterstuetzung';
       const effort=mission==='jagd'?
