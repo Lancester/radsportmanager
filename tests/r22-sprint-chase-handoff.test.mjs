@@ -356,14 +356,14 @@ test('R22: neuer physischer Jagdnachrücker wechselt nicht alle 10 s mit anderem
 });
 
 test('R22: zehnsekündige Ablösung ist erlaubt, aber nur wenn beide real vorne fahren',()=>{
-  const others=Array.from({length:28},(_,i)=>
+  const others=Array.from({length:49},(_,i)=>
     rider('PACK'+i,'T4','kapitaen',12000-i*5));
   const teams=[{id:'T1',strategy:'sprint'},
     {id:'T2',strategy:'sprint'},
     {id:'T3',strategy:'offensiv'},
     {id:'T4',strategy:'ausgewogen'}];
-  const sprint1=rider('SPR1','T1','sprinter',11942);
-  const sprint2=rider('SPR2','T2','sprinter',11943);
+  const sprint1=rider('SPR1','T1','sprinter',11800);
+  const sprint2=rider('SPR2','T2','sprinter',11803);
   const old=rider('OLD','T1','helfer',11997);
   const next=rider('NEXT','T2','helfer',12001);
   const args={timeS:10010,progress:.94,remainingM:11000,
