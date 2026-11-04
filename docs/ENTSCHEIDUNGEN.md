@@ -315,3 +315,15 @@ und Sieger nach Fahrertyp bleiben
 keine fertige Profi-Realismusfreigabe.
 R-23 nicht begonnen.
 [Gesamtdokumentation](race/R22ABC_REFERENZSTRECKEN_PROFIFELDER.md).
+
+
+## R-22: weiterer experimenteller Peloton-KI-Vergleich (04.11.2026)
+
+**Status: technischer Versuch, KEINE Änderung einer Grundsatzentscheidung.** Der dokumentierte Nutzerhinweis betrifft den plausiblen Zusammenhalt eines im Windschatten gleichmäßig fahrenden Hauptfeldes: Nicht jeder Fahrer soll ohne eigene Attacke oder physisch ausreichenden Leistungsunterschied abreißen.
+
+- **Beschlossen und unverändert:** unveränderter Bewegungsintegrator, Aero-Standard (Formation), CP/W′, R-19; keine künstlichen Geschwindigkeits-, Positions-, Energie- oder Einholboni; keine Karriere, keine automatische große Monte-Carlo-Serie. Das aktuelle Standard-`groupRidingModel` bleibt `legacy`.
+- **Experimentell umgesetzt:** Zusätzlicher, ausdrücklich zu wählender Modus `stable-pack`. Die erwiesenermaßen funktionierende gruppenbewusste Mitfahr-KI bleibt für das normale Peloton erhalten. Ein lokaler physischer Anschluss-/Beschleunigungsregler wird ausschließlich bei Verfolgern und Kleingruppen geprüft.
+- **Gemessen, noch nicht kalibriert:** [262 erfolgreiche Tests](https://github.com/Lancester/radsportmanager/actions/runs/41789070378), 154 Fahrer ohne Angriffe auf 20 km vollständig in einer Zielgruppe. Lille 184,9 km/Seed 2026: größte Zielgruppe 86, Rückstand 15,77 s, 118 binnen 60 s; dagegen 49 Attacken, 16 maximalen Abstandsgruppen.
+- **Offene Entscheidung:** Änderung der Standard-KI oder der Angriffs-/Verfolgungsparameter ist **nicht** beschlossen. Erst weitere manuelle A/B-Prüfung auf mehreren Seeds und unabhängigen Streckenprofilen samt Energie-/W′-/Windschnitt-/Zielgruppenbefunden. R-22 nicht fertig, R-23 gesperrt.
+
+[Technische und methodische Einzelheiten](race/R22_STABILES_PELOTON.md).
