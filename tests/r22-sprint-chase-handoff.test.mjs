@@ -292,3 +292,31 @@ test('R22: über zwei Sprintteams nur EIN gemeinsamer realer Feldführer statt s
     sprintFinaleMode:false});
   assert.equal(legacy.fieldChaseLeader,undefined);
 });
+
+test('R22: nach verlorener Feldführung darf realer Helfer erst physisch AUFRÜCKEN',()=>{
+  const others=Array.from({length:36},(_,i)=>
+    rider('O'+i,'T2','kapitaen',12000-i*6));
+  const target=rider('TARGET','T1','sprinter',11790);
+  const helper=rider('NEXT','T1','helfer',11900);
+  const all=[rider('ESC','T3','kapitaen',12500),
+    ...others,target,helper];
+  const teams=[{id:'T1',strategy:'sprint'},
+    {id:'T2',strategy:'ausgewogen'},
+    {id:'T3',strategy:'offensiv'}];
+  const input={timeS:10000,progress:.85,remainingM:27000,
+    riders:all,teams,previousLeaders:new Map(),
+    previousFieldChaseLeader:undefined,
+    chasingTeamIds:new Set(['T1']),
+    restInPeloton:true,physicalRelayMode:true,sprintFinaleMode:true};
+  const noLeaderAtFront=decideIntelligentCrew(input);
+  assert.equal(noLeaderAtFront.fieldChaseLeader?.riderId,'NEXT');
+  assert.equal(noLeaderAtFront.orders.get('NEXT')?.mission,'jagd');
+  assert.equal(noLeaderAtFront.orders.get('NEXT')?.duty,'unterstuetzung',
+    'keine Phantom-Führungsarbeit 100 m hinter Feldfront');
+  const physicalFront=decideIntelligentCrew({...input,timeS:10200,
+    previousFieldChaseLeader:noLeaderAtFront.fieldChaseLeader,
+    riders:all.map(r=>r.id==='NEXT'?{...r,positionM:11995}:r)});
+  assert.equal(physicalFront.fieldChaseLeader?.riderId,'NEXT');
+  assert.equal(physicalFront.orders.get('NEXT')?.duty,'fuehrung',
+    'nur wirkliche Position innerhalb 18 m erlaubt Führungsarbeit');
+});

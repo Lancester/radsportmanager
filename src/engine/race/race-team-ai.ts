@@ -377,7 +377,7 @@ export function decideIntelligentCrew(input:{
         r.id===order.riderId)!}))
       .filter(({rider})=>!rider.chaseSpent&&
         rider.reserveFraction>=R15_R16.minimumChaseReserve&&
-        frontM-rider.positionM<=72)
+        frontM-rider.positionM<=300)
       .sort((a,b)=>b.rider.positionM-a.rider.positionM||
         a.rider.id.localeCompare(b.rider.id));
     // Bestehende Auftragskontinuität aus älteren Team-API-Aufrufen
@@ -387,12 +387,18 @@ export function decideIntelligentCrew(input:{
       [...(input.previousLeaders?.values()??[])].find(p=>
         candidates.some(c=>c.rider.id===p.riderId));
     const kept=previous?candidates.find(c=>
-      c.rider.id===previous.riderId):undefined;
-    // Ohne bisherigen Leader nur wirklich an der Feldspitze stehende
-    // Helfer nominieren. Ein alter Leader darf bis 72 m nachrücken,
-    // dann übernimmt ein neuer real vorn fahrender Fahrer.
-    const chosen=kept??candidates.find(c=>
+      c.rider.id===previous.riderId&&
+      frontM-c.rider.positionM<=72):undefined;
+    // Ein frischer Helfer muss nicht magisch schon an der 18-m-Front
+    // stehen. Ist keiner vorne, wird der nächstplatzierte TATSÄCHLICH
+    // im Hauptfeld vorhandene Jäger als Nachrücker nominiert. Er hat
+    // bis zur wirklichen Feldspitze nur Unterstützungspflicht; seinen
+    // Abstand muss er mit eigenen Watt nach und nach schließen.
+    const ready=candidates.find(c=>
       frontM-c.rider.positionM<=R15_R16.frontWorkRadiusM);
+    const fresh=candidates.find(c=>
+      c.rider.id!==previous?.riderId);
+    const chosen=kept??ready??fresh??candidates[0];
     if(chosen)fieldChaseLeader={
       riderId:chosen.rider.id,
       sinceS:kept?previous!.sinceS:input.timeS,
@@ -414,8 +420,10 @@ export function decideIntelligentCrew(input:{
       if(!reallyLeading&&order.duty==='fuehrung')
         order.desiredPowerW=r.criticalPowerW*1.045;
       order.duty=reallyLeading?'fuehrung':'unterstuetzung';
+      if(order.riderId===fieldChaseLeader?.riderId&&!reallyLeading)
+        order.reason='Nächster Jagdhelfer fährt physisch zur Feldspitze auf';
     }
-    // Das historische teamweise Leader-Mapping darf keine zweiten
+    // Das historische Leader-Mapping darf keine zweiten
     // gleichzeitigen Feldführer künstlich konservieren.
     for(const [teamId] of leaderByTeam){
       if(missionByTeam.get(teamId)==='jagd'&&

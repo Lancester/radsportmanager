@@ -960,6 +960,23 @@ export function simulateRace(x:RaceInput):RaceResult {
             groupPaceByRider.get(s.rider.id)?.pacerId===s.rider.id):
           decideGroupRiding(groupObservation);
         commanded=group.powerW;
+        // Nach Abgabe der Führung ist der Vorgänger nicht länger
+        // zwangsläufig im Wind. Ein einziger frischer, wirklich im
+        // Hauptfeld befindlicher Jagd-Nachrücker darf zur Spitze
+        // aufarbeiten. Zusätzliche Leistung bleibt durch seine reale
+        // CP/W′-/R-19-Verfügbarkeit begrenzt; keine Positionsänderung.
+        const namedApproach=sprintFriendlyRace&&
+          s.rider.id===previousFieldChaseLeader?.riderId&&
+          s.crewMission==='jagd'&&s.crewDuty==='unterstuetzung'&&
+          (actualGroupSize.get(s.rider.id)??1)>=8&&
+          (actualGroupFront.get(s.rider.id)??s.positionM)-s.positionM>18&&
+          (actualGroupFront.get(s.rider.id)??s.positionM)-s.positionM<=300;
+        if(namedApproach){
+          const approach=decideChaseApproach({
+            ...observation,tacticalIntent:'windschatten'});
+          if(approach.powerW>commanded+1)
+            commanded=approach.powerW;
+        }
         // R-22: Nur im experimentellen stable-pack-Modus darf ein
         // physisch stärkerer Kletterer am langen Anstieg selbst Tempo
         // machen statt blind einem schwereren Pacesetter zu folgen.
