@@ -270,9 +270,12 @@ for(const id of routes){
   // Die Lücke der tatsächlich gefahrenen Flucht zum Hauptfeld vor /
   // während der Hochjagd, NICHT bloß ein Sprint- oder Ergebnislabel.
   if(id==='tdf25_lille'){
+    const distanceKm=fixture.input.segments.reduce((v,seg)=>
+      v+seg.lengthM,0)/1000;
     const gapAt=progress=>{
-      const cp=(r.checkpoints??[]).find(x=>
-        x.km>=fixture.route.distanceKm*progress);
+      const checkpoints=r.checkpoints??[];
+      const cp=checkpoints.find(x=>
+        x.km>=distanceKm*progress)??checkpoints.at(-1);
       if(!cp)return null;
       const groups=new Map();
       for(const row of cp.riders){
