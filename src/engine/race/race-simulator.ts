@@ -24,6 +24,8 @@ import {decideSprintLaunch,inferredSprintPeakPowerW,sprintPowerDemand}
 import {decideSprintLeadoutPace,SPRINT_LEADOUT} from './sprint-leadout.ts';
 import {chooseIndependentSprintWheel,SPRINT_WHEEL} from './sprint-wheel-choice.ts';
 import {decideClassicsPunch,CLASSICS_PUNCH} from './classics-punch.ts';
+import {ADAPTIVE_ATTACK,decideAdaptiveAttack}
+  from './adaptive-attack.ts';
 import {decideClassicsApproach,decideClassicsRampTempo}
   from './classics-racecraft.ts';
 import {decideGroupRiding,decideChaseApproach,R22_GROUP_RIDING} from './group-riding.ts';
@@ -417,6 +419,7 @@ export function simulateRace(x:RaceInput):RaceResult {
   let orderedRelayTeamSeconds=0;
   let climbingTempoSeconds=0;
   let classicsApproachSeconds=0,classicsRampTempoSeconds=0;
+  let lastAdaptiveAttackStartS=-1e9;
   const classicsRampTempoRiders=new Set<string>();
   let sprintPositioningSeconds=0,sprintEscortSeconds=0;
   let leadoutPaceCoordinationSeconds=0,independentWheelFindingSeconds=0;
@@ -565,6 +568,7 @@ export function simulateRace(x:RaceInput):RaceResult {
       for(const s of states){
         if(s.finishTimeS!==null)continue;
         const cap=captainByTeam.get(s.rider.teamId);
+        const tacticalGroup=attackGroups.find(g=>g.includes(s));
         const teamCaptainGap=cap && cap.rider.id!==s.rider.id ?
           Math.abs(cap.positionM-s.positionM):null;
         const obs={
@@ -593,6 +597,53 @@ export function simulateRace(x:RaceInput):RaceResult {
                 return false;
               const reserve=s.physiology.remainingWPrimeJ/
                 s.profile.wPrimeCapacityJ;
+              // Moderne, profilübergreifende Angriffslage ohne feste
+              // Distanzfenster; alte Versionen bleiben als Vergleich.
+              if(x.groupRidingModel==='stable-pack'){
+                const group=tacticalGroup;
+                const grade=x.segments[segmentFor(s,boundaries)].gradeFraction;
+                const meanCp=group&&group.length?
+                  group.reduce((n,r)=>n+r.dayCpW,0)/group.length:s.dayCpW;
+                const groupFrontM=group?.[0]?.positionM??s.positionM;
+                const candidate=group?.filter(r=>{
+                  const strategy=teams.get(r.rider.teamId)!.strategy;
+                  return r.rider.role==='kapitaen'&&
+                    (strategy==='offensiv'||
+                      strategy==='kapitaen_schuetzen'&&
+                        grade>=ADAPTIVE_ATTACK.protectedCaptainClimbGrade)&&
+                    r.physiology.remainingWPrimeJ/r.profile.wPrimeCapacityJ>=
+                      ADAPTIVE_ATTACK.minimumStartingReserve&&
+                    t-r.lastAttackS>=ADAPTIVE_ATTACK.cooldownForRiderS&&
+                    groupFrontM-r.positionM<=
+                      ADAPTIVE_ATTACK.maxDistanceFromGroupFrontM&&
+                    r.dayCpW>=meanCp*ADAPTIVE_ATTACK.minimumRelativeCp;
+                }).sort((a,b)=>{
+                  const score=(r:State)=>grade>=
+                    ADAPTIVE_ATTACK.climbOpportunityGrade?
+                    r.dayCpW/(r.rider.massKg+r.rider.bikeMassKg):
+                    r.rider.aggression+0.0002*r.dayCpW;
+                  return score(b)-score(a)||
+                    a.rider.id.localeCompare(b.rider.id);
+                })[0];
+                return decideAdaptiveAttack({
+                  enabled:true,strategy:teams.get(s.rider.teamId)!.strategy,
+                  role:s.rider.role,timeS:t,
+                  remainingM:Math.max(0,totalM-s.positionM),
+                  speedMps:s.speedMps,gradeFraction:grade,
+                  aggression:s.rider.aggression,
+                  currentIntent:s.intent,reserveFraction:reserve,
+                  ageSinceLastAttackS:t-s.lastAttackS,
+                  ageSinceAnyGroupAttackS:t-lastAdaptiveAttackStartS,
+                  groupSize:group?.length??1,
+                  rankInGroup:group?group.indexOf(s)+1:1,
+                  distanceFromGroupFrontM:groupFrontM-s.positionM,
+                  gapToRaceFrontM:Math.max(0,leader.positionM-s.positionM),
+                  relativeCp:s.dayCpW/Math.max(1,meanCp),
+                  isBestEligibleInGroup:candidate?.rider.id===s.rider.id,
+                  leadingBreakaway:
+                    planned?.situation.leadingBreakaway??false,
+                });
+              }
               // Begonnene Attacke darf sich auch bei gelungener Ablösung
               // vom Feld fortsetzen; sie endet nach 40 s oder W′-Mangel.
               if(s.intent==='angriff'&&t-s.lastAttackS<40&&reserve>=0.18)
@@ -735,8 +786,11 @@ export function simulateRace(x:RaceInput):RaceResult {
           if(before==='verfolgung')s.lastChaseEndS=t;
           s.intentSinceS=t;
         }
-        if(decision.intent==='angriff'&&s.intent!=='angriff')
+        if(decision.intent==='angriff'&&s.intent!=='angriff'){
           s.lastAttackS=t;
+          if(x.groupRidingModel==='stable-pack')
+            lastAdaptiveAttackStartS=t;
+        }
         s.decision=decision;s.intent=decision.intent;
         if(before!==decision.intent && events.length<100000){
           const kind=decision.intent==='angriff'?'attack':
