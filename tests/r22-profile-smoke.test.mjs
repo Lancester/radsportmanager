@@ -30,6 +30,11 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
     assert.ok(row.medianWPrimeAt50Pct>=0&&row.medianWPrimeAt50Pct<=100);
     assert.ok(row.avgCrankW>0&&row.avgCrankW<1000);
     assert.ok(row.actualChaseFrontS>=0&&row.chaseLeaderChanges>=0);
+    assert.ok(row.sprintPositioningSeconds>=0&&row.sprintEscortSeconds>=0);
+    if(row.profile!=='flach'){
+      assert.equal(row.sprintPositioningSeconds,0);
+      assert.equal(row.sprintEscortSeconds,0);
+    }
     assert.equal(row.top10Types.length,10);
   }
   // Die Zahlen sind ausdrücklich Diagnose, keine festen Soll-Sieger/Quoten.
@@ -87,6 +92,9 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
   assert.equal(lille.seed,2026);
   assert.equal(lille.preRaceBestSprinter,
     favorites[0].perCategory.find(x=>x.category==='sprinter').strongest.riderId);
+  assert.ok(lille.sprintPositioningSeconds>0,
+    'Im langen flachen Peloton muss echte Positionierungsarbeit stattfinden');
+  assert.ok(lille.sprintEscortSeconds>=0);
   assert.ok(lille.watched.length>=4);
   const best=lille.watched.find(x=>x.id===lille.preRaceBestSprinter);
   assert.ok(best?.sprintSkill>0);
