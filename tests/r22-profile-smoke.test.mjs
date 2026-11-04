@@ -58,6 +58,20 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
       assert.equal(row.realFrontChaseCpSeconds,0);
     }
     assert.equal(row.top10Types.length,10);
+    assert.equal(row.sprintersInTop10,
+      row.top10Types.filter(x=>x==='sprinter').length);
+    assert.ok(Number.isInteger(row.winnerGroupSprinters));
+    assert.ok(row.winnerGroupSprinters<=row.winnerGroup);
+    assert.equal(row.massSprintThreshold,30);
+    assert.equal(row.massSprintProxy,
+      row.winnerGroup>=30&&row.sprintersInTop10>=2);
+    assert.ok(row.actualNamedChaseFrontS>=0&&
+      row.longestNamedChaseFrontS>=0&&
+      row.longestNamedChaseCpFrontS>=0);
+    assert.ok(row.longestNamedChaseCpFrontS<=
+      row.longestNamedChaseFrontS);
+    assert.ok(row.longestNamedChaseFrontS<=
+      row.actualNamedChaseFrontS);
   }
   // Die Zahlen sind ausdrücklich Diagnose, keine festen Soll-Sieger/Quoten.
   const summaryLine=log.split('\n').find(line=>
@@ -75,6 +89,29 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
     assert.ok(trace.trace.every(x=>x.winnerRank>=1&&x.winnerRank<=154&&
       x.winnerGapM>=0));
   }
+  const finishLines=log.split('\n').filter(line=>
+    line.startsWith('R22-SPRINT-FINISH '));
+  assert.equal(finishLines.length,4);
+  for(const line of finishLines){
+    const result=JSON.parse(line.slice('R22-SPRINT-FINISH '.length));
+    const row=rows.find(x=>x.route===result.route);
+    assert.equal(result.winnerGroupSize,row.winnerGroup);
+    assert.equal(result.sprintersInTop10,row.sprintersInTop10);
+    assert.equal(result.massSprintProxy,row.massSprintProxy);
+    assert.equal(result.notCalibrated,true);
+  }
+  const leaderLine=log.split('\n').find(line=>
+    line.startsWith('R22-NAMED-CHASE-LEADER '));
+  assert.ok(leaderLine,'namentliche Frontdiagnose fehlt');
+  const leader=JSON.parse(leaderLine.slice(
+    'R22-NAMED-CHASE-LEADER '.length));
+  assert.equal(leader.route,'tdf25_lille');
+  assert.ok(leader.frontSeconds<=leader.assignedSeconds);
+  assert.ok(leader.cpNearFrontSeconds<=leader.frontSeconds);
+  assert.ok(leader.longestCpNearSeconds<=leader.longestFrontSeconds);
+  assert.ok(leader.riders.every(r=>
+    r.frontSeconds<=r.assignedSeconds&&
+    r.cpNearFrontSeconds<=r.frontSeconds));
   const favoritesLines=log.split('\n').filter(line=>
     line.startsWith('R22-FAVORITES '));
   assert.equal(favoritesLines.length,4);

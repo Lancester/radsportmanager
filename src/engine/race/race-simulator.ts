@@ -26,6 +26,7 @@ import {decideGroupRiding,decideChaseApproach,R22_GROUP_RIDING} from './group-ri
 import {decideTeamPace} from './team-pacing.ts';
 import {decideIntelligentCrew,analyzeRaceSituation} from './race-team-ai.ts';
 import {coordinatePelotonChase} from './peloton-chase.ts';
+import {ChaseLeaderTelemetry} from './chase-leader-telemetry.ts';
 import {initialChaseHelperLoad,advanceChaseHelperLoad,
   spentHelperRetreatPower,decideCommittedChasePull} from './chase-helper-fatigue.ts';
 import type {ChaseHelperLoad} from './chase-helper-fatigue.ts';
@@ -155,6 +156,11 @@ export interface RaceResult {
     /** Mit wirklich anliegender Leistung physisch gefahrene Hochjagdzeit. */
     committedChasePullSeconds?:number;
     realFrontChaseCpSeconds?:number;
+    /** Namentlicher, echt physischer Front-/Kurbelwattbeleg. */
+    namedChaseLeader?:ReturnType<ChaseLeaderTelemetry['report']>;
+    namedChaseHandoffs?:Array<{km:number;from:string|null;
+      to:string|null;reason:string;frontGapM:number|null;
+      assignmentAgeS:number|null}>;
     /** Beobachtete Position/Helfer an der Sprintfreigabe (keine Sieggarantie). */
     sprintFinale?:Array<{riderId:string;rankInGroup:number;
       groupSize:number;helpersWithin30M:number;helpersAheadWithin30M:number;
@@ -366,6 +372,8 @@ export function simulateRace(x:RaceInput):RaceResult {
   let t=0,steps=0,nextTacticS=0,nextSnapshotM=5000;
   let previousLeaders=new Map<string,{riderId:string;sinceS:number}>();
   let previousFieldChaseLeader:{riderId:string;sinceS:number}|undefined;
+  const namedLeaderAudit=new ChaseLeaderTelemetry();
+  const namedChaseHandoffs:NonNullable<RaceResult['diagnostics']['namedChaseHandoffs']>=[];
   let oldGroups=1,maximumGroups=1,lastSection=0;
   let lastGroupEventS=-Infinity;
   let breakawaySinceS:number|null=null,catchSinceS:number|null=null;
@@ -470,6 +478,31 @@ export function simulateRace(x:RaceInput):RaceResult {
         teams:teamRefs,riders:planningRiders,
       });
       if(planned){
+        if(sprintFriendlyRace&&
+          previousFieldChaseLeader?.riderId!==planned.fieldChaseLeader?.riderId&&
+          (previousFieldChaseLeader||planned.fieldChaseLeader)&&
+          namedChaseHandoffs.length<60){
+          const old=previousFieldChaseLeader;
+          const prior=old?byId.get(old.riderId):undefined;
+          const physical=pelotonGroups(planningRiders.map(r=>({
+            id:r.id,positionM:r.positionM})));
+          const main=physical.reduce((best,g)=>
+            g.length>best.length?g:best,physical[0]);
+          const inMain=!!prior&&main.some(g=>g.id===prior.rider.id);
+          const frontGapM=prior?main[0].positionM-prior.positionM:null;
+          const reason=!old?'Jagdauftrag begonnen':
+            !chaseState.active.length?'keine verfolgte Flucht':
+            prior?.chaseLoad.spent?'Helfer verausgabt':
+            !inMain?'außerhalb des Hauptfeldes':
+            frontGapM!==null&&frontGapM>72?'hinter der 72-m-Führungszone':
+            'Teamauftrag oder Sprinter-Schutz umgestellt';
+          namedChaseHandoffs.push({km:leader.positionM/1000,
+            from:old?.riderId??null,
+            to:planned.fieldChaseLeader?.riderId??null,
+            reason,frontGapM:frontGapM===null?null:
+              Math.round(frontGapM*100)/100,
+            assignmentAgeS:old?Math.round(t-old.sinceS):null});
+        }
         previousFieldChaseLeader=planned.fieldChaseLeader;
         for(const [teamId,lead] of planned.leaderByTeam){
           const former=previousLeaders.get(teamId);
@@ -1200,6 +1233,19 @@ export function simulateRace(x:RaceInput):RaceResult {
         gradeFraction:segment.gradeFraction,aeroFactor,brakeForceN,
       }));
     }
+    if(sprintFriendlyRace){
+      const nominated=previousFieldChaseLeader?.riderId??null;
+      const s=nominated?byId.get(nominated):undefined;
+      const inMain=!!s&&largestPhysicalGroup.some(g=>g.id===nominated);
+      namedLeaderAudit.observe({leaderId:nominated,dt,
+        inMainGroup:inMain,mainGroupSize:largestPhysicalGroup.length,
+        gapToActualMainFrontM:s?
+          largestPhysicalGroup[0].positionM-s.positionM:Infinity,
+        mission:s?.crewMission??null,duty:s?.crewDuty??null,
+        intent:s?.intent??'grundtempo',
+        appliedPowerW:s?(powers.get(s.rider.id)??0):0,
+        criticalPowerW:s?.dayCpW??0});
+    }
     for(const s of active){
       const before=s.positionM;
       const step=next.get(s.rider.id)!;
@@ -1365,7 +1411,9 @@ export function simulateRace(x:RaceInput):RaceResult {
           lateSprintChaseRiderSeconds,sprintFinale,
           spentChaseHelpers:spentChaseHelperIds.length,
           spentChaseHelperIds,intentionalChaseRetreatSeconds,
-          committedChasePullSeconds,realFrontChaseCpSeconds}:{}),
+          committedChasePullSeconds,realFrontChaseCpSeconds,
+          namedChaseLeader:namedLeaderAudit.report(),
+          namedChaseHandoffs}:{}),
         ...((x.groupRidingModel==='front-gated'||x.groupRidingModel==='stable-pack')?
           {unprovokedBreakawayCount}:{}),
       }:{}),teams:x.teams.length,

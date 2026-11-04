@@ -11,6 +11,7 @@ import {createReferenceFixture,REFERENCE_ROUTES}
   from '../src/engine/race/reference-fixtures.ts';
 import {simulateRace} from '../src/engine/race/race-simulator.ts';
 import {finishGroupMetrics} from '../src/engine/race/finish-groups.ts';
+import {auditSprintFinish} from '../src/engine/race/sprint-finish-audit.ts';
 import {auditRace} from '../src/engine/race/race-audit.ts';
 import {buildRiderFavoritesAudit} from '../src/engine/race/rider-strength-audit.ts';
 
@@ -48,6 +49,7 @@ for(const id of routes){
     throw new Error('R-22 Profil-Smoke: physikalische Invariante '+id);
   const groups=finishGroupMetrics(r.classification);
   const audit=auditRace(r);
+  const sprintFinish=auditSprintFinish(r.classification,kindByRider);
   const checkpoint=progress=>(r.checkpoints??[]).find(x=>
     x.km>=fixture.route.distanceKm*progress)??r.checkpoints?.at(-1);
   const c25=checkpoint(.25),c50=checkpoint(.5),c75=checkpoint(.75);
@@ -89,10 +91,35 @@ for(const id of routes){
     committedChasePullSeconds:r.diagnostics.committedChasePullSeconds??0,
     realFrontChaseCpSeconds:r.diagnostics.realFrontChaseCpSeconds??0,
     top10Types:r.classification.slice(0,10).map(x=>kindByRider.get(x.id)),
+    sprintersInTop10:sprintFinish.sprintersInTop10,
+    winnerGroupSprinters:sprintFinish.sprintersInWinnerGroup,
+    massSprintProxy:sprintFinish.massSprintProxy,
+    massSprintThreshold:sprintFinish.massSprintThreshold,
+    actualNamedChaseFrontS:r.diagnostics.namedChaseLeader?.frontSeconds??0,
+    longestNamedChaseFrontS:r.diagnostics.namedChaseLeader?.longestFrontSeconds??0,
+    longestNamedChaseCpFrontS:r.diagnostics.namedChaseLeader?.
+      longestCpNearSeconds??0,
     runtimeS:n((performance.now()-start)/1000),
   };
   results.push(details);
   console.log('R22-PROFILE '+JSON.stringify(details));
+  console.log('R22-SPRINT-FINISH '+JSON.stringify({
+    route:id,seed,winningGroupFirst:true,
+    ...sprintFinish,
+    winnerId:r.winnerId,
+    winnerType:details.winnerType,
+    largestFinishGroup:groups.largestGroupSize,
+    largestFinishGroupGapS:groups.largestGroupGapToWinnerS,
+    massSprintDefinition:'Siegerzeitgruppe >= 30 UND >= 2 Sprinterspezialisten in Top 10, 1-s-Nachbargruppenmodell',
+    notCalibrated:true,
+  }));
+  if(id==='tdf25_lille'){
+    console.log('R22-NAMED-CHASE-LEADER '+JSON.stringify({
+      route:id,seed,
+      ...r.diagnostics.namedChaseLeader,
+      handoffs:r.diagnostics.namedChaseHandoffs??[],
+    }));
+  }
   const favorites=buildRiderFavoritesAudit(fixture.input.riders,
     r.classification,fixture.route.kind);
   console.log('R22-FAVORITES '+JSON.stringify({
