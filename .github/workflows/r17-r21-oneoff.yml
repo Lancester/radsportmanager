@@ -20,7 +20,7 @@ jobs:
       - name: Großfeld und Langdistanz physisch simulieren
         run: |
           node --experimental-strip-types scripts/r21-scale-diagnostics.mjs | tee r21-results.txt
-          test "$(grep -c '^R21-SCALE ' r21-results.txt)" -eq 2
+          test "$(grep -c '^R21-SCALE ' r21-results.txt)" -eq 5
       - name: Browser-ESM-Rennen
         run: |
           node --input-type=module <<'NODE'
