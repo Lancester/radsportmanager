@@ -71,3 +71,13 @@ test('R22 Klassiker: stärkster vorgesehener Helfer darf selektiv attackieren, n
     attackRankInGroup:0,groupSize:1,gapToActualRaceFrontM:1500,
     lastAttackAgeS:80}));
 });
+
+
+test('R22 Klassiker: klare räumliche Grenze für neue Attacke, nicht für laufende Vorstöße',()=>{
+  assert.ok(decideClassicsPunch({...base,gapToActualRaceFrontM:1000}));
+  assert.equal(decideClassicsPunch({...base,gapToActualRaceFrontM:1000.1}),null);
+  assert.equal(decideClassicsPunch({...base,attackRankInGroup:0}),null);
+  assert.ok(decideClassicsPunch({...base,currentIntent:'angriff',
+    groupSize:1,attackRankInGroup:0,gapToActualRaceFrontM:1400,
+    lastAttackAgeS:40}));
+});
