@@ -84,3 +84,61 @@ Hauptfeld sowohl taktisch als auch physisch
 plausibel funktionieren. Ein Erfolg auf Lille allein
 ist ebenfalls keine Validierung für alle
 vier Rennprofile.
+
+## Erste Messung der vierten Variante: ein konkreter struktureller Engpass
+
+[GitHub-Test #41781460429](https://github.com/Lancester/radsportmanager/actions/runs/41781460429)
+hat **254/254 Tests** bestanden. Beim identischen Lille-Test
+(184,9 km, 154 Fahrer, Seed 2026) waren Jagdteams insgesamt
+**6.870 Sekunden beauftragt**. Allerdings stand nur in
+**109 Sekunden tatsächlich ein beauftragter Verfolger
+an der Spitze des größten zusammenhängenden Felds**.
+
+| Ergebnis | Bisher coordinated | Aufrücken mit 110/115 % CP |
+| --- | ---: | ---: |
+| Größte Zielgruppe | 133 | 116 |
+| Rückstand größte Zielgruppe | 929 s | **775 s** |
+| Max. Gruppen unterwegs | 5 | 8 |
+| Attacken | 18 | 36 |
+| Mittlere Leistung | 168 W | 182 W |
+| Physische Führungszeit im Hauptfeld (Jagd) | nicht separat erhoben | **109 s** |
+
+Dass nur 109 von 6.870 Jagd-Auftragssekunden
+physisch an der Spitze umgesetzt wurden,
+zeigt, dass das bloße Nominieren starker Helfer
+noch **keine funktionierende Relaisführung** ergibt.
+Der Rückstand bleibt für einen Massensprint
+viel zu hoch.
+
+### Fünfter A/B/C/D/E-Versuch: dosiertes Aufrücken
+
+Statt dass ein nur unterstützender Helfer
+starr hohe CP-Leistung anfordert
+und womöglich aus der Formation
+herausbeschleunigt, soll er nun erst
+die physikalisch notwendige Leistung
+zum Mitfahren anfordern und mit
+**höchstens 42 W Zusatzleistung**
+sowie einem Gesamtdeckel bei
+102,5 % seiner Tages-CP kontrolliert
+nach vorn gelangen.
+
+Diese Mechanik ist **nur**
+unter `groupRidingModel:'relay-paced'`
+aktiv. Sie verändert keine
+Fahrerposition direkt, überschreibt
+keine W′-/R-19-Leistungslimits
+und bewahrt die bisherigen vier
+Varianten zur A/B-Vergleichbarkeit.
+
+**Die absoluten Wattgrenzen sind experimentell**,
+nicht empirisch validiert. Wir müssen nach
+vollständigem Test sehen, ob damit
+mehr tatsächliche Führungssekunden
+im Hauptfeld entstehen und gleichzeitig
+der Rückstand der größten Zielgruppe
+sinkt. Falls nicht, braucht die 1D-Engine
+eine differenziertere realistische
+Relais-/Überholungsmechanik; mehr
+Watt zu verlangen allein wäre
+dann keine passende Lösung.
