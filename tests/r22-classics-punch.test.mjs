@@ -46,8 +46,11 @@ test('R22 Klassiker: kurzer entschlossener Ausreißversuch, danach bewusste Erho
   const ongoing=decideClassicsPunch({...base,currentIntent:'angriff',
     lastAttackAgeS:20});
   assert.ok(ongoing);
+  assert.ok(decideClassicsPunch({...base,currentIntent:'angriff',
+    groupSize:1,distanceFromGroupFrontM:0,lastAttackAgeS:50}),
+    'Bereits abgesetzter Fahrer soll seine echte Wattattacke fortsetzen können');
   assert.equal(decideClassicsPunch({...base,currentIntent:'angriff',
-    lastAttackAgeS:50}),null);
+    lastAttackAgeS:100}),null);
   assert.equal(decideClassicsPunch({...base,lastAttackAgeS:350}),null);
   assert.ok(decideClassicsPunch({...base,lastAttackAgeS:700}));
 });
