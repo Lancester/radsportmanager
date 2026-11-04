@@ -89,3 +89,19 @@ test('R22: Sprinter darf nach 250 m noch ABWARTEN; Altmodell unverändert',()=>{
   assert.notEqual(free.intent,'sprint');
   assert.ok(free.desiredPowerW<legacy.desiredPowerW);
 });
+
+test('R22: individuelle Dauer hoher Sprintleistung separat von Peak und Wprime',()=>{
+  const short=sprintPowerDemand({criticalPowerW:385,
+    sprintPeakPowerW:1300,sprintSkill:.95,elapsedS:15,
+    sprintDecayTimeS:11});
+  const long=sprintPowerDemand({criticalPowerW:385,
+    sprintPeakPowerW:1300,sprintSkill:.95,elapsedS:15,
+    sprintDecayTimeS:27});
+  assert.ok(long>short+100,'lang haltbare Sprintspitze bleibt höher');
+  assert.equal(sprintPowerDemand({criticalPowerW:385,
+    sprintPeakPowerW:1300,sprintSkill:.95,elapsedS:0,
+    sprintDecayTimeS:11}),1300);
+  assert.throws(()=>sprintPowerDemand({criticalPowerW:385,
+    sprintPeakPowerW:1300,sprintSkill:.95,elapsedS:20,
+    sprintDecayTimeS:2}),RangeError);
+});

@@ -89,20 +89,26 @@ export function decideSprintLaunch(o:FinalSprintSituation):
 export function sprintPowerDemand(o:{
   criticalPowerW:number;sprintPeakPowerW:number;
   sprintSkill:number;elapsedS:number;
+  /** Individuelle Ermüdungs-Zeitkonstante der Sprintspitze. */
+  sprintDecayTimeS?:number;
 }):number {
   const c=FINAL_SPRINT;
   if(!Number.isFinite(o.criticalPowerW)||o.criticalPowerW<=0||
     !Number.isFinite(o.sprintPeakPowerW)||o.sprintPeakPowerW<c.minPeakW||
     o.sprintPeakPowerW>c.maxPeakW||
     !Number.isFinite(o.sprintSkill)||o.sprintSkill<0||o.sprintSkill>1||
-    !Number.isFinite(o.elapsedS)||o.elapsedS<0)
+    !Number.isFinite(o.elapsedS)||o.elapsedS<0||
+    (o.sprintDecayTimeS!==undefined&&(
+      !Number.isFinite(o.sprintDecayTimeS)||
+      o.sprintDecayTimeS<8||o.sprintDecayTimeS>40)))
     throw new RangeError('R22: ungültiges Sprintleistungsprofil');
   // Sprinter müssen hohe Spitzenwatt nur KURZ halten können. Die
   // getrennte Langzeit-Ausdauer wird weiterhin außerhalb berechnet.
   const sustainable=o.criticalPowerW;
   const powerAboveCp=Math.max(0,o.sprintPeakPowerW-sustainable);
   const fatigueFactor=c.lateFraction+
-    (1-c.lateFraction)*Math.exp(-o.elapsedS/c.decayTimeS);
+    (1-c.lateFraction)*Math.exp(-o.elapsedS/
+      (o.sprintDecayTimeS??c.decayTimeS));
   return Math.min(c.maxPeakW,
     sustainable+powerAboveCp*fatigueFactor);
 }

@@ -71,6 +71,8 @@ export interface RaceRider {
   sprintLaunchPreference?:number;
   /** Kurzzeitig mögliche maximale Sprint-Kurbelwatt, nicht dauerhaft. */
   sprintPeakPowerW?:number;
+  /** Sekunden-Zeitkonstante des physiologischen Sprintleistungsabfalls. */
+  sprintDecayTimeS?:number;
 }
 export interface RaceInput {
   title:string;
@@ -276,6 +278,9 @@ export function validateRace(x:RaceInput):void {
     if(r.sprintPeakPowerW!==undefined)
       ensure('sprintPeakPowerW',r.sprintPeakPowerW,
         r.sprintPeakPowerW>=600&&r.sprintPeakPowerW<=2000);
+    if(r.sprintDecayTimeS!==undefined)
+      ensure('sprintDecayTimeS',r.sprintDecayTimeS,
+        r.sprintDecayTimeS>=8&&r.sprintDecayTimeS<=40);
   }
   if(x.enduranceModel!==undefined&&
     x.enduranceModel!=='off'&&x.enduranceModel!=='long')
@@ -1260,6 +1265,7 @@ export function simulateRace(x:RaceInput):RaceResult {
             inferredSprintPeakPowerW({
               massKg:s.rider.massKg,sprintSkill:s.rider.sprintSkill}),
           sprintSkill:s.rider.sprintSkill,
+          sprintDecayTimeS:s.rider.sprintDecayTimeS,
           elapsedS:Math.max(0,t-s.sprintLaunchedAtS),
         });
       }

@@ -296,6 +296,9 @@ function buildRider(archetype:Archetype,teamId:string,
       (7+10*(archetype==='sprinter'?.95:
         archetype==='klassiker'?.73:.45))*
       (1+symmetric(index,73)*.085)),
+    // Wie LANGE der Fahrer hohe Sprintwatt halten kann, getrennt
+    // von Spitzenwatt und der weiterhin bilanzierten W′-Reserve.
+    sprintDecayTimeS:+(13+hash(index,91)*12).toFixed(2),
     // Von Endspurt-Kraft getrennt: eigenständiges taktisches Talent,
     // ein fremdes schnelles Hinterrad im realen Feld zu erkennen.
     wheelFindingSkill:+(archetype==='sprinter'?
