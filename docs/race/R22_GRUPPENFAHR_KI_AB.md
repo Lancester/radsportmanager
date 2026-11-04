@@ -149,3 +149,58 @@ oder Gruppenboni gewährt. Jede
 Differenz zwischen Varianten entsteht
 aus physischen Pedal-Wattanfragen
 und unverändertem Bewegungsintegrator.
+
+## Gemessenes Ergebnis der dritten Iteration (04.11.2026)
+
+[GitHub-Testlauf #41776944085](https://github.com/Lancester/radsportmanager/actions/runs/41776944085):
+**252/252 Tests erfolgreich**, insbesondere zwei
+vollständige 154-Fahrer-Referenzrennen über
+184,9 km (Lille 2025), Seed 2026.
+Die bisherigen Legacy-Ergebnisse bleiben
+**identisch**, die neue Physik ist ausschließlich
+über `groupRidingModel:'cohesive'` aktivierbar.
+
+| Kennzahl | Bisherige Fahrer-KI | Experimentelle Gruppen-KI |
+| --- | ---: | ---: |
+| Siegergeschwindigkeit | 52,75 km/h | **46,01 km/h** |
+| Median-Zielrückstand | 663,6 s | **823,5 s (schlechter)** |
+| Letzter Rückstand | 4023,5 s | **1220,3 s** |
+| Maximal getrennte Gruppen | 50 | **18** |
+| Attacken | 2 | **16** |
+| Individuelle Verfolgungs-Intent-Wechsel | 7 | **390** |
+| Stärkste Gruppe bei km 5 | 106 | **150 Fahrer** |
+| Stärkste Gruppe bei km 25 | 39 | **138 Fahrer** |
+| Stärkste Gruppe bei km 50 | 26 | **138 Fahrer** |
+| Stärkste Gruppe bei km 100 | 31 | **138 Fahrer** |
+
+**Befund:** Die gemeinsame Fahrerpacing-Regel
+verbessert die frühe Feldkohäsion
+stark, und offensivere frühe
+Attacken finden tatsächlich statt.
+Das Tempo ist gegenüber der alten
+Renn-KI deutlich moderater.
+**Aber** die großen späteren Rückstände
+und die sehr hohe Zahl individueller
+Verfolgungswechsel zeigen,
+dass die autonome Teamtaktik
+und das Zusammenspiel zwischen
+Ausreißergruppen und Hauptfeld
+noch nicht fertig modelliert sind.
+
+Achtung: Die `chases`-Zahl zählt
+**individuelle Wechsel in die
+Verfolgungsabsicht**, nicht 390
+verschiedene koordiniert gestartete
+Mannschaftsjagden.
+Die neuen Gruppen müssen auf weiteren
+Seeds und allen vier Profilen
+getestet werden. Kein einzelner
+Lille-Seed darf als optimierter
+Realismusbeleg gelten.
+
+**Abnahme:** Als **experimenteller
+A/B-Schalter** geeignet, aber **nicht
+als neue Standard-Renn-KI freigegeben**.
+Bis zur besseren Steuerung von
+Flucht und Peloton bleibt die
+Voreinstellung `legacy`.
