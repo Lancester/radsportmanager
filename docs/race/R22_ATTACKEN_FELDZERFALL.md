@@ -105,3 +105,59 @@ und ihre Seed-Baselines nachvollziehbar.
 
 Das ist ausdrücklich eine
 **Ursachenprüfung, kein Freigabe-Tuning**.
+
+## Erster echter Test des Front-Gatings (Seed 2026)
+
+[PR #61](https://github.com/Lancester/radsportmanager/pull/61)
+nach erfolgreicher
+[CI #41783133007](https://github.com/Lancester/radsportmanager/actions/runs/41783133007)
+zusammengeführt, **257/257 Regressionstests erfolgreich**.
+Für Lille 2025 (184,9 km, 154 Fahrer):
+
+| Kriterium | Vorher `relay-paced` | `front-gated` |
+| --- | ---: | ---: |
+| Echte Jagd-Führungssekunden | 1.848 | **2.747** |
+| Größte Zielgruppe | 67 | **51** |
+| Rückstand größter Zielgruppe | 366 s | **398 s** |
+| Max. Abstandsgruppen | 24 | **11** |
+| Angezählte Fluchten | 1 | **1** |
+| Fluchten ohne vorherige Attacken innerhalb 180 s | nicht erhoben | **0** |
+| Individuelle Jagd-Intent-Wechsel | 464 | **441** |
+
+Interpretation: Das Begrenzen der
+starken Jagd-Wattanforderung auf
+**wirklich an der Gruppenfront
+fahrende Helfer** schafft deutlich
+mehr reale Frontjagd und etwas
+weniger dynamische Felderteilungen.
+Die größte Zielgruppe ist allerdings
+kleiner und langsamer relativ zum
+Sieger. Damit ist die Variante
+**nicht als neue Standard-KI geeignet**.
+
+Zudem bestätigt ein neuer unabhängiger
+physikalischer Kleintest:
+Eine bewusst angreifende
+Kapitäns-KI fordert tatsächlich
+mehr als ihre CP an und mehr als
+beim normalen Mitfahren.
+Bei identischem Tempo
+fordert die gruppenbewusste
+KI im Windschatten weniger Watt
+als ohne Abschirmung.
+Das **beweist noch nicht**
+die aerodynamische Kalibrierung:
+Größenordnungen (0,40-Mindestfaktor,
+24-m-Abschirmungsradius) sind
+weiterhin Proxy-Werte.
+
+**Offene Kernaufgabe:**
+Den Übergang von KI-Mission zu
+echtem Führungswechsel und das
+übermäßig nervöse Jagdverhalten
+(sowie tatsächliche Energieersparnis
+der hinten geschützten Fahrer)
+gesondert testen. Keine harte
+Sperre für nicht-attackenbedingte
+Abstände und keine GPX-/Wetter-
+Referenzgenauigkeit behaupten.
