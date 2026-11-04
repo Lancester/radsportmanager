@@ -57,6 +57,19 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
       assert.equal(row.committedChasePullSeconds,0);
       assert.equal(row.realFrontChaseCpSeconds,0);
     }
+    assert.ok(row.hillyApproachSeconds>=0&&
+      row.hillyRampPaceSeconds>=0);
+    assert.ok(Array.isArray(row.hillyRampPaceRiderIds));
+    if(row.profile!=='huegelig'){
+      assert.equal(row.hillyApproachSeconds,0);
+      assert.equal(row.hillyRampPaceSeconds,0);
+      assert.deepEqual(row.hillyRampPaceRiderIds,[]);
+    }else{
+      assert.ok(row.hillyApproachSeconds>0,
+        'kein realer Hügel-Positionsaufwand');
+      assert.ok(row.hillyRampPaceSeconds>0,
+        'keine physisch bezahlte selektive Rampenarbeit');
+    }
     assert.equal(row.top10Types.length,10);
     assert.ok(row.individualSprintAttempts>=0);
     assert.ok(Array.isArray(row.top10SprintLaunchM));
