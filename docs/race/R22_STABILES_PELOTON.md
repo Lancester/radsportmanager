@@ -46,3 +46,29 @@ Der Regler fordert nun zusätzlich die mechanisch erforderliche Beschleunigungsa
 **Bewertung:** Der separate Physik-/KI-Beschleunigungsfix verbessert die Anfangskohäsion deutlich (bei Kilometer 5 in Versuch B zwei statt elf Abstandsgruppen). Aber selbst 88 Fahrer kommen **9:30 min** hinter dem Sieger an. So ist die KI für einen glaubwürdigen Massensprint **nicht freigegeben**. Die Folge-CI für den korrigierten Testaufbau ist separat abzuwarten. Keine Änderung des Defaults und keine Freigabe von R-23.
 
 Die Ursache ist wahrscheinlich **nicht nur** die Nachfahrregelung. Zu prüfen sind, ohne heimliche Ergebnis-Boni: die Stärke der frühen Führungsbeschleunigung, tatsächliche Feldführungsposition, die reale Fahrerleistungsverteilung und die Reaktionsschwellen der jagenden Mannschaften. Der 600-s-Kontrolltest muss durch gestaffelte Fahrerprofile und längere, aber noch reproduzierbare Fahrgruppen ergänzt werden. Ein günstiger Einzelfall ist keine Validierung.
+
+
+## Versuch C: funktionierende Koordination bewahren, Jagdhelfer gezielt nachregeln
+
+Der zusätzliche [154-Fahrer-Isolationstest #41788638499](https://github.com/Lancester/radsportmanager/actions/runs/41788638499) deckte die entscheidende Trennung auf: Auf einer 20-km-Flachstrecke ohne offensive Teamleitlinien hielt die bisherige `coordinated`-KI **alle 154** Fahrer in einer Zielgruppe (maximal eine Abstandsgruppe). Der zunächst **für alle Mitfahrer** verwendete neue Regler erzeugte dagegen **17** Gruppen und nur 21 Fahrer in der größten Zielgruppe. Diese pauschale Änderung war falsch und wurde verworfen.
+
+**Gezielte, aktuelle Variante:** Für normale Fahrer in Gruppen ab acht Teilnehmern wird deshalb wieder die bewährte `decideGroupRiding`-Wattanpassung genutzt. Nur Fahrer mit `verfolgung`-Intent und Fahrer kleinerer Gruppen verwenden das neue lokale Geschwindigkeits-/Beschleunigungs-Feedback. Auch ein beauftragter Helfer im Peloton muss erst physisch an die Führungsposition gelangen, bevor er die volle Jagdleistung einsetzen darf.
+
+Der tatsächliche [CI-Lauf #41789070378](https://github.com/Lancester/radsportmanager/actions/runs/41789070378) bestätigt **262/262 Tests**, einschließlich sieben vollständiger Lille-Rennen und der zusätzlichen 154er-No-Attack-Kontrolle. Im no-attack-Kontrolllauf haben nun auch mit `stable-pack` **alle 154 Fahrer eine einzige Zielgruppe**, ohne physikalischen Zeitbonus.
+
+### 184,9 km Lille, 154 fiktive Profis, Seed 2026 – gleiche Fahrer und Strecke
+
+| KPI | Coordinated (bisher) | Front-gated (bisher) | Stable-pack (gezielt) |
+| --- | ---: | ---: | ---: |
+| Siegergruppe (1-s-Zeitgruppenproxy) | 3 | 3 | **6** |
+| Größte Zielgruppe | 133 | 51 | **86** |
+| Rückstand größte Zielgruppe | 929,37 s | 398,22 s | **15,77 s** |
+| Fahrer innerhalb 60 s | 3 | 3 | **118** |
+| Maximale Abstandsgruppen unterwegs | 5 | 11 | **16** |
+| Tatsächliche Jagdführungszeit | nicht erhoben | 2747 s | **2639 s** |
+| Registrierte Attacken | 18 | 22 | **49** |
+| Mittlere Pedalleistung pro Fahrsekunde | 167,80 W | 194,54 W | **203,46 W** |
+
+**Einordnung:** Eine konkurrenzfähige größere Zielgruppe ist jetzt erstmals vorhanden, ohne dass die restlichen Teilnehmer dorthin teleportiert oder physikalisch bevorzugt werden. Trotzdem sind 49 Attacken und 16 maximale Distanzgruppen Warnsignale für weitere taktische Abstimmung; nur ein Seed und ein Streckenprofil sind **keine Realitätsvalidierung**. Die sehr großen Rückstände älterer Varianten bleiben als reproduzierbare A/B-Referenz erhalten.
+
+**Nächster isolierter Schritt:** identische A/B-Vergleiche auf Boulogne/Hautacam und mindestens Seed 2027 nur im schon vorhandenen ausdrücklich **manuellen** Workflow; nicht automatisch 100/500/1000 Läufe starten. Danach Attacken-Häufigkeit, tatsächliche Jagdführerwechsel und Energieermüdung gegen Gruppen-Zielresultate abwägen. Ein Default-Wechsel und R-23-Engine-Freigabe bleiben offen.
