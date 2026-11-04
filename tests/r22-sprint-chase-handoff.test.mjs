@@ -77,11 +77,16 @@ test('R22: coordinated chase reserves one nearby sprinter protector',()=>{
   });
   const orders=[...plan.orders.values()].filter(x=>x.riderId.startsWith('F')&&
     x.riderId!=='F0'&&+x.riderId.slice(1)<6);
-  assert.ok(orders.length>=1);
-  assert.ok(orders.every(x=>x.mission==='jagd'),
-    'real breakaway still takes priority over sprint train');
-  assert.ok(orders.length<5,
-    'at least one of five actual nearby helpers kept for sprinter');
+  const chase=orders.filter(x=>x.mission==='jagd');
+  const train=orders.filter(x=>x.mission==='sprintzug');
+  assert.ok(chase.length>=1,
+    'physically front-eligible helpers continue to chase');
+  assert.ok(train.length>=1,
+    'real nearby helpers may prepare the sprinter at the same time');
+  assert.ok(chase.length+train.length<=5,
+    'no extra imaginary team members or energy');
+  assert.ok(train.every(x=>
+    Math.abs(all.find(y=>y.id===x.riderId).positionM-target.positionM)<=85));
 });
 
 test('R22: no sprint chasing for no escape, exhausted helpers or impossible gap',()=>{
