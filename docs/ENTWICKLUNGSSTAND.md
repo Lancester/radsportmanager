@@ -1573,3 +1573,12 @@ Die Physik wurde **zuerst** gegen eine unabhängige stationäre Bergwatt-Gleichu
 **Warum D/E nicht übernommen:** Weichere Variante D (96%-CP / +45W) bringt zu viele Nichtkletterer in die Spitzengruppe, E (97%-CP / +60W) erzeugt wieder einen 1.230,74-s-Rückstand der größten Zielgruppe. Daher C bevorzugt – **vorläufig** und nur opt-in.
 
 **Nächster exakter Schritt nach PR #65:** Im selben kleinen Vierprofil-Prozess die gesonderte Klassiker-/Puncheur-Taktik für Lüttich prüfen (bisher Sprinter gewinnt); anschließend separat Boulognes 108 Attacken und die Bergfeld-Zerlegung analysieren. Die große Mehrseed-Kalibrierung bleibt bis zum Ende verschoben. Standard `legacy`, R-22 offen, R-23 gesperrt.
+
+
+### R-22 Abschluss dieser Bergphysik-/Kletter-KI-Runde auf main (04.11.2026)
+
+**[PR #65](https://github.com/Lancester/radsportmanager/pull/65) ist nach `main` integriert** (Squash `d8ec5cbf5b1eb9f7de62162f2a7ec523a50d0d14`). Die vollständig neu geprüfte finale Quellfassung bestand [GitHub Actions #41800807951](https://github.com/Lancester/radsportmanager/actions/runs/41800807951): **271/271 Tests, 0 Fehler**, inklusive vier existierenden 154-Fahrer-Profilrennen mit Seed 2026, unabhängiger 13,5-km-Bergphysik, CP/W′-/Aero-/Schwerkraft-Bilanz, 154er-Flach-No-Attack- und 30er-Konstanttempo-Regressionsfällen. Keine physikalischen Kernänderungen, kein Default-Wechsel.
+
+**Final gewählte, weiterhin opt-in experimentelle `stable-pack`-Berg-KI:** nur Kletterer/GC-Kapitäne auf Steigungen ab 5,5 % und modellierten ≥5-km-Pässen mit realem ungeschütztem Wattüberschuss; bis 98 % CP / 80 W zusätzliche nachhaltige Leistung gegenüber solo Halten des Fronttempos. **Lille, Boulogne und Lüttich exakt unverändert** gegenüber vor der KI-Korrektur. **Hautacam:** Kletterer Plätze 1–4; größte Zielgruppe 4 Fahrer, 299,09 s Rückstand; max. 36 Distanzgruppen (vorher 25), also noch nicht perfekt. Alle fünf getesteten Abstufungen samt Problemen dokumentiert in [R22_BERGPHYSIK_UND_KLETTER_KI.md](race/R22_BERGPHYSIK_UND_KLETTER_KI.md).
+
+**Nächster konkreter kleiner Schritt (keine vorgezogene große Validierung):** die vorhandene Lüttich-Etappe weiter analysieren; eine eigene KI-Entscheidung für Klassiker-/Puncheurfahrer an kürzeren steilen Anstiegen prüfen, ohne den Langpass-Klettermodus oder Lille/Boulogne zu stören. Danach gesondert 108 Attacken auf Boulogne und physische Berggruppen am Hautacam prüfen. R-22 und Issue #54/#42 bleiben offen; R-23 nicht freigegeben.
