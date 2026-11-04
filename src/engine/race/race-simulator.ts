@@ -1108,7 +1108,7 @@ export function simulateRace(x:RaceInput):RaceResult {
             endurancePowerAvailability(s.endurance),
           originalRequestedW:commanded,
         }):null;
-      if(pull!==null&&pull>commanded+1)commanded=pull;
+      if(pull!==null)commanded=pull;
       // Absichtlich ausrollen: erst NACH allen Gruppenreglern als
       // Begrenzung, sonst würde die Feld-KI sofort wieder beschleunigen.
       if(sprintFriendlyRace){
