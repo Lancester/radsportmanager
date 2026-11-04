@@ -24,9 +24,8 @@ import {decideSprintLaunch,inferredSprintPeakPowerW,sprintPowerDemand}
 import {decideSprintLeadoutPace,SPRINT_LEADOUT} from './sprint-leadout.ts';
 import {chooseIndependentSprintWheel,SPRINT_WHEEL} from './sprint-wheel-choice.ts';
 import {decideClassicsPunch,CLASSICS_PUNCH} from './classics-punch.ts';
-import {decideClassicsApproach,decideClassicsRampTempo,
-  CLASSICS_RACECRAFT,eligibleClassicsRiderType,
-  chooseClassicsNominee} from './classics-racecraft.ts';
+import {decideClassicsApproach,decideClassicsRampTempo}
+  from './classics-racecraft.ts';
 import {decideGroupRiding,decideChaseApproach,R22_GROUP_RIDING} from './group-riding.ts';
 import {decideTeamPace} from './team-pacing.ts';
 import {decideIntelligentCrew,analyzeRaceSituation} from './race-team-ai.ts';
@@ -389,15 +388,6 @@ export function simulateRace(x:RaceInput):RaceResult {
       .sort((a,b)=>rampScore(b)-rampScore(a)||
         a.rider.id.localeCompare(b.rider.id));
     return [team.id,candidates[0]?.rider.id??null] as const;
-  }));
-  // Unabhängige Nominierung für nachhaltige Selektion:
-  // der physisch stärkste geeignete 3-Minuten-Rampenfahrer jedes Teams.
-  // Die bereits vorhandenen Puncheur-Spezialattacken bleiben separat.
-  const classicsContenderByTeam=new Map(x.teams.map(team=>{
-    const candidates=states.filter(r=>r.rider.teamId===team.id)
-      .map(r=>({id:r.rider.id,specialty:r.rider.specialty,
-        score:rampScore(r)}));
-    return [team.id,chooseClassicsNominee(candidates)] as const;
   }));
   const captainByTeam=new Map(x.teams.map(t=>[t.id,
     states.find(s=>s.rider.teamId===t.id&&s.rider.role==='kapitaen')]));
@@ -839,15 +829,14 @@ export function simulateRace(x:RaceInput):RaceResult {
     // Tempo halten; die Auswahl richtet sich nicht am Ergebnis aus.
     const classicRampPacerByGroup=new Map<string,string>();
     const classicsEnabled=x.groupRidingModel==='stable-pack'&&
-      totalM>=CLASSICS_RACECRAFT.minRaceM&&
-      shortSteepClimbs>=CLASSICS_RACECRAFT.minSteepClimbs;
+      totalM>=220000&&shortSteepClimbs>=4;
     if(classicsEnabled){
       for(const group of physicalGroups){
         if(group.length<4||leader.positionM-group[0].positionM>240)
           continue;
         const eligible=group.map(g=>byId.get(g.id)!).filter(r=>
-          eligibleClassicsRiderType(r.rider.specialty)&&
-          classicsContenderByTeam.get(r.rider.teamId)===r.rider.id&&
+          r.rider.specialty==='klassiker'&&
+          rampSpecialistByTeam.get(r.rider.teamId)===r.rider.id&&
           group[0].positionM-r.positionM<=70&&
           r.physiology.remainingWPrimeJ/r.profile.wPrimeCapacityJ>=.22);
         eligible.sort((a,b)=>rampScore(b)-rampScore(a)||
@@ -1223,7 +1212,7 @@ export function simulateRace(x:RaceInput):RaceResult {
         const groupFront=group?.[0];
         const observation={
           enabled:true,specialty:s.rider.specialty,role:s.rider.role,
-          isDesignatedRider:classicsContenderByTeam.get(s.rider.teamId)===
+          isDesignatedRider:rampSpecialistByTeam.get(s.rider.teamId)===
             s.rider.id,
           isSelectedGroupPacer:!!groupFront&&
             classicRampPacerByGroup.get(groupFront.id)===s.rider.id,

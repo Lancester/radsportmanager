@@ -14,10 +14,10 @@
 export const CLASSICS_RACECRAFT=Object.freeze({
   minRaceM:220000,minSteepClimbs:4,
   minRampGrade:.075,minRampLengthM:800,maxRampLengthM:2500,
-  positioningFromProgress:.65,positioningUntilProgress:.87,
+  positioningFromProgress:.40,positioningUntilProgress:.87,
   positioningGroupSize:12,positioningRankShare:.38,
   positioningMaxGapM:180,positioningMinReserve:.12,
-  positioningMaxCp:1.025,positioningMaxExtraW:40,
+  positioningMaxCp:1.025,
   selectionFromProgress:.78,selectionUntilProgress:.96,
   selectionFromSegment:.12,selectionUntilSegment:.92,
   selectionMaxGapFromRaceFrontM:240,
@@ -25,29 +25,6 @@ export const CLASSICS_RACECRAFT=Object.freeze({
   selectionMinReserve:.22,
   selectionMaxCp:1.085,
 });
-/** Körperlich geeignete Klassikerspezialisten, Kletterer, Allrounder
- * und Zeitfahrer dürfen mit realen Watt an späten Rampen agieren.
- * Das Fahrertyp-Label bestimmt keinen Sieg. */
-export function eligibleClassicsRiderType(specialty?:string):boolean{
-  return ['klassiker','kletterer','allrounder','zeitfahrer']
-    .includes(specialty??'');
-}
-/** Teamnominierung aus realen Profilwerten: bei nahezu gleichem
- * Rampenvermögen darf der taktisch erfahrene Puncheur Vorrang haben.
- * Ist ein Kletterer/Allrounder/TT-Fahrer physisch klar stärker,
- * wird dieser gewählt. Kein Leistungs-, Ergebnis- oder Siegvorteil. */
-export function chooseClassicsNominee(
-  candidates:readonly {id:string;specialty?:string;score:number}[],
-):string|null{
-  const ranked=candidates.filter(c=>
-    !!c.id&&eligibleClassicsRiderType(c.specialty)&&
-    Number.isFinite(c.score)&&c.score>0)
-    .sort((a,b)=>b.score-a.score||a.id.localeCompare(b.id));
-  if(!ranked.length)return null;
-  const classic=ranked.find(c=>c.specialty==='klassiker');
-  return classic&&classic.score>=.92*ranked[0].score?
-    classic.id:ranked[0].id;
-}
 export interface ClassicsRacecraftObservation {
   enabled:boolean;specialty?:string;role:string;
   isDesignatedRider:boolean;isSelectedGroupPacer:boolean;
@@ -80,8 +57,7 @@ export function decideClassicsApproach(
 ):number|null{
   if(!valid(o))throw new RangeError('R22 Klassiker: ungültige Annäherung');
   const c=CLASSICS_RACECRAFT;
-  if(!o.enabled||!eligibleClassicsRiderType(o.specialty)||
-    !o.isDesignatedRider||
+  if(!o.enabled||o.specialty!=='klassiker'||!o.isDesignatedRider||
     o.progress<c.positioningFromProgress||
     o.progress>=c.positioningUntilProgress||
     o.physicalGroupSize<c.positioningGroupSize||
@@ -94,15 +70,10 @@ export function decideClassicsApproach(
       .includes(o.intent))
     return null;
   // Keine neue künstliche Maximalleistung. Watt zum eigenständigen
-  // Aufrücken; bei schnellem Feld kann er scheitern.
-  // Die tatsächliche bereits ermittelte Gruppen-Folgeleistung ist
-  // der Ausgangspunkt. Max. 20–40 zusätzliche W statt schlagartig
-  // ~100 W vom geschützten Mitfahrer auf volle CP zu springen.
-  // Es ist in einem 1D-Modell keine durchgehende freie Überholspur.
-  const extraW=Math.min(c.positioningMaxExtraW,
-    20+o.gapToGroupFrontM*.16);
+  // Aufrücken (bis etwa CP); bei schnellem Feld kann er scheitern.
   const demanded=Math.min(o.criticalPowerW*c.positioningMaxCp,
-    o.requestedPowerW+extraW);
+    o.criticalPowerW*(.95+.05*Math.min(1,
+      o.gapToGroupFrontM/70)));
   return demanded>o.requestedPowerW+1?demanded:null;
 }
 /** Echte Selektion: EIN vorderer Klassiker macht länger Tempo bergauf. */
@@ -111,8 +82,7 @@ export function decideClassicsRampTempo(
 ):number|null{
   if(!valid(o))throw new RangeError('R22 Klassiker: ungültiges Rampentempo');
   const c=CLASSICS_RACECRAFT;
-  if(!o.enabled||!eligibleClassicsRiderType(o.specialty)||
-    !o.isDesignatedRider||
+  if(!o.enabled||o.specialty!=='klassiker'||!o.isDesignatedRider||
     !o.isSelectedGroupPacer||
     o.progress<c.selectionFromProgress||
     o.progress>c.selectionUntilProgress||
