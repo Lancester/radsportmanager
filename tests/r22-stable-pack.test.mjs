@@ -33,7 +33,7 @@ test('R22 Stabil: geschützter Mitfahrer passt tatsächliche Watt ans Tempo an',
 });
 test('R22 Stabil: echte Attacke frei, Jagdhelfer in Feldmitte begrenzt',()=>{
   const front=decideStablePackRiding({...observation,
-    tacticalIntent:'verfolgung',desiredPowerW:420},true);
+    tacticalIntent:'verfolgung',desiredPowerW:420,isPacer:true},true);
   const middle=decideStablePackRiding({...observation,
     tacticalIntent:'verfolgung',desiredPowerW:420},false);
   assert.equal(front.powerW,420);
