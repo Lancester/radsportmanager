@@ -205,3 +205,41 @@ Freigabegate zur Rennengine 1.0
 **nach** R-22, nur bei erfüllten
 Qualitätskriterien und ohne
 offene kritische Modellfehler.
+
+
+## Aktualisierter Pilot nach tatsächlicher Führungspositionsprüfung
+
+Nach der zusätzlichen R-17-Korrektur darf ein Helfer
+**nur vor seinem geschützten Kapitän/Sprinter** als
+Führender gelten. Die neuere, vollständig erfolgreich
+ausgeführte [GitHub-Actions-Skalenabnahme #41744546224](https://github.com/Lancester/radsportmanager/actions/runs/41744546224)
+(auf dem R-17-Code-Commit `f55886f67ab2e4fcd70c4bb36076f7815e4f669f`)
+liefert dadurch **andere tatsächliche Ergebnisse** als
+der oben dokumentierte erste Skalierungsversuch:
+
+| Fiktives Einzelrennen | Fahrer | Berechnungszeit CI | Max. Gruppen | Median-Zielrückstand | Letzter Zielrückstand |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Flach 200 km | 154 | 7,49 s | 19 | 838,3 s | 2.607,5 s |
+| Hügelig 200 km | 154 | 9,57 s | 76 | 1.721,8 s | 4.467,9 s |
+| Klassiker 240 km | 154 | 10,82 s | 64 | 1.560,2 s | 4.749,6 s |
+| Berg 170 km | 154 | 10,67 s | 87 | 2.815,5 s | 6.774,2 s |
+| Berg 170 km | 70 | 4,63 s | 44 | 3.058,2 s | 7.384,4 s |
+
+Alle **686 Fahrer aus fünf vollständig simulierten
+Einzelrennen** klassifiziert, mechanische
+Energie-/W′-/Kohlenhydrat- und Fluchtprotokolle
+geprüft. Der zusätzliche Browser-ESM-Test
+mit 30 Fahrern ist ebenfalls erfolgreich.
+Die Ausführung auf späteren R-17–R-21-
+Dokumentationsständen benutzt denselben
+physikalischen Code. Werte sind **fiktiv**,
+die hohen Rückstände insbesondere bei
+Hügel-/Klassiker-/Bergprofilen müssen in
+**R-22** erst empirisch plausibilisiert
+oder ursächlich kalibriert werden.
+
+Die Dateiversion mit der abschließenden
+Kohlenhydrat-Bilanzkorrektur und dem
+verbindlichen Projektfahrplan wird erst
+nach separater PR-/main-CI als
+endgültig technisch freigegeben.
