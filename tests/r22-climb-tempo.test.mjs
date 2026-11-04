@@ -21,7 +21,7 @@ test('R22 Kletter-KI: nur echte nachhaltige Pedalwatt, niemals Zeit-/Positionsbo
   assert.ok(p!==null&&p>245,'Kletterer darf nachhaltig mehr leisten');
   assert.ok(p<=observation.criticalPowerW*CLIMB_TEMPO.sustainedCpFraction);
   assert.ok(decideClimbTempo({...observation,desiredPowerW:800})<=
-    observation.criticalPowerW*.98,'Wunschwert der Gruppe darf keine W′-Erfindung auslösen');
+    observation.criticalPowerW*CLIMB_TEMPO.sustainedCpFraction,'Wunschwert der Gruppe darf keine W′-Erfindung auslösen');
 });
 test('R22 Kletter-KI: kein Berg-Privileg auf Ebene, für schwere Sprinter oder bei CP-Mangel',()=>{
   for(const obs of [
@@ -49,5 +49,5 @@ test('R22 Kletter-KI: Tempoentscheidung folgt tatsächlichem Steigungs- und Luft
   assert.equal(faster,null,
     'Wenn der Pacesetter schneller fährt als der exponierte Fahrer kann, wird kein Überholen angefordert');
   const lighter=decideClimbTempo({...observation,riderMassKg:60});
-  assert.ok(lighter!==null&&lighter<=observation.criticalPowerW*.98);
+  assert.ok(lighter!==null&&lighter<=observation.criticalPowerW*CLIMB_TEMPO.sustainedCpFraction);
 });
