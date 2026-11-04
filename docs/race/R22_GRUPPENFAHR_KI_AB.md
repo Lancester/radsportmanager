@@ -57,7 +57,7 @@ setzt **nur Wattanforderungen**:
   Der frühere künstliche Schutz, der Attacken
   bis 18 % der Distanz verbot, wird **nur im
   Experiment** teilweise aufgehoben:
-  Nach etwa 180 Sekunden und rund 1,5 %
+  Ab etwa 250 Sekunden und rund 1,5 %
   Distanz sind offensive Angriffe grundsätzlich
   möglich, sofern Position, CP und W′ dies
   tatsächlich erlauben.
