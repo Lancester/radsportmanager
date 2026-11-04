@@ -199,18 +199,24 @@ export function decideIntelligentCrew(input:{
     if(helpers.length===0)continue;
     // Im Finale einen echten Helfer unmittelbar beim Sprinter
     // zurückhalten, während andere das Peloton vorne jagen.
-    const reserve=input.sprintFinaleMode&&mission==='jagd'&&
-      team.strategy==='sprint'&&targetRemainingM<=25000&&
-      helpers.length>=2?
-      [...helpers].filter(r=>
-        Math.abs(r.positionM-target.positionM)<=65)
+    const nearbyTeamProtectors=input.sprintFinaleMode&&mission==='jagd'&&
+      team.strategy==='sprint'&&targetRemainingM<=25000?
+      members.filter(r=>r.role==='helfer'&&group.includes(r)&&
+        r.reserveFraction>=R15_R16.minimumReserve&&
+        Math.abs(r.positionM-target.positionM)<=85)
         .sort((a,b)=>
           Math.abs(a.positionM-target.positionM)-
             Math.abs(b.positionM-target.positionM)||
           b.reserveFraction-a.reserveFraction||
-          a.id.localeCompare(b.id))[0]:undefined;
-    const available=reserve?helpers.filter(r=>r.id!==reserve.id):helpers;
-    if(!available.length)continue;
+          a.id.localeCompare(b.id)):[];
+    // Etwa 10 km vor dem Ziel beginnt die ECHTE Sprintzug-Arbeit
+    // gleichzeitig mit der Verfolgung. Hintere Begleiter müssen
+    // nicht in Reichweite des absoluten Peloton-Pacesetters sein.
+    const protectCount=sprintTrain?3:1;
+    const reserve=nearbyTeamProtectors.slice(0,protectCount);
+    const reservedIds=new Set(reserve.map(r=>r.id));
+    const available=helpers.filter(r=>!reservedIds.has(r.id));
+    if(!available.length&&!reserve.length)continue;
     // Gefährliche/nahe Ausreißer und Teamstrategie bestimmen die Größe des
     // Einsatzes. Ein einzelner Verfolger ist nicht länger das Maximum.
     // Die restlichen Fahrer fahren danach weiterhin ganz normal ihr Rennen.
@@ -282,6 +288,27 @@ export function decideIntelligentCrew(input:{
       orders.set(rider.id,{riderId:rider.id,mission,duty,
         desiredPowerW:rider.criticalPowerW*effort,reason,
         groupFrontM:group[0].positionM});
+    }
+    // Mixed sprint mission: one or more HELPER riders still chase at
+    // real pack front, while local helpers close to the protected
+    // sprinter form the train at the SAME decision step. No teleport.
+    if(chase&&sprintTrain&&input.sprintFinaleMode&&reserve.length){
+      const leadCandidates=reserve.filter(r=>
+        r.positionM>target.positionM+0.1&&
+        r.positionM-target.positionM<=35);
+      const localLead=leadCandidates[0]?.id;
+      for(const rider of reserve){
+        const duty:CrewDuty=rider.id===localLead?'fuehrung':'unterstuetzung';
+        orders.set(rider.id,{
+          riderId:rider.id,mission:'sprintzug',duty,
+          desiredPowerW:rider.criticalPowerW*
+            (duty==='fuehrung'?1.085:1.025),
+          reason:duty==='fuehrung'?
+            'Sprintzug trotz laufender Feldjagd: echter naher Führender':
+            'Sprintzug trotz Feldjagd: geschützten Sprinter begleiten',
+          groupFrontM:group[0].positionM,
+        });
+      }
     }
     missionByTeam.set(team.id,mission);
   }
