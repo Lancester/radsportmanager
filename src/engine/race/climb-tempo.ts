@@ -55,6 +55,5 @@ export function decideClimbTempo(
   // Er kann nur so stark beschleunigen, wie ihn die eigene
   // vorliegende CP und die geforderte tatsächliche Kurbelwatt erlauben.
   // R-19 reduziert diese Wattanfrage anschließend ggf. zusätzlich.
-  return Math.max(o.desiredPowerW,
-    Math.min(sustainableW,bareHoldW+CLIMB_TEMPO.maximumBoostW));
+  return Math.min(sustainableW,bareHoldW+CLIMB_TEMPO.maximumBoostW);
 }
