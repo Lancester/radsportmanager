@@ -75,6 +75,22 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
     assert.ok(row.longestNamedChaseFrontS<=
       row.actualNamedChaseFrontS);
   }
+  // Integrationsgate nach Stapelung von PR #74 und #76:
+  // normale Flachjagd + Zielsprint und Klassiker-Rampenarbeit müssen
+  // gleichzeitig funktionieren, ohne über Etappenprofile zu lecken.
+  const lille=rows.find(row=>row.route==='tdf25_lille');
+  const liege=rows.find(row=>row.route==='lbl25_liege');
+  assert.ok(lille&&liege,'beide zusammenzuführenden KI-Profile fehlen');
+  assert.ok(lille.actualNamedChaseFrontS>0&&
+    lille.individualSprintAttempts>0,
+    'R22 Sprint/Jagd darf durch die Klassiker-KI nicht verloren gehen');
+  assert.equal(lille.classicsApproachSeconds,0);
+  assert.equal(lille.classicsRampTempoSeconds,0);
+  assert.ok(liege.classicsApproachSeconds>0&&
+    liege.classicsRampTempoSeconds>0,
+    'R22 Klassiker-KI muss zusammen mit dem Sprint-/Jagdcode aktiv bleiben');
+  assert.equal(liege.individualSprintAttempts,0);
+  assert.equal(liege.actualNamedChaseFrontS,0);
   // Die Zahlen sind ausdrücklich Diagnose, keine festen Soll-Sieger/Quoten.
   const summaryLine=log.split('\n').find(line=>
     line.startsWith('R22-PROFILES-SUMMARY '));
