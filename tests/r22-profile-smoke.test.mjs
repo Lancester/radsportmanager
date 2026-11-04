@@ -206,6 +206,18 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
     x.firstSize>=1&&x.largestSize>=x.firstSize&&
     x.largestSize<=154&&x.sprinterGroupSize>=1&&
     x.firstToMainGapM>=0&&x.sprinterRankInRace>=1));
+  // Szenariospezifische, KEINE allgemeine Sieg-/Massenprintquote:
+  // nach Einholen der Flucht soll Lille 5 km vor Schluss nicht mehr
+  // aus einer 25er-Spitzengruppe und 90er-Feld bestehen.
+  const lastFiveKm=finaleField.finaleField.find(x=>
+    Math.abs(x.km-180)<.08);
+  assert.ok(lastFiveKm,
+    'R22: letzter flacher 5-km-Feldcheckpoint fehlt');
+  assert.ok(lastFiveKm.firstSize>=80,
+    'R22: Sprintfinale darf das bis km 175 verbundene Hauptfeld '+
+    'nicht bereits 5 km vor Ziel in eine kleine 25er-Gruppe zerlegen');
+  assert.equal(lastFiveKm.firstToMainGapM,0,
+    'R22: die 5-km-Spitzengruppe soll noch das groesste Hauptfeld sein');
   console.log(finaleLines[0]);
   const gapLines=log.split('\n').filter(row=>
     row.startsWith('R22-LILLE-CHASE-GAPS '));
