@@ -28,6 +28,16 @@ test('R22 Zielgruppe: zusammenhängende Zeiten statt Renn-Positionsgruppen',()=>
   assert.equal(x.largestGroupSize,3);
   assert.equal(x.within60sOfWinner,5);
   assert.equal(x.groups.length,2);
+  const isolatedWinner=finishGroupMetrics([
+    {id:'winner',finishTimeS:100},
+    {id:'peloton1',finishTimeS:200},
+    {id:'peloton2',finishTimeS:200.4},
+    {id:'peloton3',finishTimeS:200.8},
+  ]);
+  assert.equal(isolatedWinner.winnerGroupSize,1);
+  assert.equal(isolatedWinner.largestGroupSize,3);
+  assert.equal(isolatedWinner.largestGroupGapToWinnerS,100);
+  assert.equal(isolatedWinner.within60sOfWinner,1);
 });
 
 test('R22 Mannschaftsjagd: nur Interessenten, keine Phantombewegung, 150s Mandat',()=>{
