@@ -1483,3 +1483,10 @@ Die Rennsimulation protokolliert nun für die drei experimentellen physischen Re
 **Abnahmestand:** Quelländerungen und Regressionstest geschrieben, aber GitHub-Actions-Ergebnis und tatsächliche neue Messwerte **noch nicht bestätigt**. Keine neue sportliche Realismusfreigabe. Standard-KI bleibt `legacy`; R-22 Issue #54 und Peloton-Issue #42 bleiben offen. Keine Anpassung von CP/W′, R-19, Aero, Integrator, Strecken, Fahrertypen oder Spielsystemen. Keine automatische Großtest-Serie.
 
 **Exakter nächster Schritt:** CI prüfen; danach mit vom Nutzer manuell ausgelösten A/B-Läufen mehrere Seeds und Rennprofile vergleichen. Die Häufigkeit echter Ablösungen, längste Frontphasen, Dauer von Jagdmandaten, physische Zielgruppengrößen und Rückstände gemeinsam beurteilen. Erst danach einen isolierten, schaltbaren KI-Versuch für Ablösung/Rückkehr vorsehen. Details: [R22_RELAIS_FUEHRUNGSDIAGNOSE.md](race/R22_RELAIS_FUEHRUNGSDIAGNOSE.md).
+
+
+### R-22 Relais-Diagnose: technische Abnahme (04.11.2026)
+
+[PR #62](https://github.com/Lancester/radsportmanager/pull/62) wurde erfolgreich in `main` übernommen (Squash-Commit `d63afbf3cc4eefd447669896db59c6cfb4c89564`). [PR-Actions #41785543300](https://github.com/Lancester/radsportmanager/actions/runs/41785543300) war erfolgreich: **257/257 Tests, 0 Fehler**, inklusive des Sechs-Varianten-Vollrennvergleichs mit jeweils 154 Fahrern. Die neuen Kennzahlen für direkte physische Jagd-Führungswechsel und die längste ununterbrochene persönliche Frontphase sind in die Diagnostik aufgenommen; dies ist **noch keine sportliche Verbesserung der KI**. Der bisherige Default `legacy` bleibt bestehen.
+
+**Weiter offen:** Die neuen Führungs-Kennzahlen tatsächlich über mehrere manuell gestartete Seeds und Strecken auswerten, bevor wir das KI-Verhalten für Ablösung, Rückkehr und ruhige Verfolgung verändern. Der CI-Erfolg ist ein technischer Nachweis, keine professionelle Realitätskalibrierung. R-22 bleibt offen, R-23 ist nicht freigegeben.
