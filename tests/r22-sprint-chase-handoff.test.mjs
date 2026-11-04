@@ -194,3 +194,43 @@ test('R22: physischer Langjagdführer behält seinen Auftrag nach kurzen Positio
   assert.equal(second.leaderByTeam.get('T1')?.riderId,initial.riderId,
     '400 seconds in, physical 24m setback does not force arbitrary rotation');
 });
+
+test('R22: echte 7–12 Fahrer starke Flucht wird NUR im opt-in-Sprintmodus erkannt',()=>{
+  const main=Array.from({length:24},(_,i)=>rider('MAIN'+i,
+    i<5?'T1':'T2',i===0?'sprinter':i<5?'helfer':'kapitaen',
+    10000-i*3));
+  const lead=Array.from({length:7},(_,i)=>
+    rider('ESC'+i,'T3','kapitaen',10400-i*3));
+  const riders=[...lead,...main];
+  const legacy=analyzeRaceSituation(riders,28000);
+  const sprint=analyzeRaceSituation(riders,28000,12);
+  assert.equal(legacy.leadingBreakaway,false,
+    'bisherige sechs-Fahrer-Regel für andere Profile erhalten');
+  assert.equal(sprint.leadingBreakaway,true,
+    'sieben physisch abgesetzte Ausreißer dürfen verfolgt werden');
+  assert.equal(sprint.breakawaySize,7);
+  assert.ok(sprint.gapM>300);
+  const teams=[{id:'T1',strategy:'sprint'},
+    {id:'T2',strategy:'ausgewogen'},
+    {id:'T3',strategy:'offensiv'}];
+  const c=coordinatePelotonChase({
+    timeS:9000,remainingM:28000,progress:.84,
+    mainGroupIds:new Set(main.map(r=>r.id)),
+    teams,riders,situation:sprint,previous:none,
+    sprintFinaleMode:true,
+  });
+  assert.ok(c.chasingTeamIds.has('T1'));
+  const plan=decideIntelligentCrew({
+    timeS:9000,remainingM:28000,progress:.84,
+    teams,riders,previousLeaders:new Map(),
+    chasingTeamIds:c.chasingTeamIds,physicalRelayMode:true,
+    restInPeloton:true,sprintFinaleMode:true,
+  });
+  assert.ok([...plan.orders.values()].some(o=>o.mission==='jagd'),
+    'auch Crew-KI muss 7-Fahrer-Flucht erkennen');
+  assert.equal(analyzeRaceSituation([...lead,
+    ...Array.from({length:6},(_,i)=>rider('EXTRA'+i,'T3',
+      'kapitaen',10370-i*2)),...main],28000,12)
+    .leadingBreakaway,false,
+    '13 Fahrer brauchen eigene taktische Bewertung');
+});
