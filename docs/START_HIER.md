@@ -470,3 +470,45 @@ der teils großen Gruppen-/Zielabstände.**
 **R-23** bleibt gesonderte Freigabeprüfung für
 Rennengine 1.0. **Keine Rundfahrten und
 kein Karrieremodus in R-22.**
+
+
+## R-22 Pilot 0.1 – GitHub Actions auf manuellen Start umgestellt (04.11.2026)
+
+[PR #55](https://github.com/Lancester/radsportmanager/pull/55)
+ist mit Squash `d5e763cad6d0dea4e6a23ec0ae24c3da2c8cf7e2`
+in `main` übernommen.
+**[Reguläre main-CI #41763646503](https://github.com/Lancester/radsportmanager/actions/runs/41763646503):
+242/242 Tests, drei Referenzrennen, TypeScript-/Browserbuild und
+GitHub-Pages-Deployment erfolgreich.**
+
+**Neuer nutzbarer GitHub-Workflow:** `Actions → R-22 – Monte-Carlo-Test manuell starten → Run workflow`.
+Er wird **ausschließlich durch den Nutzer ausgelöst**, nicht über
+Push, Zeitplan oder Automatisierung. Eingaben: Rennprofil,
+3/10/25/50/100 Seeds, 5/10/22 Teams × 7 Fahrer, Distanz
+50/60/170/200/240 km, Seed, optional gepaarte 20-vs-100-g/h-
+Verpflegungssensitivität. Ausgaben: `summary.md`, `races.csv`,
+`summary.json` als 30-Tage-Actions-Artefakt plus GitHub Run Summary.
+[Bedienung und Methodik](race/R22_MONTE_CARLO_PILOT.md).
+
+**Pilotmessung tatsächlich ausgeführt:**
+[PR-Tests #41763527407](https://github.com/Lancester/radsportmanager/actions/runs/41763527407)
+haben zwei Seeds (2026/2027) × zwei Verpflegungszustände
+über 170 km Bergprofil mit jeweils 35 Fahrern durchgerechnet:
+**vier vollständige Rennen, 140 Zielankünfte**.
+Die angenommene höhere KH-Zufuhr verkürzte
+die modellierte Siegerzeit im gepaarten Mittel
+um **2932 s (~49 min)**, was ausdrücklich als
+**Warnsignal möglicher starker R-19-Überempfindlichkeit**
+gilt, NICHT als echter physiologischer Renneffekt.
+
+**R-22 ist noch nicht beendet.** Der Seed variiert
+bislang nur die tagesformabhängige CP um ±2 %.
+Er variiert weder Wetter noch Fahrerkader oder
+taktische Zufallsentscheidungen. Externe
+Profirenn-Validierungsdaten, breit angelegte
+Monte Carlo, ursächliche Kalibrierung und
+Held-out-Tests stehen noch aus.
+[R-22 Issue #54](https://github.com/Lancester/radsportmanager/issues/54)
+bleibt offen. **R-23 Freigabe unzulässig vor R-22-Abnahme.**
+Weiterhin ausschließlich **Einzelrenn-Engine**;
+keine Rundfahrten oder Karriere.
