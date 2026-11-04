@@ -92,3 +92,46 @@ test('R21: Feld >60 Fahrer kann ohne Fehler ein Einzelrennen fahren',()=>{
   assert.ok(r.classification.every(s=>
     Math.abs(s.energyResidualJ)<.05&&s.finalWPrimeJ>=0));
 });
+
+test('R18: steigende Fluchtgeschwindigkeit erhöht die gemessene Prognose',()=>{
+  const teams=[{id:'A',strategy:'sprint'},{id:'B',strategy:'offensiv'}];
+  const riders=[
+    {id:'B-C',teamId:'B',role:'kapitaen',positionM:1200,
+      speedMps:15,criticalPowerW:300,reserveFraction:.8,aggression:.5},
+    ...Array.from({length:5},(_,i)=>({
+      id:'A-'+i,teamId:'A',role:i===0?'sprinter':'helfer',
+      positionM:980-i*2,speedMps:13,criticalPowerW:300,
+      reserveFraction:.8,aggression:.5,
+    })),
+  ];
+  const input={teams,riders,timeS:800,progress:.5,remainingM:10000};
+  const fast=decideIntelligentCrew(input).situation;
+  const slow=decideIntelligentCrew({...input,
+    riders:riders.map(r=>r.id==='B-C'?{...r,speedMps:11}:r)}).situation;
+  assert.ok(fast.leadingBreakaway&&slow.leadingBreakaway);
+  assert.ok(fast.projectedGapM>slow.projectedGapM);
+  assert.ok(fast.gapM===slow.gapM);
+});
+test('R20: Wind/rauer Belag ändern mechanisch berechnete Zielzeiten',()=>{
+  const base=createRaceExample({profile:'flach',seed:818});
+  const calm=simulateRace(base);
+  const wind={...base,segments:base.segments.map(s=>({...s,
+    headwindMps:7,crosswindMps:4,rollingCoefficient:.008}))};
+  const severe=simulateRace(wind);
+  assert.equal(severe.finisherCount,30);
+  assert.ok(severe.durationS>calm.durationS,
+    'Wind+hoher Rollwiderstand muss im Physikkern Zeit kosten');
+  assert.ok(severe.classification.every(r=>
+    r.energyResidualJ<.05&&r.energyResidualJ>-.05));
+  const calmCopy=simulateRace(base);
+  assert.deepEqual(calm.classification,calmCopy.classification);
+});
+test('R21: vollständiges 154-Fahrer-Einzelrennen über 10 km',()=>{
+  const x=createLongRaceFixture({profile:'flach',teams:22,
+    rosterSize:7,distanceKm:10,seed:777});
+  const out=simulateRace(x);
+  assert.equal(out.finisherCount,154);
+  assert.equal(out.diagnostics.teams,22);
+  assert.ok(out.classification.every(r=>r.finalWPrimeJ>=0&&
+    Math.abs(r.energyResidualJ)<.05));
+});
