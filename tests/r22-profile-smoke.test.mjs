@@ -59,6 +59,12 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
     }
     assert.equal(row.top10Types.length,10);
     assert.ok(row.individualSprintAttempts>=0);
+    assert.ok(row.hillyRampTempoSeconds>=0);
+    assert.ok(Array.isArray(row.hillyRampTempoRiders));
+    if(row.profile!=='huegelig'){
+      assert.equal(row.hillyRampTempoSeconds,0);
+      assert.deepEqual(row.hillyRampTempoRiders,[]);
+    }
     assert.ok(Array.isArray(row.top10SprintLaunchM));
     assert.equal(row.sprintersInTop10,
       row.top10Types.filter(x=>x==='sprinter').length);
@@ -92,6 +98,46 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
     'R22 Klassiker-KI muss zusammen mit dem Sprint-/Jagdcode aktiv bleiben');
   assert.equal(classicsIntegration.individualSprintAttempts,0);
   assert.equal(classicsIntegration.actualNamedChaseFrontS,0);
+  const hillyLines=log.split('\n').filter(line=>
+    line.startsWith('R23-HILLY-AUDIT '));
+  assert.equal(hillyLines.length,1,'Huegel-Attacken-Audit fehlt');
+  const hill=JSON.parse(hillyLines[0].slice('R23-HILLY-AUDIT '.length));
+  assert.equal(hill.route,'tdf25_boulogne');
+  assert.equal(hill.seed,2026);
+  assert.equal(hill.attacks,
+    rows.find(r=>r.route==='tdf25_boulogne').attacks);
+  assert.equal(hill.attacks,hill.earlyAttacks+
+    hill.midAttacks+hill.lateAttacks);
+  assert.ok(hill.uniqueAttackers>=1&&
+    hill.uniqueAttackers<=hill.attacks);
+  assert.ok(hill.lateRampAttacks<=hill.lateAttacks);
+  assert.ok(hill.checkpoints.length>=5&&
+    hill.checkpoints.every(x=>x.frontGroup>=1&&
+      x.largestGroup>=x.frontGroup));
+  assert.ok(hill.hillyRampTempoSeconds>=0);
+  assert.ok(Array.isArray(hill.hillyRampTempoRiders));
+  assert.ok(hill.attacks>=10&&hill.attacks<=60,
+    'R23: 154er-Huegelrennen darf nicht erneut in 108 Attacken ausarten');
+  assert.ok(hill.lateRampAttacks>0,
+    'R23: am spaeten Schluesselanstieg muss Angriff moeglich bleiben');
+  assert.equal(hill.attackTraces.length,hill.attacks);
+  assert.ok(hill.attackTraces.every(x=>
+    x.id&&x.km>=0&&x.finishRank>=1&&x.finishRank<=154&&
+    (!x.beforeCheckpoint||
+      x.beforeCheckpoint.wPrimePct>=0&&
+      x.beforeCheckpoint.wPrimePct<=100&&
+      x.beforeCheckpoint.groupSize>=1)&&
+    (!x.atLeast5KmLater||
+      x.atLeast5KmLater.wPrimePct>=0&&
+      x.atLeast5KmLater.wPrimePct<=100&&
+      x.atLeast5KmLater.groupSize>=1)));
+  // Eine negative sportliche Regression (Median +7 bis +11 Minuten)
+  // muss im konkreten Boulogne-Seed statt mit gruenem Unit-Test
+  // sichtbar mit einer Begründung geprüft werden.
+  const hillyProfile=rows.find(x=>x.route==='tdf25_boulogne');
+  assert.ok(hillyProfile.medianFinishGapS<200,
+    'R23: starke, ungeklärte Zeitabstands-Regression im Huegelrennen');
+  console.log(hillyLines[0]);
   // Die Zahlen sind ausdrücklich Diagnose, keine festen Soll-Sieger/Quoten.
   const summaryLine=log.split('\n').find(line=>
     line.startsWith('R22-PROFILES-SUMMARY '));
@@ -224,6 +270,16 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
   assert.equal(lille.seed,2026);
   assert.equal(lille.preRaceBestSprinter,
     favorites[0].perCategory.find(x=>x.category==='sprinter').strongest.riderId);
+  // Referenz-Seed 2026: kein Rueckfall auf nur 8 Siegergruppenfahrer.
+  // Dies ist ein gezieltes Integrations-Gate, keine Multi-Seed-Quote.
+  const flatCheck=rows.find(x=>x.route==='tdf25_lille');
+  const mountainCheck=rows.find(x=>x.route==='tdf25_hautacam');
+  assert.ok(flatCheck.winnerGroup>=20,
+    'R23: Flachsprintfinale darf die bestehende 26er-Siegergruppe nicht auf 8 reduzieren');
+  assert.equal(flatCheck.sprintersInTop10,8);
+  assert.equal(mountainCheck.sprintersInTop10,0,
+    'R23: Bergankunft darf keinen Sprinter in der Top 10 haben');
+  assert.equal(mountainCheck.winnerType,'kletterer');
   assert.ok(lille.sprintPositioningSeconds>0,
     'Im langen flachen Peloton muss echte Positionierungsarbeit stattfinden');
   assert.ok(lille.sprintEscortSeconds>=0);
@@ -287,7 +343,13 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
   assert.equal(lille.spentHelperTrace.length,lille.spentChaseHelpers);
   assert.ok(lille.spentHelperTrace.every(x=>
     x.message.includes('Führungsarbeit')&&x.km>0));
-  assert.ok(lille.watched.length>=4);
+  // Eine Person kann gleichzeitig Favorit, bestplatzierter Sprinter
+  // und Rennsieger sein; die Beobachtung dedupliziert absichtlich.
+  assert.ok(lille.watched.length>=3);
+  assert.equal(new Set(lille.watched.map(x=>x.id)).size,
+    lille.watched.length);
+  assert.ok(lille.watched.some(x=>
+    x.id===rows.find(r=>r.route==='tdf25_lille').winnerId));
   const best=lille.watched.find(x=>x.id===lille.preRaceBestSprinter);
   assert.ok(best?.sprintSkill>0);
   assert.ok(best?.baseCpW>0);

@@ -82,6 +82,8 @@ for(const id of routes){
     classicsApproachSeconds:r.diagnostics.classicsApproachSeconds??0,
     classicsRampTempoSeconds:r.diagnostics.classicsRampTempoSeconds??0,
     classicsRampTempoRiders:r.diagnostics.classicsRampTempoRiderIds??[],
+    hillyRampTempoSeconds:r.diagnostics.hillyRampTempoSeconds??0,
+    hillyRampTempoRiders:r.diagnostics.hillyRampTempoRiderIds??[],
     sprintPositioningSeconds:r.diagnostics.sprintPositioningSeconds??0,
     sprintEscortSeconds:r.diagnostics.sprintEscortSeconds??0,
     leadoutPaceCoordinationSeconds:r.diagnostics.leadoutPaceCoordinationSeconds??0,
@@ -142,6 +144,78 @@ for(const id of routes){
   console.log('R22-FAVORITES '+JSON.stringify({
     route:id,seed,...favorites,
   }));
+  if(id==='tdf25_boulogne'){
+    const attacks=r.events.filter(e=>e.type==='attack');
+    const byRider=new Map();
+    const bySegment=[];
+    let startM=0;
+    for(const [i,seg] of fixture.input.segments.entries()){
+      bySegment.push({i,startM,endM:startM+seg.lengthM,
+        name:seg.name,grade:seg.gradeFraction,lengthM:seg.lengthM,
+        count:0});
+      startM+=seg.lengthM;
+    }
+    for(const a of attacks){
+      byRider.set(a.riderId,(byRider.get(a.riderId)??0)+1);
+      const section=bySegment.find(s=>
+        a.km*1000>=s.startM&&a.km*1000<s.endM);
+      if(section)section.count++;
+    }
+    const early=attacks.filter(a=>a.km<.13*fixture.route.distanceKm);
+    const mid=attacks.filter(a=>
+      a.km>=.13*fixture.route.distanceKm&&
+      a.km<.76*fixture.route.distanceKm);
+    const late=attacks.filter(a=>
+      a.km>=.76*fixture.route.distanceKm);
+    const lateRamp=attacks.filter(a=>{
+      const section=bySegment.find(s=>
+        a.km*1000>=s.startM&&a.km*1000<s.endM);
+      return a.km>=fixture.route.distanceKm*.76&&section&&
+        section.grade>=.065&&section.lengthM>=700&&
+        section.lengthM<=2500;
+    });
+    const checkpoints=[100,160,180,195,201,205].map(km=>{
+      const cp=(r.checkpoints??[]).find(x=>x.km>=km);
+      if(!cp)return null;
+      const groups=[...cp.groupSizes].sort((a,b)=>b-a);
+      return {km:n(cp.km),frontGroup:cp.groupSizes[0],
+        largestGroup:groups[0],numberGroups:cp.groupCount};
+    }).filter(Boolean);
+    // Jede Attacke gegen den naechsten existierenden 5-km-Checkpoint
+    // vergleichen. Das sind grobe Beobachtungen, keine sekunden-
+    // genauen Start- und Nachher-Messungen und kein Erfolgsbonus.
+    const attackTraces=attacks.map(e=>{
+      const cpBefore=(r.checkpoints??[]).filter(cp=>cp.km<=e.km).at(-1);
+      const cpAfter=(r.checkpoints??[]).find(cp=>cp.km>=e.km+5);
+      const sample=cp=>{
+        const z=cp?.riders.find(z=>z.riderId===e.riderId);
+        return z?{km:n(cp.km),gapM:n(z.gapToLeaderM),
+          wPrimePct:n(z.wPrimeRemainingPct),groupSize:z.groupSize}:null;
+      };
+      const f=r.classification.find(z=>z.id===e.riderId);
+      return {id:e.riderId,kind:kindByRider.get(e.riderId),
+        km:n(e.km),description:e.description,
+        beforeCheckpoint:sample(cpBefore),
+        atLeast5KmLater:sample(cpAfter),
+        finishRank:f?.rank??null,
+        finishGapS:f?n(f.gapS):null};
+    });
+    console.log('R23-HILLY-AUDIT '+JSON.stringify({
+      route:id,seed,attacks:attacks.length,
+      attackTraces,
+      earlyAttacks:early.length,midAttacks:mid.length,
+      lateAttacks:late.length,lateRampAttacks:lateRamp.length,
+      uniqueAttackers:byRider.size,
+      repeatedAttackers:[...byRider.values()].filter(v=>v>1).length,
+      maxAttacksByRider:Math.max(0,...byRider.values()),
+      topAttackers:[...byRider.entries()]
+        .sort((a,b)=>b[1]-a[1]).slice(0,8),
+      attackedSegments:bySegment.filter(s=>s.count>0),
+      hillyRampTempoSeconds:r.diagnostics.hillyRampTempoSeconds??0,
+      hillyRampTempoRiders:r.diagnostics.hillyRampTempoRiderIds??[],
+      checkpoints,
+    }));
+  }
   // Nur Diagnose: keine zusätzliche Simulation. Wie kam der Sieger
   // tatsächlich zu seiner Position vor der letzten Selektion?
   const sampleKm=[.25,.5,.75,.9]
