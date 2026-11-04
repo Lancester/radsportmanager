@@ -38,13 +38,36 @@ die bisherigen sechs beliebigen langen 170-km-Bergblöcke,
 ersetzt aber **nicht** das für endgültige Endkalibrierung
 benötigte georeferenzierte GPX-/DEM-Profil.
 
-Auch der `referenceAscentM` aus Quellen ist eine
-**separate externe Ziel-/Referenzgröße**, NICHT der
-numerisch aus unseren Proxy-Abschnitten errechnete
-Höhengewinn. In `reference-scenario.json` werden beide
-ohne Gleichsetzung ausgegeben. Die publizierten
-Höhenmeter können je nach Quelle/Glättungsmethode
-abweichen, wie bei Etappe 2.
+Die **veröffentlichten Gesamthöhenmeter** werden als
+**Makro-Zielwerte** für die künstlichen Zwischenabschnitte verwendet:
+die belegten Anstiege bleiben bei der publizierten
+Kilometrierung und Steigung, während die positiven/
+negativen Übergangsneigungen angepasst werden.
+Damit passen die Gesamthöhenmeter auf den drei
+Strecken mit externem Höhenmeteranker nun exakt
+zur verwendeten Referenz (Lille **1065 hm**,
+Boulogne **2164 hm**, Hautacam **3850 hm**).
+Für Liège–Bastogne–Liège fehlen in diesem
+Datensatz unabhängig bestätigte Gesamthöhenmeter;
+die **3346 modellierten hm** sind **nicht als offizieller
+Wert** zu interpretieren. Der modellierte
+Netto-Höhenunterschied beträgt bei Lille
+-14 m und bei Hautacam +1381 m
+gemäß veröffentlichten Start-/Zielhöhen.
+Bei Boulogne und Lüttich wird dagegen
+**0 m als ausdrücklich angenommener
+Netto-Höhenunterschied** verwendet,
+nicht als amtlicher Messwert.
+
+`reference-scenario.json` enthält die externe
+Höhenmeterreferenz und den modellierten
+Höhengewinn **getrennt**, auch wenn beide nach
+diesem Makro-Fit zahlenmäßig gleich sind.
+Der Fit verbessert die Plausibilität
+der Gesamthöhenmeter, **rekonstruiert aber
+ausdrücklich keine echte GPX-Steigungskurve**.
+Auch publizierte Höhenmeter können je nach
+Quelle/Glättung abweichen, wie bei Etappe 2.
 
 Winddaten sind nicht automatisch die historische
 Windlage am Renntag. Reifen, Kurven und die
@@ -101,13 +124,22 @@ Die Teamtypen sind feste, **fiktive**
 Profi-Rennkonstellationen und **nicht**
 historische tatsächliche Starterlisten:
 
-| Teamfokus | Anzahl Teams | Beispielspezialisierungen |
-| --- | ---: | --- |
-| Sprint | 5 | Sprinterkapitän, zweiter Sprinter, Klassiker-/Tempohelfer |
-| Berg/GC | 6 | GC-Kapitän, weitere Kletterer, Zeitfahrer-/Allroundhelfer |
-| Klassiker | 4 | Klassikerkapitän, Sprinter, weitere Klassikerfahrer |
-| Ausreißer | 3 | Offensives Allround-/Klassiker-/Zeitfahrerteam |
-| Ausgewogen | 4 | GC-Kapitän, Sprinter, Kletterer und Vielseitige |
+| Teamfokus | Flach | Hügelig | Klassiker | Berg |
+| --- | ---: | ---: | ---: | ---: |
+| Sprint | 8 | 4 | 1 | 1 |
+| Berg/GC | 4 | 5 | 4 | 11 |
+| Klassiker | 4 | 7 | 10 | 4 |
+| Ausreißer | 3 | 3 | 4 | 3 |
+| Ausgewogen | 3 | 3 | 3 | 3 |
+| **Gesamt** | **22** | **22** | **22** | **22** |
+
+Diese Gewichte sind bewusst fiktive
+**rennprofilspezifische Startkader**.
+Eine reale Tour-Mannschaft plant
+mehrere Etappen gleichzeitig; unser
+Datensatz ist dagegen ausschließlich
+für die Kalibrierung **eines einzelnen
+Rennens** optimiert.
 
 Alle Fahrereigenschaften sind konkrete
 CP/W′/Masse/CdA-/Fähigkeitswerte, keine
