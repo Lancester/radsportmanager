@@ -38,6 +38,10 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
       row.lateSprintChaseRiderSeconds>=0);
     assert.ok(row.nearSprinterTrainRiderSeconds<=
       row.actualSprintTrainRiderSeconds);
+    assert.ok(row.spentChaseHelpers>=0&&
+      row.intentionalChaseRetreatSeconds>=0);
+    if(row.spentChaseHelpers===0)
+      assert.equal(row.intentionalChaseRetreatSeconds,0);
     if(row.profile!=='flach'){
       assert.equal(row.sprintPositioningSeconds,0);
       assert.equal(row.sprintEscortSeconds,0);
@@ -46,6 +50,8 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
       assert.equal(row.actualSprintTrainRiderSeconds,0);
       assert.equal(row.nearSprinterTrainRiderSeconds,0);
       assert.equal(row.lateSprintChaseRiderSeconds,0);
+      assert.equal(row.spentChaseHelpers,0);
+      assert.equal(row.intentionalChaseRetreatSeconds,0);
     }
     assert.equal(row.top10Types.length,10);
   }
@@ -127,6 +133,12 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
   assert.ok(lille.actualSprintTrainRiderSeconds>=0);
   assert.ok(lille.nearSprinterTrainRiderSeconds>=0);
   assert.ok(lille.lateSprintChaseRiderSeconds>=0);
+  assert.ok(lille.spentChaseHelpers>=0);
+  assert.ok(lille.intentionalChaseRetreatSeconds>=0);
+  assert.ok(Array.isArray(lille.spentHelperTrace));
+  assert.equal(lille.spentHelperTrace.length,lille.spentChaseHelpers);
+  assert.ok(lille.spentHelperTrace.every(x=>
+    x.message.includes('Führungsarbeit')&&x.km>0));
   assert.ok(lille.watched.length>=4);
   const best=lille.watched.find(x=>x.id===lille.preRaceBestSprinter);
   assert.ok(best?.sprintSkill>0);
