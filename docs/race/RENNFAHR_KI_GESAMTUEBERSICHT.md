@@ -1,5 +1,15 @@
 # Rennfahr-KI – Gesamtübersicht des aktuellen Entwicklungsstands
 
+## Aktueller verbindlicher Stand – R-23 integriert und Work-Gesamtaudit vorbereitet (04.11.2026)
+
+**Fertig nach `main` gemergt:** PR [#74](https://github.com/Lancester/radsportmanager/pull/74) (Sprint/Jagd), [#76](https://github.com/Lancester/radsportmanager/pull/76) (Klassiker) und [#78](https://github.com/Lancester/radsportmanager/pull/78) (Hügel-KI + generische Angriffe ohne starre 88-%-Sperre). Letzter Code-Merge-Commit `f7333421`; [CI #41904933020](https://github.com/Lancester/radsportmanager/actions/runs/41904933020) **330/330 Tests erfolgreich**, 154 fiktive Fahrer je Profil, **ein Seed 2026**. `legacy`, physikalischer Motion-Core, CP/W′, R-19 und Aero-Kern unverändert.
+
+**Sportliche Referenz (ein Seed, nicht kalibriert):** Lille F149 Sprinter, 8 Sprinter Top10, 26 Fahrer Siegerzeitgruppe, 45 Attacken. Boulogne F001 Klassiker, 35 Attacken statt 108 (19 früh, 0 Mitte, 16 auf späten Rampen), Median +129,70 s statt +81,41 s. Liège F057 Klassiker, 0 Sprinter Top10, 53 Attacken. Hautacam F078 Kletterer, 0 Sprinter Top10, 13 Attacken. Lille, Liège und Hautacam wurden durch PR #78 in allen bisherigen Referenzkennzahlen exakt erhalten. Am 1,1-km-Haut-Pichot sind **zehn Angriffsereignisse** auffällig: Das sind Wattwünsche, nicht zehn bestätigte erfolgreiche Ausreißgruppen; ein explizites 5-km-Checkpoint-/W′-Audit ist in PR #78 ergänzt.
+
+**Produktentscheidung:** PR [#75](https://github.com/Lancester/radsportmanager/pull/75) (manuelle 0–5-Jagdhelferzahl) ist **ohne Merge geschlossen**. Manager gibt die Leitlinie vor, sportliche Leiter bestimmen Helferzahl und Ablösung autonom.
+
+**Nächste Priorität:** **Unabhängiger kritischer Work-Gesamtaudit vor weiteren Renn-KI-/Manager-Features.** Vollständiger Auftrag: [`docs/race/KI_GESAMTAUDIT_WORK_BRIEFING.md`](https://github.com/Lancester/radsportmanager/blob/main/docs/race/KI_GESAMTAUDIT_WORK_BRIEFING.md). Insbesondere übersehene starre Prozentfenster, Taktikprioritäten, 10–30er-Spitzengruppen, große Zeitabstände, tatsächliche Angriffsfolgen, CP/W′-/Windschatteninvarianten, Mehrseed-Stabilität und Android-Laufzeit prüfen. Ältere Aussagen wie „PR #74/#76/#78 ungemergt“ sind historische Journalnotizen, **nicht** der aktuelle Stand. Keine Sport-Realismusabnahme aus nur einem Seed ableiten.
+
 **Stand: 04.11.2026 – nach PR #65, Hauptbranch main.** Dieses Dokument beschreibt das **tatsächlich implementierte Verhalten** der Einzelrenn-Simulation, insbesondere der aktuellen experimentellen Variante **groupRidingModel = stable-pack**. Es ist keine Wunschliste und kein Pflichtenheft für spätere Karrieremodule.
 
 **Wichtig:** Die zugrunde liegende Kraft-/Bewegungs-, Energie- und CP/W′-Physik wurde wiederholt intern getestet (insbesondere Berggegenprobe in PR #65), ist aber **ein vereinfachtes, nicht vollständig wissenschaftlich kalibriertes Straßenrennmodell**. Deshalb unterscheiden wir immer (a) physikalisches Grundgesetz, (b) gewählte Modellannahmen und (c) verhaltenssteuernde KI-Heuristik. Die tatsächliche Rennintelligenz ist **regelbasiert und deterministisch** – kein trainiertes neuronales Fahrermodell.
