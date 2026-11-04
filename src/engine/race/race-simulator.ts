@@ -428,6 +428,16 @@ export function simulateRace(x:RaceInput):RaceResult {
           coordinatedTeamPace:true,
           ...(coordinated?{
             attackOpportunity:(()=>{
+              // Für lange Ardennenklassiker die knappe W′-Reserve der
+              // Klassiker-Kapitäne bis zu den entscheidenden Rampen
+              // schonen. Nur dort kann decideClassicsPunch später
+              // physisch bezahlte Angriffe auslösen.
+              if(x.groupRidingModel==='stable-pack'&&
+                totalM>=CLASSICS_PUNCH.minRaceM&&
+                shortSteepClimbs>=CLASSICS_PUNCH.minShortSteepClimbs&&
+                s.rider.specialty==='klassiker'&&
+                s.rider.role==='kapitaen')
+                return false;
               const reserve=s.physiology.remainingWPrimeJ/
                 s.profile.wPrimeCapacityJ;
               // Begonnene Attacke darf sich auch bei gelungener Ablösung
