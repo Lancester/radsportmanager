@@ -16,7 +16,7 @@ import type {CpWprimeState,CpWprimeProfile} from '../physiology/critical-power.t
 import {chooseRacePower,stabilizeRaceDecision} from './race-tactics.ts';
 import {decidePackInstruction,pelotonGroups} from './peloton.ts';
 import {formationAeroFactors} from './formation-aero.ts';
-import {decideGroupRiding} from './group-riding.ts';
+import {decideGroupRiding,R22_GROUP_RIDING} from './group-riding.ts';
 import {decideTeamPace} from './team-pacing.ts';
 import {decideIntelligentCrew} from './race-team-ai.ts';
 import {initialEnduranceState,advanceEndurance,endurancePowerAvailability}
@@ -483,9 +483,47 @@ export function simulateRace(x:RaceInput):RaceResult {
     // Gruppe nur einmal für alle Fahrer dieser Sekunde ermitteln.
     const actualGroupFront=new Map<string,number>();
     const actualGroupSize=new Map<string,number>();
+    const groupPaceByRider=new Map<string,{
+      pacerId:string;speedMps:number;accelerationMps2:number;
+      pacerPowerW:number;
+    }>();
     for(const group of pelotonGroups(ordered.map(s=>({
       id:s.rider.id,positionM:s.positionM,
     })))){
+      const pacer=byId.get(group[0].id)!;
+      if(x.groupRidingModel==='cohesive'&&
+        group.length>=R22_GROUP_RIDING.minGroupSize){
+        const current=x.segments[segmentFor(pacer,boundaries)];
+        const mass=pacer.rider.massKg+pacer.rider.bikeMassKg;
+        const airV=Math.hypot(
+          Math.max(0,pacer.speedMps+(current.headwindMps??0)),
+          current.crosswindMps??0);
+        const aero=formationFactors?.get(pacer.rider.id)??1;
+        const resistance=.5*pacer.physical.airDensityKgM3*
+          pacer.rider.dragAreaM2*aero*airV*airV+
+          mass*9.80665*
+            ((current.rollingCoefficient??.004)*
+              Math.cos(Math.atan(current.gradeFraction))+
+            Math.sin(Math.atan(current.gradeFraction)));
+        const hasMission=['angriff','sprint','verfolgung','helferarbeit']
+          .includes(pacer.intent);
+        const cps=group.map(g=>byId.get(g.id)!.dayCpW)
+          .sort((a,b)=>a-b);
+        const referenceCp=cps[Math.floor(cps.length*.35)];
+        const pacerPower=hasMission?pacer.decision.desiredPowerW:
+          Math.min(pacer.decision.desiredPowerW,
+            pacer.dayCpW*R22_GROUP_RIDING.leaderCpFraction,
+            referenceCp*.90);
+        const availablePacerPower=pacerPower*(x.enduranceModel==='off'?
+          1:endurancePowerAvailability(pacer.endurance));
+        const acc=Math.max(-.8,Math.min(.8,
+          (availablePacerPower*pacer.physical.drivetrainEfficiency/
+            Math.max(pacer.speedMps,3)-resistance)/mass));
+        for(const g of group)groupPaceByRider.set(g.id,{
+          pacerId:pacer.rider.id,speedMps:pacer.speedMps,
+          accelerationMps2:acc,pacerPowerW:pacerPower,
+        });
+      }
       for(const member of group){
         actualGroupFront.set(member.id,group[0].positionM);
         actualGroupSize.set(member.id,group.length);
@@ -545,6 +583,13 @@ export function simulateRace(x:RaceInput):RaceResult {
             (actualGroupFront.get(s.rider.id)??s.positionM)-s.positionM),
           frontGapM:frontGap.get(s.rider.id)??null,
           frontSpeedMps:frontSpeed.get(s.rider.id)??null,
+          referenceSpeedMps:groupPaceByRider.get(s.rider.id)?.speedMps??
+            s.speedMps,
+          referenceAccelerationMps2:groupPaceByRider.get(s.rider.id)?.
+            accelerationMps2??0,
+          isPacer:groupPaceByRider.get(s.rider.id)?.pacerId===s.rider.id,
+          groupPacerPowerW:groupPaceByRider.get(s.rider.id)?.pacerPowerW??
+            commanded,
           ownSpeedMps:s.speedMps,desiredPowerW:commanded,
           criticalPowerW:s.dayCpW,
           reserveFraction:s.physiology.remainingWPrimeJ/
