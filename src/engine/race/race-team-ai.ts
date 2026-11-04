@@ -242,7 +242,7 @@ export function decideIntelligentCrew(input:{
       situation.projectedGapM/Math.max(1,input.remainingM)>0.05;
     let requested=1;
     if(chase)requested=input.physicalRelayMode?
-      Math.min(input.sprintFinaleMode&&input.progress>=2/3?2:4,
+      Math.min(input.sprintFinaleMode&&input.progress>=2/3?1:4,
         available.length):input.restInPeloton?
       Math.min(3,available.length):
       team.strategy==='sprint'? (urgency?5:3):
