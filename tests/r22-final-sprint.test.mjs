@@ -24,7 +24,7 @@ test('R22 Sprintstart individuell – weder für alle 250 m noch alle 400 m',()=
   assert.equal(decideSprintLaunch({...situation,
     remainingM:600}).shouldLaunch,false);
   assert.equal(decideSprintLaunch({...situation,
-    groupSize:1}).shouldLaunch,false);
+    groupSize:1,rankInGroup:1}).shouldLaunch,false);
 });
 test('R22 Sprintentscheidung hängt von realer Position, Hinterrad und Gegenwind ab',()=>{
   const front=decideSprintLaunch({...situation,
