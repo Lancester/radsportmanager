@@ -256,8 +256,14 @@ export function decideIntelligentCrew(input:{
         gapToFront(r)<=R15_R16.frontWorkRadiusM)&&
       r.positionM>target.positionM+0.1);
     const previous=input.previousLeaders?.get(team.id);
+    // Lange kontrollierte Nachführarbeit: Ein freiwillig führender
+    // Helfer kann 15–20 min an der echten Feldfront bleiben, solange
+    // er dort physisch noch erreichbar ist und Reserven besitzt.
+    // Auf anderen Strecken bleibt die 75-s-Rotation unverändert.
+    const allowedStintSeconds=input.sprintFinaleMode&&mission==='jagd'&&
+      input.progress>=2/3?1200:R15_R16.relaySeconds;
     const retained=previous&&input.timeS-previous.sinceS<
-      R15_R16.relaySeconds?
+      allowedStintSeconds?
       frontEligible.find(r=>r.id===previous.riderId):undefined;
     const leader=retained??(frontEligible.length?
       frontEligible[rotation%frontEligible.length]:null);
