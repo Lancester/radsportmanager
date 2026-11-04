@@ -57,9 +57,22 @@ export function decideGeneralAttackOpportunity(o:GeneralAttackObservation):
     o.timeS>=c.earlyMinTimeS&&
     o.progress>=c.earlyProgressFrom&&
     o.progress<c.earlyProgressUntil;
-  // Das 18%-Mindestfenster ist fuer bestehende mittlere Rennen aus
-  // Kompatibilitaetsgruenden belassen. Es gibt KEINE Obergrenze bei 88%.
-  if(!early&&o.progress<.18)return false;
+  // Bis zu diesem Punkt das nachgewiesen funktionierende Verhalten
+  // bewahren. Ab 88% ist die neue Entscheidung dennoch OFFEN:
+  // steile Schlussanstiege, aber auch seltene Flachattacken sind moeglich.
+  if(o.progress<.88){
+    if(!early&&o.progress<.18)return false;
+    return o.lastAttackAgeS>=c.minimumAttackAgeS&&
+      o.reserveFraction>=c.minimumReserve&&
+      o.distanceFromGroupFrontM<=(early?
+        c.earlyGroupFrontM:c.defaultGroupFrontM)&&
+      o.distanceFromRaceFrontM<=(early?
+        c.earlyRaceFrontM:c.defaultRaceFrontM)&&
+      o.dayCpW>=o.meanGroupCpW*c.minimumCpGroupFactor&&
+      o.gradeFraction>=-.03;
+  }
+  // Kein starres Angriffsverbot ab 88%: spaete flache Attacken
+  // erfordern hoehere Reserve, Ueberlegenheit und bessere Position.
   const protectedFlatFinish=o.remainingM<=c.flatFinishDistanceM&&
     o.gradeFraction<c.flatFinishMaxGrade;
   const neededReserve=protectedFlatFinish?

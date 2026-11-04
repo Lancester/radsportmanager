@@ -19,11 +19,13 @@ export const HILLY_RACECRAFT=Object.freeze({
   rampFromFraction:.12,rampUntilFraction:.92,
   continueMinReserve:.18,
   minimumRepeatAttackAgeS:1500,continueAttackSeconds:65,
+  minimumNewAttackSpacingOnSegmentS:100,
   minimumGroupSize:4,
   maxPositionGapM:115,maxRaceGapM:950,
   tempoMinReserve:.20,tempoMinGrade:.075,
   tempoMaxGroupFrontGapM:70,
   tempoMaxRaceFrontGapM:650,tempoMaxCpFraction:1.075,
+  tempoMaxAddedPowerW:38,
 });
 export interface HillyRouteObservation {
   raceLengthM:number;ascentM:number;
@@ -138,6 +140,9 @@ export function decideHillyRampTempo(o:HillyTacticalObservation):
       .includes(o.currentIntent))return null;
   const factor=Math.min(c.tempoMaxCpFraction,
     1.035+Math.max(0,o.gradeFraction-c.minRampGrade)*.9);
-  const demand=o.criticalPowerW*factor;
+  // Kein kostenloser grosser Leistungssprung aus dem Windschatten.
+  // Der echte Fuehrungswatt-Bedarf bleibt Ausgangspunkt.
+  const demand=Math.min(o.criticalPowerW*factor,
+    o.requestedPowerW+c.tempoMaxAddedPowerW);
   return demand>o.requestedPowerW+1?demand:null;
 }

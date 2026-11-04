@@ -61,7 +61,9 @@ test('R23: fruehe Flucht oder spaete echte Rampe, nicht Dauerschleife',()=>{
 });
 test('R23: dauerhaftes Rampentempo ist reale CP-nahe Wattanforderung',()=>{
   const p=decideHillyRampTempo(basic);
-  assert.ok(p>basic.criticalPowerW);
+  assert.ok(p>basic.requestedPowerW);
+  assert.ok(p-basic.requestedPowerW<=
+    HILLY_RACECRAFT.tempoMaxAddedPowerW);
   assert.ok(p<=basic.criticalPowerW*HILLY_RACECRAFT.tempoMaxCpFraction);
   for(const specialty of ['klassiker','allrounder','kletterer','zeitfahrer'])
     assert.ok(decideHillyRampTempo({...basic,specialty})!==null);

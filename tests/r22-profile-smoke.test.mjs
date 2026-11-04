@@ -249,6 +249,16 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
   assert.equal(lille.seed,2026);
   assert.equal(lille.preRaceBestSprinter,
     favorites[0].perCategory.find(x=>x.category==='sprinter').strongest.riderId);
+  // Referenz-Seed 2026: kein Rueckfall auf nur 8 Siegergruppenfahrer.
+  // Dies ist ein gezieltes Integrations-Gate, keine Multi-Seed-Quote.
+  const flatCheck=rows.find(x=>x.route==='tdf25_lille');
+  const mountainCheck=rows.find(x=>x.route==='tdf25_hautacam');
+  assert.ok(flatCheck.winnerGroup>=20,
+    'R23: Flachsprintfinale darf die bestehende 26er-Siegergruppe nicht auf 8 reduzieren');
+  assert.equal(flatCheck.sprintersInTop10,8);
+  assert.equal(mountainCheck.sprintersInTop10,0,
+    'R23: Bergankunft darf keinen Sprinter in der Top 10 haben');
+  assert.equal(mountainCheck.winnerType,'kletterer');
   assert.ok(lille.sprintPositioningSeconds>0,
     'Im langen flachen Peloton muss echte Positionierungsarbeit stattfinden');
   assert.ok(lille.sprintEscortSeconds>=0);
