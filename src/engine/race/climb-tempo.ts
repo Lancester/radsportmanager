@@ -15,8 +15,8 @@ export const CLIMB_TEMPO=Object.freeze({
   minimumGroupSize:4,
   minimumReserveFraction:0.12,
   minimumExposedPowerSurplusW:22,
-  sustainedCpFraction:0.96,
-  maximumBoostW:45,
+  sustainedCpFraction:0.97,
+  maximumBoostW:60,
 });
 
 export interface ClimbTempoObservation extends GroupRidingObservation {
