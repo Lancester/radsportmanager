@@ -43,6 +43,10 @@ for(const model of ['legacy','cohesive','coordinated','relays','relay-paced','fr
     orderedRelayTeamSeconds:result.diagnostics.orderedRelayTeamSeconds??0,
     mainFieldFrontWorkWithAssignedChaserS:
       result.diagnostics.mainFieldFrontWorkWithAssignedChaserS??0,
+    mainFieldChaserLeaderChanges:
+      result.diagnostics.mainFieldChaserLeaderChanges??0,
+    longestMainFieldChaserStintS:
+      result.diagnostics.longestMainFieldChaserStintS??0,
     breakawaysWithoutRecentAttack:
       result.diagnostics.unprovokedBreakawayCount??0,
     within60sOfWinner:finishGroups.within60sOfWinner,
@@ -111,12 +115,13 @@ const md=[
   'bei größeren Gruppen das gemeinsame Tempo an, statt durchgehend',
   'eine fahrerindividuelle CP-Fraktion einzufordern. Nur Watt-Anfragen.',
   '',
-  '| Modell | Sieger km/h | Median-Rückstand s | Max. Gruppen | Größte Zielgruppe (1s) | Rückstand größte Zielgruppe s | Siegergruppe (1s) | Binnen 60s | Attacken | Mittelwatt | Jagdteam tatsächlich vorn (s) |',
-  '| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
+  '| Modell | Sieger km/h | Median-Rückstand s | Max. Gruppen | Größte Zielgruppe (1s) | Rückstand größte Zielgruppe s | Siegergruppe (1s) | Binnen 60s | Attacken | Mittelwatt | Jagdteam tatsächlich vorn (s) | Echte direkte Führungswechsel | Längste ununterbrochene Jagdführung (s) |',
+  '| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
   ...runs.map(r=>'| '+[r.model,r.speedKmh,r.medianGapS,
     r.maximumGroups,r.largestFinishGroup,r.largestFinishGroupGapS,
     r.winnerFinishGroup,r.within60sOfWinner,r.attacks,r.meanCrankW,
-    r.mainFieldFrontWorkWithAssignedChaserS].join(' | ')+' |'),
+    r.mainFieldFrontWorkWithAssignedChaserS,
+    r.mainFieldChaserLeaderChanges,r.longestMainFieldChaserStintS].join(' | ')+' |'),
   '',
   '## Delta experimentelle KI − bisherige KI',
   '- Siegerzeit: '+delta.winnerTimeS+' s',
