@@ -116,3 +116,66 @@ R-13 sollten wir nachweisen:
 Geschwindigkeits-, Leistungs- oder
 Ergebnisboni und keine sofortige
 Freigabe R-23.**
+
+## Erster tatsächlich ausgeführter 154-Fahrer-Kausaltest (04.11.2026)
+
+Der [CI-Test #41774718299](https://github.com/Lancester/radsportmanager/actions/runs/41774718299)
+mit Seed 2026 auf 184,9 km Lille-Streckenproxy lief erfolgreich:
+**249/249 Tests; alle drei Vollrennen mit je 154 Zielankünften**.
+Das Zuschalten der 5-km-Messungen verändert nach
+Regressionstest die sportlichen Ergebnisse **nicht**.
+
+| Kennzahl | Baseline | R19 aus | Alte Aero |
+| --- | ---: | ---: | ---: |
+| Siegerzeit | 12619,2 s | 12198,5 s | 14859,8 s |
+| Siegergeschwindigkeit | 52,75 km/h | 54,57 km/h | 44,79 km/h |
+| Median-Zielrückstand | 663,6 s | 517,6 s | 617,2 s |
+| Letzter Rückstand | 4023,5 s | 3623,5 s | 1796,3 s |
+| Maximal beobachtete Gruppen | 50 | 37 | 60 |
+| Max. R19-Leistungsstrafe | 32 % | 0 % | 32,94 % |
+| Mittlerer Aero-Faktor | **0,5897** | 0,5441 | **0,8902** |
+| Mittelwert angelegte Leistung | 307,8 W | 329,2 W | 312,8 W |
+
+**Interpretation:** Die zusätzliche Langzeitermüdung
+verlangsamt den Sieger in diesem gepaarten
+Einzelszenario um **420,7 s (~7 min)**;
+sie ist also nicht die Ursache der bereits
+zu hohen Spitzengeschwindigkeit.
+Sie verstärkt jedoch den Median- und
+Schlussrückstand (im A/B um 146 bzw. 400 s).
+
+Die ältere Windschatten-Näherung
+verlangsamt den Sieger um **2240,6 s
+(~37 min)** bei einem erheblich
+höheren mittleren Aero-Faktor
+(0,89 statt 0,59). Das ist ein
+**starkes Indiz für eine zu starke
+Formations-Abschirmung** im
+aktuellen 1D-Modell. Es beweist
+nicht, dass der alte Aero-Modus
+realistisch wäre: dessen Gruppenzahl
+liegt sogar höher (60 statt 50).
+Eine ursächliche Aero-Kalibrierung
+darf deshalb nicht auf einfache
+Umschaltung zum alten Modell
+reduziert werden.
+
+Das fiktive Streckenproxy weist
+**1065 m positive Höhenmeter** und
+ungefähr **−14 m Nettohöhenänderung**
+auf. Seine historischen Streckenanker
+stimmen nur teilweise mit
+originalen Profilpunkten überein;
+die selbst erzeugte Zwischengeometrie
+kann ein Vergleichstempo beeinflussen.
+
+**Nächster fachlicher Schritt:** Die
+5-km-Zeitreihe nutzen, um den Zeitpunkt
+und die Dynamik der Feldtrennung im
+Verhältnis zum R-19-Anstieg
+zu bestimmen, bevor R-13/R-19-
+Parameter verändert werden.
+Zum endgültigen Fit werden
+exakte Strecke, tatsächliche
+Windbedingungen, Zielgruppen
+und unabhängige Test-Profile benötigt.
