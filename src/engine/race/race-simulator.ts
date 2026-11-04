@@ -47,6 +47,8 @@ export interface RaceSegment {
 }
 export interface RaceTeam {
   id:string;name:string;strategy:RaceStrategy;
+  /** R-22: Manager kann später 0–5 Helfer für die Jagd auswählen. */
+  chaseHelperCount?:number;
 }
 export interface RaceRider {
   id:string;name:string;teamId:string;role:RaceRole;
@@ -203,6 +205,10 @@ export function validateRace(x:RaceInput):void {
        typeof t.name!=='string'||!t.name.trim()||
        !['ausgewogen','offensiv','sprint','kapitaen_schuetzen'].includes(t.strategy))
       throw new RangeError('Rennsimulation: Team oder Leitlinie ungültig');
+    if(t.chaseHelperCount!==undefined&&(
+      !Number.isInteger(t.chaseHelperCount)||
+      t.chaseHelperCount<0||t.chaseHelperCount>5))
+      throw new RangeError('R-22: Jagdhelferanzahl 0–5');
     teamIds.add(t.id);
   }
   const riderIds=new Set<string>();
@@ -400,6 +406,7 @@ export function simulateRace(x:RaceInput):RaceResult {
       }));
       const teamRefs=x.teams.map(team=>({
         id:team.id,strategy:team.strategy,
+        ...(sprintFriendlyRace?{chaseHelperCount:team.chaseHelperCount}:{}),
       }));
       const teamRefsAndChase=(x.groupRidingModel==='coordinated'||
         (x.groupRidingModel==='relays'||x.groupRidingModel==='relay-paced'||
@@ -415,6 +422,7 @@ export function simulateRace(x:RaceInput):RaceResult {
           riders:planningRiders,situation:analyzeRaceSituation(
             planningRiders,Math.max(0,totalM-leader.positionM)),
           previous:chaseState,
+          sprintFinaleMode:sprintFriendlyRace,
         });
         chaseState=next.state;
         return next;
@@ -424,6 +432,7 @@ export function simulateRace(x:RaceInput):RaceResult {
         remainingM:Math.max(0,totalM-leader.positionM),
         teams:teamRefs,riders:planningRiders,
         previousLeaders,
+        sprintFinaleMode:sprintFriendlyRace,
         ...(teamRefsAndChase?{
           chasingTeamIds:teamRefsAndChase.chasingTeamIds,
           restInPeloton:true,
