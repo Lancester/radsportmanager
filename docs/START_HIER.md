@@ -634,3 +634,12 @@ realistisch kalibriert.
 
 [GitHub Actions: drei KI-Varianten
 manuell vergleichen](https://github.com/Lancester/radsportmanager/actions/workflows/r22-group-ai-ab.yml).
+
+
+## Aktueller experimenteller R-22-Branch – kein stillschweigender Default-Wechsel (04.11.2026)
+
+**[Draft-PR #63](https://github.com/Lancester/radsportmanager/pull/63)** untersucht den vom Nutzer bemerkten unplausiblen Feldzerfall bei langem, konstantem Führungstempo. Der alte `group-riding.ts`-Nachfahrregler setzt acht Fahrer voraus und reagiert bei >42 m oder bestimmten Teamaufträgen wieder individuell. Daher wurde `groupRidingModel:'stable-pack'` ausschließlich als zuschaltbarer KI-Versuch implementiert. Der Versuch koppelt Nachfahrer über physisch berechnete Leistungsanforderung, lokale Vordermann-Geschwindigkeit und Pacesetter-Beschleunigung; kein künstliches Positionieren, keine Veränderung von CP/W′/R-19/Aero-/Bewegungsphysik.
+
+[CI #41788228190](https://github.com/Lancester/radsportmanager/actions/runs/41788228190) bestätigt **261/261 Tests**, sieben vollständige 154-Fahrer-Lille-Varianten. Die 600-s-Konstantführungsprobe besteht. Das stärkere Großfeld-A/B bleibt aber **unbefriedigend**: nach Beschleunigungsfix 88 in größter Zielgruppe, ca. 570 s hinter Sieger, maximal 26 Abstandsgruppen, 28 Fahrer innerhalb einer Minute. Vorher nur 27 Fahrer in größter Zielgruppe. Verbleibende Fehlerursachen: frühes Lead-Pacing, Fahren schwächerer Profis, W′/R-19 und Jagdreaktionen gezielt isolieren. **Nicht in main übernehmen**, bevor A/B auf mehreren Seeds/Profilen deutlich plausibler ist. R-23 bleibt gesperrt. Alle Details [R22_STABILES_PELOTON.md](race/R22_STABILES_PELOTON.md).
+
+**Verbindlich:** Hauptbranch-Standard `legacy` und alle bestehenden Modelle unverändert; kein automatischer Großtest, keine Karriereentwicklung, keine Änderung der Grundsatzentscheidungen.
