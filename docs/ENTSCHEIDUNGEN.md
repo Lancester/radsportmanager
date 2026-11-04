@@ -332,3 +332,21 @@ R-23 nicht begonnen.
 ### R-22 Integrationsstatus nach PR #63 (04.11.2026)
 
 **Nur technischer experimenteller Modus in main, keine neue Grundsatzentscheidung:** `groupRidingModel:'stable-pack'` ist nach 262 grünen Tests explizit auswählbar. `legacy` bleibt Standard; D-074 bis D-097 und die bestehende Physik bleiben gültig. Der Modus ist nicht als realistisch kalibrierte neue Standard-KI beschlossen. R-22 bleibt offen und R-23 ist nicht freigegeben. [PR #63](https://github.com/Lancester/radsportmanager/pull/63), [Ergebnisse](race/R22_STABILES_PELOTON.md).
+
+
+## D-098 bis D-102 – ab sofort verbindliche iterative Weiterentwicklung der Renn-KI (04.11.2026)
+
+| ID | Status | Vereinbartes Vorgehen | Klare Grenze |
+| --- | --- | --- | --- |
+| D-098 | **Nutzerbeschluss** | Die in PR #63 integrierte experimentelle Variante `stable-pack` ist die Ausgangsbasis für die nächsten KI-Verbesserungen, nicht ein Neuaufbau des Rennsimulators. | Standardmodus `legacy` bleibt unverändert, bis eine spätere eigenständige Abnahme vorliegt. |
+| D-099 | **Nutzerbeschluss** | Vier **bereits bestehende** Referenzrennen Flach/Lille, Hügel/Boulogne, Klassiker/Lüttich und Berg/Hautacam verwenden; keine neuen Fantasie-Teststrecken anlegen. Zunächst drei feste Seeds (2026–2028), später bis zu fünf Seeds. | Teststrecken sind veröffentlichte Streckenanker mit modellierten Übergängen, keine vollständigen originalen GPX-Strecken; keine behaupteten historischen Rennergebnisse. |
+| D-100 | **Nutzerbeschluss** | Eine KI-Hypothese nach der anderen prüfen; `coordinated`, `front-gated`, `stable-pack` pro Route/Seed mit identischem Fahrerfeld und identischer Physik vergleichen; Fehler und erfolglose Experimente nachvollziehbar dokumentieren. | Keine versteckten Positions-/Zeit-/Wattboni, keine unbegründete Änderung an CP/W′, R-19, Formation-Aero oder 1D-Bewegungskern. |
+| D-101 | **Nutzerbeschluss** | Bewertung profilspezifisch nach Siegergruppe, größter Zielgruppe **und ihrem Rückstand**, Fahrer innerhalb 60 s, Angriffshäufigkeit, tatsächlicher Führungsarbeit und -wechseln, Ermüdung/W′ sowie Sieg-/Top-10-Fahrertypen; flache Etappen brauchen Feldzusammenhalt, Bergrennen dürfen selektiv sein. | Kein einzelner Lille-Seed und keine künstliche Massensprint-Vorgabe am Berg rechtfertigen eine Freigabe. |
+| D-102 | **Verbindliche Kosten- und Prozessgrenze** | Große Profil-/Seed-Vergleiche ausschließlich bewusst manuell per GitHub Actions (`workflow_dispatch`), maximal 4 Profile × 5 Seeds × 3 KI-Varianten = 60 vollständige Rennen je Lauf, 45-Minuten-Limit, gesicherte Berichte; reguläre Regressionen/CLI-Planprüfung bleiben getrennt. | Keine Push-/Zeitplan-Monte-Carlo-Serie, keine automatisierte Ausweitung ohne Nutzerbeschluss. |
+
+**Spezifikation und exakter Ablauf:** [R22_VALIDIERUNGSFAHRPLAN.md](race/R22_VALIDIERUNGSFAHRPLAN.md).
+Nach Umsetzung des Skripts und grünem PR-Test folgt die **erste manuell ausgelöste**
+Vierstrecken-/Dreiseed-Matrix; erst ihre realen Ergebnisse entscheiden über
+die nächste gezielte KI-Korrektur. Der 2026-Lille-Wert aus PR #63 ist
+ein Zwischenbefund, **keine Mehrprofil-Realismusabnahme**.
+R-22 weiter offen, R-23 nicht freigegeben.
