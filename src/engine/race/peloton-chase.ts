@@ -24,6 +24,7 @@ export function coordinatePelotonChase(input:{
   mainGroupIds:ReadonlySet<string>;
   teams:readonly IntelligentTeam[];riders:readonly IntelligentRider[];
   situation:RaceSituation;previous:ChaseCoordinatorState;
+  sprintFinaleMode?:boolean;
 }):{state:ChaseCoordinatorState;chasingTeamIds:ReadonlySet<string>}{
   const {timeS,remainingM,progress,mainGroupIds,teams,riders,situation,previous}=input;
   if(!Number.isFinite(timeS)||timeS<0||!Number.isFinite(remainingM)||
@@ -66,9 +67,10 @@ export function coordinatePelotonChase(input:{
     const helpers=members.filter(r=>r.role==='helfer'&&r.reserveFraction>.32);
     const hasSprinter=members.some(r=>r.role==='sprinter');
     const hasCaptain=members.some(r=>r.role==='kapitaen');
-    const interested=team.strategy==='sprint'&&hasSprinter||
+    const interested=!(input.sprintFinaleMode&&team.chaseHelperCount===0)&&(
+      team.strategy==='sprint'&&hasSprinter||
       urgent&&team.strategy==='kapitaen_schuetzen'&&hasCaptain||
-      urgent&&team.strategy==='ausgewogen'&&hasCaptain;
+      urgent&&team.strategy==='ausgewogen'&&hasCaptain);
     return {team:team.id,helpers:helpers.length,
       score:team.strategy==='sprint'?3:
         team.strategy==='kapitaen_schuetzen'?2:1,interested};
