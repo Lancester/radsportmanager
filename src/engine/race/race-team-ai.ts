@@ -108,6 +108,8 @@ export function decideIntelligentCrew(input:{
   chasingTeamIds?:ReadonlySet<string>;
   /** Im großen Feld schützen unbeschäftigte Helfer ihre Reserven. */
   restInPeloton?:boolean;
+  /** R22: größerer Einordnungsbereich, um Helfern echte Aufrückarbeit zu ermöglichen. */
+  physicalRelayMode?:boolean;
 }):CrewPlan{
   if(!input||!Array.isArray(input.teams)||!Array.isArray(input.riders))
     throw new RangeError('R-15/R-16: Team-/Fahrerfeld fehlt');
@@ -176,7 +178,8 @@ export function decideIntelligentCrew(input:{
     const gapToFront=(r:IntelligentRider)=>group[0].positionM-r.positionM;
     const helpers=members.filter(r=>r.role==='helfer'&&group.includes(r)&&
       r.reserveFraction>=(chase?R15_R16.minimumChaseReserve:R15_R16.minimumReserve)&&
-      gapToFront(r)<=R15_R16.maximumCrewDistanceFromGroupFrontM&&
+      gapToFront(r)<=(input.physicalRelayMode?300:
+        R15_R16.maximumCrewDistanceFromGroupFrontM)&&
       (chase||Math.abs(r.positionM-target.positionM)<=
         R15_R16.maximumSupportDistanceToTargetM));
     if(helpers.length===0)continue;
@@ -186,7 +189,9 @@ export function decideIntelligentCrew(input:{
     const urgency=situation.gapFractionOfRemaining>0.04||
       situation.projectedGapM/Math.max(1,input.remainingM)>0.05;
     let requested=1;
-    if(chase)requested=input.restInPeloton?Math.min(3,helpers.length):
+    if(chase)requested=input.physicalRelayMode?
+      Math.min(4,helpers.length):input.restInPeloton?
+      Math.min(3,helpers.length):
       team.strategy==='sprint'? (urgency?5:3):
       team.strategy==='kapitaen_schuetzen'?(urgency?4:2):(urgency?3:2);
     else if(sprintTrain)requested=input.progress>=0.94?3:4;
@@ -222,7 +227,10 @@ export function decideIntelligentCrew(input:{
       const duty:CrewDuty=leader!==null&&rider.id===leader.id&&frontEligible?
         'fuehrung':'unterstuetzung';
       const effort=mission==='jagd'?
-        (duty==='fuehrung'?1.12:1.055):
+        (input.physicalRelayMode?
+          (duty==='fuehrung'?1.15:
+            gapToFront(rider)>R15_R16.frontWorkRadiusM?1.10:1.045):
+          duty==='fuehrung'?1.12:1.055):
         mission==='sprintzug'?
         (duty==='fuehrung'?1.12:1.055):
         (duty==='fuehrung'?1.065:

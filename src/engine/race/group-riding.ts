@@ -102,3 +102,22 @@ export function decideGroupRiding(o:GroupRidingObservation):GroupRidingDecision{
     hold+groupAccelerationPower+response)),
     reason:'follow_group'};
 }
+
+/**
+ * R-22 v2: Aufrücken ohne versehentliche Soloflucht.
+ * Ein nominierter Jagdhelfer bleibt Teil des Feldes: Er fordert zuerst
+ * genau die physisch nötige Wattzahl zum Mitfahren an. Darüber hinaus
+ * kann er kontrolliert zusätzliche Leistung zum Vorbeifahren aufbringen,
+ * anstatt minutenlang blind mit 110 % CP davonzusprinten.
+ * Nur das physische Bewegungsmodell entscheidet, ob er aufrückt.
+ */
+export function decideChaseApproach(o:GroupRidingObservation):GroupRidingDecision{
+  const hold=decideGroupRiding({...o,tacticalIntent:'windschatten'});
+  if(hold.reason!=='follow_group')return hold;
+  // Eine begrenzte, überprüfbare Mehrleistung, kein Geschwindigkeitsziel
+  // und keine Korrektur der Position. Sportphysiologische Werte noch offen.
+  const extra=Math.min(42,14+
+    Math.max(0,Math.min(28,o.distanceFromGroupFrontM*.15)));
+  return {powerW:Math.min(o.criticalPowerW*1.025,
+    hold.powerW+extra),reason:'follow_group'};
+}
