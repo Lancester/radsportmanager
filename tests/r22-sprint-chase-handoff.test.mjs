@@ -106,3 +106,27 @@ test('R22: no sprint chasing for no escape, exhausted helpers or impossible gap'
   assert.equal(res.chasingTeamIds.size,0,
     'cannot assign extra chase power from exhausted helpers');
 });
+
+test('R22: physically spent helper is released; eligible fresh colleagues inherit chasing and leadout',()=>{
+  const riders=Array.from({length:24},(_,i)=>
+    rider('F'+i,i<6?'T1':'T2',
+      i===1?'sprinter':i<6?'helfer':'kapitaen',10000-i*4));
+  // F2 has completed a physically hard real front stint. He may
+  // now let the peloton pass; do not immediately hand him another job.
+  riders[2]={...riders[2],chaseSpent:true};
+  const all=[rider('A1','T3','kapitaen',10200),...riders];
+  const args={
+    timeS:16000,progress:.77,remainingM:34000,
+    teams:[sprintTeam,{id:'T2',strategy:'ausgewogen'},
+      {id:'T3',strategy:'offensiv'}],
+    riders:all,previousLeaders:new Map(),
+    chasingTeamIds:new Set(['T1']),restInPeloton:true,
+    physicalRelayMode:true,sprintFinaleMode:true,
+  };
+  const plan=decideIntelligentCrew(args);
+  assert.equal(plan.orders.has('F2'),false,
+    'spent leader is no longer a team-chase or sprint-train candidate');
+  assert.ok([...plan.orders.values()].some(x=>x.mission==='jagd'&&
+    x.riderId.startsWith('F')),
+    'other physically present helpers should pick up the work');
+});
