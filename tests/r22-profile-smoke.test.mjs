@@ -195,6 +195,18 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
   assert.ok(lille.lateSprintChaseRiderSeconds>=0);
   assert.ok(lille.spentChaseHelpers>=0);
   assert.ok(lille.intentionalChaseRetreatSeconds>=0);
+  const finaleLines=log.split('\n').filter(row=>
+    row.startsWith('R22-LILLE-FINALE-FIELD '));
+  assert.equal(finaleLines.length,1,'Feldzerfall vor Sprintfinale muss messbar sein');
+  const finaleField=JSON.parse(finaleLines[0].slice(
+    'R22-LILLE-FINALE-FIELD '.length));
+  assert.equal(finaleField.route,'tdf25_lille');
+  assert.ok(finaleField.finaleField.length>=3);
+  assert.ok(finaleField.finaleField.every(x=>
+    x.firstSize>=1&&x.largestSize>=x.firstSize&&
+    x.largestSize<=154&&x.sprinterGroupSize>=1&&
+    x.firstToMainGapM>=0&&x.sprinterRankInRace>=1));
+  console.log(finaleLines[0]);
   const gapLines=log.split('\n').filter(row=>
     row.startsWith('R22-LILLE-CHASE-GAPS '));
   assert.equal(gapLines.length,1);

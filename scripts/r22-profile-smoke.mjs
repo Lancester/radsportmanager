@@ -338,6 +338,33 @@ for(const id of routes){
         actualBreak:genuineBreak};
     };
     const gaps=[.65,.70,.75,.80,.85,.90,.95,.98].map(gapAt);
+    const finaleField=(r.checkpoints??[]).filter(cp=>
+      cp.km>=165&&cp.km<=185&&
+      [165,170,175,180].some(target=>Math.abs(cp.km-target)<.08))
+      .map(cp=>{
+        const sorted=[...cp.riders].sort((a,b)=>
+          b.positionM-a.positionM||a.riderId.localeCompare(b.riderId));
+        const groupMap=new Map();
+        for(const row of sorted){
+          const items=groupMap.get(row.groupIndex)??[];
+          items.push(row);groupMap.set(row.groupIndex,items);
+        }
+        const groups=[...groupMap.values()].sort((a,b)=>b.length-a.length);
+        const first=groupMap.get(sorted[0].groupIndex)??[];
+        const main=groups[0]??[];
+        const bestSprinter=cp.riders.find(x=>x.riderId==='F023');
+        return {km:n(cp.km),firstSize:first.length,
+          largestSize:main.length,groupCount:groupMap.size,
+          firstToMainGapM:n(Math.max(0,
+            Math.min(...first.map(x=>x.positionM))-
+            Math.max(...main.map(x=>x.positionM)))),
+          sprinterGroupSize:bestSprinter?.groupSize??0,
+          sprinterRankInRace:sorted.findIndex(x=>x.riderId==='F023')+1,
+          sprinterGapM:bestSprinter?n(bestSprinter.gapToLeaderM):null};
+      });
+    console.log('R22-LILLE-FINALE-FIELD '+JSON.stringify({
+      route:id,seed,finaleField,
+    }));
     console.log('R22-LILLE-CHASE-GAPS '+JSON.stringify({
       route:id,seed,gaps,
       measuredLongPullSeconds:r.diagnostics.committedChasePullSeconds??0,
