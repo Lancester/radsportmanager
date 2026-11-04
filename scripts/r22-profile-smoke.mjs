@@ -79,6 +79,9 @@ for(const id of routes){
     chaseLeaderChanges:r.diagnostics.mainFieldChaserLeaderChanges??0,
     longestPhysicalChaseFrontStintS:r.diagnostics.longestMainFieldChaserStintS??0,
     climbingTempoSeconds:r.diagnostics.climbingTempoSeconds??0,
+    classicsApproachSeconds:r.diagnostics.classicsApproachSeconds??0,
+    classicsRampTempoSeconds:r.diagnostics.classicsRampTempoSeconds??0,
+    classicsRampTempoRiders:r.diagnostics.classicsRampTempoRiderIds??[],
     sprintPositioningSeconds:r.diagnostics.sprintPositioningSeconds??0,
     sprintEscortSeconds:r.diagnostics.sprintEscortSeconds??0,
     leadoutPaceCoordinationSeconds:r.diagnostics.leadoutPaceCoordinationSeconds??0,
@@ -401,6 +404,56 @@ for(const id of routes){
         finishRank:classification?.rank??null,
         finishGapS:classification?n(classification.gapS):null};
     });
+    const keyRiders=['F003','F024','F049'];
+    const keyRiderTrace=keyRiders.map(id=>{
+      const fin=r.classification.find(x=>x.id===id);
+      const samples=(r.checkpoints??[]).filter(cp=>
+        cp.km>=120&&(Math.round(cp.km)%10<=1||
+          cp.km>=215)).map(cp=>{
+        const row=cp.riders.find(z=>z.riderId===id);
+        if(!row)return null;
+        const fellows=cp.riders.filter(z=>z.groupIndex===row.groupIndex);
+        const groupFront=Math.max(...fellows.map(z=>z.positionM));
+        const groupRank=fellows.filter(z=>z.positionM>row.positionM).length+1;
+        return {km:n(cp.km),group:row.groupSize,
+          rank:groupRank,
+          realFrontGapM:n(groupFront-row.positionM),
+          raceGapM:n(row.gapToLeaderM),
+          wPrimePct:n(row.wPrimeRemainingPct),
+          watts:n(row.appliedPowerW),
+          endurancePct:n(row.enduranceAvailabilityPct)};
+      }).filter(Boolean);
+      return {id,finishRank:fin?.rank,finishGapS:n(fin?.gapS??0),
+        samples:samples.filter((x,i)=>i%2===0||x.km>=215)};
+    });
+    const groupTimeline=[190,205,215,220,230,240,245].map(target=>{
+      const cp=(r.checkpoints??[]).find(row=>row.km>=target);
+      if(!cp)return null;
+      const sorted=[...cp.riders].sort((a,b)=>b.positionM-a.positionM);
+      const gaps=sorted.map(row=>row.gapToLeaderM)
+        .sort((a,b)=>a-b);
+      const groups=new Map();
+      for(const row of sorted)groups.set(row.groupIndex,
+        (groups.get(row.groupIndex)??0)+1);
+      const topGroupSize=groups.get(sorted[0].groupIndex)??1;
+      return {km:n(cp.km),leaderType:kindByRider.get(sorted[0].riderId),
+        firstGroupSize:topGroupSize,
+        largestGroupSize:Math.max(...groups.values()),
+        groupCount:groups.size,
+        gapAtRank40M:n(gaps[Math.min(39,gaps.length-1)]),
+        gapAtRank77M:n(gaps[Math.min(76,gaps.length-1)]),
+        medianWPrimePct:n(median(cp.riders.map(v=>v.wPrimeRemainingPct))),
+      };
+    }).filter(Boolean);
+    console.log('R22-CLASSICS-SELECTION '+JSON.stringify({
+      route:id,seed,groupTimeline,
+      approachS:r.diagnostics.classicsApproachSeconds??0,
+      rampTempoS:r.diagnostics.classicsRampTempoSeconds??0,
+      rampRiders:r.diagnostics.classicsRampTempoRiderIds??[],
+      rampRiderTypes:(r.diagnostics.classicsRampTempoRiderIds??[])
+        .map(id=>({id,specialty:kindByRider.get(id)})),
+      keyRiderTrace,
+    }));
     console.log('R22-CLASSICS-PUNCH-AUDIT '+JSON.stringify({
       route:id,seed,
       totalPunchEvents:punches.length,uniqueRiders:

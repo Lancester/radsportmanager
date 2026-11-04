@@ -75,6 +75,23 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
     assert.ok(row.longestNamedChaseFrontS<=
       row.actualNamedChaseFrontS);
   }
+  // Integrationsgate nach Stapelung von PR #74 und #76:
+  // normale Flachjagd + Zielsprint und Klassiker-Rampenarbeit müssen
+  // gleichzeitig funktionieren, ohne über Etappenprofile zu lecken.
+  const flatIntegration=rows.find(row=>row.route==='tdf25_lille');
+  const classicsIntegration=rows.find(row=>row.route==='lbl25_liege');
+  assert.ok(flatIntegration&&classicsIntegration,
+    'beide zusammenzuführenden KI-Profile fehlen');
+  assert.ok(flatIntegration.actualNamedChaseFrontS>0&&
+    flatIntegration.individualSprintAttempts>0,
+    'R22 Sprint/Jagd darf durch die Klassiker-KI nicht verloren gehen');
+  assert.equal(flatIntegration.classicsApproachSeconds,0);
+  assert.equal(flatIntegration.classicsRampTempoSeconds,0);
+  assert.ok(classicsIntegration.classicsApproachSeconds>0&&
+    classicsIntegration.classicsRampTempoSeconds>0,
+    'R22 Klassiker-KI muss zusammen mit dem Sprint-/Jagdcode aktiv bleiben');
+  assert.equal(classicsIntegration.individualSprintAttempts,0);
+  assert.equal(classicsIntegration.actualNamedChaseFrontS,0);
   // Die Zahlen sind ausdrücklich Diagnose, keine festen Soll-Sieger/Quoten.
   const summaryLine=log.split('\n').find(line=>
     line.startsWith('R22-PROFILES-SUMMARY '));
@@ -152,6 +169,43 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
   console.log(finishLines.join('\n'));
   console.log(leaderLine);
   console.log(traces.join('\n'));
+  const selectionLines=log.split('\n').filter(line=>
+    line.startsWith('R22-CLASSICS-SELECTION '));
+  assert.equal(selectionLines.length,1,
+    'Klassiker-Positionierungs- und Rampentempo-Audit fehlt');
+  const selection=JSON.parse(selectionLines[0].slice(
+    'R22-CLASSICS-SELECTION '.length));
+  assert.equal(selection.route,'lbl25_liege');
+  assert.equal(selection.seed,2026);
+  assert.ok(selection.approachS>0&&selection.rampTempoS>0,
+    'Klassiker-KI muss im Liège-Referenzrennen echte Wattentscheidungen treffen');
+  assert.ok(Array.isArray(selection.rampRiders));
+  assert.equal(selection.rampRiderTypes.length,selection.rampRiders.length);
+  assert.ok(selection.rampRiderTypes.every(r=>
+    ['klassiker','allrounder','kletterer','zeitfahrer']
+      .includes(r.specialty)));
+  assert.equal(selection.keyRiderTrace.length,3);
+  assert.equal(selection.groupTimeline.length,7);
+  assert.ok(selection.groupTimeline.every(g=>
+    g.firstGroupSize>=1&&g.groupCount>=1&&
+    g.gapAtRank40M>=0&&g.gapAtRank77M>=g.gapAtRank40M&&
+    g.medianWPrimePct>=0&&g.medianWPrimePct<=100));
+  console.log(selectionLines[0]);
+  assert.ok(selection.keyRiderTrace.every(x=>
+    x.id&&x.finishRank>=1&&x.finishRank<=154&&
+    x.samples.length>0&&x.samples.every(p=>
+      p.group>=1&&p.rank>=1&&p.rank<=p.group&&
+      p.realFrontGapM>=0&&p.wPrimePct>=0&&p.wPrimePct<=100)));
+  for(const row of rows){
+    assert.ok(row.classicsApproachSeconds>=0&&
+      row.classicsRampTempoSeconds>=0);
+    assert.ok(Array.isArray(row.classicsRampTempoRiders));
+    if(row.profile!=='klassiker'){
+      assert.equal(row.classicsApproachSeconds,0);
+      assert.equal(row.classicsRampTempoSeconds,0);
+      assert.deepEqual(row.classicsRampTempoRiders,[]);
+    }
+  }
   const classicAudits=log.split('\n').filter(line=>
     line.startsWith('R22-CLASSICS-PUNCH-AUDIT '));
   assert.equal(classicAudits.length,1,'Klassiker-Rampen-Audit fehlt');
