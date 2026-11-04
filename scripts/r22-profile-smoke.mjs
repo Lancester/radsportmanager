@@ -120,6 +120,72 @@ for(const id of routes){
     top10:r.classification.slice(0,10).map(x=>({
       id:x.id,type:kindByRider.get(x.id),gapS:n(x.gapS)}))}));
 
+  // R-22: dieselben 154 Fahrer, kein weiteres Rennen. Weshalb wird
+  // ausgerechnet der vorab stärkste Sprinter in Lille weit abgehängt?
+  if(id==='tdf25_lille'){
+    const sprinters=favorites.perCategory.find(x=>x.category==='sprinter');
+    if(!sprinters)throw new Error('R22 Lille: Sprinterkategorie fehlt');
+    const bestActualSprinter=r.classification.find(x=>
+      kindByRider.get(x.id)==='sprinter');
+    const watched=[...new Set([
+      ...sprinters.topThree.map(x=>x.riderId),
+      bestActualSprinter?.id,
+      r.winnerId,
+    ].filter(Boolean))];
+    const stages=r.checkpoints??[];
+    const watch=watched.map(riderId=>{
+      const rider=fixture.input.riders.find(x=>x.id===riderId);
+      const classification=r.classification.find(x=>x.id===riderId);
+      const samples=stages.map(cp=>{
+        const rr=cp.riders.find(x=>x.riderId===riderId);
+        if(!rr)return null;
+        const actualRank=[...cp.riders].sort((a,b)=>
+          b.positionM-a.positionM||
+          a.riderId.localeCompare(b.riderId))
+          .findIndex(x=>x.riderId===riderId)+1;
+        return {km:n(cp.km),rank:actualRank,
+          gapM:n(rr.gapToLeaderM),groupIndex:rr.groupIndex,
+          groupSize:rr.groupSize,wPrimePct:n(rr.wPrimeRemainingPct),
+          powerW:n(rr.appliedPowerW),dayCpW:n(rr.dayCpW),
+          aero:n(rr.aeroFactor),endurancePct:n(rr.enduranceAvailabilityPct),
+          speedKmh:n(rr.speedKmh)};
+      }).filter(Boolean);
+      const every20=samples.filter((x,i)=>i===0||
+        i===samples.length-1||
+        Math.round(x.km)%20<=1||x.km>=165);
+      const firstGap=threshold=>samples.find(x=>x.gapM>=threshold)??null;
+      return {id:riderId,category:rider?.specialty,
+        role:rider?.role,teamId:rider?.teamId,
+        strategy:fixture.input.teams.find(x=>x.id===rider?.teamId)?.strategy,
+        baseCpW:rider?.criticalPowerW,wPrimeCapacityJ:rider?.wPrimeJ,
+        massKg:rider?.massKg,sprintSkill:rider?.sprintSkill,
+        finishRank:classification?.rank,finishGapS:classification?
+          n(classification.gapS):null,
+        avgCrankW:classification?n(classification.averageCrankPowerW):null,
+        finalWPrimeJ:classification?n(classification.finalWPrimeJ):null,
+        enduranceAvailabilityAtFinish:classification?
+          n(classification.endurancePowerAvailability):null,
+        firstGap50m:firstGap(50),firstGap200m:firstGap(200),
+        firstGap1000m:firstGap(1000),
+        timeline:every20,
+        events:r.events.filter(e=>
+          e.riderId===riderId||
+          (e.teamId===rider?.teamId&&
+            ['team-chase','team-pace','sprint-train'].includes(e.type)))
+          .slice(0,35).map(e=>({
+            type:e.type,km:n(e.km),timeS:n(e.timeS),
+            riderId:e.riderId,description:e.description,
+          })),
+      };
+    });
+    console.log('R22-LILLE-SPRINTER-AUDIT '+JSON.stringify({
+      route:id,seed,
+      preRaceBestSprinter:sprinters.strongest.riderId,
+      bestPlacedSprinter:bestActualSprinter?.id,
+      winnerId:r.winnerId,
+      watched:watch,
+    }));
+  }
   // Keine neue Simulation: zeigt, ob Puncheure an den real modellierten
   // Schlüsselrampen absetzen, sich nach 5 km wieder einfangen lassen
   // oder ihr W′-Budget für einen aussichtslosen Versuch ausgeben.
