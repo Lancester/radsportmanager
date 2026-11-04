@@ -12,6 +12,10 @@ export interface EnduranceState {
   carbohydrateKcal:number;
   carbohydrateConsumedKcal:number;
   carbohydrateIngestedKcal:number;
+  /** Nicht gespeicherte Zufuhr bei bereits vollem Speicher. */
+  carbohydrateOverflowKcal:number;
+  /** Durch alternative Substrate zu deckender geschätzter Kohlenhydratbedarf. */
+  carbohydrateUnmetDemandKcal:number;
   /** Nur Ausdauerermüdung, nicht W′. */
   workloadHours:number;
   elapsedS:number;
@@ -40,6 +44,7 @@ const valid=(label:string,n:number,ok:boolean)=>{
 export function initialEnduranceState():EnduranceState{
   return {carbohydrateKcal:R19_ENDURANCE.carbohydrateCapacityKcal,
     carbohydrateConsumedKcal:0,carbohydrateIngestedKcal:0,
+    carbohydrateOverflowKcal:0,carbohydrateUnmetDemandKcal:0,
     workloadHours:0,elapsedS:0};
 }
 export function endurancePowerAvailability(state:EnduranceState):number{
@@ -71,14 +76,23 @@ export function advanceEndurance(input:{
   const intake=carbs*c.kcalPerGramCarb*dt/3600;
   const expenditure=appliedPowerW*dt/
     (4184*c.mechanicalEfficiency)*c.carbohydrateFractionOfExpenditure;
-  const nextFuel=Math.max(0,Math.min(c.carbohydrateCapacityKcal,
-    state.carbohydrateKcal+intake-expenditure));
+  // Bilanz: nur verfügbare KH-Energie ist tatsächlich aus dem Speicher
+  // verbraucht. Nicht verfügbare Nachfrage wird als unmetDemand erfasst
+  // und nur indirekt über geringere künftige Watt-Anforderung abgebildet.
+  const available=state.carbohydrateKcal+intake;
+  const overflow=Math.max(0,available-c.carbohydrateCapacityKcal);
+  const usable=Math.min(c.carbohydrateCapacityKcal,available);
+  const consumed=Math.min(expenditure,usable);
+  const nextFuel=Math.max(0,usable-consumed);
   const hardWork=Math.max(0,
     appliedPowerW/referenceCpW-0.70);
   const next:EnduranceState={
     carbohydrateKcal:nextFuel,
-    carbohydrateConsumedKcal:state.carbohydrateConsumedKcal+expenditure,
+    carbohydrateConsumedKcal:state.carbohydrateConsumedKcal+consumed,
     carbohydrateIngestedKcal:state.carbohydrateIngestedKcal+intake,
+    carbohydrateOverflowKcal:state.carbohydrateOverflowKcal+overflow,
+    carbohydrateUnmetDemandKcal:state.carbohydrateUnmetDemandKcal+
+      Math.max(0,expenditure-consumed),
     workloadHours:state.workloadHours+hardWork*dt/3600,
     elapsedS:state.elapsedS+dt,
   };
