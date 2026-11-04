@@ -14,7 +14,7 @@ export const GENERAL_ATTACK=Object.freeze({
   earlyProgressFrom:.015,earlyProgressUntil:.13,
   earlyMinTimeS:180,earlyGroupFrontM:150,earlyRaceFrontM:220,
   defaultGroupFrontM:40,defaultRaceFrontM:120,
-  flatFinishDistanceM:12000,
+  flatFinishDistanceM:25000,
   flatFinishMaxGrade:.04,
   flatFinishReserve:.85,
   flatFinishMinAgeS:2400,

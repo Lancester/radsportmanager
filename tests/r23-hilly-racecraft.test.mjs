@@ -33,9 +33,12 @@ test('R23: fruehe Flucht oder spaete echte Rampe, nicht Dauerschleife',()=>{
   assert.equal(decideHillyAttackOpportunity({...basic,
     progress:.55,gradeFraction:.01}),false,
     'ohne echte Rampe kein grundloser Mittelteil-Angriff');
+  assert.equal(decideHillyAttackOpportunity({...basic,
+    progress:.50,gradeFraction:.05}),false,
+    '5%-Uebergang ist zu flach fuer jeden einzelnen Punch-Versuch');
   assert.ok(decideHillyAttackOpportunity({...basic,
-    progress:.50,gradeFraction:.05}),
-    'auch die mittlere Cavron-Rampe kann Attacken ausloesen');
+    progress:.50,gradeFraction:.08}),
+    'auch mittlere echte Steilrampen koennen Attacken ausloesen');
   assert.equal(decideHillyAttackOpportunity({...basic,
     progress:.055,timeS:650,gradeFraction:.002,
     breakawayEstablished:true}),false,

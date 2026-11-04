@@ -19,7 +19,6 @@ export const HILLY_RACECRAFT=Object.freeze({
   rampFromFraction:.12,rampUntilFraction:.92,
   continueMinReserve:.18,
   minimumRepeatAttackAgeS:1500,continueAttackSeconds:65,
-  minimumNewAttackSpacingOnSegmentS:100,
   minimumGroupSize:4,
   maxPositionGapM:115,maxRaceGapM:950,
   tempoMinReserve:.20,tempoMinGrade:.075,

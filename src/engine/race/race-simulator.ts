@@ -427,9 +427,6 @@ export function simulateRace(x:RaceInput):RaceResult {
   const classicsRampTempoRiders=new Set<string>();
   let hillyRampTempoSeconds=0;
   const hillyRampTempoRiders=new Set<string>();
-  // Taktische Reaktionsphase nach einer neuen Attacke am selben
-  // Anstieg. Keine feste Anzahl Gewinner oder Gruppen.
-  const hillyLastNewAttackBySegment=new Map<number,number>();
   let sprintPositioningSeconds=0,sprintEscortSeconds=0;
   let leadoutPaceCoordinationSeconds=0,independentWheelFindingSeconds=0;
   let actualSprintTrainRiderSeconds=0,nearSprinterTrainRiderSeconds=0;
@@ -633,10 +630,6 @@ export function simulateRace(x:RaceInput):RaceResult {
                 const g=attackGroups.find(g=>g.includes(s));
                 const si=segmentFor(s,boundaries);
                 const seg=x.segments[si];
-                const reaktionAbgeschlossen=s.intent==='angriff'||
-                  t-(hillyLastNewAttackBySegment.get(si)??-1e9)>=
-                    HILLY_RACECRAFT.minimumNewAttackSpacingOnSegmentS;
-                if(!reaktionAbgeschlossen)return false;
                 return decideHillyAttackOpportunity({
                   enabled:true,role:s.rider.role,
                   strategy:teams.get(s.rider.teamId)!.strategy,
@@ -803,10 +796,8 @@ export function simulateRace(x:RaceInput):RaceResult {
           if(before==='verfolgung')s.lastChaseEndS=t;
           s.intentSinceS=t;
         }
-        if(decision.intent==='angriff'&&s.intent!=='angriff'){
+        if(decision.intent==='angriff'&&s.intent!=='angriff')
           s.lastAttackS=t;
-          if(hillyRace)hillyLastNewAttackBySegment.set(segmentId,t);
-        }
         s.decision=decision;s.intent=decision.intent;
         if(before!==decision.intent && events.length<100000){
           const kind=decision.intent==='angriff'?'attack':
