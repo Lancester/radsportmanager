@@ -26,6 +26,8 @@ import {chooseIndependentSprintWheel,SPRINT_WHEEL} from './sprint-wheel-choice.t
 import {decideClassicsPunch,CLASSICS_PUNCH} from './classics-punch.ts';
 import {ADAPTIVE_ATTACK,decideAdaptiveAttack}
   from './adaptive-attack.ts';
+import {HILLY_SELECTION,decideHillySelection}
+  from './hilly-selection.ts';
 import {decideClassicsApproach,decideClassicsRampTempo}
   from './classics-racecraft.ts';
 import {decideGroupRiding,decideChaseApproach,R22_GROUP_RIDING} from './group-riding.ts';
@@ -160,6 +162,8 @@ export interface RaceResult {
     classicsApproachSeconds?:number;
     classicsRampTempoSeconds?:number;
     classicsRampTempoRiderIds?:string[];
+    hillyApproachSeconds?:number;hillyRampPaceSeconds?:number;
+    hillyRampPaceRiderIds?:string[];
     independentWheelFindingSeconds?:number;
     actualSprintTrainRiderSeconds?:number;
     nearSprinterTrainRiderSeconds?:number;
@@ -382,6 +386,17 @@ export function simulateRace(x:RaceInput):RaceResult {
     !hasHighMountain;
   let sum=0;
   for(const segment of x.segments){sum+=segment.lengthM;boundaries.push(sum);}
+  // Nur die letzten drei real modellierten kurzen Steilrampen: keine
+  // Distanz-Prozentfenster. Bei anderem Verlauf können sie auch
+  // weit früher im Rennen liegen.
+  const hillyKeyClimbs=x.segments.map((seg,i)=>({
+    index:i,startM:boundaries[i]-seg.lengthM,
+    climbM:seg.lengthM,grade:seg.gradeFraction,
+  })).filter(x=>x.climbM>=HILLY_SELECTION.minClimbM&&
+    x.climbM<=HILLY_SELECTION.maxClimbM&&
+    x.grade>=HILLY_SELECTION.minClimbGrade)
+    .slice(-HILLY_SELECTION.keyClimbCount);
+  const hillyKeyIndices=new Set(hillyKeyClimbs.map(c=>c.index));
   const states=buildStates(x);
   const byId=new Map(states.map(s=>[s.rider.id,s]));
   const teams=new Map(x.teams.map(t=>[t.id,t]));
@@ -397,6 +412,15 @@ export function simulateRace(x:RaceInput):RaceResult {
   const rampSpecialistByTeam=new Map(x.teams.map(team=>{
     const candidates=states.filter(r=>
       r.rider.teamId===team.id&&r.rider.specialty==='klassiker')
+      .sort((a,b)=>rampScore(b)-rampScore(a)||
+        a.rider.id.localeCompare(b.rider.id));
+    return [team.id,candidates[0]?.rider.id??null] as const;
+  }));
+  const hillyCandidateByTeam=new Map(x.teams.map(team=>{
+    const candidates=states.filter(r=>
+      r.rider.teamId===team.id&&
+      ['klassiker','allrounder','kletterer','gc','zeitfahrer']
+        .includes(r.rider.specialty??''))
       .sort((a,b)=>rampScore(b)-rampScore(a)||
         a.rider.id.localeCompare(b.rider.id));
     return [team.id,candidates[0]?.rider.id??null] as const;
@@ -430,6 +454,8 @@ export function simulateRace(x:RaceInput):RaceResult {
   let climbingTempoSeconds=0;
   let classicsApproachSeconds=0,classicsRampTempoSeconds=0;
   let lastAdaptiveAttackStartS=-1e9;
+  let hillyApproachSeconds=0,hillyRampPaceSeconds=0;
+  const hillyRampRiderIds=new Set<string>();
   const classicsRampTempoRiders=new Set<string>();
   let sprintPositioningSeconds=0,sprintEscortSeconds=0;
   let leadoutPaceCoordinationSeconds=0,independentWheelFindingSeconds=0;
@@ -920,6 +946,24 @@ export function simulateRace(x:RaceInput):RaceResult {
           eligible[0].rider.id);
       }
     }
+    const hillyPacerByGroup=new Map<string,string>();
+    if(hillyAttackProfile){
+      for(const group of physicalGroups){
+        if(group.length<4||
+          leader.positionM-group[0].positionM>
+            HILLY_SELECTION.tempoMaxRaceGapM)continue;
+        const candidates=group.map(g=>byId.get(g.id)!).filter(r=>
+          hillyCandidateByTeam.get(r.rider.teamId)===r.rider.id&&
+          group[0].positionM-r.positionM<=
+            HILLY_SELECTION.tempoMaxFrontGapM&&
+          r.physiology.remainingWPrimeJ/r.profile.wPrimeCapacityJ>=
+            HILLY_SELECTION.tempoMinReserve)
+          .sort((a,b)=>rampScore(b)-rampScore(a)||
+            a.rider.id.localeCompare(b.rider.id));
+        if(candidates[0])hillyPacerByGroup.set(group[0].id,
+          candidates[0].rider.id);
+      }
+    }
     for(const group of physicalGroups){
       const pacer=byId.get(group[0].id)!;
       if((x.groupRidingModel==='cohesive'||
@@ -1278,6 +1322,42 @@ export function simulateRace(x:RaceInput):RaceResult {
             headwindMps:headwind,crosswindMps:crosswind,
           });
           commanded=approach.powerW;
+        }
+      }
+      // Huegel-KI: Topografie und echte Feldpositionen, keine direkte
+      // Fahrerbewegung oder Wattgutschrift.
+      if(hillyAttackProfile){
+        const physical=physicalGroupOf.get(s.rider.id);
+        const groupFront=physical?.[0];
+        const next=hillyKeyClimbs.find(c=>c.startM>s.positionM);
+        const currentClimb=hillyKeyIndices.has(index);
+        const decision=decideHillySelection({
+          enabled:true,specialty:s.rider.specialty,
+          isTeamCandidate:hillyCandidateByTeam.get(s.rider.teamId)===
+            s.rider.id,
+          isSelectedGroupPacer:!!groupFront&&
+            hillyPacerByGroup.get(groupFront.id)===s.rider.id,
+          currentIntent:s.intent,
+          distanceToNextKeyClimbM:next?
+            next.startM-s.positionM:null,
+          onKeyClimb:currentClimb,
+          climbGrade:segment.gradeFraction,
+          climbLengthM:segment.lengthM,
+          climbProgress:(s.positionM-
+            (index>0?boundaries[index-1]:0))/segment.lengthM,
+          groupSize:physical?.length??1,
+          distanceFromGroupFrontM:Math.max(0,
+            (groupFront?.positionM??s.positionM)-s.positionM),
+          gapToRaceFrontM:Math.max(0,leader.positionM-s.positionM),
+          criticalPowerW:s.dayCpW,requestedPowerW:commanded,
+          reserveFraction:s.physiology.remainingWPrimeJ/
+            s.profile.wPrimeCapacityJ,
+        });
+        if(decision&&decision.powerW>commanded+1){
+          commanded=decision.powerW;
+          if(decision.reason==='approach')hillyApproachSeconds+=dt;
+          else {hillyRampPaceSeconds+=dt;
+            hillyRampRiderIds.add(s.rider.id);}
         }
       }
       // Frühzeitige echte Positionierung der nominierten Puncheure
@@ -1661,6 +1741,8 @@ export function simulateRace(x:RaceInput):RaceResult {
           leadoutPaceCoordinationSeconds,independentWheelFindingSeconds,
     classicsApproachSeconds,classicsRampTempoSeconds,
     classicsRampTempoRiderIds:[...classicsRampTempoRiders].sort(),
+    hillyApproachSeconds,hillyRampPaceSeconds,
+    hillyRampPaceRiderIds:[...hillyRampRiderIds].sort(),
           actualSprintTrainRiderSeconds,nearSprinterTrainRiderSeconds,
           lateSprintChaseRiderSeconds,sprintFinale,
           spentChaseHelpers:spentChaseHelperIds.length,

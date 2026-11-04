@@ -79,6 +79,9 @@ for(const id of routes){
     chaseLeaderChanges:r.diagnostics.mainFieldChaserLeaderChanges??0,
     longestPhysicalChaseFrontStintS:r.diagnostics.longestMainFieldChaserStintS??0,
     climbingTempoSeconds:r.diagnostics.climbingTempoSeconds??0,
+    hillyApproachSeconds:r.diagnostics.hillyApproachSeconds??0,
+    hillyRampPaceSeconds:r.diagnostics.hillyRampPaceSeconds??0,
+    hillyRampPaceRiderIds:r.diagnostics.hillyRampPaceRiderIds??[],
     classicsApproachSeconds:r.diagnostics.classicsApproachSeconds??0,
     classicsRampTempoSeconds:r.diagnostics.classicsRampTempoSeconds??0,
     classicsRampTempoRiders:r.diagnostics.classicsRampTempoRiderIds??[],
@@ -111,6 +114,22 @@ for(const id of routes){
   };
   results.push(details);
   console.log('R22-PROFILE '+JSON.stringify(details));
+  if(fixture.route.kind==='huegelig'){
+    const attackEvents=r.events.filter(e=>e.type==='attack');
+    const keyClimbs=fixture.route.climbs.slice(-4).map(climb=>{
+      const at=attackEvents.filter(e=>
+        e.km>=climb.endKm-climb.lengthKm&&e.km<=climb.endKm);
+      return {climb:climb.name,attacks:at.length,
+        unique:new Set(at.map(e=>e.riderId)).size};
+    });
+    console.log('R22-HILLY-AUDIT '+JSON.stringify({
+      route:id,seed,totalAttacks:attackEvents.length,keyClimbs,
+      hillyApproachSeconds:details.hillyApproachSeconds,
+      hillyRampPaceSeconds:details.hillyRampPaceSeconds,
+      hillyRampPaceRiderIds:details.hillyRampPaceRiderIds,
+      winnerType:details.winnerType,top10Types:details.top10Types,
+    }));
+  }
   if(id==='tdf25_lille')
     console.log('R22-FINAL-SPRINT '+JSON.stringify({
       route:id,seed,
