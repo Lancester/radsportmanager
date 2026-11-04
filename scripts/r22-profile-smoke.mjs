@@ -210,14 +210,27 @@ for(const id of routes){
           const after=(r.checkpoints??[]).find(cp=>cp.km>=e.km+5);
           const data=cp=>cp?.riders.find(row=>row.riderId===e.riderId);
           const prev=data(before),next=data(after);
+          // Das Zurückfallen muss IN der physischen Hauptgruppe
+          // erkennbar sein. Abstand zur absoluten Flucht allein reicht
+          // nicht als Beleg, weil das Feld die Flucht einholen kann.
+          const local=cp=>{
+            const r=data(cp);
+            if(!r)return null;
+            const members=cp.riders.filter(x=>
+              x.groupIndex===r.groupIndex).sort((x,y)=>
+                y.positionM-x.positionM||
+                x.riderId.localeCompare(y.riderId));
+            return {km:n(cp.km),gapM:n(r.gapToLeaderM),
+              groupSize:r.groupSize,
+              groupRank:members.findIndex(x=>
+                x.riderId===r.riderId)+1,
+              gapToOwnGroupFrontM:n(members[0].positionM-r.positionM),
+              wprimePct:n(r.wPrimeRemainingPct)};
+          };
           return {id:e.riderId,teamId:e.teamId,km:n(e.km),
             message:e.description,
-            before:prev?{km:n(before.km),gapM:n(prev.gapToLeaderM),
-              groupSize:prev.groupSize,
-              wprimePct:n(prev.wPrimeRemainingPct)}:null,
-            after5km:next?{km:n(after.km),gapM:n(next.gapToLeaderM),
-              groupSize:next.groupSize,
-              wprimePct:n(next.wPrimeRemainingPct)}:null};
+            before:prev?local(before):null,
+            after5km:next?local(after):null};
         }).slice(0,40),
       // Warum fehlen vor dem Zielsprint Helfer? Kein weiterer Lauf,
       // nur dieselben vorhandenen 5-km-Checkpoints beobachten.
