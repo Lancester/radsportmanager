@@ -232,6 +232,30 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
   assert.ok(lille.lateSprintChaseRiderSeconds>=0);
   assert.ok(lille.spentChaseHelpers>=0);
   assert.ok(lille.intentionalChaseRetreatSeconds>=0);
+  const finaleLines=log.split('\n').filter(row=>
+    row.startsWith('R22-LILLE-FINALE-FIELD '));
+  assert.equal(finaleLines.length,1,'Feldzerfall vor Sprintfinale muss messbar sein');
+  const finaleField=JSON.parse(finaleLines[0].slice(
+    'R22-LILLE-FINALE-FIELD '.length));
+  assert.equal(finaleField.route,'tdf25_lille');
+  assert.ok(finaleField.finaleField.length>=3);
+  assert.ok(finaleField.finaleField.every(x=>
+    x.firstSize>=1&&x.largestSize>=x.firstSize&&
+    x.largestSize<=154&&x.sprinterGroupSize>=1&&
+    x.firstToMainGapM>=0&&x.sprinterRankInRace>=1));
+  // Szenariospezifische, KEINE allgemeine Sieg-/Massenprintquote:
+  // nach Einholen der Flucht soll Lille 5 km vor Schluss nicht mehr
+  // aus einer 25er-Spitzengruppe und 90er-Feld bestehen.
+  const lastFiveKm=finaleField.finaleField.find(x=>
+    Math.abs(x.km-180)<.08);
+  assert.ok(lastFiveKm,
+    'R22: letzter flacher 5-km-Feldcheckpoint fehlt');
+  assert.ok(lastFiveKm.firstSize>=80,
+    'R22: Sprintfinale darf das bis km 175 verbundene Hauptfeld '+
+    'nicht bereits 5 km vor Ziel in eine kleine 25er-Gruppe zerlegen');
+  assert.equal(lastFiveKm.firstToMainGapM,0,
+    'R22: die 5-km-Spitzengruppe soll noch das groesste Hauptfeld sein');
+  console.log(finaleLines[0]);
   const gapLines=log.split('\n').filter(row=>
     row.startsWith('R22-LILLE-CHASE-GAPS '));
   assert.equal(gapLines.length,1);

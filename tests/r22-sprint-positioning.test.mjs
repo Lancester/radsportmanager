@@ -33,10 +33,13 @@ test('R-22: ab 75 % selbst mit realen Watt ins vordere Viertel fahren',()=>{
     rankInGroup:25}),null);
 });
 test('R-22: erst auf letzten ca. 6 % der Strecke gezielter Sprintzugplatz',()=>{
-  const r=decideSprintPosition({...base,progress:.955,rankInGroup:27});
+  const r=decideSprintPosition({...base,progress:.955,rankInGroup:37});
   assert.ok(r);
   assert.equal(r.reason,'leadout_position');
   assert.ok(r.powerW<=base.criticalPowerW*SPRINT_POSITION.leadoutCpFraction);
+  assert.equal(decideSprintPosition({...base,progress:.955,
+    rankInGroup:27}),null,
+    'Fahrer im vorderen Fünftel muss nicht nochmals 65 W anfordern');
   assert.equal(decideSprintPosition({...base,progress:.955,
     rankInGroup:10}),null);
   assert.equal(decideSprintPosition({...base,progress:.996}),null);

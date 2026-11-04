@@ -4,7 +4,7 @@
  * 0-75 %: Im Hauptfeld bleiben und energiesparend mitfahren. Ein Zielsprinter
  * am hintersten Feldende darf nur begrenzt Kontaktpflege-Watt anfordern.
  * 75-94 %: Aufrücken ins vordere Viertel mit Helferbegleitung.
- * Ab 94 %: Position für Sprintzug im ersten Zehntel halten/verbessern.
+ * Ab 94 %: vorderes Fünftel ohne überflüssige Beschleunigungsduelle sichern.
  *
  * Für den tatsächlichen Sprint (<250 m) gilt weiterhin chooseRacePower und
  * der physikalische Windschatten; keine direkte Platzierung oder Siegchance.
@@ -23,7 +23,11 @@ export const SPRINT_POSITION=Object.freeze({
   // nur hinter dem letzten ~12 % vorsichtig Anschluss sichern.
   rearSafetyFraction:.88,
   advanceFrontShare:.25,
-  leadoutFrontShare:.10,
+  // Im letzten 6-%-Abschnitt ist Platz im vorderen Fuenftel
+  // ausreichend, um nicht gleichzeitig 8 Sprintteams aus dem
+  // gemeinsamen Hauptfeld herausbeschleunigen zu lassen.
+  // Die eigentliche Schlussposition entsteht spaeter physisch.
+  leadoutFrontShare:.20,
   minRankToPosition:12,
   safetyExtraW:18,
   advanceExtraW:65,
