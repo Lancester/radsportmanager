@@ -19,6 +19,8 @@ import {formationAeroFactors} from './formation-aero.ts';
 import {decideStablePackRiding} from './stable-pack.ts';
 import {decideClimbTempo} from './climb-tempo.ts';
 import {decideSprintPosition,SPRINT_POSITION} from './sprint-positioning.ts';
+import {decideSprintLeadoutPace,SPRINT_LEADOUT} from './sprint-leadout.ts';
+import {chooseIndependentSprintWheel,SPRINT_WHEEL} from './sprint-wheel-choice.ts';
 import {decideClassicsPunch,CLASSICS_PUNCH} from './classics-punch.ts';
 import {decideGroupRiding,decideChaseApproach,R22_GROUP_RIDING} from './group-riding.ts';
 import {decideTeamPace} from './team-pacing.ts';
@@ -136,10 +138,13 @@ export interface RaceResult {
     sprintTrainAssignments:number;actualFrontWorkSteps:number;
     relayChanges:number;maximumEndurancePenalty:number;
     sprintPositioningSeconds?:number;sprintEscortSeconds?:number;
+    leadoutPaceCoordinationSeconds?:number;
+    independentWheelFindingSeconds?:number;
     /** Beobachtete Position/Helfer an der Sprintfreigabe (keine Sieggarantie). */
     sprintFinale?:Array<{riderId:string;rankInGroup:number;
       groupSize:number;helpersWithin30M:number;helpersAheadWithin30M:number;
-      helpersOnSprintTrain:number;sprintSkill:number;wPrimePct:number}>;
+      helpersOnSprintTrain:number;sprintSkill:number;
+      wheelFindingSkill:number;wPrimePct:number}>;
     participants:number;raceDistanceKm:number};
 }
 interface State {
@@ -349,6 +354,7 @@ export function simulateRace(x:RaceInput):RaceResult {
   let orderedRelayTeamSeconds=0;
   let climbingTempoSeconds=0;
   let sprintPositioningSeconds=0,sprintEscortSeconds=0;
+  let leadoutPaceCoordinationSeconds=0,independentWheelFindingSeconds=0;
   const sprintFinale:NonNullable<RaceResult['diagnostics']['sprintFinale']>=[];
   const sprintFinaleObserved=new Set<string>();
   let mainFieldFrontWorkWithAssignedChaserS=0;
@@ -774,6 +780,7 @@ export function simulateRace(x:RaceInput):RaceResult {
           helpersOnSprintTrain:nearby.filter(r=>
             r.crewMission==='sprintzug').length,
           sprintSkill:target.rider.sprintSkill,
+          wheelFindingSkill:target.rider.wheelFindingSkill??.5,
           wPrimePct:100*target.physiology.remainingWPrimeJ/
             target.profile.wPrimeCapacityJ,
         });
@@ -912,6 +919,87 @@ export function simulateRace(x:RaceInput):RaceResult {
               commanded=position.powerW;
               if(isTargetSprinter)sprintPositioningSeconds+=dt;
               else sprintEscortSeconds+=dt;
+            }
+          }
+        }
+        if(sprintFriendlyRace){
+          const sprintTarget=targetByTeam.get(s.rider.teamId);
+          // Eine gute Sprintmannschaft darf ihre Helfer nicht 70 m
+          // vorausfahren lassen. Führungsleistung wird physisch begrenzt,
+          // um für den Sprinter ein wirklich nutzbares Rad anzubieten.
+          if(s.rider.role==='helfer'&&
+            teams.get(s.rider.teamId)?.strategy==='sprint'&&
+            sprintTarget?.rider.specialty==='sprinter'){
+            const leadout=decideSprintLeadoutPace({
+              enabled:true,
+              currentIntent:s.intent,
+              remainingM:totalM-s.positionM,
+              distanceAheadOfSprinterM:s.positionM-
+                sprintTarget.positionM,
+              sprinterSpeedMps:sprintTarget.speedMps,
+              helperSpeedMps:s.speedMps,
+              currentPowerW:commanded,criticalPowerW:s.dayCpW,
+              riderMassKg:s.rider.massKg,
+              bikeMassKg:s.rider.bikeMassKg,
+              dragAreaM2:s.rider.dragAreaM2,aeroFactor,
+              gradeFraction:segment.gradeFraction,
+              rollingCoefficient:segment.rollingCoefficient??
+                s.physical.rollingCoefficient,
+              airDensityKgM3:s.physical.airDensityKgM3,
+              drivetrainEfficiency:s.physical.drivetrainEfficiency,
+              headwindMps:headwind,crosswindMps:crosswind,
+            });
+            if(leadout&&leadout.powerW<commanded-1){
+              commanded=leadout.powerW;
+              leadoutPaceCoordinationSeconds+=dt;
+            }
+          }
+          // Auch ein Sprinter OHNE eigenes Helferrad darf sich aus
+          // EIGENER Leistung an ein tatsächlich benachbartes gegnerisches
+          // Hinterrad hängen. Sein Talent ist unabhängig von Sprintwatt.
+          if(s.rider.specialty==='sprinter'&&
+            ['sprinter','kapitaen'].includes(s.rider.role)){
+            const group=physicalGroupOf.get(s.rider.id);
+            const hasTeamHelperAhead=active.some(r=>
+              r.rider.teamId===s.rider.teamId&&
+              r.rider.role==='helfer'&&
+              r.positionM>s.positionM&&
+              r.positionM-s.positionM<=30);
+            const candidates=(group??[]).filter(q=>
+              q.id!==s.rider.id).map(q=>byId.get(q.id)!)
+              .filter(r=>r.rider.teamId!==s.rider.teamId&&
+                r.positionM>s.positionM&&
+                r.positionM-s.positionM<=SPRINT_WHEEL.maxLookAheadM)
+              .map(r=>({riderId:r.rider.id,
+                gapAheadM:r.positionM-s.positionM,
+                speedMps:r.speedMps,
+                sprintSkill:r.rider.sprintSkill}));
+            const independent=chooseIndependentSprintWheel({
+              wheelFindingSkill:s.rider.wheelFindingSkill??.5,
+              sprintSkill:s.rider.sprintSkill,
+              remainingM:totalM-s.positionM,
+              groupSize:group?.length??1,
+              ownSpeedMps:s.speedMps,
+              criticalPowerW:s.dayCpW,
+              reserveFraction:s.physiology.remainingWPrimeJ/
+                s.profile.wPrimeCapacityJ,
+              currentIntent:s.intent,
+              hasTeamHelperAhead,
+              desiredFollowW:commanded,
+              riderMassKg:s.rider.massKg,
+              bikeMassKg:s.rider.bikeMassKg,
+              dragAreaM2:s.rider.dragAreaM2,aeroFactor,
+              gradeFraction:segment.gradeFraction,
+              rollingCoefficient:segment.rollingCoefficient??
+                s.physical.rollingCoefficient,
+              airDensityKgM3:s.physical.airDensityKgM3,
+              drivetrainEfficiency:s.physical.drivetrainEfficiency,
+              headwindMps:headwind,crosswindMps:crosswind,
+              wheels:candidates,
+            });
+            if(independent&&independent.powerW>commanded+1){
+              commanded=independent.powerW;
+              independentWheelFindingSeconds+=dt;
             }
           }
         }
@@ -1145,6 +1233,7 @@ export function simulateRace(x:RaceInput):RaceResult {
         longestMainFieldChaserStintS,
         ...(x.groupRidingModel==='stable-pack'?{
           climbingTempoSeconds,sprintPositioningSeconds,sprintEscortSeconds,
+          leadoutPaceCoordinationSeconds,independentWheelFindingSeconds,
           sprintFinale}:{}),
         ...((x.groupRidingModel==='front-gated'||x.groupRidingModel==='stable-pack')?
           {unprovokedBreakawayCount}:{}),
