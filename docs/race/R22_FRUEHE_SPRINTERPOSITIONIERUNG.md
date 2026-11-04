@@ -54,3 +54,42 @@ Das Experiment ist streng begrenzt auf:
 - Die bisherigen `tests/r22-profile-smoke.test.mjs`, 154-Fahrer-20-km-No-Attack- und 30-Fahrer-Konstanttempo-Regressionen müssen weiter bestehen. Die neuen Diagnosezähler `sprintPositioningSeconds` und `sprintEscortSeconds` werden direkt in die vorhandenen `R22-PROFILE`- und `R22-LILLE-SPRINTER-AUDIT`-Logs aufgenommen.
 - Erst mit einem erneuten grünen vollständigen PR-CI nach dieser letzten Diagnoselog-Erweiterung die Experiment-Implementierung auf `main` übernehmen. **Nicht** von erfolgreich bestandenem Unit-Test auf empirische Siegwahrscheinlichkeit schließen.
 - Weitere schrittweise KI-Arbeit danach: tatsächliche Sprinter-/Helfer-Verfolgung und Sprintzug im letzten Renndrittel, ohne den gewonnenen pelotonstabilen Flachverlauf zu verschlechtern. Später separat Liège-Klassikerwirkung und Boulogne-Angriffshäufigkeit. **Große Multi-Seed-Abnahme erst am Ende und manuell.**
+
+
+## 5. Verbindliche sportliche Korrektur durch den Nutzer – dreiphasiger Sprinter statt Frühpositionierung
+
+**Nutzerkorrektur 04.11.2026: Die oben getestete frühe Top-17-Position bei Kilometer 20 ist zwar technisch möglich, aber **sportlich keine angemessene Zielstrategie**. Ein Sprinter fährt zunächst energiesparend und geschützt im Hauptfeld, beginnt typischerweise erst **im letzten Viertel** gezielt nach vorne zu kommen, und im Finale sind die *wirkliche* Position, tatsächlich nahe Helfer sowie die physische Sprintstärke entscheidend. Weiterer Nutzerhinweis: Nicht jeder Spitzen-Sprinter braucht einen eigenen Sprintzug. Manche finden eigenständig ein gutes **fremdes Hinterrad**. Ein fehlender Sprintzug verringert seine Chancen, darf aber keinen automatischen Sieg-Ausschluss verursachen.
+
+Die ursprünglichen Abschnitte 2–4 dokumentieren den **historischen Version-A-Versuch** und sind nicht mehr die neueste KI-Definition. Diese Sektion **ersetzt die früheren pauschalen ersten-85%-Aufrückbedingungen**.
+
+### Neue tatsächliche Entwicklungs-Implementierung auf PR #72
+
+Die neue `sprint-positioning.ts` unterscheidet **drei Phasen** (taktische Heuristiken, nicht harte Radrenngesetze):
+
+- **0–75 % Rennweg: mitfahren/schützen statt früh an die Spitze.** Bis 10 % des Rennens wird kein besonderer Aufrückauftrag vergeben; anschließend darf der Zielsprinter bei großen Gruppen lediglich im **hintersten etwa 12 %** eine sehr moderate, unter 97 % seiner CP begrenzte physische Kontaktpflegeleistung verlangen. Ein Platz im hinteren Mittelfeld ist sonst völlig akzeptabel. Frühzeitige Sprintzüge sind nicht aktiviert.
+- **75–94 % Rennweg: gezielt nach vorne.** Als Ziel gilt das **vordere Viertel der tatsächlich gefahrenen Abstandsgruppe**. Mehrleistung nur aus realem Wattbudget und bei vorhandener W′-Reserve. Höchstens zwei **bereits tatsächlich nahe** Teamhelfer bekommen Begleitaufträge.
+- **94 % bis Ende des Positionierungsvorgangs (spätestens 99,5 %): günstige Sprintausgangsstellung** im **vorderen Zehntel** der eigenen physischen Gruppe anstreben. Bis zu drei reale Teamhelfer dürfen aus maximal 30 m Umgebung begleiten. Bereits begonnene Attacken und der tatsächliche Zielsprint ab 250 m haben Vorrang. Die 1D-Beschränkung (keine Seitenlinie/Überholspur) bleibt unverändert.
+
+**Neue Sprintzug-Tempokoordination `src/engine/race/sprint-leadout.ts`:** Tatsächlich vor dem Sprinter liegende Teamhelfer erhalten auf den letzten 10 km eine reine, widerstandsbasierte Begrenzung ihrer Wattanfrage, wenn sie zu weit vorausfahren. Das adressiert den im echten Vorabtest beobachteten Fehler, dass Helfer bei km 175 noch nah waren, bei km 180 aber ca. 67–74 m **vor** F023 in eine andere Abstandsgruppe gefahren waren. Kein direktes Abbremsen durch Positionstricks und keine künstliche Energierückerstattung; das tatsächliche Tempo folgt dem Bewegungsintegrator. Aktive Jagd-/Angriffs-/Erholungsaufträge haben Vorrang.
+
+### Dritte, individuelle Fähigkeit: selbstständig ein geeignetes Hinterrad finden
+
+Die Körper-/Leistungswerte `sprintSkill` und `criticalPowerW` bleiben unverändert; ein **neuer davon getrennter Fahrerwert** `wheelFindingSkill?:number` (**0..1**, optional für kompatible alte Spielstände, Validierung in `validateRace`) steht für die taktische Fähigkeit, einen schnellen Fahrer in realer Reichweite zu erkennen und sich an dessen Hinterrad zu hängen.
+
+- Die fiktiven R-22-Profis erhalten deterministische unterschiedliche Werte, **unabhängig von ihrer bisherigen identischen .95-Sprintstärke**. Dies ist eine **nicht extern kalibrierte KI-Modellannahme**. Bei früheren/anderen Rennprofilen ohne Wert gilt standardmäßig `0.5`.
+- `src/engine/race/sprint-wheel-choice.ts` prüft nur **tatsächlich vor dem eigenen Fahrer befindliche gegnerische Räder innerhalb der 24-m-Formationszone**, ihre wirkliche Geschwindigkeit und ihr Sprintvermögen. Der Sprinter darf dieses Rad nur durch **eigene, innerhalb CP/W′/R-19 begrenzte Wattarbeit** erreichen/halten. Es werden **keine** virtuellen Aero-Faktoren hinzugefügt. Physischer Windschatten entsteht nur durch die bereits bestehende Formation-Berechnung aus echten Positionen.
+- Ein hohes `wheelFindingSkill` erlaubt frühere und präzisere Reaktion auf einen tatsächlich verfügbaren fremden Windschatten. Ein geringerer Wert kann dieselbe Gelegenheit ebenfalls nutzen, aber typischerweise später und mit weniger gezielter Wattnachfrage.
+- **Eigener, real direkt vorausfahrender Teamhelfer hat Vorrang** vor dem fremden Hinterrad. Ohne eigenen Helfer wird die Sprintchance **nicht künstlich auf null** gesetzt.
+- **Keine erfundene fixe Siegquote** („mit Sprintzug 30 %, ohne 10 %“). Bei realistischer späterer Mehrseed-Validierung wird die **empirische Häufigkeit** guter Sprintpositionen und Siege mit/nicht vorhandenem Lead-out analysiert – erst am Ende der schrittweisen KI-Arbeit, nicht durch ein hartcodiertes Ergebnislotto.
+
+### Neue unabhängige Finale-Messwerte
+
+Der bereits gespeicherte `sprintFinale`-Querschnitt der tatsächlich gefahrenen letzten 250 m führt **getrennt** `sprintSkill`, `wheelFindingSkill`, tatsächlichen Rang in der Gruppe, Größe dieser Gruppe, verfügbare W′-Reserve, **Anzahl realer Teamhelfer innerhalb 30 m** und Anzahl real **vor dem Sprinter** stehender Helfer. Neue Zähler der aktiven angewendeten Regler: `sprintPositioningSeconds`, `sprintEscortSeconds`, `leadoutPaceCoordinationSeconds`, `independentWheelFindingSeconds`.
+
+**Wichtig:** Es sind beobachtbare Taktik- und Leistungsmerkmale und **keine** addierten Siegwatt oder Platzboni. Ein guter Sprintzug kann die Vorpositionierung und Energieschonung verbessern; der solo taktierende Sprinter bleibt konkurrenzfähig, wenn ein echtes geeignetes Fremdrad verfügbar und seine eigene Leistung ausreichend ist.
+
+### Tatsächlich bestätigte Zwischenprobe vor der neuen Solo-Hinterrad- und Leadout-Erweiterung
+
+[GitHub Actions #41817675032](https://github.com/Lancester/radsportmanager/actions/runs/41817675032): **286/286 Tests grün** mit den drei Phasen; Lille **F023 Platz 33, +11,08 s**, nach 20 km bewusst **Rang 134 statt verfrüht Rang 17**, nach 100 km **Rang 110**, späteres physisches Aufrücken; Boulogne/Liège/Hautacam unverändert. Das ist der **vorherige Zwischenstand**, nicht bereits ein Erfolg der **neu hinzugefügten** Solo-Hinterrad-/Leadout-Steuerung. Zusätzliche Diagnose [CI #41818209636](https://github.com/Lancester/radsportmanager/actions/runs/41818209636), ebenfalls **286/286 grün**: F023-Helfer F024 km175 noch -17,49 m, km180 +74,15 m vor F023 in einer anderen Abstandsgruppe. Daraus ergab sich die neue Tempo-Koordination.
+
+**Gate für den aktuellen PR #72:** Erst nach vollständigem GitHub-CI mit *beiden* neuen getrennten Fähigkeiten und allen vier bekannten Einzelrennprofilen entscheidet die sportliche Ergebnisprüfung über die Integration. `legacy` bleibt Default, keine Physikänderung, kein automatischer Großlauf.
