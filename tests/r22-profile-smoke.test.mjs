@@ -40,8 +40,12 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
       row.actualSprintTrainRiderSeconds);
     assert.ok(row.spentChaseHelpers>=0&&
       row.intentionalChaseRetreatSeconds>=0);
+    assert.ok(row.committedChasePullSeconds>=0&&
+      row.realFrontChaseCpSeconds>=0);
     if(row.spentChaseHelpers===0)
       assert.equal(row.intentionalChaseRetreatSeconds,0);
+      assert.equal(row.committedChasePullSeconds,0);
+      assert.equal(row.realFrontChaseCpSeconds,0);
     if(row.profile!=='flach'){
       assert.equal(row.sprintPositioningSeconds,0);
       assert.equal(row.sprintEscortSeconds,0);
@@ -135,6 +139,16 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
   assert.ok(lille.lateSprintChaseRiderSeconds>=0);
   assert.ok(lille.spentChaseHelpers>=0);
   assert.ok(lille.intentionalChaseRetreatSeconds>=0);
+  const gapLines=log.split('\n').filter(row=>
+    row.startsWith('R22-LILLE-CHASE-GAPS '));
+  assert.equal(gapLines.length,1);
+  const gapAudit=JSON.parse(gapLines[0].slice(
+    'R22-LILLE-CHASE-GAPS '.length));
+  assert.equal(gapAudit.route,'tdf25_lille');
+  assert.equal(gapAudit.gaps.length,8);
+  assert.ok(gapAudit.gaps.every(x=>x&&x.gapM>=0&&
+    x.leadSize>=1&&x.mainSize>=1));
+  console.log(gapLines.join('\n'));
   assert.ok(Array.isArray(lille.spentHelperTrace));
   assert.equal(lille.spentHelperTrace.length,lille.spentChaseHelpers);
   assert.ok(lille.spentHelperTrace.every(x=>
