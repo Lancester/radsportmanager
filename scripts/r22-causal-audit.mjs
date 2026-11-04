@@ -178,4 +178,8 @@ await Promise.all([
   writeFile(args.output+'/finishers.csv',csv(finishers)),
   writeFile(args.output+'/summary.md',md),
 ]);
+console.log('R22-CAUSAL-CHECKPOINTS',JSON.stringify(
+  checkpoints.filter(x=>x.variant==='baseline'&&
+    [5,25,50,75,100,125,150,175,180].some(v=>Math.abs(x.km-v)<1))
+));
 console.log('R22-CAUSAL-SUMMARY',JSON.stringify(report));
