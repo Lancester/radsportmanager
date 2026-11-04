@@ -14,7 +14,11 @@ export interface IntelligentRider {
   /** Opt-in: Helfer hat physisch viel Jagdarbeit geleistet und wird abgelöst. */
   chaseSpent?:boolean;
 }
-export interface IntelligentTeam {id:string;strategy:RaceStrategy}
+export interface IntelligentTeam {
+  id:string;strategy:RaceStrategy;
+  /** Später via Teammanager auswählbar. 0 = kein Jagdhelfer. */
+  chaseHelperCount?:number;
+}
 export type CrewMission='jagd'|'sprintzug'|'schutz';
 export type CrewDuty='fuehrung'|'unterstuetzung';
 export interface CrewOrder {
@@ -126,6 +130,10 @@ export function decideIntelligentCrew(input:{
       teamIds.has(team.id)||!
       ['ausgewogen','offensiv','sprint','kapitaen_schuetzen'].includes(team.strategy))
       throw new RangeError('R-15/R-16: ungültiges Team');
+    if(team.chaseHelperCount!==undefined&&(
+      !Number.isInteger(team.chaseHelperCount)||
+      team.chaseHelperCount<0||team.chaseHelperCount>5))
+      throw new RangeError('R-22: Anzahl Jagdhelfer muss 0..5 sein');
     teamIds.add(team.id);
   }
   for(const r of input.riders){
@@ -181,6 +189,7 @@ export function decideIntelligentCrew(input:{
       isMain&&
       input.progress<(input.sprintFinaleMode?.995:.94)&&
       (input.chasingTeamIds===undefined||input.chasingTeamIds.has(team.id))&&
+      !(input.sprintFinaleMode&&team.chaseHelperCount===0)&&
       (!sprintTrain||input.sprintFinaleMode===true)&&
       team.strategy!=='offensiv'&&
       (team.strategy!=='ausgewogen'||!sprintTeamReady||urgentChase);
@@ -235,6 +244,8 @@ export function decideIntelligentCrew(input:{
     else if(sprintTrain)requested=input.progress>=0.94?3:4;
     else if(team.strategy==='kapitaen_schuetzen'&&input.progress<0.82)
       requested=2;
+    if(chase&&input.sprintFinaleMode&&team.chaseHelperCount!==undefined)
+      requested=team.chaseHelperCount;
     requested=Math.min(R15_R16.maximumCrew,requested,available.length);
     // Teammitglieder werden nach tatsächlichem Abstand zur Front und
     // Energiereserve berücksichtigt, nicht alphabetisch als Phantomführer.
