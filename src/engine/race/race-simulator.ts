@@ -392,10 +392,22 @@ export function simulateRace(x:RaceInput):RaceResult {
               const groupFront=group[0].positionM;
               const meanCp=group.reduce((n,r)=>n+r.dayCpW,0)/group.length;
               const grade=x.segments[segmentFor(s,boundaries)].gradeFraction;
+              // In Profirennen werden Fluchtversuche häufig schon in
+              // den ersten Kilometern gestartet. Das bisherige künstliche
+              // Mindestfenster ab 18 % der Strecke verhindert sie komplett.
+              // Nur im R-22-KI-Experiment die erste frühe Phase öffnen;
+              // Starter müssen noch physisch nach vorne fahren.
+              const early=x.groupRidingModel==='cohesive'&&
+                t>=180&&s.positionM/totalM>=0.015&&
+                s.positionM/totalM<0.13;
+              const nearFront=early?
+                s.positionM>=groupFront-150:
+                s.positionM>=groupFront-40;
               const opening=t-s.lastAttackS>=900&&t>=250&&
-                s.positionM/totalM>=0.18&&s.positionM/totalM<0.88&&
-                reserve>=0.42&&s.positionM>=groupFront-40&&
-                s.positionM>=leader.positionM-120&&
+                (early||s.positionM/totalM>=0.18)&&
+                s.positionM/totalM<0.88&&
+                reserve>=0.42&&nearFront&&
+                s.positionM>=leader.positionM-(early?220:120)&&
                 s.dayCpW>=meanCp*0.93&&grade>=-0.03;
               return opening;
             })(),
@@ -513,7 +525,7 @@ export function simulateRace(x:RaceInput):RaceResult {
         const pacerPower=hasMission?pacer.decision.desiredPowerW:
           Math.min(pacer.decision.desiredPowerW,
             pacer.dayCpW*R22_GROUP_RIDING.leaderCpFraction,
-            referenceCp*.90);
+            referenceCp*1.04);
         const availablePacerPower=pacerPower*(x.enduranceModel==='off'?
           1:endurancePowerAvailability(pacer.endurance));
         const acc=Math.max(-.8,Math.min(.8,
