@@ -69,7 +69,17 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
   }
   console.log(lines.join('\n'));
   console.log(traces.join('\n'));
+  const classicAudits=log.split('\n').filter(line=>
+    line.startsWith('R22-CLASSICS-PUNCH-AUDIT '));
+  assert.equal(classicAudits.length,1,'Klassiker-Rampen-Audit fehlt');
+  const classics=JSON.parse(
+    classicAudits[0].slice('R22-CLASSICS-PUNCH-AUDIT '.length));
+  assert.equal(classics.route,'lbl25_liege');
+  assert.equal(classics.seed,2026);
+  assert.ok(classics.climbEvents.length>=4);
+  assert.ok(classics.totalPunchEvents>=0);
   console.log(favoritesLines.join('\n'));
+  console.log(classicAudits.join('\n'));
   console.log(summaryLine);
 });
 

@@ -18,6 +18,7 @@ import {decidePackInstruction,pelotonGroups} from './peloton.ts';
 import {formationAeroFactors} from './formation-aero.ts';
 import {decideStablePackRiding} from './stable-pack.ts';
 import {decideClimbTempo} from './climb-tempo.ts';
+import {decideClassicsPunch,CLASSICS_PUNCH} from './classics-punch.ts';
 import {decideGroupRiding,decideChaseApproach,R22_GROUP_RIDING} from './group-riding.ts';
 import {decideTeamPace} from './team-pacing.ts';
 import {decideIntelligentCrew,analyzeRaceSituation} from './race-team-ai.ts';
@@ -279,6 +280,12 @@ export function simulateRace(x:RaceInput):RaceResult {
   validateRace(x);
   const totalM=x.segments.reduce((v,s)=>v+s.lengthM,0);
   const boundaries:number[]=[];
+  // Nicht der Rennname, sondern ein langes Profil mit mehreren
+  // kurzen Steilrampen aktiviert die separate Puncheur-Entscheidung.
+  const shortSteepClimbs=x.segments.filter(seg=>
+    seg.lengthM>=CLASSICS_PUNCH.minClimbM&&
+    seg.lengthM<=CLASSICS_PUNCH.maxClimbM&&
+    seg.gradeFraction>=CLASSICS_PUNCH.minGrade).length;
   let sum=0;
   for(const segment of x.segments){sum+=segment.lengthM;boundaries.push(sum);}
   const states=buildStates(x);
@@ -421,6 +428,16 @@ export function simulateRace(x:RaceInput):RaceResult {
           coordinatedTeamPace:true,
           ...(coordinated?{
             attackOpportunity:(()=>{
+              // Für lange Ardennenklassiker die knappe W′-Reserve der
+              // Klassiker-Kapitäne bis zu den entscheidenden Rampen
+              // schonen. Nur dort kann decideClassicsPunch später
+              // physisch bezahlte Angriffe auslösen.
+              if(x.groupRidingModel==='stable-pack'&&
+                totalM>=CLASSICS_PUNCH.minRaceM&&
+                shortSteepClimbs>=CLASSICS_PUNCH.minShortSteepClimbs&&
+                s.rider.specialty==='klassiker'&&
+                s.rider.role==='kapitaen')
+                return false;
               const reserve=s.physiology.remainingWPrimeJ/
                 s.profile.wPrimeCapacityJ;
               // Begonnene Attacke darf sich auch bei gelungener Ablösung
@@ -456,7 +473,39 @@ export function simulateRace(x:RaceInput):RaceResult {
             })(),
           }:{})
         };
-        const baseProposal=chooseRacePower(obs);
+        const group=attackGroups.find(g=>g.includes(s));
+        const segmentId=segmentFor(s,boundaries);
+        const stageSegment=x.segments[segmentId];
+        const segmentStartM=segmentId>0?boundaries[segmentId-1]:0;
+        const classics=x.groupRidingModel==='stable-pack'?
+          decideClassicsPunch({
+            specialty:s.rider.specialty,role:s.rider.role,
+            strategy:teams.get(s.rider.teamId)!.strategy,
+            raceLengthM:totalM,shortSteepClimbs,
+            progress:s.positionM/totalM,
+            segmentLengthM:stageSegment.lengthM,
+            segmentProgress:(s.positionM-segmentStartM)/stageSegment.lengthM,
+            gradeFraction:stageSegment.gradeFraction,
+            groupSize:group?.length??1,
+            distanceFromGroupFrontM:group?
+              group[0].positionM-s.positionM:Infinity,
+            criticalPowerW:s.dayCpW,
+            reserveFraction:obs.reserveFraction,
+            lastAttackAgeS:t-s.lastAttackS,currentIntent:s.intent,
+            speedMps:group?.[0].speedMps??s.speedMps,
+            riderMassKg:s.rider.massKg,bikeMassKg:s.rider.bikeMassKg,
+            dragAreaM2:s.rider.dragAreaM2,
+            airDensityKgM3:s.physical.airDensityKgM3,
+            rollingCoefficient:stageSegment.rollingCoefficient??
+              s.physical.rollingCoefficient,
+            drivetrainEfficiency:s.physical.drivetrainEfficiency,
+            headwindMps:stageSegment.headwindMps??0,
+            crosswindMps:stageSegment.crosswindMps??0,
+          }):null;
+        const baseProposal:TacticDecision=classics?{
+          desiredPowerW:classics.powerW,intent:'angriff',
+          reason:classics.reason,
+        }:chooseRacePower(obs);
         const crew=planned?.orders.get(s.rider.id);
         const oldOrder=orders?.get(s.rider.id);
         const assignedKind:TeamPaceKind|null=crew?
