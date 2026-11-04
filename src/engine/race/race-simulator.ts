@@ -16,6 +16,7 @@ import type {CpWprimeState,CpWprimeProfile} from '../physiology/critical-power.t
 import {chooseRacePower,stabilizeRaceDecision} from './race-tactics.ts';
 import {decidePackInstruction,pelotonGroups} from './peloton.ts';
 import {formationAeroFactors} from './formation-aero.ts';
+import {decideGroupRiding} from './group-riding.ts';
 import {decideTeamPace} from './team-pacing.ts';
 import {decideIntelligentCrew} from './race-team-ai.ts';
 import {initialEnduranceState,advanceEndurance,endurancePowerAvailability}
@@ -60,6 +61,9 @@ export interface RaceInput {
   enduranceModel?:'long'|'off';
   /** Standard: R-15/R-16-Renn-KI. R-14 zum kontrollierten Vergleich. */
   tacticModel?:'r14'|'r15-r16';
+  /** R-22 experimentell: autonome Gruppenkoordination mit Wattsollwert,
+   * Legacy als bisheriger Standard bis vollständiger empirischer Abnahme. */
+  groupRidingModel?:'legacy'|'cohesive';
   stepSeconds?:number;
   maxRaceTimeS?:number;
   /** Nur Diagnostik: speichert alle aktiven Fahrer alle 5 km. */
@@ -211,6 +215,9 @@ export function validateRace(x:RaceInput):void {
   if(x.diagnosticLevel!==undefined&&
     x.diagnosticLevel!=='checkpoints')
     throw new RangeError('Rennsimulation: diagnosticLevel ungültig');
+  if(x.groupRidingModel!==undefined&&
+    !['legacy','cohesive'].includes(x.groupRidingModel))
+    throw new RangeError('Rennsimulation: groupRidingModel ungültig');
   if(x.tacticModel!==undefined&&
     x.tacticModel!=='r14'&&x.tacticModel!=='r15-r16')
     throw new RangeError('Rennsimulation: tacticModel ungültig');
@@ -475,11 +482,14 @@ export function simulateRace(x:RaceInput):RaceResult {
     const powers=new Map<string,number>();
     // Gruppe nur einmal für alle Fahrer dieser Sekunde ermitteln.
     const actualGroupFront=new Map<string,number>();
+    const actualGroupSize=new Map<string,number>();
     for(const group of pelotonGroups(ordered.map(s=>({
       id:s.rider.id,positionM:s.positionM,
     })))){
-      for(const member of group)
+      for(const member of group){
         actualGroupFront.set(member.id,group[0].positionM);
+        actualGroupSize.set(member.id,group.length);
+      }
     }
     for(const s of active){
       const index=segmentFor(s,boundaries);
@@ -528,6 +538,29 @@ export function simulateRace(x:RaceInput):RaceResult {
       aeroFactorSum+=aeroFactor;aeroFactorSamples++;
       minimumAeroFactor=Math.min(minimumAeroFactor,aeroFactor);
       let commanded=pack.requestedPowerW;
+      if(x.groupRidingModel==='cohesive'){
+        const group=decideGroupRiding({
+          groupSize:actualGroupSize.get(s.rider.id)??1,
+          distanceFromGroupFrontM:Math.max(0,
+            (actualGroupFront.get(s.rider.id)??s.positionM)-s.positionM),
+          frontGapM:frontGap.get(s.rider.id)??null,
+          frontSpeedMps:frontSpeed.get(s.rider.id)??null,
+          ownSpeedMps:s.speedMps,desiredPowerW:commanded,
+          criticalPowerW:s.dayCpW,
+          reserveFraction:s.physiology.remainingWPrimeJ/
+            s.profile.wPrimeCapacityJ,
+          tacticalIntent:s.intent,
+          riderMassKg:s.rider.massKg,bikeMassKg:s.rider.bikeMassKg,
+          dragAreaM2:s.rider.dragAreaM2,aeroFactor,
+          gradeFraction:segment.gradeFraction,
+          rollingCoefficient:segment.rollingCoefficient??
+            s.physical.rollingCoefficient,
+          airDensityKgM3:s.physical.airDensityKgM3,
+          drivetrainEfficiency:s.physical.drivetrainEfficiency,
+          headwindMps:headwind,crosswindMps:crosswind,
+        });
+        commanded=group.powerW;
+      }
       if(Math.abs(pack.addedPowerW)>0.5)counters.paceSupportSteps++;
       let brakeForceN=0;
       if(segment.gradeFraction<-0.012&&segment.descentTechnicality>0){
