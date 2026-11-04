@@ -215,3 +215,57 @@ versionieren. Erst danach
 physiologische Parameter begründet
 ändern. R-23 Freigabe ist damit
 ausdrücklich **noch nicht erreicht**.
+
+
+## Verifizierter technischer Vierfach-Großfeldtest (04.11.2026)
+
+[GitHub Actions – einmalige vollständige Referenzabnahme #41768768694](https://github.com/Lancester/radsportmanager/actions/runs/41768768694):
+**vier gesamte Einzelrennen mit je 22×7 = 154 Fahrern,
+zusammen 616 klassifizierte Zielankünfte**, jedes mit
+vollständiger Renn-/Flucht-/CP/W′-/Kohlenhydrat-
+und mechanischer Energieprüfung erfolgreich.
+Der einmalige Push-Test-Workflow wurde
+anschließend aus dem Branch entfernt;
+`scripts/r22-reference-validation.mjs`
+bleibt für reproduzierbare zukünftige Diagnosen erhalten.
+
+| Referenz (jeweils Seed 2026) | Distanz | modellierte Hm | max. Gruppen | Median-Zielrückstand | Letzter Fahrer | Runner-Zeit |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Lille, TdF 2025 | 184,9 km | 1065 | 50 | 663,6 s | 4023,5 s | 12,79 s |
+| Boulogne, TdF 2025 | 209,1 km | 2164 | 64 | 867,8 s | 3879,3 s | 14,15 s |
+| Liège–Bastogne–Liège 2025 | 252 km | 3346 (synthetisch) | 86 | 977,0 s | 5288,0 s | 18,90 s |
+| Hautacam, TdF 2025 | 180,6 km | 3850 | 73 | 1539,5 s | 4884,7 s | 15,31 s |
+
+**Wichtig für R-22-Fehlersuche:**
+Bei diesem einzigen Seed wurde auf Lille/Boulogne/
+Lüttich/Hautacam jeweils ein im Test als
+`kletterer` gekennzeichneter Fahrer Sieger.
+Auf Lille ergibt sich eine Siegerzeit von
+**12619,2 s (3:30:19)**, während das echte
+TdF-2025-Lille-Rennen mit etwa **3:53 h**
+beendet wurde. Das beweist wegen noch
+synthetischer Straßenübergänge, fiktiver
+CP-/W′-Kader, fehlenden Verkehrs-/Rennsituationen
+und nur einem Seed keinen einzelnen
+Fehler im CP-Kern – ist jedoch ein
+**konkretes Warnsignal** für spätere
+Zeit- und Spezialistenkalibrierung.
+Der Abstand des Letzten beträgt selbst
+im Lille-Test knapp 67 Minuten und
+die Zahl von bis zu 50 Gruppen ist
+noch nicht extern plausibilisiert.
+
+**Kein voreiliger Eingriff:** CP/W′,
+Ermüdungsmodell, Windschatten,
+Renn-KI und Entscheidungsschwellen
+bleiben in R-22A/B/C unverändert.
+Erst die nächste eigentliche
+physiologische und gruppentaktische
+R-22-Kalibrierung mit mehreren Seeds
+und unabhängigen realen Daten
+darf diese Parameter verändern.
+
+**Validierungsstatus:** technische Funktionsabnahme
+für die Referenzdaten abgeschlossen;
+**weder originale GPX-Geometrie noch
+wissenschaftliche Rennkalibrierung abgeschlossen**.
