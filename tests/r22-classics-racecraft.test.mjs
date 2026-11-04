@@ -40,3 +40,27 @@ test('Klassiker: nur echter vorderer Rampenfahrer darf kontinuierliches Tempo be
   ])assert.equal(decideClassicsRampTempo({...o,rankInPhysicalGroup:4,...changed}),null);
   assert.throws(()=>decideClassicsRampTempo({...o,rankInPhysicalGroup:33}),RangeError);
 });
+
+test('Klassiker-KI senkt niemals die Gruppenwatt ab und ignoriert ungültige Positions- oder Physikdaten',()=>{
+  for(const demand of [260,330,380,430]){
+    const x=decideClassicsRampTempo({...o,rankInPhysicalGroup:4,
+      requestedPowerW:demand});
+    if(x!==null)assert.ok(x>demand);
+    const ahead=decideClassicsApproach({...o,progress:.55,
+      requestedPowerW:demand});
+    if(ahead!==null){
+      assert.ok(ahead>demand);
+      assert.ok(ahead-demand<=CLASSICS_RACECRAFT.positioningMaxExtraW+1e-8);
+    }
+  }
+  for(const invalid of [
+    {criticalPowerW:0},{requestedPowerW:-1},
+    {requestedPowerW:NaN},{reserveFraction:1.2},
+    {physicalGroupSize:2,rankInPhysicalGroup:3},
+    {rankInPhysicalGroup:0},{gapToGroupFrontM:-1},
+    {progress:1.01},{segmentLengthM:0},
+  ]){
+    assert.throws(()=>decideClassicsApproach({...o,...invalid}),RangeError);
+    assert.throws(()=>decideClassicsRampTempo({...o,...invalid}),RangeError);
+  }
+});
