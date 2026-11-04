@@ -1294,3 +1294,62 @@ vier Rennvorlagen, Start-Seed und
 CSV/JSON/Markdown zum Herunterladen;
 bestehender Monte-Carlo-Workflow bleibt erhalten.
 R-22 ist weiterhin offen; R-23 nicht freigegeben.
+
+
+## R-22 experimentelle gruppenbewusste Fahrer-KI (04.11.2026)
+
+[PR #58](https://github.com/Lancester/radsportmanager/pull/58)
+gemergt, Code-Commit
+`08116b99e22dc775dd8429d0710d5f0ba7634f9e`,
+[PR CI 252/252 Tests erfolgreich](https://github.com/Lancester/radsportmanager/actions/runs/41777253189).
+
+**Nachgewiesener KI-Fehler:** Die alte automatische
+Angriffsentscheidung erlaubt keine Attacken
+vor 18 % Rennfortschritt; dennoch entstand
+bereits nach km 25 die starke Fragmentierung.
+Die bestehende Standard-KI verlangt
+von Fahrern viel zu unabhängig
+CP-basierte Dauerleistung, statt
+kontrolliertes Gruppentempo zu fahren.
+
+**Neue Option** `groupRidingModel:'cohesive'`
+in der Einzelrenn-Engine:
+ein physischer Pacesetter pro Gruppe,
+gruppenbezogen berechnete Wattanfragen
+zur passenden Geschwindigkeit und
+Beschleunigung, mit Vorrang für Angriff,
+Sprint, aktive Teamarbeit und
+Verfolgung; erste frühe Angriffsmöglichkeiten.
+Keine Geschwindigkeits-/Zeit-/Positionsboni.
+**Standard bleibt unverändert legacy**,
+R-22-Version ist **nur experimenteller
+A/B-Schalter**, weil noch nicht validiert.
+
+**Drei echte 154-Fahrer-Iterationen (Lille,
+Seed 2026):** Individueller Gruppenansatz
+verschlechterte die Gruppenanzahl 50→75;
+zu defensiver gemeinsamer Pacesetter
+unterdrückte Attacken komplett und
+ergab nur 41,3 km/h. Dritte Fassung:
+**46,01 km/h statt 52,75 km/h;
+18 statt 50 maximale Gruppen;
+Hauptgruppe km25: 138 statt 39 Fahrer;
+16 statt 2 Attacken**.
+Allerdings **Median-Zielrückstand
+823,5 statt 663,6 s** und
+**390 individuelle Chase-Intent-Wechsel**
+gegenüber 7: Jagd-/Team-KI ist nicht
+abnahmefähig, Kalibrierung weiter offen.
+
+Zusätzlicher ausschließlich manuell
+zu startender GitHub-Workflow
+**R-22 – Gruppen-KI A/B (154 Fahrer)**
+([Workflow](https://github.com/Lancester/radsportmanager/actions/workflows/r22-group-ai-ab.yml)),
+mit identischem Seed/Referenzstrecke, zwei
+154er-Vollrennen und CSV/JSON/Markdown-
+Protokoll. [Vollständige A/B-Dokumentation](race/R22_GRUPPENFAHR_KI_AB.md).
+Nächster Schritt: stabile
+Pelotonspitzen-Teamführung,
+Ausreißerjagd, Chase-Hysterese
+und mehrprofilige Validierung.
+R-23 ausdrücklich noch nicht freigegeben.
