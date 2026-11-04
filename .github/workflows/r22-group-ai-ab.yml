@@ -1,6 +1,6 @@
-name: R-22 – Gruppen-KI A/B (154 Fahrer)
+name: R-22 – Gruppen-KI + Zielgruppen (154 Fahrer)
 
-# Experimenteller Einzelrennvergleich, nur manuell durch den Nutzer.
+# Drei experimentelle Einzelrennvarianten, nur manuell durch den Nutzer.
 on:
   workflow_dispatch:
     inputs:
@@ -11,7 +11,7 @@ on:
         required: true
         default: tdf25_lille
       seed:
-        description: 'Gleicher Seed für bisherige und experimentelle Fahrer-KI'
+        description: 'Gleicher Seed für alle drei KI-Varianten'
         type: string
         required: true
         default: '2026'
@@ -27,7 +27,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Zwei vollständige Einzelrennen mit identischem Feld
+      - name: Drei vollständige Einzelrennen inklusive Zielgruppen-Kennzahlen
         env:
           R_ROUTE: ${{ inputs.route }}
           R_SEED: ${{ inputs.seed }}
