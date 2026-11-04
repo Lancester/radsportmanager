@@ -113,6 +113,44 @@ for(const id of routes){
     trace,winnerEvents,
     top10:r.classification.slice(0,10).map(x=>({
       id:x.id,type:kindByRider.get(x.id),gapS:n(x.gapS)}))}));
+  // Keine neue Simulation: zeigt, ob Puncheure an den real modellierten
+  // Schlüsselrampen absetzen, sich nach 5 km wieder einfangen lassen
+  // oder ihr W′-Budget für einen aussichtslosen Versuch ausgeben.
+  if(fixture.route.kind==='klassiker'){
+    const punches=r.events.filter(e=>e.type==='attack'&&
+      e.description.includes('Kurzer Steilanstieg'));
+    const attacksOnClimbs=fixture.route.climbs.map(climb=>{
+      const start=climb.endKm-climb.lengthKm;
+      const events=punches.filter(e=>e.km>=start&&e.km<=climb.endKm);
+      return {climb:climb.name,attacks:events.length,
+        distinctRiders:new Set(events.map(e=>e.riderId)).size};
+    });
+    const events=punches.slice(0,30).map(e=>{
+      const pre=(r.checkpoints??[]).filter(c=>c.km<=e.km).at(-1);
+      const post=(r.checkpoints??[]).find(c=>c.km>=e.km+5);
+      const read=c=>c?.riders.find(x=>x.riderId===e.riderId);
+      const before=read(pre),after=read(post);
+      const classification=r.classification.find(x=>x.id===e.riderId);
+      return {id:e.riderId,kind:kindByRider.get(e.riderId),
+        km:n(e.km),timeS:n(e.timeS),
+        before:before?{km:n(pre.km),gapM:n(before.gapToLeaderM),
+          wPrimePct:n(before.wPrimeRemainingPct),
+          groupSize:before.groupSize}:null,
+        after5Km:after?{km:n(post.km),gapM:n(after.gapToLeaderM),
+          wPrimePct:n(after.wPrimeRemainingPct),
+          groupSize:after.groupSize}:null,
+        finishRank:classification?.rank??null,
+        finishGapS:classification?n(classification.gapS):null};
+    });
+    console.log('R22-CLASSICS-PUNCH-AUDIT '+JSON.stringify({
+      route:id,seed,
+      totalPunchEvents:punches.length,uniqueRiders:
+        new Set(punches.map(e=>e.riderId)).size,
+      climbEvents:attacksOnClimbs,
+      events,
+    }));
+  }
+
 
 }
 console.log('R22-PROFILES-SUMMARY '+JSON.stringify({
