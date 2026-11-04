@@ -334,19 +334,15 @@ R-23 nicht begonnen.
 **Nur technischer experimenteller Modus in main, keine neue Grundsatzentscheidung:** `groupRidingModel:'stable-pack'` ist nach 262 grünen Tests explizit auswählbar. `legacy` bleibt Standard; D-074 bis D-097 und die bestehende Physik bleiben gültig. Der Modus ist nicht als realistisch kalibrierte neue Standard-KI beschlossen. R-22 bleibt offen und R-23 ist nicht freigegeben. [PR #63](https://github.com/Lancester/radsportmanager/pull/63), [Ergebnisse](race/R22_STABILES_PELOTON.md).
 
 
-## D-098 bis D-102 – ab sofort verbindliche iterative Weiterentwicklung der Renn-KI (04.11.2026)
+## D-098 bis D-101 – Profilweises Weiterentwickeln vor großer Validierung (04.11.2026)
 
-| ID | Status | Vereinbartes Vorgehen | Klare Grenze |
+Der Nutzer hat den ersten größeren Mehrseed-Plan ausdrücklich **zurückgestellt**: keine 36/60 Rennen als Einstieg. Es werden zunächst die **bereits vorhandenen vier Etappenprofile** in kleinen Einzelprüfungen durch den Assistenten verglichen und die KI schrittweise verbessert. Erst **am Ende der KI-Kalibrierung** folgt die große statistische Validierung.
+
+| ID | Status | Vereinbartes Vorgehen | Grenze |
 | --- | --- | --- | --- |
-| D-098 | **Nutzerbeschluss** | Die in PR #63 integrierte experimentelle Variante `stable-pack` ist die Ausgangsbasis für die nächsten KI-Verbesserungen, nicht ein Neuaufbau des Rennsimulators. | Standardmodus `legacy` bleibt unverändert, bis eine spätere eigenständige Abnahme vorliegt. |
-| D-099 | **Nutzerbeschluss** | Vier **bereits bestehende** Referenzrennen Flach/Lille, Hügel/Boulogne, Klassiker/Lüttich und Berg/Hautacam verwenden; keine neuen Fantasie-Teststrecken anlegen. Zunächst drei feste Seeds (2026–2028), später bis zu fünf Seeds. | Teststrecken sind veröffentlichte Streckenanker mit modellierten Übergängen, keine vollständigen originalen GPX-Strecken; keine behaupteten historischen Rennergebnisse. |
-| D-100 | **Nutzerbeschluss** | Eine KI-Hypothese nach der anderen prüfen; `coordinated`, `front-gated`, `stable-pack` pro Route/Seed mit identischem Fahrerfeld und identischer Physik vergleichen; Fehler und erfolglose Experimente nachvollziehbar dokumentieren. | Keine versteckten Positions-/Zeit-/Wattboni, keine unbegründete Änderung an CP/W′, R-19, Formation-Aero oder 1D-Bewegungskern. |
-| D-101 | **Nutzerbeschluss** | Bewertung profilspezifisch nach Siegergruppe, größter Zielgruppe **und ihrem Rückstand**, Fahrer innerhalb 60 s, Angriffshäufigkeit, tatsächlicher Führungsarbeit und -wechseln, Ermüdung/W′ sowie Sieg-/Top-10-Fahrertypen; flache Etappen brauchen Feldzusammenhalt, Bergrennen dürfen selektiv sein. | Kein einzelner Lille-Seed und keine künstliche Massensprint-Vorgabe am Berg rechtfertigen eine Freigabe. |
-| D-102 | **Verbindliche Kosten- und Prozessgrenze** | Große Profil-/Seed-Vergleiche ausschließlich bewusst manuell per GitHub Actions (`workflow_dispatch`), maximal 4 Profile × 5 Seeds × 3 KI-Varianten = 60 vollständige Rennen je Lauf, 45-Minuten-Limit, gesicherte Berichte; reguläre Regressionen/CLI-Planprüfung bleiben getrennt. | Keine Push-/Zeitplan-Monte-Carlo-Serie, keine automatisierte Ausweitung ohne Nutzerbeschluss. |
+| D-098 | **Nutzerbeschluss** | `stable-pack` dient als Ausgangsbasis für weitere **gezielte** KI-Verbesserungen, nicht den Rennsimulator neu schreiben. | Der standardmäßig aktive Modus bleibt `legacy` bis zur gesonderten Abnahme. |
+| D-099 | **Nutzerbeschluss** | Bereits vorhandene Referenzstrecken **Lille (flach), Boulogne (hügelig), Lüttich (Klassiker), Hautacam (Berg)** verwenden. Zunächst pro Profil **ein** identischer Seed und **nur `stable-pack`**, ohne neue Strecken oder großes A/B-/Seedraster. Der Assistent führt die kleinen Tests im normalen GitHub-PR-Testlauf selbst aus. | Vier Einzelrennen, 154 Fahrer je Strecke. Die veröffentlichten Steigungen/Streckenanker enthalten modellierte Übergänge, keine exakten GPX-Daten. |
+| D-100 | **Nutzerbeschluss** | Nach jedem kleinen Profilvergleich Ursachen für auffällige Zielabstände, Feldzerfall, Attacken, Jagdführungswechsel oder Berg-/Sprinterverhalten bestimmen und gezielt **eine** KI-Ursache verbessern. Bestehende Physik und normale Mitfahrregelung bewahren. | Keine erfundenen Zeiten, Positionskorrekturen, Energiegutschriften oder unbegründeten Physikparameter-Änderungen. Test-Plausi ist nicht Realitätskalibrierung. |
+| D-101 | **Nutzerbeschluss** | Größere Mehrseed-/Monte-Carlo-Validierung **erst zum Abschluss**, wenn die grundlegenden Verhaltensprobleme der vier Profile behoben sind. | Große Reihen nur bewusst manuell und begrenzt via GitHub Actions, keine automatisch gestarteten 36/60-Rennen-Workflows. R-22 offen, R-23 nicht freigegeben. |
 
-**Spezifikation und exakter Ablauf:** [R22_VALIDIERUNGSFAHRPLAN.md](race/R22_VALIDIERUNGSFAHRPLAN.md).
-Nach Umsetzung des Skripts und grünem PR-Test folgt die **erste manuell ausgelöste**
-Vierstrecken-/Dreiseed-Matrix; erst ihre realen Ergebnisse entscheiden über
-die nächste gezielte KI-Korrektur. Der 2026-Lille-Wert aus PR #63 ist
-ein Zwischenbefund, **keine Mehrprofil-Realismusabnahme**.
-R-22 weiter offen, R-23 nicht freigegeben.
+Konkreter Ablauf: [R22_KLEINE_PROFILTESTS.md](race/R22_KLEINE_PROFILTESTS.md). Der erste kleine Vergleich läuft über `scripts/r22-profile-smoke.mjs` und `tests/r22-profile-smoke.test.mjs` direkt in der PR-CI, mit festen Eingaben `all / seed 2026`. Der frühere 36-/60-Rennen-Matrixvorschlag wurde **aus dem Branch entfernt**, nicht gestartet und **nicht beschlossen**.
