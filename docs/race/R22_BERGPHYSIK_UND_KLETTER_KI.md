@@ -75,3 +75,8 @@ Die **auf die Bergkapitäne begrenzte Version C** ist im Quellcode wiederhergest
 weiterhin nur `stable-pack`, kein Default-Wechsel. Damit können GC-Fahrer auf langen Pässen physisch selbst Tempo machen, ohne zeitliche oder positionale Sonderbehandlung.
 
 Nach einer finalen grünen PR-CI erfolgt die Aufnahme als **experimenteller Schritt** in `main`. R-22 ist ausdrücklich nicht abgeschlossen. **Als nächstes** zuerst die Klassiker-/Puncheur-KI für Lüttich in einem separaten kleinen Testschritt untersuchen; Boulognes Attackenhäufigkeit sowie Hautacams Gruppenverteilung getrennt diagnostizieren. Erst am Ende eine größere, bewusst manuelle Mehrseed-Validierung. Kein neuen Physikkern bauen, keine Karriere, keine R-23-Freigabe.
+
+
+## 7. Technisch final verifizierte Integration
+
+[PR #65](https://github.com/Lancester/radsportmanager/pull/65) ist mit Squash-Commit `d8ec5cbf5b1eb9f7de62162f2a7ec523a50d0d14` in `main` übernommen. **Finale CI [#41800807951](https://github.com/Lancester/radsportmanager/actions/runs/41800807951): 271/271 Tests, 0 Fehler.** Alle vier Profi-Referenzrennen bestätigten nach Wiederherstellen der vorläufig bevorzugten **C-Fassung** die gemessenen Werte erneut (Lille 86/15,77 s; Boulogne 32/63,24 s; Liège 46/706,93 s; Hautacam Kletterer Top 4, größte Zielgruppe 4/299,09 s, maximal 36 Gruppen). Damit ist eine **reproduzierbare experimentelle Berg-KI-Erweiterung**, keine sportlich fertig kalibrierte allgemeine Rennengine, integriert. Das Benutzervereinbarte kleine Profiltest-Verfahren und die manuelle Schlussvalidierung bleiben gültig.
