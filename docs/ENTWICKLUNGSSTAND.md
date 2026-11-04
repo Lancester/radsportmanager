@@ -1490,3 +1490,28 @@ Die Rennsimulation protokolliert nun für die drei experimentellen physischen Re
 [PR #62](https://github.com/Lancester/radsportmanager/pull/62) wurde erfolgreich in `main` übernommen (Squash-Commit `d63afbf3cc4eefd447669896db59c6cfb4c89564`). [PR-Actions #41785543300](https://github.com/Lancester/radsportmanager/actions/runs/41785543300) war erfolgreich: **257/257 Tests, 0 Fehler**, inklusive des Sechs-Varianten-Vollrennvergleichs mit jeweils 154 Fahrern. Die neuen Kennzahlen für direkte physische Jagd-Führungswechsel und die längste ununterbrochene persönliche Frontphase sind in die Diagnostik aufgenommen; dies ist **noch keine sportliche Verbesserung der KI**. Der bisherige Default `legacy` bleibt bestehen.
 
 **Weiter offen:** Die neuen Führungs-Kennzahlen tatsächlich über mehrere manuell gestartete Seeds und Strecken auswerten, bevor wir das KI-Verhalten für Ablösung, Rückkehr und ruhige Verfolgung verändern. Der CI-Erfolg ist ein technischer Nachweis, keine professionelle Realitätskalibrierung. R-22 bleibt offen, R-23 ist nicht freigegeben.
+
+
+## R-22: Separater stabiler Peloton-Regler – Kontrolltest vor Freigabe (04.11.2026)
+
+Nach PR #62 wurde die direkte 1D-Gruppen-/Fahrer-KI geprüft: Der bisherige Nachfahrregler setzt acht Fahrer voraus, lässt Jagdhelfer ohne wirkliche Frontposition hohe Watt anfordern und fällt beim Überschreiten von 42 m auf individuelle Zielwatt zurück. Die grundsätzliche Trennung zwischen 24-m-Windschutz und 42-m-Abstandsdiagnose ist richtig, aber die Rückkehr zur Einzel-KI kann Lochbildung verstärken. In der bestehenden Kraft-/Energiebilanz wurde bei Codeprüfung kein ebenso eindeutiger Integratorfehler gefunden; die dynamische Gegenprobe folgt im Test.
+
+**Feature-Branch** `feature/r22-stabiler-peloton-regler`: zusätzliche, ausschließlich opt-in verwendete Variante `groupRidingModel:'stable-pack'`. Lokale Vordermann-Geschwindigkeit, Kraftwatt für dessen Fahrt, begrenzte Abstandsregelung, physisch arbeitende Jagdhelfer nur vorne; kein automatisches Schließen oder neu erfundener Aero-/Leistungsvorteil. Veraltete Taktik- oder CP/W′-Modelle wurden nicht verändert. Ein fester 30-Fahrer-/600-s-Konstanttempo-Test, Einzelregler- und 30-Fahrer-Vollrenntests sind ergänzt. [Fachnotiz](race/R22_STABILES_PELOTON.md).
+
+**Aktueller Status: Code erstellt; Test-/CI-Abnahme noch offen.** Vor positiver Prüfung keine Aussage über tatsächlich gestiegene Zielgruppenqualität. Standard `legacy` bleibt, R-22 Issue #54 und Issue #42 offen. Nächster Schritt: Testfehler korrigieren, anschließend manuelle A/B-Fälle mit mehreren Seeds/Profilen und Wirkungskennzahlen. R-23 keinesfalls freigeben.
+
+
+### R-22 stabilisierter Peloton-Versuch: geprüfter Status / **NICHT MERGEN** (04.11.2026)
+
+[PR #63](https://github.com/Lancester/radsportmanager/pull/63) bleibt **Draft**; kein neuer Standard. [GitHub-Regression #41788228190](https://github.com/Lancester/radsportmanager/actions/runs/41788228190) **261/261 Tests bestanden**, inklusive 600-s-/30-Fahrer-Konstanttempo, Energieprüfung und sieben vollständigen 154-Fahrer-Lille-Varianten. Der ursprüngliche Versuch ohne Beschleunigungs-Feedforward war zwar technisch grün, sportlich aber deutlich schlechter (27 Fahrer in größter Zielgruppe, 576 s Rückstand). Nach Einbau der physisch begründeten Beschleunigungsarbeit verbessert sich dieser Wert auf **88 Fahrer**, aber mit **570 s (~9:30 min)** Rückstand, **26 maximalen physischen Abstandsgruppen**, nur **28 Fahrern innerhalb 60 s** und **183 direkten Jagdführerwechseln**. Deshalb **keine Freigabe**, **kein Merge nach main**, solange keine deutlich glaubwürdigeren Vergleichsverteilungen nachgewiesen wurden.
+
+**Exakter nächster Schritt:** Kontrollierte fahrertypen- und profilspezifische Ursache des frühen Hauptfeldzerfalls isolieren (Lead-Pacing/Leistungsgrenze, lokaler Windschutz, R-19, tatsächliche Jagdfront, 1D-Überholen); harte A/B-Gegenproben mit identischen Seeds und echter Energie-/Positionsbilanz. Keine stillen Zeit-/Geschwindigkeitsboni, keine Änderung am Standardmodell ohne neue fachliche Belege; keine automatisierte große Monte-Carlo-Serie. Vollständiger Befund in [R22_STABILES_PELOTON.md](race/R22_STABILES_PELOTON.md).
+
+
+### Korrektur nach 154-Fahrer-Isolation und A/B-Abnahme – R-22 (04.11.2026)
+
+Die pauschale lokale Mitfahrregelung aus frühen PR-63-Commits ist **verworfen**: der 154er-Isolationstest zeigte ohne Angriffe ein schlechtes Feld. Die geprüfte Endfassung bewahrt die funktionierende reguläre Gruppen-KI für geschützte Mitfahrer und benutzt nur bei physischen Verfolgern/kleinen Gruppen die neue Regelung.
+
+[CI #41789070378](https://github.com/Lancester/radsportmanager/actions/runs/41789070378): **262/262 Tests**, kontrollierte 154er-/20-km-Flachfahrt mit 154 Fahrern in einer Zielgruppe und sieben vollständige Lille-184,9-km-Rennen. Lille/Seed 2026: größte Zielgruppe **86 Fahrer, 15,77 s** Rückstand; **118** Fahrer binnen 60 s statt nur drei in den beiden zuvor genannten A/B-Modellen. Echte Jagdführung **2639 s**, **49** Attacken, max. **16** Gruppen – relevante Restprobleme. Keine Zeit-/Positionsboni, keine Änderungen an CP/W′, R-19, Aero oder Bewegungsintegrator.
+
+**Weiterer Plan:** experimentelle Option getrennt halten, keinen ungeprüften Standardwechsel. Mehrere Seeds/Referenzprofile über den schon vorhandenen ausschließlich manuell startbaren Workflow prüfen, anschließend Angriffstaktik und Gruppen-/Jagdrotation beurteilen. R-22 bleibt offen und R-23 gesperrt. [Einordnung](race/R22_STABILES_PELOTON.md).
