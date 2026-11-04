@@ -142,3 +142,44 @@ eine differenziertere realistische
 Relais-/Überholungsmechanik; mehr
 Watt zu verlangen allein wäre
 dann keine passende Lösung.
+
+## A/B/C/D/E-Ergebnis: kontrolliertes Aufrücken ist wirksam, aber nicht ausreichend
+
+[GitHub-CI #41781971739](https://github.com/Lancester/radsportmanager/actions/runs/41781971739):
+**255/255 Tests grün**, einschließlich **fünf kompletter
+154-Fahrer-Rennen** auf Lille 184,9 km, Seed 2026,
+mit unverändertem CP/W′-, Aero- und R-19-Kern.
+
+| Kennzahl | Coordinated | Relays (110/115 % CP) | Relay-paced (dosiert) |
+| --- | ---: | ---: | ---: |
+| Sieger km/h | 44,76 | 45,41 | 44,76 |
+| Größte Zielgruppe | 133 | 116 | **67** |
+| Rückstand dieser Gruppe | 929 s (15:29) | 775 s (12:55) | **366 s (6:06)** |
+| Maximalgruppen unterwegs | 5 | 8 | 24 |
+| Wirkliche Hauptfeld-Jagdführungszeit | nicht erhoben | 109 s | **1.848 s** |
+| Beauftragte Jagdzeit (ein Team oder mehr) | nicht erhoben | 6.870 s | 11.430 s |
+| Individuelle Jagd-Intent-Wechsel | 123 | 84 | **464** |
+| Mittlere Kurbelwatt | 168 | 182 | 208 |
+
+**Wichtig:** Die neue kontrollierte Aufrückregel
+vervielfacht die tatsächliche körperlich erarbeitete
+Feldführungszeit um etwa den Faktor 17 und reduziert
+den Rückstand der größten Zielgruppe von 12:55
+auf 6:06 Minuten. Das ist ein starker technischer
+Mechanismusbeleg. Trotzdem ist es
+**keine plausible Massensprint-Reproduktion**:
+das große Feld zerfällt wieder in deutlich mehr
+Gruppen, und 464 einzelne Jagd-Intent-Wechsel
+sind kein glaubwürdiger organisierter Mannschaftsablauf.
+
+**Nicht als neue Default-KI übernehmen.**
+Die drei Effekte müssen entkoppelt werden:
+Helfer an die Spitze bringen, ihnen dort
+physisch mögliche zeitlich begrenzte
+Führungsarbeit zuweisen, und nach
+einem Wechsel oder einer gestellten Flucht
+die großen Felder stabil weiterfahren lassen.
+Die 1D-Lage- und Überholmodellierung
+bleibt ein wichtiger Engpass.
+Keine Optimierung nur auf diesen
+einen historischen Referenzseed.
