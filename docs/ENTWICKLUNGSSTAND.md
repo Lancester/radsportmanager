@@ -1256,3 +1256,41 @@ unabhängiger Referenzvergleich
 und die CP/W′-/Ermüdungs- und
 Feld-Dynamik-Kalibrierung.
 R-23 bleibt ausstehend.
+
+
+## R-22 Ursachen-Audit (04.11.2026) – nachgemessene frühe Feldfragmentierung
+
+[PR #57](https://github.com/Lancester/radsportmanager/pull/57)
+gemergt. [249/249 Regressionstests erfolgreich](https://github.com/Lancester/radsportmanager/actions/runs/41774943026).
+Die 5-km-Simulation zeichnet bei Bedarf alle 154 Fahrer samt
+Position, Gruppen, Watt, CP, W′, Kohlenhydraten, R-19-Verfügbarkeit
+und Aero-Faktor auf, **ohne Physik- oder Ergebniseingriff**.
+
+Gepaarter Lille-184,9-km-Test (154 Fahrer, Seed 2026):
+Baseline Sieger 12619,2 s (52,75 km/h), Medianabstand
+663,6 s, letzter 4023,5 s, 50 Gruppen.
+**Ohne R-19**: Sieger 420,7 s schneller, 37 Gruppen.
+**Alte Aero-Approximation**: Sieger 2240,6 s langsamer,
+mittlerer Aero-Faktor 0,8902 statt 0,5897, aber
+**60 statt 50 Gruppen**.
+
+Entscheidender neuer Messbefund: Bereits bei
+**km 25 zwölf** und **km 50 29** Abstandsgruppen,
+obwohl die **R-19-Leistungsstrafe noch 0 %** ist.
+Bei km 150 sind es 42 Gruppen und
+15,8 % Median-R-19-Leistungsstrafe.
+Die **frühe Fragmentierung kann nicht durch R-19
+allein erklärt werden**; die
+starke Formationsaerodynamik (mehrfach Median
+Aero-Faktor 0,40), 1D-Abstandsfeedback
+und Varianz der Fahreranforderungen
+müssen getrennt geprüft werden.
+**Keine Kalibrierungsparameter verändert.**
+
+[Ausführlicher Ursache-Audit samt Zahlen](race/R22_URSACHEN_AUDIT.md).
+Neuer separater manueller Workflow
+**R-22 – Ursachen-Audit (154 Fahrer)** mit
+vier Rennvorlagen, Start-Seed und
+CSV/JSON/Markdown zum Herunterladen;
+bestehender Monte-Carlo-Workflow bleibt erhalten.
+R-22 ist weiterhin offen; R-23 nicht freigegeben.
