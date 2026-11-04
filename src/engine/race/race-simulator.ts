@@ -18,6 +18,7 @@ import {decidePackInstruction,pelotonGroups} from './peloton.ts';
 import {formationAeroFactors} from './formation-aero.ts';
 import {decideStablePackRiding} from './stable-pack.ts';
 import {decideClimbTempo} from './climb-tempo.ts';
+import {decideGeneralAttackOpportunity} from './general-attack.ts';
 import {decideSprintPosition,SPRINT_POSITION} from './sprint-positioning.ts';
 import {decideSprintLaunch,inferredSprintPeakPowerW,sprintPowerDemand}
   from './final-sprint.ts';
@@ -650,38 +651,34 @@ export function simulateRace(x:RaceInput):RaceResult {
                   requestedPowerW:s.decision.desiredPowerW,
                 });
               }
-              const reserve=s.physiology.remainingWPrimeJ/
-                s.profile.wPrimeCapacityJ;
-              // Begonnene Attacke darf sich auch bei gelungener Ablösung
-              // vom Feld fortsetzen; sie endet nach 40 s oder W′-Mangel.
-              if(s.intent==='angriff'&&t-s.lastAttackS<40&&reserve>=0.18)
-                return true;
+              // Generische Offensiv-KI hat kein 88%-Angriffsverbot:
+              // echte Position, Gruppenleistung, Reserve und
+              // Streckensteigung bestimmen den Versuch auch im Finale.
               const group=attackGroups.find(g=>g.includes(s));
-              if(!group||group.length<4)return false;
-              const groupFront=group[0].positionM;
-              const meanCp=group.reduce((n,r)=>n+r.dayCpW,0)/group.length;
+              const groupFront=group?.[0].positionM??s.positionM;
+              const meanCp=group?
+                group.reduce((n,r)=>n+r.dayCpW,0)/group.length:
+                s.dayCpW;
               const grade=x.segments[segmentFor(s,boundaries)].gradeFraction;
-              // In Profirennen werden Fluchtversuche häufig schon in
-              // den ersten Kilometern gestartet. Das bisherige künstliche
-              // Mindestfenster ab 18 % der Strecke verhindert sie komplett.
-              // Nur im R-22-KI-Experiment die erste frühe Phase öffnen;
-              // Starter müssen noch physisch nach vorne fahren.
-              const early=(x.groupRidingModel==='cohesive'||
-                x.groupRidingModel==='coordinated'||
-                (x.groupRidingModel==='relays'||x.groupRidingModel==='relay-paced'||
-          x.groupRidingModel==='front-gated'||x.groupRidingModel==='stable-pack'))&&
-                t>=180&&s.positionM/totalM>=0.015&&
-                s.positionM/totalM<0.13;
-              const nearFront=early?
-                s.positionM>=groupFront-150:
-                s.positionM>=groupFront-40;
-              const opening=t-s.lastAttackS>=900&&t>=250&&
-                (early||s.positionM/totalM>=0.18)&&
-                s.positionM/totalM<0.88&&
-                reserve>=0.42&&nearFront&&
-                s.positionM>=leader.positionM-(early?220:120)&&
-                s.dayCpW>=meanCp*0.93&&grade>=-0.03;
-              return opening;
+              return decideGeneralAttackOpportunity({
+                progress:Math.min(1,s.positionM/totalM),timeS:t,
+                remainingM:Math.max(0,totalM-s.positionM),
+                gradeFraction:grade,
+                groupSize:group?.length??1,
+                distanceFromGroupFrontM:Math.max(0,
+                  groupFront-s.positionM),
+                distanceFromRaceFrontM:Math.max(0,
+                  leader.positionM-s.positionM),
+                dayCpW:s.dayCpW,meanGroupCpW:meanCp,
+                reserveFraction:s.physiology.remainingWPrimeJ/
+                  s.profile.wPrimeCapacityJ,
+                lastAttackAgeS:t-s.lastAttackS,
+                currentIntent:s.intent,
+                earlyRacingModel:[
+                  'cohesive','coordinated','relays','relay-paced',
+                  'front-gated','stable-pack',
+                ].includes(x.groupRidingModel??'legacy'),
+              });
             })(),
           }:{})
         };
