@@ -5,6 +5,8 @@
  * Aktivierung ausschliesslich aus der geometrischen Streckencharakteristik
  * im expliziten stable-pack-Experiment.
  */
+import {contiguousClimbRuns} from './climb-runs.ts';
+
 export const HILLY_RACECRAFT=Object.freeze({
   minRaceM:160000,maxRaceM:225000,
   minAscentM:1750,maxAscentM:3150,
@@ -46,6 +48,21 @@ export function isSelectiveHillyRoute(o:HillyRouteObservation):boolean{
     o.ascentM>=c.minAscentM&&o.ascentM<=c.maxAscentM&&
     ramps>=c.minSteepRamps&&!longClimb;
 }
+/** R-24: identische Geometrie fuehrt bei verschiedener Segmentierung und
+ * wenigen Metern Unterschied in der Gesamtlaenge zum selben Verhalten. */
+export function isAdaptiveHillyRoute(o:HillyRouteObservation):boolean{
+  if(!Number.isFinite(o.raceLengthM)||o.raceLengthM<=0||
+    !Number.isFinite(o.ascentM)||o.ascentM<0||
+    !Array.isArray(o.segments)||!o.segments.length||
+    o.segments.some(s=>!Number.isFinite(s.lengthM)||s.lengthM<=0||
+      !Number.isFinite(s.gradeFraction)))return false;
+  const c=HILLY_RACECRAFT;
+  const ramps=contiguousClimbRuns(o.segments,c.minRampGrade).filter(s=>
+    s.lengthM>=c.minRampLengthM&&s.lengthM<=c.maxRampLengthM);
+  const longClimb=contiguousClimbRuns(o.segments,.05).some(s=>
+    s.lengthM>=c.maxLongClimbM);
+  return ramps.length>=c.minSteepRamps&&!longClimb;
+}
 export interface HillyTacticalObservation {
   enabled:boolean;role:string;strategy:string;specialty?:string;
   progress:number;timeS:number;segmentLengthM:number;
@@ -54,6 +71,8 @@ export interface HillyTacticalObservation {
   reserveFraction:number;lastAttackAgeS:number;
   currentIntent:string;isGroupNominee:boolean;
   breakawayEstablished?:boolean;
+  /** Gleiche physische Faehigkeiten erhalten dieselbe Tempochance. */
+  abilityBased?:boolean;
   criticalPowerW:number;requestedPowerW:number;
 }
 function valid(o:HillyTacticalObservation):boolean{
@@ -128,8 +147,8 @@ export function decideHillyRampTempo(o:HillyTacticalObservation):
   const c=HILLY_RACECRAFT;
   if(!o.enabled||!o.isGroupNominee||
     o.role!=='kapitaen'||
-    !['klassiker','allrounder','kletterer','zeitfahrer']
-      .includes(o.specialty??'')||
+    (!o.abilityBased&&!['klassiker','allrounder','kletterer','zeitfahrer']
+      .includes(o.specialty??''))||
     !selectiveRamp(o,c.tempoMinGrade)||
     o.groupSize<c.minimumGroupSize||
     o.gapToGroupFrontM>c.tempoMaxGroupFrontGapM||

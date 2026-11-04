@@ -51,6 +51,8 @@ export interface ChaseHelperEffortSample {
   enduranceAvailability?:number;
   /** Only physically applied pedal watts, AFTER CP/W′ & endurance. */
   appliedCrankPowerW:number;
+  /** R-24: nur real ungeschuetzte Frontarbeit als solche erfassen. */
+  actualWindExposure?:boolean;
 }
 export function advanceChaseHelperLoad(
   state:ChaseHelperLoad,sample:ChaseHelperEffortSample,
@@ -61,6 +63,7 @@ export function advanceChaseHelperLoad(
     sample.progress>=c.latestProgress||
     sample.teamStrategy!=='sprint'||sample.role!=='helfer'||
     sample.mission!=='jagd'||sample.duty!=='fuehrung'||
+    sample.actualWindExposure===false||
     sample.distanceFromRealGroupFrontM>c.frontRadiusM||
     sample.distanceFromRealGroupFrontM<0||
     sample.physicalGroupSize<c.minMainGroupSize||

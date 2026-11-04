@@ -91,7 +91,7 @@ test('R22 Stabil: vollständiges 30-Fahrer-Flachrennen ohne Ergebnis-/Physikbonu
   assert.ok(result.diagnostics.maximumGroups>=1);
 });
 
-test('R22 Isolation: 154 verschiedene Profis auf 20 km flach, ohne offensive Teamleitlinie',()=>{
+test('R22 Isolation: 154 verschiedene Profis auf 20 km flach, Angriffe explizit ausgeschaltet',()=>{
   const fixture=createReferenceFixture({routeId:'tdf25_lille',seed:2026});
   const input={...fixture.input,
     title:'R22 154er-Konstantprofil ohne offensive Teamstrategie',
@@ -99,6 +99,9 @@ test('R22 Isolation: 154 verschiedene Profis auf 20 km flach, ohne offensive Tea
       gradeFraction:0,descentTechnicality:0}],
     teams:fixture.input.teams.map(team=>({...team,strategy:'ausgewogen'})),
     enduranceModel:'off',
+    // R24: Auch ausgewogene Kapitaene duerfen situativ attackieren.
+    // Der physikalische Kontrolllauf schaltet Attacken daher direkt aus.
+    disableAttacks:true,
   };
   const a=simulateRace({...input,groupRidingModel:'coordinated'});
   const b=simulateRace({...input,groupRidingModel:'stable-pack'});

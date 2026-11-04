@@ -16,10 +16,10 @@ import {auditRace} from '../src/engine/race/race-audit.ts';
 import {buildRiderFavoritesAudit} from '../src/engine/race/rider-strength-audit.ts';
 
 const ids=Object.keys(REFERENCE_ROUTES);
-const args={route:'all',seed:'2026'};
+const args={route:'all',seed:'2026',roster:''};
 for(let i=2;i<process.argv.length;i+=2){
   const flag=process.argv[i],value=process.argv[i+1];
-  if(!value||!['--route','--seed'].includes(flag))
+  if(!value||!['--route','--seed','--roster'].includes(flag))
     throw new Error('R-22 Profil-Smoke: ungültiger Parameter '+flag);
   args[flag.slice(2)]=value;
 }
@@ -28,6 +28,8 @@ if(!Number.isSafeInteger(seed)||seed<0||seed>2147483647)
   throw new Error('R-22 Profil-Smoke: Seed außerhalb 0–2147483647');
 if(args.route!=='all'&&!ids.includes(args.route))
   throw new Error('R-22 Profil-Smoke: unbekannte Strecke');
+if(args.roster&&!['flach','huegelig','klassiker','berg'].includes(args.roster))
+  throw new Error('R-22 Profil-Smoke: unbekanntes Fahrerfeld');
 const routes=args.route==='all'?ids:[args.route];
 const n=x=>+x.toFixed(2);
 const median=arr=>{
@@ -37,7 +39,8 @@ const median=arr=>{
 const results=[];
 for(const id of routes){
   const start=performance.now();
-  const fixture=createReferenceFixture({routeId:id,seed});
+  const fixture=createReferenceFixture({routeId:id,seed,
+    ...(args.roster?{rosterKind:args.roster}:{})});
   const kindByRider=new Map(fixture.input.riders.map(r=>[r.id,r.specialty]));
   const r=simulateRace({...fixture.input,
     groupRidingModel:'stable-pack',diagnosticLevel:'checkpoints'});
@@ -56,6 +59,7 @@ for(const id of routes){
   const details={
     route:id,profile:fixture.route.kind,km:fixture.route.distanceKm,
     seed,participants:154,model:'stable-pack',
+    rosterKind:args.roster||fixture.route.kind,
     winnerId:r.winnerId,winnerType:kindByRider.get(r.winnerId),
     winnerSpeedKmh:n(r.distanceM/r.classification[0].finishTimeS*3.6),
     winnerGroup:groups.winnerGroupSize,
@@ -109,10 +113,39 @@ for(const id of routes){
     longestNamedChaseFrontS:r.diagnostics.namedChaseLeader?.longestFrontSeconds??0,
     longestNamedChaseCpFrontS:r.diagnostics.namedChaseLeader?.
       longestCpNearSeconds??0,
+    exposedNamedChaseFrontS:r.diagnostics.namedChaseLeader?.exposedSeconds??0,
+    longestExposedChaseFrontS:r.diagnostics.namedChaseLeader?.
+      longestExposedSeconds??0,
+    exposedCpNearChaseS:r.diagnostics.namedChaseLeader?.
+      exposedCpNearSeconds??0,
+    longestExposedCpNearChaseS:r.diagnostics.namedChaseLeader?.
+      longestExposedCpNearSeconds??0,
     runtimeS:n((performance.now()-start)/1000),
   };
   results.push(details);
   console.log('R22-PROFILE '+JSON.stringify(details));
+  const attackEffects=r.diagnostics.attackTraces??[];
+  const observed=attackEffects.filter(a=>a.afterFiveKm!==null);
+  console.log('R24-ATTACK-EFFECTS '+JSON.stringify({
+    route:id,seed,attempts:attackEffects.length,
+    observedAfterFiveKm:observed.length,
+    aheadOfFormerGroupOver42M:observed.filter(a=>
+      (a.afterFiveKm.gapToFormerGroupFrontM??-Infinity)>42).length,
+    totalRequestedCrankJ:Math.round(attackEffects.reduce((v,a)=>
+      v+a.requestedCrankJ,0)),
+    totalAppliedCrankJ:Math.round(attackEffects.reduce((v,a)=>
+      v+a.appliedCrankJ,0)),
+    totalAppliedAboveEffectiveCpJ:Math.round(attackEffects.reduce((v,a)=>
+      v+a.appliedAboveEffectiveCpJ,0)),
+    samples:observed.slice(0,8),
+    final15Km:attackEffects.filter(a=>a.startPositionM>=
+      fixture.route.distanceKm*1000-15000).map(a=>({riderId:a.riderId,
+        km:n(a.startPositionM/1000),timeS:a.startTimeS,
+        initialGroupSize:a.initialGroupSize,attackSeconds:a.attackSeconds,
+        appliedCrankJ:n(a.appliedCrankJ),
+        appliedAboveEffectiveCpJ:n(a.appliedAboveEffectiveCpJ),
+        afterFiveKm:a.afterFiveKm,finishRank:a.finishRank})),
+  }));
   if(id==='tdf25_lille')
     console.log('R22-FINAL-SPRINT '+JSON.stringify({
       route:id,seed,

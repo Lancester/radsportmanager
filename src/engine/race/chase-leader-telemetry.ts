@@ -8,6 +8,9 @@ export interface ChaseLeaderObservation {
   gapToActualMainFrontM:number;
   mission:string|null;duty:string|null;intent:string;
   appliedPowerW:number;criticalPowerW:number;
+  effectiveCriticalPowerW?:number;
+  /** Tatsaechliche Position und Aero dieses Zeitschritts. */
+  isAtWindFront?:boolean;aeroFactor?:number;
 }
 interface RiderTelemetry {
   riderId:string;assignedSeconds:number;frontSeconds:number;
@@ -16,6 +19,10 @@ interface RiderTelemetry {
   currentFrontSeconds:number;currentCpNearSeconds:number;
   notMainSeconds:number;tooFarSeconds:number;notLeadingSeconds:number;
   belowCpNearSeconds:number;
+  exposedSeconds:number;longestExposedSeconds:number;
+  currentExposedSeconds:number;
+  exposedCpNearSeconds:number;longestExposedCpNearSeconds:number;
+  currentExposedCpNearSeconds:number;
 }
 export class ChaseLeaderTelemetry {
   private records=new Map<string,RiderTelemetry>();
@@ -26,6 +33,8 @@ export class ChaseLeaderTelemetry {
     if(this.previousId&&this.previousId!==o.leaderId){
       const former=this.records.get(this.previousId)!;
       former.currentFrontSeconds=0;former.currentCpNearSeconds=0;
+      former.currentExposedSeconds=0;
+      former.currentExposedCpNearSeconds=0;
     }
     this.previousId=o.leaderId;
     if(!o.leaderId)return;
@@ -34,6 +43,9 @@ export class ChaseLeaderTelemetry {
       frontSeconds:0,cpNearFrontSeconds:0,frontCrankEnergyJ:0,
       longestFrontSeconds:0,longestCpNearSeconds:0,
       currentFrontSeconds:0,currentCpNearSeconds:0,
+      exposedSeconds:0,longestExposedSeconds:0,currentExposedSeconds:0,
+      exposedCpNearSeconds:0,longestExposedCpNearSeconds:0,
+      currentExposedCpNearSeconds:0,
       notMainSeconds:0,tooFarSeconds:0,notLeadingSeconds:0,
       belowCpNearSeconds:0};
       this.records.set(o.leaderId,r);}
@@ -48,6 +60,9 @@ export class ChaseLeaderTelemetry {
       o.appliedPowerW>=0;
     const cpNear=duty&&actual&&
       o.appliedPowerW>=.86*o.criticalPowerW;
+    const exposed=duty&&actual&&o.isAtWindFront===true&&
+      o.aeroFactor!==undefined&&Number.isFinite(o.aeroFactor)&&
+      o.aeroFactor>=.95;
     if(!main)r.notMainSeconds+=o.dt;
     else if(!near)r.tooFarSeconds+=o.dt;
     else if(!duty)r.notLeadingSeconds+=o.dt;
@@ -65,16 +80,35 @@ export class ChaseLeaderTelemetry {
       r.longestCpNearSeconds=Math.max(
         r.longestCpNearSeconds,r.currentCpNearSeconds);
     }else r.currentCpNearSeconds=0;
+    if(exposed){
+      r.exposedSeconds+=o.dt;
+      r.currentExposedSeconds+=o.dt;
+      r.longestExposedSeconds=Math.max(r.longestExposedSeconds,
+        r.currentExposedSeconds);
+    }else r.currentExposedSeconds=0;
+    const effectiveCp=o.effectiveCriticalPowerW??o.criticalPowerW;
+    const effectiveCpNear=duty&&actual&&Number.isFinite(effectiveCp)&&
+      effectiveCp>0&&o.appliedPowerW>=.86*effectiveCp;
+    if(exposed&&effectiveCpNear){
+      r.exposedCpNearSeconds+=o.dt;
+      r.currentExposedCpNearSeconds+=o.dt;
+      r.longestExposedCpNearSeconds=Math.max(r.longestExposedCpNearSeconds,
+        r.currentExposedCpNearSeconds);
+    }else r.currentExposedCpNearSeconds=0;
   }
   report():{
     assignedSeconds:number;frontSeconds:number;
     cpNearFrontSeconds:number;longestFrontSeconds:number;
     longestCpNearSeconds:number;meanFrontPowerW:number;
+    exposedSeconds:number;longestExposedSeconds:number;
+    exposedCpNearSeconds:number;longestExposedCpNearSeconds:number;
     missed:{notMainSeconds:number;tooFarSeconds:number;
       notLeadingSeconds:number;belowCpNearSeconds:number};
     riders:Array<{riderId:string;assignedSeconds:number;
       frontSeconds:number;cpNearFrontSeconds:number;
       longestFrontSeconds:number;longestCpNearSeconds:number;
+      exposedSeconds:number;longestExposedSeconds:number;
+      exposedCpNearSeconds:number;longestExposedCpNearSeconds:number;
       meanFrontPowerW:number}>;
   }{
     const riders=[...this.records.values()].sort((a,b)=>
@@ -92,6 +126,12 @@ export class ChaseLeaderTelemetry {
         r.longestFrontSeconds)),
       longestCpNearSeconds:Math.max(0,...riders.map(r=>
         r.longestCpNearSeconds)),
+      exposedSeconds:sum('exposedSeconds'),
+      longestExposedSeconds:Math.max(0,...riders.map(r=>
+        r.longestExposedSeconds)),
+      exposedCpNearSeconds:sum('exposedCpNearSeconds'),
+      longestExposedCpNearSeconds:Math.max(0,...riders.map(r=>
+        r.longestExposedCpNearSeconds)),
       meanFrontPowerW:sum('frontSeconds')?
         Math.round(sum('frontCrankEnergyJ')/sum('frontSeconds')*100)/100:0,
       missed:{notMainSeconds:sum('notMainSeconds'),
@@ -104,6 +144,10 @@ export class ChaseLeaderTelemetry {
         cpNearFrontSeconds:r.cpNearFrontSeconds,
         longestFrontSeconds:r.longestFrontSeconds,
         longestCpNearSeconds:r.longestCpNearSeconds,
+        exposedSeconds:r.exposedSeconds,
+        longestExposedSeconds:r.longestExposedSeconds,
+        exposedCpNearSeconds:r.exposedCpNearSeconds,
+        longestExposedCpNearSeconds:r.longestExposedCpNearSeconds,
         meanFrontPowerW:mean(r)})),
     };
   }

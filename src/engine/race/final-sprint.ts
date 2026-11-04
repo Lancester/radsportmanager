@@ -36,6 +36,8 @@ export interface FinalSprintSituation {
   groupFrontSpeedMps:number;
   headwindMps:number;
   reserveFraction:number;
+  /** Abstand zu einem realen Fahrer vor oder hinter einer Solo-Gruppe. */
+  nearbyRiderGapM?:number|null;
 }
 export function decideSprintLaunch(o:FinalSprintSituation):
   {shouldLaunch:boolean;triggerDistanceM:number;reason:string}{
@@ -52,7 +54,9 @@ export function decideSprintLaunch(o:FinalSprintSituation):
     o.distanceFromGroupFrontM<0||
     o.remainingM<0||o.reserveFraction<0||o.reserveFraction>1.000001||
     (o.frontWheelGapM!==null&&
-      (!Number.isFinite(o.frontWheelGapM)||o.frontWheelGapM<0)))
+      (!Number.isFinite(o.frontWheelGapM)||o.frontWheelGapM<0))||
+    (o.nearbyRiderGapM!==undefined&&o.nearbyRiderGapM!==null&&
+      (!Number.isFinite(o.nearbyRiderGapM)||o.nearbyRiderGapM<0)))
     throw new RangeError('R22: ungültige Sprintentscheidung');
   // Die individuelle Präferenz ist eine Fahrer-Eigenschaft und kein
   // perfektes Timing-Talent. Frühstarter und Abwartende koexistieren.
@@ -78,7 +82,9 @@ export function decideSprintLaunch(o:FinalSprintSituation):
     shouldLaunch:o.remainingM<=triggerDistanceM&&
       o.remainingM<=c.earliestRemainingM&&
       o.remainingM>0&&
-      o.groupSize>=c.minGroupSize&&
+      (o.groupSize>=c.minGroupSize||
+        (o.nearbyRiderGapM!==undefined&&o.nearbyRiderGapM!==null&&
+          o.nearbyRiderGapM<=120))&&
       o.reserveFraction>=c.minReserveFraction,
     triggerDistanceM,
     reason:sheltered?'Sprint: aus echtem Windschatten spät antreten':

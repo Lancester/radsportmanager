@@ -6,19 +6,24 @@ import {createRaceExample,simulateRace}
   from '../src/engine/race/race-simulator.ts';
 
 test('R-22 Diagnostik greift nicht in Ergebnis/Physik ein',()=>{
-  const input=createRaceExample({profile:'flach',seed:2026});
-  const normal=simulateRace(input);
-  const traced=simulateRace({...input,diagnosticLevel:'checkpoints'});
-  const withoutTrace={...traced};
-  delete withoutTrace.checkpoints;
-  assert.deepEqual(withoutTrace,normal);
-  assert.ok(traced.checkpoints.length>0);
-  for(const cp of traced.checkpoints){
-    assert.equal(cp.riders.length,cp.activeRiders);
-    assert.equal(cp.groupSizes.reduce((a,b)=>a+b,0),cp.activeRiders);
-    assert.ok(cp.riders.every(r=>r.aeroFactor>0&&r.aeroFactor<=1&&
-      r.wPrimeRemainingPct>=0&&r.wPrimeRemainingPct<=100&&
-      r.enduranceAvailabilityPct>=60&&r.enduranceAvailabilityPct<=100));
+  for(const model of [undefined,'stable-pack']){
+    const input={...createRaceExample({profile:'flach',seed:2026}),
+      ...(model?{groupRidingModel:model}:{})};
+    const normal=simulateRace(input);
+    const traced=simulateRace({...input,diagnosticLevel:'checkpoints'});
+    const withoutTrace={...traced,diagnostics:{...traced.diagnostics}};
+    delete withoutTrace.checkpoints;
+    delete withoutTrace.diagnostics.attackTraces;
+    assert.deepEqual(withoutTrace,normal);
+    assert.ok(Array.isArray(traced.diagnostics.attackTraces));
+    assert.ok(traced.checkpoints.length>0);
+    for(const cp of traced.checkpoints){
+      assert.equal(cp.riders.length,cp.activeRiders);
+      assert.equal(cp.groupSizes.reduce((a,b)=>a+b,0),cp.activeRiders);
+      assert.ok(cp.riders.every(r=>r.aeroFactor>0&&r.aeroFactor<=1&&
+        r.wPrimeRemainingPct>=0&&r.wPrimeRemainingPct<=100&&
+        r.enduranceAvailabilityPct>=60&&r.enduranceAvailabilityPct<=100));
+    }
   }
 });
 

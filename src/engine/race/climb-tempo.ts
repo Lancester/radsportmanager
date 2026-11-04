@@ -24,6 +24,7 @@ export interface ClimbTempoObservation extends GroupRidingObservation {
   role:string;
   remainingM:number;
   climbLengthM:number;
+  abilityBased?:boolean;
 }
 
 /** Null = reguläre Gruppenregelung; Zahl = reine Wattanfrage. */
@@ -32,7 +33,7 @@ export function decideClimbTempo(
 ):number|null {
   // Nur Kletterer – inklusive der aus demselben Modell abgeleiteten
   // Klassementfahrer. Sprint und echte Angriffe bleiben unberührt.
-  if(o.specialty!=='kletterer'||o.role!=='kapitaen'||
+  if((!o.abilityBased&&o.specialty!=='kletterer')||o.role!=='kapitaen'||
     o.gradeFraction<CLIMB_TEMPO.minimumGrade||
     o.climbLengthM<CLIMB_TEMPO.minimumClimbLengthM||
     o.groupSize<CLIMB_TEMPO.minimumGroupSize||

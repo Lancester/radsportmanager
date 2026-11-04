@@ -21,6 +21,15 @@ export const R12_AERO_EXPERIMENT=Object.freeze({
   minimumAeroFactor:0.40,
 });
 
+/** Stable-pack verwendet die Formation als vollstaendiges Aero-Modell.
+ * Alte Modi behalten fuer exakte Vergleiche die historische Kombination. */
+export function raceAeroFactor(input:{formation:number|null;
+  legacyPack:number;stablePack:boolean}):number{
+  if(input.formation===null)return input.legacyPack;
+  return input.stablePack?input.formation:
+    Math.min(input.formation,input.legacyPack);
+}
+
 /**
  * Liefert einen Aero-Faktor je Fahrer, deterministisch nach Position und ID.
  * Nur nach VORNE innerhalb einer lokalen Abstandszone prüfen; keine

@@ -16,7 +16,7 @@ export interface IntelligentRider {
 }
 export interface IntelligentTeam {
   id:string;strategy:RaceStrategy;
-  /** Später via Teammanager auswählbar. 0 = kein Jagdhelfer. */
+  /** Veraltete Vergleichs-API; im adaptiven Modus ohne Steuerwirkung. */
   chaseHelperCount?:number;
 }
 export type CrewMission='jagd'|'sprintzug'|'schutz';
@@ -34,6 +34,8 @@ export interface RaceSituation {
   gapFractionOfRemaining:number;
   /** Nicht jeder Rückstand ist automatisch eine erfolgversprechende Jagd. */
   chaseViable:boolean;
+  /** Tatsaechliche Fahrer der vorausliegenden Gruppe. */
+  leadingRiderIds?:readonly string[];
 }
 export const R15_R16=Object.freeze({
   groupBreakM:42,
@@ -78,7 +80,8 @@ function meanSpeed(g:readonly IntelligentRider[]):number{
 }
 export function analyzeRaceSituation(
   riders:readonly IntelligentRider[],remainingM:number,
-  maxBreakawaySize=R15_R16.maxBreakawaySize,
+  maxBreakawaySize:number=R15_R16.maxBreakawaySize,
+  allowLargerLeadingGroups=false,
 ):RaceSituation{
   valid('maximumBreakawaySize',maxBreakawaySize,
     Number.isInteger(maxBreakawaySize)&&maxBreakawaySize>=1&&
@@ -91,7 +94,8 @@ export function analyzeRaceSituation(
   const groups=sortGroups(riders);
   const lead=groups[0];
   const main=groups.reduce((best,g)=>g.length>best.length?g:best,groups[0]);
-  const smallLeader=lead!==main&&lead.length<=maxBreakawaySize&&
+  const smallLeader=lead!==main&&
+    (allowLargerLeadingGroups||lead.length<=maxBreakawaySize)&&
     main.length>=R15_R16.minimumMainGroupSize;
   const gap=smallLeader?lead.at(-1)!.positionM-main[0].positionM:0;
   const relativeSpeed=smallLeader?meanSpeed(lead)-meanSpeed(main):0;
@@ -106,6 +110,7 @@ export function analyzeRaceSituation(
     (relativeSpeed<=2.5||gapFraction<=0.04);
   return {leadingBreakaway:smallLeader&&gap>=R15_R16.minimumBreakawayGapM,
     gapM:gap,breakawaySize:smallLeader?lead.length:0,
+    leadingRiderIds:smallLeader?lead.map(r=>r.id):[],
     mainGroupSize:main.length,relativeSpeedMps:relativeSpeed,
     projectedGapM,
     gapFractionOfRemaining:gapFraction,chaseViable:plausible};
@@ -126,6 +131,8 @@ export function decideIntelligentCrew(input:{
   physicalRelayMode?:boolean;
   /** Experimenteller R-22-Sprint: Jagd/Sprintzug getrennt planen. */
   sprintFinaleMode?:boolean;
+  /** R-24: auch groessere Spitzengruppen und eigene Teamziele beachten. */
+  adaptiveChase?:boolean;
 }):CrewPlan{
   if(!input||!Array.isArray(input.teams)||!Array.isArray(input.riders))
     throw new RangeError('R-15/R-16: Team-/Fahrerfeld fehlt');
@@ -159,7 +166,8 @@ export function decideIntelligentCrew(input:{
   const missionByTeam=new Map<string,CrewMission>();
   const leaderByTeam=new Map<string,{riderId:string;sinceS:number}>();
   const situation=analyzeRaceSituation(input.riders,input.remainingM,
-    input.sprintFinaleMode?12:R15_R16.maxBreakawaySize);
+    input.sprintFinaleMode?12:R15_R16.maxBreakawaySize,
+    input.adaptiveChase===true);
   if(input.riders.length<2)return {orders,situation,missionByTeam,leaderByTeam};
   const groups=sortGroups(input.riders);
   const main=groups.reduce((best,g)=>g.length>best.length?g:best,groups[0]);
@@ -196,17 +204,27 @@ export function decideIntelligentCrew(input:{
     const chase=(input.chasingTeamIds!==undefined?
       situation.leadingBreakaway:situation.chaseViable)&&
       isMain&&
-      input.progress<(input.sprintFinaleMode?.995:.94)&&
+      input.progress<(input.adaptiveChase?1:
+        input.sprintFinaleMode?.995:.94)&&
       (input.chasingTeamIds===undefined||input.chasingTeamIds.has(team.id))&&
-      !(input.sprintFinaleMode&&team.chaseHelperCount===0)&&
+      !(input.sprintFinaleMode&&!input.adaptiveChase&&team.chaseHelperCount===0)&&
       (!sprintTrain||input.sprintFinaleMode===true)&&
-      team.strategy!=='offensiv'&&
+      (team.strategy!=='offensiv'||input.adaptiveChase===true)&&
       (team.strategy!=='ausgewogen'||!sprintTeamReady||urgentChase);
     const mission:CrewMission=chase?'jagd':
       sprintTrain?'sprintzug':'schutz';
-    if(input.restInPeloton&&mission==='schutz')continue;
+    // Keine permanente Phantom-Tempoarbeit im grossen Feld. Bei einer
+    // tatsaechlich gefaehrdeten Position oder niedriger Reserve bleibt
+    // aber ein naher Helfer als Begleiter des Kapitaens vorgesehen.
+    const targetRank=group.findIndex(r=>r.id===target.id)+1;
+    const needsCaptainSupport=input.adaptiveChase&&
+      team.strategy==='kapitaen_schuetzen'&&target.role==='kapitaen'&&
+      group.length>=4&&
+      (target.reserveFraction<.4||targetRank>Math.ceil(group.length*.70)||
+        (!isMain&&raceFrontM-target.positionM>75));
+    if(input.restInPeloton&&mission==='schutz'&&!needsCaptainSupport)continue;
     if(input.progress>=0.97&&!sprintTrain&&
-      !(input.sprintFinaleMode&&chase))continue;
+      !((input.sprintFinaleMode||input.adaptiveChase)&&chase))continue;
     const gapToFront=(r:IntelligentRider)=>group[0].positionM-r.positionM;
     const helpers=members.filter(r=>r.role==='helfer'&&group.includes(r)&&
       !(input.sprintFinaleMode&&r.chaseSpent)&&
@@ -253,14 +271,16 @@ export function decideIntelligentCrew(input:{
       team.strategy==='kapitaen_schuetzen'?(urgency?4:2):(urgency?3:2);
     else if(sprintTrain)requested=input.progress>=0.94?3:4;
     else if(team.strategy==='kapitaen_schuetzen'&&input.progress<0.82)
-      requested=2;
-    if(chase&&input.sprintFinaleMode&&team.chaseHelperCount!==undefined)
+      requested=input.adaptiveChase?1:2;
+    if(chase&&input.sprintFinaleMode&&!input.adaptiveChase&&
+      team.chaseHelperCount!==undefined)
       requested=team.chaseHelperCount;
     requested=Math.min(R15_R16.maximumCrew,requested,available.length);
     // Teammitglieder werden nach tatsächlichem Abstand zur Front und
     // Energiereserve berücksichtigt, nicht alphabetisch als Phantomführer.
     const sorted=available.sort((a,b)=>
-      (input.sprintFinaleMode&&mission==='sprintzug'?
+      ((input.sprintFinaleMode&&mission==='sprintzug')||
+        (input.adaptiveChase&&mission==='schutz')?
         Math.abs(a.positionM-target.positionM)-
           Math.abs(b.positionM-target.positionM):
         gapToFront(a)-gapToFront(b))||
@@ -426,7 +446,8 @@ export function decideIntelligentCrew(input:{
     const chosen=physicalFrontRelay??kept??ready??fresh??candidates[0];
     if(chosen)fieldChaseLeader={
       riderId:chosen.rider.id,
-      sinceS:kept?previous!.sinceS:input.timeS,
+      sinceS:kept&&chosen.rider.id===kept.rider.id?
+        previous!.sinceS:input.timeS,
     };
     for(const order of orders.values()){
       if(order.mission!=='jagd')continue;

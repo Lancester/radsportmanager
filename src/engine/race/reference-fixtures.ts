@@ -10,8 +10,9 @@
  * orientieren sich an publizierten Typ-Mittelwerten (nicht Messwerten
  * einzelner realer Profis). Kein heimlicher Zeit-/Positionierungsbonus.
  */
-import type {RaceInput,RaceRider,RaceSegment,RaceStrategy}
+import type {RaceInput,RaceRider,RaceSegment}
   from './race-simulator.ts';
+import type {RaceStrategy} from './race-tactics.ts';
 import {validateRace} from './race-simulator.ts';
 
 export type ReferenceRouteId=
@@ -316,6 +317,8 @@ export interface ReferenceFixture {
 }
 export function createReferenceFixture(options:{
   routeId:ReferenceRouteId;seed?:number;teamCount?:number;
+  /** Vergleich: gleiche Fahrer/Teams fuer unterschiedliche Rennprofile. */
+  rosterKind?:ReferenceRoute['kind'];
 }):ReferenceFixture{
   if(!options||!REFERENCE_ROUTES[options.routeId])
     throw new RangeError('R-22A: Referenzstrecke ungültig');
@@ -324,7 +327,8 @@ export function createReferenceFixture(options:{
     throw new RangeError('R-22C: 1–22 Referenzteams');
   const route=REFERENCE_ROUTES[options.routeId];
   const segments=createReferenceSegments(options.routeId);
-  const chosen=createReferenceTeamCompositions(route.kind).slice(0,count);
+  const chosen=createReferenceTeamCompositions(options.rosterKind??route.kind)
+    .slice(0,count);
   const teams=chosen.map(c=>({
     id:c.teamId,name:'Fiktives Profi-Team '+c.teamId,
     strategy:c.strategy,

@@ -1,5 +1,20 @@
 # Entwicklungsstand
 
+## R-24 – Auditkorrekturen als experimenteller Entwicklungsstand
+
+Auf dem Entwicklungsbranch werden die im unabhängigen Audit erkannten
+Kopplungs-, Angriffs-, Gruppen- und Jagdprobleme bearbeitet. Der
+Bewegungs- und CP/W′-Kern bleibt erhalten; die konkrete R-19-Kopplung
+und die `stable-pack`-Entscheidungen ändern sich. Die autonome Wahl der
+Jagdhelfer bleibt die Produktentscheidung. Einzelheiten, Modellannahmen,
+Testergebnisse und offene sportliche Befunde:
+[R-24 Auditkorrekturen](race/R24_AUDIT_KORREKTUREN.md).
+
+**Status:** Dieser Abschnitt beschreibt einen Testkandidaten auf einem
+Entwicklungsbranch, keine Übernahme nach `main` und keine
+Realismusfreigabe. Der nachfolgende R-23-Abschnitt beschreibt weiterhin
+den integrierten Stand von `main`.
+
 **Aktueller Stand: 04.11.2026 – R-23: Sprint-, Jagd-, Klassiker- und Hügel-KI in `main`; 330/330 Tests; Work-Gesamtaudit als nächste unabhängige Qualitätsprüfung.** Ein Seed ist noch keine Mehrseed-Kalibrierung.
 
 ## Aktueller verbindlicher Stand – R-23 integriert und Work-Gesamtaudit vorbereitet (04.11.2026)
