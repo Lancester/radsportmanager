@@ -9,7 +9,8 @@ export function finishGroupMetrics(
   riders:ReadonlyArray<FinishRider>,maxAdjacentGapS=1,
 ):{
   groups:FinishGroup[];winnerGroupSize:number;largestGroupSize:number;
-  largestGroupSharePct:number;within60sOfWinner:number;
+  largestGroupSharePct:number;largestGroupGapToWinnerS:number;
+  within60sOfWinner:number;
   within180sOfWinner:number;
 }{
   if(!riders.length||!Number.isFinite(maxAdjacentGapS)||
@@ -36,6 +37,9 @@ export function finishGroupMetrics(
     groups,winnerGroupSize:groups[0].count,
     largestGroupSize:largest,
     largestGroupSharePct:+(largest/s.length*100).toFixed(1),
+    // Bei mehreren gleich großen Gruppen entscheidet die früheste.
+    largestGroupGapToWinnerS:+(groups.find(g=>g.count===largest)!.startTimeS-
+      winnerTime).toFixed(2),
     within60sOfWinner:s.filter(r=>r.finishTimeS-winnerTime<=60).length,
     within180sOfWinner:s.filter(r=>r.finishTimeS-winnerTime<=180).length,
   };
