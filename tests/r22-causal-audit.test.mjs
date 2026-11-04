@@ -44,5 +44,9 @@ test('R-22 realer Ursachen-Audit: drei 154er-Vollrennen und Exporte',()=>{
   // Vorherige unveränderte Referenz aus manuellem #41773569558.
   assert.ok(Math.abs(report.variants[0].winnerTimeS-12619.2)<.2);
   assert.ok(Math.abs(report.variants[0].medianGapS-663.6)<.2);
+  const auditCheckpoints=output.split('\n').find(s=>s.startsWith(
+    'R22-CAUSAL-CHECKPOINTS '));
+  assert.ok(auditCheckpoints,'Checkpoint-Protokoll fehlt');
+  console.log(auditCheckpoints);
   console.log('R22-CAUSAL-RESULTS',JSON.stringify(report));
 });
