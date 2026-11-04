@@ -441,7 +441,8 @@ export function simulateRace(x:RaceInput):RaceResult {
           progress:Math.min(1,leader.positionM/totalM),
           mainGroupIds:new Set(main.map(r=>r.id)),teams:teamRefs,
           riders:planningRiders,situation:analyzeRaceSituation(
-            planningRiders,Math.max(0,totalM-leader.positionM)),
+            planningRiders,Math.max(0,totalM-leader.positionM),
+            sprintFriendlyRace?12:6),
           previous:chaseState,
           sprintFinaleMode:sprintFriendlyRace,
         });
