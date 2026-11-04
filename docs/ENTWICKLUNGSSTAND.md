@@ -1073,12 +1073,16 @@ Vier volle 154-Fahrer-Rennen und eine 70er-
 Berg-Gegenprobe erfolgreich auf dem
 GitHub-Runner ausgeführt. Die Rennzeit-/Gruppen-
 Ausreißer sind noch **nicht empirisch kalibriert**.
-Ein 154er-200-km-Flachlauf:
-21 max. Gruppen; Median-Zielabstand
-ca. 12 min, letzter Fahrer ca. 84 min zurück.
-154er-170-km-Berglauf:
-82 max. Gruppen; Median-Zielabstand
-ca. 41 min, letzter Fahrer ca. 105 min zurück.
+Der aktuelle positionsgeprüfte
+[GitHub-Actions-Lauf #41744546224](https://github.com/Lancester/radsportmanager/actions/runs/41744546224)
+ergab für 154 Fahrer/200 km flach:
+19 maximale Gruppen, Median-Zielrückstand
+ca. 14 min, letzter Fahrer ca. 43 min zurück.
+Für 154 Fahrer/170 km bergig:
+87 Gruppen, Median-Zielrückstand
+ca. 47 min, letzter Fahrer ca. 113 min zurück.
+Alle vier 154er-Profile liefen im CI-Runner
+in ca. 7,5–10,8 Sekunden je Einzelevent.
 Das sind **technische Messungen, keine
 behaupteten realistischen WorldTour-Verteilungen**.
 
