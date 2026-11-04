@@ -80,6 +80,9 @@ for(const id of routes){
     sprintEscortSeconds:r.diagnostics.sprintEscortSeconds??0,
     leadoutPaceCoordinationSeconds:r.diagnostics.leadoutPaceCoordinationSeconds??0,
     independentWheelFindingSeconds:r.diagnostics.independentWheelFindingSeconds??0,
+    actualSprintTrainRiderSeconds:r.diagnostics.actualSprintTrainRiderSeconds??0,
+    nearSprinterTrainRiderSeconds:r.diagnostics.nearSprinterTrainRiderSeconds??0,
+    lateSprintChaseRiderSeconds:r.diagnostics.lateSprintChaseRiderSeconds??0,
     top10Types:r.classification.slice(0,10).map(x=>kindByRider.get(x.id)),
     runtimeS:n((performance.now()-start)/1000),
   };
@@ -190,6 +193,9 @@ for(const id of routes){
       sprintEscortSeconds:r.diagnostics.sprintEscortSeconds??0,
     leadoutPaceCoordinationSeconds:r.diagnostics.leadoutPaceCoordinationSeconds??0,
     independentWheelFindingSeconds:r.diagnostics.independentWheelFindingSeconds??0,
+    actualSprintTrainRiderSeconds:r.diagnostics.actualSprintTrainRiderSeconds??0,
+    nearSprinterTrainRiderSeconds:r.diagnostics.nearSprinterTrainRiderSeconds??0,
+    lateSprintChaseRiderSeconds:r.diagnostics.lateSprintChaseRiderSeconds??0,
       sprintFinale:r.diagnostics.sprintFinale??[],
       // Warum fehlen vor dem Zielsprint Helfer? Kein weiterer Lauf,
       // nur dieselben vorhandenen 5-km-Checkpoints beobachten.
