@@ -25,6 +25,15 @@ test('R19: Verpflegungsbilanz ist nachvollziehbar, ohne negative Speicher',()=>{
     endurancePowerAvailability(fasted));
   assert.ok(endurancePowerAvailability(fasted)>=0.6);
   assert.equal(fasted.carbohydrateIngestedKcal,0);
+  for(const state of [fed,fasted]){
+    assert.ok(Math.abs(
+      1200+state.carbohydrateIngestedKcal-
+      state.carbohydrateConsumedKcal-
+      state.carbohydrateOverflowKcal-
+      state.carbohydrateKcal)<1e-5,
+      'Kohlenhydratbilanz muss exakt nachvollziehbar sein');
+    assert.ok(state.carbohydrateUnmetDemandKcal>=0);
+  }
 });
 test('R17: gleicher frontnaher Helfer bleibt bei Schichtwechsel verfügbar',()=>{
   const teams=[{id:'T',strategy:'kapitaen_schuetzen'}];
