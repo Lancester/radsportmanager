@@ -93,3 +93,32 @@ Der bereits gespeicherte `sprintFinale`-Querschnitt der tatsächlich gefahrenen 
 [GitHub Actions #41817675032](https://github.com/Lancester/radsportmanager/actions/runs/41817675032): **286/286 Tests grün** mit den drei Phasen; Lille **F023 Platz 33, +11,08 s**, nach 20 km bewusst **Rang 134 statt verfrüht Rang 17**, nach 100 km **Rang 110**, späteres physisches Aufrücken; Boulogne/Liège/Hautacam unverändert. Das ist der **vorherige Zwischenstand**, nicht bereits ein Erfolg der **neu hinzugefügten** Solo-Hinterrad-/Leadout-Steuerung. Zusätzliche Diagnose [CI #41818209636](https://github.com/Lancester/radsportmanager/actions/runs/41818209636), ebenfalls **286/286 grün**: F023-Helfer F024 km175 noch -17,49 m, km180 +74,15 m vor F023 in einer anderen Abstandsgruppe. Daraus ergab sich die neue Tempo-Koordination.
 
 **Gate für den aktuellen PR #72:** Erst nach vollständigem GitHub-CI mit *beiden* neuen getrennten Fähigkeiten und allen vier bekannten Einzelrennprofilen entscheidet die sportliche Ergebnisprüfung über die Integration. `legacy` bleibt Default, keine Physikänderung, kein automatischer Großlauf.
+
+
+## 6. Final geprüfter kombinierter Stand – PR #73 integriert (04.11.2026)
+
+**GitHub-Freigabe:** [PR #73](https://github.com/Lancester/radsportmanager/pull/73) wurde nach **zwei vollständigen erfolgreichen CI-Läufen**, darunter [Actions #41820155850](https://github.com/Lancester/radsportmanager/actions/runs/41820155850), **295/295 Tests bestanden** und null Fehler, mit Squash-Commit `11e02f2f2cbc1be0d247facc55d14f0734e852f2` in `main` integriert. Der ältere PR #72 wurde ausdrücklich als *durch #73 ersetzt* geschlossen.
+
+**Gemessener aktueller Vierprofil-Einzelrennen-Vergleich – nur Seed 2026, je 154 Fahrer**:
+
+| Kriterium | Freigegebene Dreiphasen-Variante mit Solo-Hinterrad | Ausgangsbefund PR #71 |
+| --- | ---: | ---: |
+| Stärkster Lille-Sprinter F023 Zielrang | **5** | **150** |
+| F023 Rückstand | **8,18 s** | **267,50 s** |
+| F023 Rang km 20 | **134** (absichtlich nicht an der Spitze) | 149 |
+| F023 Rang km 100 | **110** | 126 |
+| F023 Finale bei 250 m | **Rang 17 in 126er-Gruppe** | nicht diagnostiziert |
+| Wirklich nahe Teamhelfer bei 250 m | **3 innerhalb 30 m**, alle drei voraus | früher 0 in vorheriger Dreiphasenversion |
+| F023 Sprintskill | **0,95** | 0,95 |
+| F023 getrenntes Hinterradtalent | **0,976** | nicht modelliert |
+| F023 W′ vor Sprintauslösung | **100 %** | nicht im gleichen Umfang gemessen |
+| Gesamte Lille-Positionierungsarbeit | **8284 Fahrer-Sekunden** | nicht vorhanden |
+| Reale Eskorteure | **1854 Fahrer-Sekunden** | nicht vorhanden |
+| Anpassung von Sprintzug-Helferwatt | **13465 Fahrer-Sekunden** | nicht vorhanden |
+| Eigenständige Fremdhinterrad-Anforderungen | **4397 Fahrer-Sekunden** | nicht vorhanden |
+
+Lille gewinnt diesmal **Klassikerfahrer F036**, nicht ein Sprinter. Verbleibende Zielzeitgruppen: größte Gruppe 81 / +25,94s; **130 Fahrer innerhalb 60s**, Angriffsevents 48. Diese konkreten Zahlen sind die **aktuelle neue Referenz**. Die drei anderen Profile bleiben beim identischen Seed unverändert: Boulogne Klassikergewinner / 108 Angriffe / größte Zielgruppe 32 +63,24s, Liège Sprinter / 68 Angriffe / größte Zielgruppe 31 +152,89s, Hautacam Kletterer / 13 Angriffe / größte Zielgruppe 4 +299,09s.
+
+**Genauigkeit der sportlichen Aussage:** Die Hilfe der drei nahen Helfer ist **räumlich wirklich nachgewiesen**, aber im Diagnose-Querschnitt wurden **0** davon als Crew-Mission `sprintzug` gezählt. Die kombinierte KI verbessert also **faktisch Positionierung und vorhandene Führungsräder**, ist aber **noch kein umfassend modellierter, taktisch koordinierter Sprintzug**. Das neue Talent `wheelFindingSkill` erzeugt **keine direkte Siegchance und keinen Phantomaero-Faktor**; die dokumentierten 4397 Sek. sind angeforderte Wattänderungen beim Versuch, real vorhandene gegnerische Hinterräder zu nutzen. Ob daraus in einer größeren Stichprobe ohne Helfer genug wirkliche Siegchancen entstehen, ist später empirisch zu testen. **Kein garantiertes Ergebnis** nach nur einem Seed.
+
+**Nächste Aufgabe:** Separate kleine Iteration für wirklich koordinierte finale Teamführung und realistische Verfolgung der frühen Flucht, während drei Rennphasen, physische CP/W′-Grenzen, R-19 und `legacy`-Default geschützt bleiben. Wieder vier Profile / ein Seed, große Multi-Seed-Kampagne erst nach abgeschlossener KI-Entwicklung.
