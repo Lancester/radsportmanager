@@ -78,6 +78,8 @@ for(const id of routes){
     climbingTempoSeconds:r.diagnostics.climbingTempoSeconds??0,
     sprintPositioningSeconds:r.diagnostics.sprintPositioningSeconds??0,
     sprintEscortSeconds:r.diagnostics.sprintEscortSeconds??0,
+    leadoutPaceCoordinationSeconds:r.diagnostics.leadoutPaceCoordinationSeconds??0,
+    independentWheelFindingSeconds:r.diagnostics.independentWheelFindingSeconds??0,
     top10Types:r.classification.slice(0,10).map(x=>kindByRider.get(x.id)),
     runtimeS:n((performance.now()-start)/1000),
   };
@@ -161,6 +163,7 @@ for(const id of routes){
         strategy:fixture.input.teams.find(x=>x.id===rider?.teamId)?.strategy,
         baseCpW:rider?.criticalPowerW,wPrimeCapacityJ:rider?.wPrimeJ,
         massKg:rider?.massKg,sprintSkill:rider?.sprintSkill,
+        wheelFindingSkill:rider?.wheelFindingSkill??null,
         finishRank:classification?.rank,finishGapS:classification?
           n(classification.gapS):null,
         avgCrankW:classification?n(classification.averageCrankPowerW):null,
@@ -185,6 +188,8 @@ for(const id of routes){
       preRaceBestSprinter:sprinters.strongest.riderId,
       sprintPositioningSeconds:r.diagnostics.sprintPositioningSeconds??0,
       sprintEscortSeconds:r.diagnostics.sprintEscortSeconds??0,
+    leadoutPaceCoordinationSeconds:r.diagnostics.leadoutPaceCoordinationSeconds??0,
+    independentWheelFindingSeconds:r.diagnostics.independentWheelFindingSeconds??0,
       sprintFinale:r.diagnostics.sprintFinale??[],
       // Warum fehlen vor dem Zielsprint Helfer? Kein weiterer Lauf,
       // nur dieselben vorhandenen 5-km-Checkpoints beobachten.
