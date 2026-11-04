@@ -38,7 +38,18 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
   const summary=JSON.parse(summaryLine.slice('R22-PROFILES-SUMMARY '.length));
   assert.equal(summary.races,4);
   assert.equal(summary.notRealismValidated,true);
+  const traces=log.split('\n').filter(line=>
+    line.startsWith('R22-WINNER-TRACE '));
+  assert.equal(traces.length,4);
+  for(const line of traces){
+    const trace=JSON.parse(line.slice('R22-WINNER-TRACE '.length));
+    assert.ok(trace.winnerId);
+    assert.ok(trace.trace.length>=4);
+    assert.ok(trace.trace.every(x=>x.winnerRank>=1&&x.winnerRank<=154&&
+      x.winnerGapM>=0));
+  }
   console.log(lines.join('\n'));
+  console.log(traces.join('\n'));
   console.log(summaryLine);
 });
 
