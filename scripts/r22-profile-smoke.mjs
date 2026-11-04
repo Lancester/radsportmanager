@@ -85,6 +85,8 @@ for(const id of routes){
     lateSprintChaseRiderSeconds:r.diagnostics.lateSprintChaseRiderSeconds??0,
     spentChaseHelpers:r.diagnostics.spentChaseHelpers??0,
     intentionalChaseRetreatSeconds:r.diagnostics.intentionalChaseRetreatSeconds??0,
+    committedChasePullSeconds:r.diagnostics.committedChasePullSeconds??0,
+    realFrontChaseCpSeconds:r.diagnostics.realFrontChaseCpSeconds??0,
     top10Types:r.classification.slice(0,10).map(x=>kindByRider.get(x.id)),
     runtimeS:n((performance.now()-start)/1000),
   };
@@ -200,6 +202,8 @@ for(const id of routes){
     lateSprintChaseRiderSeconds:r.diagnostics.lateSprintChaseRiderSeconds??0,
     spentChaseHelpers:r.diagnostics.spentChaseHelpers??0,
     intentionalChaseRetreatSeconds:r.diagnostics.intentionalChaseRetreatSeconds??0,
+    committedChasePullSeconds:r.diagnostics.committedChasePullSeconds??0,
+    realFrontChaseCpSeconds:r.diagnostics.realFrontChaseCpSeconds??0,
       sprintFinale:r.diagnostics.sprintFinale??[],
       // Physisch im Wind verausgabte Jagdhelfer: nur EIN Lauf,
       // Checkpointabstand vor/nach den realen zurücknehmenden Watt.
@@ -260,6 +264,39 @@ for(const id of routes){
       bestPlacedSprinter:bestActualSprinter?.id,
       winnerId:r.winnerId,
       watched:watch,
+    }));
+  }
+  // Die Lücke der tatsächlich gefahrenen Flucht zum Hauptfeld vor /
+  // während der Hochjagd, NICHT bloß ein Sprint- oder Ergebnislabel.
+  if(id==='tdf25_lille'){
+    const gapAt=progress=>{
+      const cp=(r.checkpoints??[]).find(x=>
+        x.km>=fixture.route.distanceKm*progress);
+      if(!cp)return null;
+      const groups=new Map();
+      for(const row of cp.riders){
+        const entries=groups.get(row.groupIndex)??[];
+        entries.push(row);
+        groups.set(row.groupIndex,entries);
+      }
+      const ordered=[...groups.entries()].sort((a,b)=>
+        b[1].length-a[1].length||
+        Math.min(...a[1].map(r=>r.groupIndex))-
+          Math.min(...b[1].map(r=>r.groupIndex)));
+      const main=ordered[0]?.[1]??[];
+      const lead=groups.get(Math.min(...groups.keys()))??[];
+      const mainFront=Math.max(...main.map(r=>r.positionM));
+      const leadRear=Math.min(...lead.map(r=>r.positionM));
+      const genuineBreak=lead!==main&&lead.length<=6&&main.length>=8;
+      return {km:n(cp.km),mainSize:main.length,leadSize:lead.length,
+        gapM:n(genuineBreak?Math.max(0,leadRear-mainFront):0),
+        actualBreak:genuineBreak};
+    };
+    const gaps=[.65,.70,.75,.80,.85,.90,.95,.98].map(gapAt);
+    console.log('R22-LILLE-CHASE-GAPS '+JSON.stringify({
+      route:id,seed,gaps,
+      measuredLongPullSeconds:r.diagnostics.committedChasePullSeconds??0,
+      spentHelpers:r.diagnostics.spentChaseHelpers??0,
     }));
   }
   // Keine neue Simulation: zeigt, ob Puncheure an den real modellierten
