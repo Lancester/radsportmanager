@@ -26,7 +26,7 @@ if(!/^artifacts\/[\w/-]+$/.test(args.output)||args.output.includes('..'))
 const f=createReferenceFixture({routeId:args.route,seed});
 const runs=[],checkpoints=[],finishes=[];
 const rounded=n=>+n.toFixed(2);
-for(const model of ['legacy','cohesive','coordinated']){
+for(const model of ['legacy','cohesive','coordinated','relays']){
   const t=performance.now();
   const result=simulateRace({...f.input,
     groupRidingModel:model,diagnosticLevel:'checkpoints'});
@@ -40,6 +40,9 @@ for(const model of ['legacy','cohesive','coordinated']){
     largestFinishGroupSharePct:finishGroups.largestGroupSharePct,
     largestFinishGroupGapS:finishGroups.largestGroupGapToWinnerS,
     meanCrankW:rounded(audit.averageCrankPowerW),
+    orderedRelayTeamSeconds:result.diagnostics.orderedRelayTeamSeconds??0,
+    mainFieldFrontWorkWithAssignedChaserS:
+      result.diagnostics.mainFieldFrontWorkWithAssignedChaserS??0,
     within60sOfWinner:finishGroups.within60sOfWinner,
     finishGroupCount:finishGroups.groups.length,
     winner:result.winnerId,
@@ -84,7 +87,7 @@ for(const model of ['legacy','cohesive','coordinated']){
       gapS:rounded(r.gapS),avgW:rounded(r.averageCrankPowerW)});
   }
 }
-const base=runs[0],experiment=runs[2];
+const base=runs[0],experiment=runs[3];
 const delta={winnerTimeS:rounded(experiment.winnerTimeS-base.winnerTimeS),
   medianGapS:rounded(experiment.medianGapS-base.medianGapS),
   lastGapS:rounded(experiment.lastGapS-base.lastGapS),
@@ -106,11 +109,12 @@ const md=[
   'bei größeren Gruppen das gemeinsame Tempo an, statt durchgehend',
   'eine fahrerindividuelle CP-Fraktion einzufordern. Nur Watt-Anfragen.',
   '',
-  '| Modell | Sieger km/h | Median-Rückstand s | Max. Gruppen | Größte Zielgruppe (1s) | Rückstand größte Zielgruppe s | Siegergruppe (1s) | Binnen 60s | Attacken | Mittelwatt |',
-  '| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
+  '| Modell | Sieger km/h | Median-Rückstand s | Max. Gruppen | Größte Zielgruppe (1s) | Rückstand größte Zielgruppe s | Siegergruppe (1s) | Binnen 60s | Attacken | Mittelwatt | Jagdteam tatsächlich vorn (s) |',
+  '| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
   ...runs.map(r=>'| '+[r.model,r.speedKmh,r.medianGapS,
     r.maximumGroups,r.largestFinishGroup,r.largestFinishGroupGapS,
-    r.winnerFinishGroup,r.within60sOfWinner,r.attacks,r.meanCrankW].join(' | ')+' |'),
+    r.winnerFinishGroup,r.within60sOfWinner,r.attacks,r.meanCrankW,
+    r.mainFieldFrontWorkWithAssignedChaserS].join(' | ')+' |'),
   '',
   '## Delta experimentelle KI − bisherige KI',
   '- Siegerzeit: '+delta.winnerTimeS+' s',
