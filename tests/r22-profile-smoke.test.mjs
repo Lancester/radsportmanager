@@ -152,6 +152,32 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
   console.log(finishLines.join('\n'));
   console.log(leaderLine);
   console.log(traces.join('\n'));
+  const selectionLines=log.split('\n').filter(line=>
+    line.startsWith('R22-CLASSICS-SELECTION '));
+  assert.equal(selectionLines.length,1,
+    'Klassiker-Positionierungs- und Rampentempo-Audit fehlt');
+  const selection=JSON.parse(selectionLines[0].slice(
+    'R22-CLASSICS-SELECTION '.length));
+  assert.equal(selection.route,'lbl25_liege');
+  assert.equal(selection.seed,2026);
+  assert.ok(selection.approachS>=0&&selection.rampTempoS>=0);
+  assert.ok(Array.isArray(selection.rampRiders));
+  assert.equal(selection.keyRiderTrace.length,3);
+  assert.ok(selection.keyRiderTrace.every(x=>
+    x.id&&x.finishRank>=1&&x.finishRank<=154&&
+    x.samples.length>0&&x.samples.every(p=>
+      p.group>=1&&p.rank>=1&&p.rank<=p.group&&
+      p.realFrontGapM>=0&&p.wPrimePct>=0&&p.wPrimePct<=100)));
+  for(const row of rows){
+    assert.ok(row.classicsApproachSeconds>=0&&
+      row.classicsRampTempoSeconds>=0);
+    assert.ok(Array.isArray(row.classicsRampTempoRiders));
+    if(row.profile!=='klassiker'){
+      assert.equal(row.classicsApproachSeconds,0);
+      assert.equal(row.classicsRampTempoSeconds,0);
+      assert.deepEqual(row.classicsRampTempoRiders,[]);
+    }
+  }
   const classicAudits=log.split('\n').filter(line=>
     line.startsWith('R22-CLASSICS-PUNCH-AUDIT '));
   assert.equal(classicAudits.length,1,'Klassiker-Rampen-Audit fehlt');
