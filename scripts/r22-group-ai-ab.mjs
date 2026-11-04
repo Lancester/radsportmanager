@@ -8,6 +8,7 @@ import {createReferenceFixture,REFERENCE_ROUTES}
   from '../src/engine/race/reference-fixtures.ts';
 import {simulateRace} from '../src/engine/race/race-simulator.ts';
 import {auditRace} from '../src/engine/race/race-audit.ts';
+import {finishGroupMetrics} from '../src/engine/race/finish-groups.ts';
 
 const args={route:'tdf25_lille',seed:'2026',output:'artifacts/r22-group-ai'};
 for(let i=2;i<process.argv.length;i+=2){
@@ -25,14 +26,22 @@ if(!/^artifacts\/[\w/-]+$/.test(args.output)||args.output.includes('..'))
 const f=createReferenceFixture({routeId:args.route,seed});
 const runs=[],checkpoints=[],finishes=[];
 const rounded=n=>+n.toFixed(2);
-for(const model of ['legacy','cohesive']){
+for(const model of ['legacy','cohesive','coordinated']){
   const t=performance.now();
   const result=simulateRace({...f.input,
     groupRidingModel:model,diagnosticLevel:'checkpoints'});
   const audit=auditRace(result);
   if(result.finisherCount!==154)throw new Error('unvollständiger A/B-Lauf');
+  const finishGroups=finishGroupMetrics(result.classification);
   const row={
     model,seed,route:args.route,participants:result.finisherCount,
+    winnerFinishGroup:finishGroups.winnerGroupSize,
+    largestFinishGroup:finishGroups.largestGroupSize,
+    largestFinishGroupSharePct:finishGroups.largestGroupSharePct,
+    largestFinishGroupGapS:finishGroups.largestGroupGapToWinnerS,
+    meanCrankW:rounded(audit.averageCrankPowerW),
+    within60sOfWinner:finishGroups.within60sOfWinner,
+    finishGroupCount:finishGroups.groups.length,
     winner:result.winnerId,
     winnerTimeS:rounded(result.classification[0].finishTimeS),
     speedKmh:rounded(result.distanceM/
@@ -75,11 +84,13 @@ for(const model of ['legacy','cohesive']){
       gapS:rounded(r.gapS),avgW:rounded(r.averageCrankPowerW)});
   }
 }
-const base=runs[0],experiment=runs[1];
+const base=runs[0],experiment=runs[2];
 const delta={winnerTimeS:rounded(experiment.winnerTimeS-base.winnerTimeS),
   medianGapS:rounded(experiment.medianGapS-base.medianGapS),
   lastGapS:rounded(experiment.lastGapS-base.lastGapS),
-  maximumGroups:experiment.maximumGroups-base.maximumGroups};
+  maximumGroups:experiment.maximumGroups-base.maximumGroups,
+  largestFinishGroup:experiment.largestFinishGroup-base.largestFinishGroup,
+  within60sOfWinner:experiment.within60sOfWinner-base.within60sOfWinner};
 const csv=rows=>[Object.keys(rows[0]).join(','),
   ...rows.map(r=>Object.values(r).join(','))].join('\n')+'\n';
 const report={status:'exploratory-not-calibrated',route:f.route.name,seed,
@@ -95,16 +106,20 @@ const md=[
   'bei größeren Gruppen das gemeinsame Tempo an, statt durchgehend',
   'eine fahrerindividuelle CP-Fraktion einzufordern. Nur Watt-Anfragen.',
   '',
-  '| Modell | Sieger km/h | Median-Rückstand s | Letzter s | Max. Gruppen | Attacken |',
-  '| --- | ---: | ---: | ---: | ---: | ---: |',
+  '| Modell | Sieger km/h | Median-Rückstand s | Max. Gruppen | Größte Zielgruppe (1s) | Rückstand größte Zielgruppe s | Siegergruppe (1s) | Binnen 60s | Attacken | Mittelwatt |',
+  '| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
   ...runs.map(r=>'| '+[r.model,r.speedKmh,r.medianGapS,
-    r.lastGapS,r.maximumGroups,r.attacks].join(' | ')+' |'),
+    r.maximumGroups,r.largestFinishGroup,r.largestFinishGroupGapS,
+    r.winnerFinishGroup,r.within60sOfWinner,r.attacks,r.meanCrankW].join(' | ')+' |'),
   '',
   '## Delta experimentelle KI − bisherige KI',
   '- Siegerzeit: '+delta.winnerTimeS+' s',
   '- Median-Rückstand: '+delta.medianGapS+' s',
   '- Letzter: '+delta.lastGapS+' s',
   '- Maximale Gruppen: '+delta.maximumGroups,
+  '- Größte Zielgruppe Δ: '+delta.largestFinishGroup,
+  '- Fahrer binnen 60s Δ: '+delta.within60sOfWinner,
+  '- Zielgruppe: maximal 1 s zwischen benachbarten Zielankünften; keine UCI-Offizialmessung.',
   '',
   '## Messpunkte',
   '| km | Gruppen bisher | Gruppen neu | größte Gruppe bisher | größte Gruppe neu | Median-Abstand bisher m | Median-Abstand neu m |',
