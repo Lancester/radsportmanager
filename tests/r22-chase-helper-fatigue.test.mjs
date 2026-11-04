@@ -97,6 +97,10 @@ test('R22: CP-naher, langer Jagdeinsatz fordert tatsächlich höhere Watt gegen 
   assert.ok(target!==null&&target>300);
   assert.ok(target<=350*1.20,
     'Requested watts are still CP/Wprime limited in the engine');
+  const regulated=decideCommittedChasePull({...base,
+    originalRequestedW:350*1.15});
+  assert.ok(regulated!==null&&regulated<350*1.15,
+    'existing 1.15 CP leading spikes must be damped to sustainable pace');
   assert.ok(target*.86>=350*.97,
     'Actual target is at least about 97 percent CP');
   assert.equal(decideCommittedChasePull({...base,role:'sprinter'}),null);
