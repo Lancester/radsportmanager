@@ -119,13 +119,14 @@ export function coordinatePelotonChase(input:{
       a.team.localeCompare(b.team))
     .slice(0,sprintFinale&&remainingM<35000?4:
       R22_CHASE.maximumTeams).map(x=>x.team);
-  // Ein Mandat bleibt stabil, aber nicht fuer ein Team, dessen eigener
-  // Kapitaen inzwischen vorne faehrt oder das keine Helfer mehr besitzt.
+  // Bestehende Mandate bleiben erhalten, solange die Teams noch
+  // interessiert sind. Neu interessierte Teams dürfen dazukommen.
   if(adaptive&&previous.active.length){
     const stillEligible=previous.active.filter(id=>choices.includes(id));
     if(stillEligible.length){
-      const state={...previous,active:stillEligible};
-      return {state,chasingTeamIds:new Set(stillEligible)};
+      const active=[...stillEligible,...choices.filter(id=>!stillEligible.includes(id))];
+      const state={...previous,active};
+      return {state,chasingTeamIds:new Set(active)};
     }
   }
   const state={active:choices,sinceS:timeS,cooldownUntilS:previous.cooldownUntilS};
