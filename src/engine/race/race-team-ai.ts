@@ -7,6 +7,7 @@
  */
 import type {RaceRole,RaceStrategy} from './race-tactics.ts';
 import type {KnownRiderAbility} from './opponent-assessment.ts';
+import {sprintPreparationStage} from './sprint-positioning.ts';
 
 export interface IntelligentRider {
   id:string;teamId:string;role:RaceRole;
@@ -14,6 +15,7 @@ export interface IntelligentRider {
   criticalPowerW:number;reserveFraction:number;aggression:number;
   /** Opt-in: Helfer hat physisch viel Jagdarbeit geleistet und wird abgelöst. */
   chaseSpent?:boolean;knownAbility?:KnownRiderAbility;
+  wheelFindingSkill?:number;
 }
 export interface IntelligentTeam {
   id:string;strategy:RaceStrategy;
@@ -204,13 +206,19 @@ export function decideIntelligentCrew(input:{
     const raceFrontM=groups[0][0].positionM;
     const targetRemainingM=input.remainingM+Math.max(0,
       raceFrontM-target.positionM);
-    // Sprintzugstart am EIGENEN Sprinter, nicht am Ausreißer vorne.
-    const sprintTrain=team.strategy==='sprint'&&
+    // Neue autonome Sprintplanung orientiert sich an Zeit und echter
+    // Position des eigenen Sprinters, nicht an einem festen Rennprozentsatz.
+    const dynamicSprint=input.adaptiveChase===true&&input.sprintFinaleMode===true;
+    const sprintStage=dynamicSprint&&target.speedMps>0?
+      sprintPreparationStage({remainingM:targetRemainingM,speedMps:target.speedMps,
+        distanceFromGroupFrontM:Math.max(0,group[0].positionM-target.positionM),
+        wheelFindingSkill:target.wheelFindingSkill}):'wait';
+    const sprintTrain=team.strategy==='sprint'&&group.length>=3&&
+      (dynamicSprint?targetRemainingM>250&&sprintStage!=='wait':
       input.progress>=0.82&&
       (input.sprintFinaleMode?
         targetRemainingM>250&&targetRemainingM<=10000:
-        input.remainingM>250&&input.remainingM<=10000)&&
-      group.length>=3;
+        input.remainingM>250&&input.remainingM<=10000));
     // Ein abgehängter Kapitän darf seine Helfer in der eigenen Gruppe
     // zum realen Aufschließen einsetzen. Die größte Gruppe muss dazu
     // nicht ebenfalls hinter der Spitze liegen. Angreifende Teams und
@@ -296,7 +304,8 @@ export function decideIntelligentCrew(input:{
       Math.min(3,available.length):
       team.strategy==='sprint'? (urgency?5:3):
       team.strategy==='kapitaen_schuetzen'?(urgency?4:2):(urgency?3:2);
-    else if(sprintTrain)requested=input.progress>=0.94?3:4;
+    else if(sprintTrain)requested=(dynamicSprint?sprintStage==='leadout':
+      input.progress>=0.94)?3:4;
     else if(team.strategy==='kapitaen_schuetzen'&&input.progress<0.82)
       requested=input.adaptiveChase?1:2;
     if(chase&&input.sprintFinaleMode&&!input.adaptiveChase&&
