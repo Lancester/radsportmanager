@@ -68,3 +68,12 @@ Nächster Diskussionspunkt: Zusammenspiel und Verfolgung von Teams nach Etablier
 - Ein Fahrer kann die Verfolgung aufgeben oder reduzieren, wenn die Lage, Kräfte, Teamaufgabe und Aussichten dies nahelegen. Er muss nicht bis zur völligen Erschöpfung jagen. Motivation und spätere Aufgaben können seine Risikobereitschaft beeinflussen.
 - Keine Erfolgsgarantie, keine festen Sollzeiten; Wattanfragen, tatsächliche Position und Energiebilanz verbleiben im bestehenden Modell.
 - Gemeinsam vereinbarte Zielbeschreibung, keine Aussage, dass die 120-s-Regel bereits geändert, die künftige KI umgesetzt oder getestet ist.
+
+## 8. Angriffe um den Sieg — vereinbart
+
+- Fahrer wägen ihre Siegchance anhand persönlicher Fähigkeiten, Team- und Eigenzielen, Rennlage, verbleibender Strecke, verfügbaren Kräften und gegenwärtigem und vorausliegendem Gelände ab.
+- Ein schneller Sprinter kann eine gemeinsame Ankunft bevorzugen, muss aber auf gefährliche Angriffe reagieren können. Ein Fahrer mit geringerer Sprintchance kann versuchen, sich vor dem Ziel, z. B. auf für ihn geeignetem Gelände, zu lösen.
+- Favoriten dürfen situativ auch weit vor dem Finale attackieren, wenn die Situation und die Kräfte dafür sprechen. Kein starres Verbot bis zu einem festgelegten Kilometer; auch frühe Attacken benötigen nachvollziehbare Motivation.
+- Rivalen können beispielsweise unmittelbar reagieren, dosiert nachführen oder die Verantwortung dem Team bzw. anderen Fahrern überlassen. Diese Tendenzen und Prioritäten sind noch weiter gemeinsam auszuarbeiten.
+- Ein Angriff kann scheitern, Energie kosten und späteres Mitfahren erschweren. Das Ergebnis entsteht aus tatsächlicher Bewegung, Gruppendynamik und Energiebilanz, ohne Positions- oder Siegbonus.
+- Gemeinsam vereinbarte Zielvorstellung; noch nicht als vollständig umgesetzt oder validiert behauptet. Erst Regeln gemeinsam durchgehen, dann Entwicklungsmodell anpassen und danach testen.
