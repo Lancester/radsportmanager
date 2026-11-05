@@ -1,5 +1,17 @@
 # Entwicklungsstand
 
+## Wiederaufnehmbarer Zwischenstand – R-24 (05.11.2026)
+
+**Entwicklungsbranch:** `feature/r24-rennki-audit`, [Entwurf PR #81](https://github.com/Lancester/radsportmanager/pull/81). Dieser Stand ist experimentell; `main` bleibt unverändert. Die ausführliche Chronik steht in [R-24 Auditkorrekturen](race/R24_AUDIT_KORREKTUREN.md), der Abgleich mit echten Rennen in [R-24 Realrennen](race/R24_REALRENNEN_ABGLEICH.md).
+
+**Erledigt:** Der physikalische Bewegungskern und der CP/W′-Kern wurden beibehalten. Die Ermüdungskopplung, Angriffs- und Jagdentscheidungen, Gruppenerkennung und Renntelemetrie wurden überarbeitet. Ein Fehler im Sprintzug, der unbeteiligten Fahrern Leistung entzog, und eine verdeckte 25-%-Begrenzung der dreiminütigen Rampenbewertung wurden korrigiert. Geschützte abgehängte Kapitäne können mit tatsächlich verfügbaren Teamhelfern einen Anschluss organisieren; die dokumentierten Entscheidungsschwellen sind vorläufig und erzeugen keine künstliche Positionsänderung.
+
+**Sportlicher Zwischenstand:** Im kontrollierten Vergleich mit demselben fiktiven Fahrerfeld und Seed 2026 lagen die Medianrückstände `main` → aktueller Kandidat bei Lille 26,9 → 17,2 s, Boulogne 344,7 → 205,4 s, Liège 791,2 → 600,6 s und Hautacam 1931,7 → 936,2 s. Das sind Einzelbeobachtungen, keine Zielwerte und kein Nachweis einer allgemeinen Verbesserung. Andere Zusammensetzungen und Seeds ergeben andere Ergebnisse; insbesondere variiert die Wirkung der Kapitänsjagd. Große Rückstände sind für sich genommen kein Fehler: Der Finishermedian des echten Liège betrug 2024 +13:10 und 2025 +5:41. Die unterschiedlichen Teilnehmer, Ausfälle und Zeitmessungen begrenzen den Vergleich.
+
+**Geprüft:** 17 gezielte Tests zur Rampenbewertung und 19 zur Jagd-/Schutzlogik bestanden; nach Anpassung situationsabhängiger Integrationserwartungen bestanden 12 gezielte Profil-/Klassiktests. TypeScript wurde geprüft. Der letzte Gesamtlauf vor der Testanpassung ergab 362/363; der einzelne Fehltest verlangte Rampenarbeit auch ohne passende Rennsituation. Die Testannahme wurde transparent angepasst und durch unabhängige situative Tests ergänzt; ein neuer vollständiger Gesamtlauf steht noch aus. Keine Realismusfreigabe.
+
+**Als Nächstes:** Vollständige Tests und CI auf dem jeweiligen Branchstand prüfen; vier Profile mit mehreren Seeds und gleichen Feldern nachvollziehbar gegenüberstellen; Rennverläufe und Leistung insbesondere bei frühen Berg-Gruppentrennungen, Anschlüssen, Sprintern und Klassikern untersuchen. Erst danach Auswirkungen und dokumentierte Schwellen bewerten. Noch kein Merge nach `main`.
+
 ## R-24 – Auditkorrekturen als experimenteller Entwicklungsstand
 
 Auf dem Entwicklungsbranch werden die im unabhängigen Audit erkannten
