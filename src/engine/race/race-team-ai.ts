@@ -57,8 +57,8 @@ export const R15_R16=Object.freeze({
  * Kapitäns. Sie begrenzen nur die freiwillige Wattanforderung; ob die
  * Gruppe wirklich aufschließt, entscheidet die bestehende Rennphysik. */
 export const R24_REJOIN=Object.freeze({
-  minimumGroupSize:4,maximumGapM:1500,maximumRemainingFraction:.10,
-  minimumCaptainReserve:.27,leaderCpFraction:1.045,supportCpFraction:1,
+  minimumGroupSize:2,maximumRemainingFraction:.10,
+  leaderCpFraction:1.045,supportCpFraction:1,
 });
 export interface CrewPlan {
   orders:Map<string,CrewOrder>;
@@ -225,9 +225,9 @@ export function decideIntelligentCrew(input:{
     const rejoin=input.adaptiveChase===true&&
       team.strategy==='kapitaen_schuetzen'&&target.role==='kapitaen'&&
       !isMain&&preceding!==null&&group.length>=R24_REJOIN.minimumGroupSize&&
-      precedingGap>R15_R16.groupBreakM&&precedingGap<=R24_REJOIN.maximumGapM&&
+      precedingGap>R15_R16.groupBreakM&&
       precedingGap/Math.max(1,targetRemainingM)<R24_REJOIN.maximumRemainingFraction&&
-      target.reserveFraction>=R24_REJOIN.minimumCaptainReserve&&!ownLeaderAhead;
+      !ownLeaderAhead;
     const chase=rejoin||((input.chasingTeamIds!==undefined?
       situation.leadingBreakaway:situation.chaseViable)&&
       isMain&&
@@ -291,7 +291,7 @@ export function decideIntelligentCrew(input:{
       situation.projectedGapM/Math.max(1,input.remainingM)>0.05;
     let requested=1;
     if(chase)requested=input.physicalRelayMode?
-      Math.min(input.sprintFinaleMode&&input.progress>=2/3?1:4,
+      Math.min(input.sprintFinaleMode&&input.progress>=2/3&&!rejoin?1:4,
         available.length):input.restInPeloton?
       Math.min(3,available.length):
       team.strategy==='sprint'? (urgency?5:3):
