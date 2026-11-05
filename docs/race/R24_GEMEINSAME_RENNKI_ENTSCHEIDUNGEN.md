@@ -29,3 +29,13 @@ Nächster Diskussionspunkt: Zusammenspiel und Verfolgung von Teams nach Etablier
 - Wenn andere Teams ausreichend arbeiten, kann ein Team zunächst Kräfte sparen und später bei Bedarf helfen. Es kann ein kontrolliertes Feldtempo geben; das Feld muss nicht stehenbleiben oder sofort Vollgas fahren.
 - Der Abstand entsteht physisch aus dem tatsächlichen Tempo beider Gruppen und kann anders verlaufen als erwartet. Keine feste erlaubte Zeitspanne, garantierte Einholung oder vorgegebene Gruppengröße.
 - Diese Regeln sind gemeinsam beschlossene Ziele; sie sind noch nicht vollständig implementiert oder sportlich validiert. Vor weiteren Tests werden die Regeln gemeinsam durchgesprochen.
+
+## 4. Verfolgung organisieren und dosieren — vereinbart
+
+- Interessierte Teams können zunächst ein kontrolliertes Feldtempo fahren, um den Vorsprung zu begrenzen, ohne die Flucht sofort einholen zu müssen.
+- Bei wachsender Gefahr, knapp werdender Reststrecke oder anderer veränderter Rennlage können interessierte Teams die Arbeit verstärken und weitere verfügbare Helfer einsetzen.
+- Helfer können sich in der Führung abwechseln. Die tatsächlich geleistete ungeschützte Führungsarbeit kostet Energie; eine Führung darf bei passender Leistungsfähigkeit und Rennlage auch mehrere Minuten oder länger dauern. Keine allgemeine feste Pflichtdauer.
+- Sprintteams wägen den Aufwand gegen die benötigten Kräfte für Sprintvorbereitung und Finale ab. Andere Teams können sich beteiligen, abwarten oder nicht mitarbeiten, abhängig von ihrem jeweiligen Ziel und der Rennlage.
+- Die Team-KI bestimmt zunächst autonom, wie viele verfügbare Helfer sie einsetzt; der Spieler muss dies nicht während des Rennens festlegen.
+- Gruppen- und Fahrertempo, Einholen, Erschöpfung und mögliche Niederlage entstehen durch tatsächliche simulierte Kräfte, Windschatten, individuelle Fähigkeiten und Reserven. Einholen ist nicht garantiert.
+- Taktische Zielvorstellung; keine Aussage, dass jede Einzelheit schon umgesetzt oder validiert ist. Weiterhin zuerst Regeln gemeinsam besprechen, dann Entwicklungsmodell ändern und erst danach testen.
