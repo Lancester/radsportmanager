@@ -47,6 +47,17 @@ export function advanceBreakawayTracker<T extends {positionM:number}>(input:{
   // formal schon derselben Gruppe wie das alte Hauptfeld zuordnet.
   const formerMainFront=mainMembers.length?
     Math.max(...mainMembers.map(r=>r.positionM)):null;
+  // Nachträglich aufgeschlossene Fahrer gehören zur Flucht, sofern sie
+  // real mit einem ursprünglichen Ausreißer vor dem Hauptfeld fahren.
+  // Nicht die gesamte 42-m-Abstandskette als Flucht übernehmen.
+  const joinedEscapees=formerMainFront===null?[]:groups.flatMap(group=>
+    group.some(r=>escapedIds.has(riderId(r))&&
+      r.positionM>formerMainFront+35)?group.filter(r=>
+        r.positionM>formerMainFront+35&&group.some(e=>
+          escapedIds.has(riderId(e))&&Math.abs(e.positionM-r.positionM)<=15)):[]);
+  const extendedEscapeIds=new Set([...state.escapeIds,...joinedEscapees.map(riderId)]);
+  const extendedMainIds=state.mainIds.filter(id=>!extendedEscapeIds.has(id));
+  const updatedState={...state,escapeIds:[...extendedEscapeIds],mainIds:extendedMainIds};
   const escapedStillAhead=formerMainFront!==null&&remaining.some(r=>
     r.positionM>formerMainFront+35);
   let gap=Infinity;
@@ -55,9 +66,9 @@ export function advanceBreakawayTracker<T extends {positionM:number}>(input:{
   const caught=mainMembers.length>0&&joined.length>0&&
     !escapedStillAhead&&gap<=35;
   if(!caught)
-    return {state:{...state,catchSinceS:null},event:null,gapM:0};
+    return {state:{...updatedState,catchSinceS:null},event:null,gapM:0};
   const since=state.catchSinceS??timeS;
   if(timeS-since<40)
-    return {state:{...state,catchSinceS:since},event:null,gapM:gap};
+    return {state:{...updatedState,catchSinceS:since},event:null,gapM:gap};
   return {state:reset(),event:'caught',gapM:gap};
 }
