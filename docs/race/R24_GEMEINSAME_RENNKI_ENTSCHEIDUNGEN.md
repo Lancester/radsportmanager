@@ -118,3 +118,12 @@ Nächster Diskussionspunkt: Zusammenspiel und Verfolgung von Teams nach Etablier
 
 - Nutzer fragt, ob sich Fahrer unterscheiden sollten, die besonders gut gleichmäßiges Tempo fahren oder halten, und Fahrer, die bewusst wiederholt attackieren und Konkurrenten durch Tempowechsel belasten können, vergleichbar mit beobachtetem offensivem Fahrstil.
 - Zu klären sind die Trennung zwischen körperlicher Fähigkeit und taktischer Neigung, die Rolle von tatsächlichem Energieverbrauch und Erholung, Reaktionen der Gegner sowie das Risiko eigener Erschöpfung. Noch keine konkreten Parameter, zusätzliche Attribute oder Implementierung vereinbart.
+
+## 13. Unterschiedliche Fahrweisen am Berg — vereinbart
+
+- Körperliche Fähigkeiten (z. B. langfristig fahrbare Leistung, kurzfristige Mehrleistung und W′, Erholungs- und Ermüdungsverhalten) und taktische Neigung (z. B. gleichmäßiges Tempo oder wiederholte Tempowechsel) sollen getrennt betrachtet werden.
+- Fahrer können situativ von einer bevorzugten Fahrweise abweichen; kein starres Typ-Etikett, keine garantierte Attacke, keine Sieggarantie und kein gratis Leistungs- oder Positionsbonus.
+- Ein Fahrer kann am Anstieg gleichmäßig hoch fahren, um Leistung auf Dauer durchzusetzen. Ein anderer kann situativ wiederholt antreten, wenn er darin eine taktische Chance sieht, z. B. eine Lücke oder eine Schwächung der Verfolger; auch andere Fahrweisen sind möglich.
+- Tempowechsel erzeugen körperliche Belastung für Angreifer und reagierende Fahrer anhand der tatsächlich gefahrenen Leistung. W′-Verbrauch, Erholung und langfristige Ermüdung sollen im bestehenden Modell abgebildet und überprüft werden; kein automatischer zusätzlicher Ermüdungsabzug für Gegner allein wegen eines Angriffs.
+- Wiederholte Attacken können für den Angreifer ebenso negative Folgen haben; Gegner entscheiden situativ, ob sie direkt reagieren, dosiert nachfahren oder eigenes Tempo fahren.
+- Exakte zusätzliche Attribute, Datenmodell, Parameter, Individualverteilung und erforderliche Erweiterungen der bisherigen Energiebilanz sind noch nicht beschlossen bzw. getestet. Sportliche Zielbeschreibung, Implementierung nach gemeinsamer Regelbesprechung und vor späterer Testphase.
