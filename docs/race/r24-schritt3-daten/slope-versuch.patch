@@ -1,0 +1,17 @@
+--- a/src/engine/race/race-simulator.ts
++++ b/src/engine/race/race-simulator.ts
+@@ -1124,6 +1124,14 @@
+           groupSpeedMps:groupPaceByRider.get(s.rider.id)?.speedMps??s.speedMps,
+           groupAccelerationMps2:groupPaceByRider.get(s.rider.id)?.
+             accelerationMps2??0});
++        const groupPacerId=groupPaceByRider.get(s.rider.id)?.pacerId;
++        const distantPacer=groupPacerId?byId.get(groupPacerId):undefined;
++        const descendingAhead=!!distantPacer&&segment.gradeFraction>0.005&&
++          x.segments[segmentFor(distantPacer,boundaries)].gradeFraction< -0.005;
++        if(x.groupRidingModel==='stable-pack'&&descendingAhead){
++          paceReference.speedMps=frontSpeed.get(s.rider.id)??s.speedMps;
++          paceReference.accelerationMps2=frontAcceleration.get(s.rider.id)??0;
++        }
+         const observation={
+           groupSize:actualGroupSize.get(s.rider.id)??1,
+           distanceFromGroupFrontM:Math.max(0,

@@ -1,5 +1,9 @@
 # Entwicklungsstand
 
+## Schritt 3 – Fortsetzung: Anschlussarbeit messbar, Gruppenregler offen
+
+Im Checkpoint-Diagnosemodus werden tatsächlich geleistete Sekunden und Kurbelarbeit unter Anschlussauftrag sowie an der unmittelbaren Gruppenspitze je Helfer erfasst. Der gepaarte Berglauf ergab identische Rennereignisse, Klassifikation und Messpunkte mit und ohne Zusatzmessung; der vollständige lokale Testlauf bestand mit 365/365 Tests und das Browsermodul ließ sich bauen und importieren. Zwei weitere Varianten des Gruppenreglers zeigten keine belastbare Verbesserung und wurden nicht übernommen. [Einzelheiten und offene Aufgaben](race/R24_SCHRITT3_GRUPPEN_UND_SPRINTER.md). Die Korrektur des Geländeübergangs und die Bewertung des Erfolgs einzelner Anschlussversuche bleiben offen; Schritt 3 ist insoweit nicht vollständig abgeschlossen.
+
 ## Schritt 3 – Gruppenübergang und Sprinter geprüft (05.11.2026)
 
 [Schritt 3: Gruppen und Sprinter](race/R24_SCHRITT3_GRUPPEN_UND_SPRINTER.md) enthält aktuelle Sekundenmessung, gepaarte Gegenprobe, reale Auftragsereignisse im fiktiven Rennen und einen Test zu individuell unterschiedlichen Sprintern. Eine einfache lokale Beschleunigungsreferenz veränderte die Renndynamik stark und wurde nicht in die Engine übernommen. Der Gruppenübergang und die tatsächliche Dauer und Wirksamkeit der Kapitänsjagd sind daher **noch nicht abschließend gelöst**. Fünf zielgerichtete Tests bestanden. Diagnose, Messdaten und verworfene Versuchsänderung sind gesichert; für Nutzerfeedback hier anhalten.
