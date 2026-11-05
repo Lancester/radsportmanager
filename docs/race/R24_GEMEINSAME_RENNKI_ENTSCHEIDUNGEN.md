@@ -145,3 +145,12 @@ Nächster Diskussionspunkt: Zusammenspiel und Verfolgung von Teams nach Etablier
 - Eine Lücke kann beispielsweise durch Attacken, Tempoverschärfung und Wind entstehen. Reaktion, Anschluss oder Zurückfallen ergeben sich aus tatsächlicher Position, Leistung, Energie und Gruppenfahrt, nicht aus einer Gratisversetzung.
 - Das bestehende vereinfachte 1D-Modell bildet keine realistischen seitlichen Fahrspuren und komplexe Überholmanöver vollständig ab. Die sportlichen Effekte sollen im Rahmen der realen Modellmöglichkeiten nachvollziehbar entstehen; eine bestimmte 2D-Implementierung ist nicht beschlossen.
 - Gemeinsam vereinbartes Ziel, noch keine vollständige Implementierung oder Sportfreigabe. Die technische 42-m-Gruppengrenze ist bei der späteren Prüfung als Modellannahme separat zu beurteilen.
+
+## 16. Stürze und Defekte — vereinbart
+
+- Stürze und Defekte können in Rennen vorkommen, sollen aber nicht ständig auftreten oder Ergebnisse beliebig machen. Es sind keine festen Ereignisse oder vorbestimmten Ausfälle zu erzwingen.
+- Ereignisse können unterschiedlich schwere Folgen haben: Zeitverlust und Weiterfahrt, notwendige Unterstützung oder bei schwereren Fällen eine Aufgabe. Ein Defekt soll nicht automatisch zum Ausfall führen.
+- Bei Stürzen können unter anderem aktuelle Rennsituation, Streckencharakter, Feldposition, Fahrerfähigkeiten und individuelles Risikoverhalten eine Rolle spielen. Auch Pech und nicht kontrollierbare Ereignisse bleiben möglich.
+- Ein Anschluss nach Sturz oder Defekt hängt unter anderem von realem Zeitverlust, Gelände, Geschwindigkeit, verfügbaren Helfern, Fahrerzustand und Entscheidungen ab und ist nicht garantiert.
+- Verletzungsdauern und Folgen über ein Rennen hinaus können für einen späteren Karrieremodus relevant werden; Ausmaß, konkrete Mechanik und Detailtiefe sind gesondert zu entscheiden.
+- Diese Zielvorstellung ist kein Nachweis, dass Stürze, Defekte, Verletzungen oder deren reale Wahrscheinlichkeiten im gegenwärtigen Rennmotor bereits implementiert und kalibriert sind. Die weitere Regelbesprechung geht Änderungen und Tests voraus.
