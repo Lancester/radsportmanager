@@ -202,3 +202,18 @@ Der Vier-Profil-Integrationstest auf dem korrigierten Sprintzugstand besteht lok
 ### Technischer Gesamttest nach der Korrektur
 
 Auf dem Code von Commit `3a1fea1` (mit den in den Folgecommits angepassten Profiltests) bestand der vollständige lokale Lauf mit `node --experimental-strip-types --test --test-concurrency=2 tests/*.test.mjs`: **360/360 Tests**, keine Fehler. Das ist keine GitHub-Actions- oder Android-Messung und kein Beweis für sportlichen Realismus. Insbesondere bleibt die frühe Bergfeldteilung aus der vorstehenden Gegenprobe offen.
+
+## Weiterführung: identisches Fahrerfeld und Untersuchung des Übergangs
+
+`main` (`621e712`) und der R-24-Stand vor dem nächsten Versuch wurden lokal mit Seed 2026, jeweils 154 **identischen Fahrern und Teams aus dem Flachfeld**, über alle vier Strecken verglichen. Median = Median der tatsächlichen Zielrückstände. Ein Seed ist keine Statistik.
+
+| Strecke | Sieger main → R-24 | Medianrückstand main → R-24 | innerhalb 60 s main → R-24 | Angriffsstarts main → R-24 |
+| --- | --- | ---: | ---: | ---: |
+| Lille | Sprinter → Sprinter | 26,9 → 17,2 s | 119 → 154 | 45 → 24 |
+| Boulogne | Klassiker → Sprinter | 344,7 → 220,6 s | 24 → 26 | 19 → 45 |
+| Liège | Klassiker → Zeitfahrer | 791,2 → 598,0 s | 20 → 20 | 20 → 68 |
+| Hautacam | Kletterer → Kletterer | 1931,7 → 1119,2 s | 2 → 1 | 14 → 51 |
+
+Auf Liège waren im Top 10 auf `main` drei Sprinter, im R-24-Lauf keiner. Die Ergebnisse widersprechen daher einer pauschalen Aussage, der neue Stand sei überall schlechter; sie belegen ebenso wenig eine generelle Verbesserung. Alle vier Referenzen sind synthetisch und nicht empirisch kalibriert.
+
+Eine Sekundenmessung ohne Attacken am Übergang um km 24,6 im Hautacam-Seed 2026 zeigt einen konkreten Mechanismus: Während F078 noch an der Steigung fährt und das unmittelbar vorausfahrende Rad ca. 37,9 km/h fährt, läuft die entfernte Gruppenfront bereits ca. 52 km/h in der Abfahrt. Die Gruppenregel fordert für F078 zeitweise rund 459 W an. Danach entstehen mehrere Abstandsgruppen. Ein lokaler Versuch dämpft die Fernreferenz bei unterschiedlichen Steigungen; er wird gegen den bisherigen Stand und ohne Attacken geprüft. Die noch laufenden Versuche sind **nicht** Teil des gesicherten Produktcodes.
