@@ -25,6 +25,8 @@ import {decideClimbTempo} from './climb-tempo.ts';
 import {decideGeneralAttackOpportunity} from './general-attack.ts';
 import {selectAttackPurpose,estimateBridge} from './attack-purpose.ts';
 import {evaluatePursuit} from './pursuit-evaluation.ts';
+import {estimateOpponentThreat} from './opponent-assessment.ts';
+import {decideRiderReaction} from './rider-reaction.ts';
 import type {AttackPurpose} from './attack-purpose.ts';
 import {adaptiveAttackDraw,decideAdaptiveAttackOpportunity}
   from './adaptive-attack.ts';
@@ -667,6 +669,19 @@ export function simulateRace(x:RaceInput):RaceResult {
         attackGroupByRider.set(member.rider.id,group);
       const mainAttackGroup=attackGroups.reduce<State[]|undefined>((best,g)=>
         !best||g.length>best.length?g:best,undefined);
+      // Momentaufnahme: Reaktionen dürfen nicht von der Reihenfolge der
+      // späteren Fahrerverarbeitung in diesem 10-s-Takt abhängen.
+      const knownField=planningRiders.map(r=>r.knownAbility);
+      const reactionProfile=sprintFriendlyRace?'flach':
+        longClimbs.some(c=>c.lengthM>=5000&&c.endM>leader.positionM)?'berg':'gemischt';
+      const observedAttackers=active.filter(r=>r.intent==='angriff').map(r=>({
+        id:r.rider.id,teamId:r.rider.teamId,positionM:r.positionM,
+        threat:estimateOpponentThreat({opponent:{id:r.rider.id,
+          knownCpW:r.rider.criticalPowerW,massKg:r.rider.massKg,
+          bikeMassKg:r.rider.bikeMassKg,dragAreaM2:r.rider.dragAreaM2,
+          sprintSkill:r.rider.sprintSkill},field:knownField,
+          profile:reactionProfile,situation:'flucht'}),
+      }));
       for(const s of states){
         if(s.finishTimeS!==null)continue;
         const localAttackGroup=attackGroupByRider.get(s.rider.id);
@@ -850,6 +865,19 @@ export function simulateRace(x:RaceInput):RaceResult {
         }:chooseRacePower(obs);
         const crew=planned?.orders.get(s.rider.id);
         const bridgePlan=bridgePlans.get(s.rider.id);
+        if(x.groupRidingModel==='stable-pack'&&!bridgePlan&&!crew&&
+          ['grundtempo','windschatten'].includes(baseProposal.intent)){
+          const rival=observedAttackers.filter(r=>r.teamId!==s.rider.teamId&&
+            r.positionM>=s.positionM&&r.positionM-s.positionM<=150)
+            .sort((a,b)=>b.threat-a.threat||a.positionM-b.positionM||
+              a.id.localeCompare(b.id))[0];
+          if(rival&&decideRiderReaction({gapM:rival.positionM-s.positionM,
+            threat:rival.threat,reserveFraction:obs.reserveFraction,
+            aggression:s.rider.aggression,isTeammate:false,hasTeamDuty:false,
+            currentIntent:s.intent,draw:adaptiveAttackDraw(x.seed,s.rider.id,t)}))
+            baseProposal={intent:'verfolgung',desiredPowerW:s.dayCpW*1.08,
+              reason:`Reaktion auf Angriff von ${rival.id}`};
+        }
         if(bridgePlan){
           const bridgeTarget=byId.get(bridgePlan.targetId);
           const gap=bridgeTarget&&bridgeTarget.finishTimeS===null?
