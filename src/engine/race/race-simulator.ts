@@ -96,6 +96,8 @@ export interface RaceRider {
   descentSkill:number;sprintSkill:number;aggression:number;
   /** 0..1: Neigung, eine aussichtsarme Verfolgung fortzusetzen; kein Leistungsbonus. */
   pursuitPersistence?:number;
+  /** 0..1: Neigung am Berg eher gleichmäßig oder mit Angriffen zu fahren. */
+  climbingAttackPreference?:number;
   /** 0..1: Taktisches Erkennen/Besetzen eines real vorausfahrenden Hinterrads. */
   wheelFindingSkill?:number;
   /** Früh-/Spätstart-Vorliebe: 0 = eher abwarten, 1 = eher früh; keine Sieggarantie. */
@@ -324,6 +326,9 @@ export function validateRace(x:RaceInput):void {
     if(r.pursuitPersistence!==undefined)
       ensure('pursuitPersistence',r.pursuitPersistence,
         r.pursuitPersistence>=0&&r.pursuitPersistence<=1);
+    if(r.climbingAttackPreference!==undefined)
+      ensure('climbingAttackPreference',r.climbingAttackPreference,
+        r.climbingAttackPreference>=0&&r.climbingAttackPreference<=1);
     if(r.wheelFindingSkill!==undefined)
       ensure('wheelFindingSkill',r.wheelFindingSkill,
         r.wheelFindingSkill>=0&&r.wheelFindingSkill<=1);
@@ -767,6 +772,7 @@ export function simulateRace(x:RaceInput):RaceResult {
                   gradeFraction:seg.gradeFraction,role:s.rider.role,
                   strategy:teams.get(s.rider.teamId)!.strategy,
                   aggression:s.rider.aggression,groupSize:g?.length??1,
+                  climbingAttackPreference:s.rider.climbingAttackPreference,
                   gapToGroupFrontM:Math.max(0,
                     (g?.[0].positionM??s.positionM)-s.positionM),
                   gapToRaceFrontM:Math.max(0,leader.positionM-s.positionM),
