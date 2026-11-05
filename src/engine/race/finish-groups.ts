@@ -44,3 +44,24 @@ export function finishGroupMetrics(
     within180sOfWinner:s.filter(r=>r.finishTimeS-winnerTime<=180).length,
   };
 }
+
+/** Wertungszeiten aus simulierten Zielzeiten mit konfigurierbarer Lücke.
+ * Kein vollständiges Regelwerk (z.B. Sturz- oder Rundfahrtsonderregeln). */
+export function assignFinishGroupTimes<T extends FinishRider>(
+  riders:readonly T[],gapThresholdS:number,
+):Array<T & {groupIndex:number;groupTimeS:number;groupGapS:number}>{
+  if(!riders.length||!Number.isFinite(gapThresholdS)||gapThresholdS<=0||
+    riders.some(r=>!Number.isFinite(r.finishTimeS)||r.finishTimeS<0)||
+    new Set(riders.map(r=>r.id)).size!==riders.length)
+    throw new RangeError('Zielwertung: ungültige Eingabe');
+  const sorted=[...riders].sort((a,b)=>a.finishTimeS-b.finishTimeS||a.id.localeCompare(b.id));
+  let groupIndex=0,groupTimeS=sorted[0].finishTimeS,lastTimeS=groupTimeS;
+  const winnerTimeS=groupTimeS;
+  return sorted.map((r,i)=>{
+    if(i>0&&r.finishTimeS-lastTimeS>=gapThresholdS){
+      groupIndex++;groupTimeS=r.finishTimeS;
+    }
+    lastTimeS=r.finishTimeS;
+    return {...r,groupIndex:groupIndex+1,groupTimeS,groupGapS:groupTimeS-winnerTimeS};
+  });
+}
