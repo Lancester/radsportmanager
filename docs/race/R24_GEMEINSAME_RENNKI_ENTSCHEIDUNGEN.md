@@ -58,3 +58,13 @@ Nächster Diskussionspunkt: Zusammenspiel und Verfolgung von Teams nach Etablier
 - Geländeausblick ist eine unsichere taktische Einschätzung, keine Kenntnis zukünftiger exakter Fahrleistungen, automatischer Positionen oder garantierten Überholens. Das Gelände und Gegner müssen erreichbar bleiben; das Warten kann auch scheitern. Sicherheits- und Risikoverhalten sowie die tatsächlich fahrbare Geschwindigkeit und Kräfte sind im Modell zu berücksichtigen; es dürfen keine Gratisboni entstehen.
 - Die Stärke einer taktischen Gelände-Vorausschau kann später durch Eigenschaften des Fahrers/sportlichen Leiters begrenzt werden; eine präzise Ausgestaltung ist noch gemeinsam zu klären und nicht als bereits vereinbartes Attribut zu behaupten.
 - Diese Punkte beschreiben das vereinbarte Ziel. Der bisherige individuelle Versuchsanschluss bildet die abgestimmte Zusammenarbeit und verlässliche Vorausschau noch nicht vollständig ab. Erst die übrigen Regeln gemeinsam besprechen, dann das Entwicklungsmodell ändern und anschließend testen.
+
+## 7. Verfolgung fortsetzen, dosieren oder aufgeben — vereinbart
+
+- Ein Fahrer bricht eine Verfolgung nicht allein deswegen ab, weil der Abstand eine feste Zeit lang unverändert bleibt. Die im experimentellen Stand vorhandene 120-s-Regel für ausbleibenden Fortschritt soll als starres Einzelkriterium durch eine situationsabhängige Bewertung ersetzt werden.
+- Die KI berücksichtigt die Entwicklung der Lücke, die verbleibenden Kräfte und den erwarteten Energieaufwand, das eigene Renn- und Teamziel, Hilfe bzw. Mitarbeit anderer, verbleibende Strecke und erreichbares bevorstehendes Gelände.
+- Die KI berücksichtigt individuelle Stärken und ggf. passende Fahrereigenschaften: Ein Fahrer kann auf einen nahen Anstieg oder eine Abfahrt setzen, auch wenn er gegenwärtig nicht aufholt. Die Einschätzung ist unvollkommen, und das Warten oder die Verfolgung kann scheitern.
+- Zwischen voller Nachführarbeit und Aufgabe liegen dosierte Weiterfahrt, Schutz im Windschatten und vorübergehendes Kräftesparen; der Fahrer kann später im passenden Gelände erneut nachsetzen.
+- Ein Fahrer kann die Verfolgung aufgeben oder reduzieren, wenn die Lage, Kräfte, Teamaufgabe und Aussichten dies nahelegen. Er muss nicht bis zur völligen Erschöpfung jagen. Motivation und spätere Aufgaben können seine Risikobereitschaft beeinflussen.
+- Keine Erfolgsgarantie, keine festen Sollzeiten; Wattanfragen, tatsächliche Position und Energiebilanz verbleiben im bestehenden Modell.
+- Gemeinsam vereinbarte Zielbeschreibung, keine Aussage, dass die 120-s-Regel bereits geändert, die künftige KI umgesetzt oder getestet ist.
