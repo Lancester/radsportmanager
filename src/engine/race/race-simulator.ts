@@ -22,6 +22,8 @@ import {captainEscortPower} from './captain-support.ts';
 import {decideStablePackRiding} from './stable-pack.ts';
 import {decideClimbTempo} from './climb-tempo.ts';
 import {decideGeneralAttackOpportunity} from './general-attack.ts';
+import {selectAttackPurpose} from './attack-purpose.ts';
+import type {AttackPurpose} from './attack-purpose.ts';
 import {adaptiveAttackDraw,decideAdaptiveAttackOpportunity}
   from './adaptive-attack.ts';
 import {decideSprintPosition,SPRINT_POSITION} from './sprint-positioning.ts';
@@ -442,6 +444,18 @@ export function simulateRace(x:RaceInput):RaceResult {
   const targetByTeam=new Map(x.teams.map(t=>[t.id,
     states.find(s=>s.rider.teamId===t.id&&s.rider.role===
       (t.strategy==='sprint'?'sprinter':'kapitaen'))]));
+  // Bergfavorit ist eine vorläufige relative Leistungsbewertung, kein
+  // Ergebnisindex; sie gilt nur bei einem langen späten Anstieg.
+  const hasMajorFinalClimb=longClimbs.some(c=>c.lengthM>=4000&&
+    totalM-c.endM<=60000);
+  const captainClimbScores=states.filter(s=>s.rider.role==='kapitaen')
+    .map(s=>s.rider.criticalPowerW/(s.rider.massKg+s.rider.bikeMassKg));
+  const bestCaptainClimb=Math.max(0,...captainClimbScores);
+  const protectedMountainFavorites=new Set(hasMajorFinalClimb?
+    states.filter(s=>s.rider.role==='kapitaen'&&bestCaptainClimb>0&&
+      s.rider.criticalPowerW/(s.rider.massKg+s.rider.bikeMassKg)>=
+        bestCaptainClimb*.97).map(s=>s.rider.id):[]);
+  const activeAttackPurposes=new Map<string,AttackPurpose>();
   const events:RaceEvent[]=[{timeS:0,km:0,type:'start',
     description:`${states.length} Fahrer starten auf ${(totalM/1000).toFixed(1)} km`}];
   const snapshots:RaceSnapshot[]=[];
@@ -635,8 +649,27 @@ export function simulateRace(x:RaceInput):RaceResult {
       const attackGroupByRider=new Map<string,State[]>();
       for(const group of attackGroups)for(const member of group)
         attackGroupByRider.set(member.rider.id,group);
+      const mainAttackGroup=attackGroups.reduce<State[]|undefined>((best,g)=>
+        !best||g.length>best.length?g:best,undefined);
       for(const s of states){
         if(s.finishTimeS!==null)continue;
+        const localAttackGroup=attackGroupByRider.get(s.rider.id);
+        const groupIndex=localAttackGroup?attackGroups.indexOf(localAttackGroup):-1;
+        const nextGroup=groupIndex>0?attackGroups[groupIndex-1]:undefined;
+        const purpose=selectAttackPurpose({remainingM:Math.max(0,totalM-s.positionM),
+          progress:Math.min(1,s.positionM/totalM),
+          gradeFraction:x.segments[segmentFor(s,boundaries)].gradeFraction,
+          role:s.rider.role,protectedFavorite:protectedMountainFavorites.has(s.rider.id),
+          inMainGroup:localAttackGroup===mainAttackGroup&&!!localAttackGroup,
+          gapToRaceFrontM:Math.max(0,leader.positionM-s.positionM),
+          gapToNextGroupM:nextGroup&&localAttackGroup?
+            Math.max(0,nextGroup[nextGroup.length-1].positionM-
+              localAttackGroup[0].positionM):null,
+          breakawayEstablished:breakawayActive,
+          teammateAhead:active.some(r=>r.rider.teamId===s.rider.teamId&&
+            r.rider.id!==s.rider.id&&r.positionM>s.positionM+75),
+          groupSize:localAttackGroup?.length??1,
+          winnerFinished:states.some(r=>r.finishTimeS!==null)});
         const cap=captainByTeam.get(s.rider.teamId);
         const teamCaptainGap=cap && cap.rider.id!==s.rider.id ?
           Math.abs(cap.positionM-s.positionM):null;
@@ -657,6 +690,7 @@ export function simulateRace(x:RaceInput):RaceResult {
             attackOpportunity:(()=>{
               if(x.disableAttacks)return false;
               if(x.groupRidingModel==='stable-pack'){
+                if(!purpose&&s.intent!=='angriff')return false;
                 const g=attackGroupByRider.get(s.rider.id);
                 const si=segmentFor(s,boundaries);
                 const seg=x.segments[si];
@@ -841,6 +875,7 @@ export function simulateRace(x:RaceInput):RaceResult {
         }
         if(decision.intent==='angriff'&&s.intent!=='angriff'){
           s.lastAttackS=t;
+          if(purpose)activeAttackPurposes.set(s.rider.id,purpose);
           attackTelemetry?.start({riderId:s.rider.id,timeS:t,
             positionM:s.positionM,groupIds:group?.map(r=>r.rider.id)??[s.rider.id],
             gapToRaceFrontM:Math.max(0,leader.positionM-s.positionM),
@@ -859,7 +894,7 @@ export function simulateRace(x:RaceInput):RaceResult {
             if(kind==='sprint')counters.sprints++;
             events.push({timeS:t,km:s.positionM/1000,
               type:kind,riderId:s.rider.id,teamId:s.rider.teamId,
-              description:`${s.rider.name}: ${decision.reason}`});
+              description:`${s.rider.name}: ${decision.reason}${kind==='attack'&&x.groupRidingModel==='stable-pack'?` [Ziel: ${activeAttackPurposes.get(s.rider.id)??'nicht erfasst'}]`:''}`});
           }
         }
       }
