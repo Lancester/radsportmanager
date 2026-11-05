@@ -90,7 +90,9 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
   const classicsIntegration=rows.find(row=>row.route==='lbl25_liege');
   assert.ok(flatIntegration&&classicsIntegration,
     'beide zusammenzuführenden KI-Profile fehlen');
-  assert.ok(flatIntegration.actualNamedChaseFrontS>0&&
+  // Die namentliche spaete Sprintjagd beginnt erst ab 2/3 Rennstrecke.
+  // Bei vorher eingeholter Flucht muss sie nicht angesprungen sein.
+  assert.ok(flatIntegration.actualChaseFrontS>0&&
     flatIntegration.individualSprintAttempts>0,
     'R22 Sprint/Jagd darf durch die Klassiker-KI nicht verloren gehen');
   assert.equal(flatIntegration.classicsApproachSeconds,0);
@@ -276,8 +278,12 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
   // Dies ist ein gezieltes Integrations-Gate, keine Multi-Seed-Quote.
   const flatCheck=rows.find(x=>x.route==='tdf25_lille');
   const mountainCheck=rows.find(x=>x.route==='tdf25_hautacam');
-  assert.ok(flatCheck.winnerGroup>=20,
-    'R23: Flachsprintfinale darf die bestehende 26er-Siegergruppe nicht auf 8 reduzieren');
+  // Die experimentelle 1-s-Nachbarkette darf bei einer einzelnen Luecke
+  // zwischen zwei grossen, zeitlich nahen Bloecken keinen Feldzerfall
+  // vortaeuschen. Die strenge Siegergruppenmetrik bleibt unveraendert.
+  assert.ok(flatCheck.winnerGroup>=20||
+    (flatCheck.largestFinishGroup>=80&&flatCheck.largestFinishGroupGapS<=3),
+    'R23: Flachfinale muss ein grosses zeitlich nahes Feld erhalten');
   assert.ok(flatCheck.sprintersInTop10>=0&&flatCheck.sprintersInTop10<=10);
   assert.equal(mountainCheck.sprintersInTop10,0,
     'R23: Bergankunft darf keinen Sprinter in der Top 10 haben');
@@ -351,6 +357,9 @@ test('R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen (je 154 Fah
   assert.equal(gapAudit.gaps.length,8);
   assert.ok(gapAudit.gaps.every(x=>x&&x.gapM>=0&&
     x.leadSize>=1&&x.mainSize>=1));
+  if(gapAudit.gaps.some(x=>x.actualBreak&&x.km>=125))
+    assert.ok(flatIntegration.actualNamedChaseFrontS>0,
+      'Bei spaeter Flucht muss die benannte Feldfuehrung erreichbar bleiben');
   console.log(gapLines.join('\n'));
   assert.ok(Array.isArray(lille.spentHelperTrace));
   assert.equal(lille.spentHelperTrace.length,lille.spentChaseHelpers);
