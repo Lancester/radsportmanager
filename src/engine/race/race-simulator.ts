@@ -2069,7 +2069,8 @@ export function simulateRace(x:RaceInput):RaceResult {
         leadGap>=75&&best.positionM>1000;
       if(x.groupRidingModel==='stable-pack'){
         const nextBreakaway=advanceBreakawayTracker({state:trackedBreakaway,
-          groups,riderId:r=>r.rider.id,timeS:t});
+          groups,riderId:r=>r.rider.id,timeS:t,
+          raceWinnerFinished:states.some(r=>r.finishTimeS!==null)});
         trackedBreakaway=nextBreakaway.state;
         breakawayActive=trackedBreakaway.escapeIds.length>0;
         if(nextBreakaway.event==='breakaway'){
