@@ -34,4 +34,4 @@ const classification=result.classification.filter(r=>ids.includes(r.id)).map(r=>
   averageCrankPowerW:r.averageCrankPowerW,finalWPrimeJ:r.finalWPrimeJ}));
 const events=result.events.filter(e=>['T12','T20'].includes(e.teamId)&&['team-chase','team-pace','attack'].includes(e.type));
 console.log(JSON.stringify({scenario,routeId,seed:2026,disableAttacks:scenario==='berg-ohne-attacken',
-  totalCheckpoints:result.checkpoints.length,winnerId:result.winnerId,profiles,classification,events,checkpoints,rejoinWork:result.diagnostics.rejoinWork}));
+  totalCheckpoints:result.checkpoints.length,winnerId:result.winnerId,profiles,classification,events,checkpoints,rejoinWork:result.diagnostics.rejoinWork,rejoinAttempts:result.diagnostics.rejoinAttempts}));

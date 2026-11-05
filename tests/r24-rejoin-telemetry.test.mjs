@@ -16,6 +16,12 @@ test('R24: Anschlussmessung ist optional, bilanziert reale Watt und ändert kein
   const a=simulateRace(input),b=simulateRace({...input,diagnosticLevel:'checkpoints'});
   assert.equal(a.diagnostics.rejoinWork,undefined);
   assert.ok(Array.isArray(b.diagnostics.rejoinWork));
+  assert.ok(Array.isArray(b.diagnostics.rejoinAttempts));
+  assert.ok(b.diagnostics.rejoinAttempts.length>0);
+  for(const attempt of b.diagnostics.rejoinAttempts){
+    assert.ok(attempt.endTimeS>=attempt.startTimeS&&attempt.startGapM>42);
+    assert.ok(attempt.targetRiderIds.length>0&&attempt.helperIds.length>0);
+  }
   assert.ok(b.diagnostics.rejoinWork.length>0,'Kontrolllauf muss Anschlussaufträge enthalten');
   assert.deepEqual(b.classification,a.classification);
   assert.deepEqual(b.events,a.events);

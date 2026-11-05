@@ -15,9 +15,11 @@ test('R-22 Diagnostik greift nicht in Ergebnis/Physik ein',()=>{
     delete withoutTrace.checkpoints;
     delete withoutTrace.diagnostics.attackTraces;
     delete withoutTrace.diagnostics.rejoinWork;
+    delete withoutTrace.diagnostics.rejoinAttempts;
     assert.deepEqual(withoutTrace,normal);
     assert.ok(Array.isArray(traced.diagnostics.attackTraces));
     assert.ok(Array.isArray(traced.diagnostics.rejoinWork));
+    assert.ok(Array.isArray(traced.diagnostics.rejoinAttempts));
     assert.ok(traced.checkpoints.length>0);
     for(const cp of traced.checkpoints){
       assert.equal(cp.riders.length,cp.activeRiders);

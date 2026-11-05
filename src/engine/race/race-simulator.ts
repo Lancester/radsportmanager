@@ -1,3 +1,4 @@
+import {RejoinAttemptTelemetry} from './rejoin-attempt-telemetry.ts';
 /**
  * R-09 – erster vollständig durchgerechneter Rennprototyp.
  *
@@ -194,6 +195,8 @@ export interface RaceResult {
     namedChaseHandoffs?:Array<{km:number;from:string|null;
       to:string|null;reason:string;frontGapM:number|null;
       assignmentAgeS:number|null}>;
+    /** Ereignisse im 10-s-Takt; Ziel ist ein Fahrer der ursprünglich vorausliegenden Gruppe. */
+    rejoinAttempts?:ReturnType<RejoinAttemptTelemetry['report']>;
     /** Tatsächlich geleistete Arbeit unter Anschlussauftrag; nur im Checkpoint-Modus. */
     rejoinWork?:Array<{riderId:string;teamId:string;assignedS:number;
       actualFrontS:number;appliedWorkJ:number;actualFrontWorkJ:number}>;
@@ -437,6 +440,7 @@ export function simulateRace(x:RaceInput):RaceResult {
   const checkpoints:RaceCheckpoint[]|undefined=
     x.diagnosticLevel==='checkpoints'?[]:undefined;
   const attackTelemetry=checkpoints?new AttackTelemetry():null;
+  const rejoinAttempts=checkpoints?new RejoinAttemptTelemetry():null;
   const rejoinRiders=checkpoints?new Set<string>():null;
   const rejoinWork=checkpoints?new Map<string,{riderId:string;teamId:string;
     assignedS:number;actualFrontS:number;appliedWorkJ:number;actualFrontWorkJ:number}>():null;
@@ -564,6 +568,7 @@ export function simulateRace(x:RaceInput):RaceResult {
         timeS:t,progress:Math.min(1,leader.positionM/totalM),
         teams:teamRefs,riders:planningRiders,
       });
+      if(rejoinAttempts&&planned)rejoinAttempts.observe(t,planningRiders,planned.orders);
       if(rejoinRiders){
         rejoinRiders.clear();
         for(const order of planned?.orders.values()??[])
@@ -1849,6 +1854,7 @@ export function simulateRace(x:RaceInput):RaceResult {
     winnerId:sorted[0].rider.id,finisherCount:sorted.length,
     diagnostics:{...counters,maximumGroups,
       ...(attackTelemetry?{attackTraces:attackTelemetry.report(classification)}:{}),
+      ...(rejoinAttempts?{rejoinAttempts:rejoinAttempts.report(t)}:{}),
       ...(rejoinWork?{rejoinWork:[...rejoinWork.values()].sort((a,b)=>
         a.riderId.localeCompare(b.riderId))}:{}),
       ...((x.groupRidingModel==='relays'||x.groupRidingModel==='relay-paced'||
