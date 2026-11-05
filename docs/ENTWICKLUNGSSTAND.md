@@ -1,5 +1,9 @@
 # Entwicklungsstand
 
+## Schritt 3 – kontrollierte Geländeversuche und Einzelanschlüsse
+
+[Kontrollierte Terrain- und Anschlussprüfung](race/R24_SCHRITT3_TERRAIN_UND_ANSCHLUSS.md): In 30-km-Kontrollstrecken blieb das Modellfeld bei Ebene und Anstieg→Ebene zusammen, teilte sich jedoch zeitweise beim Übergang in eine Abfahrt. Eine begrenzte Beschleunigungsreferenz reduzierte die Spreizung in drei Kontroll-Seeds, bewirkte aber Änderungen in Vollrennen und bleibt eine nicht übernommene Heuristik. Einzelne Kapitäns-Anschlussversuche werden im Checkpoint-Modus mit ursprünglicher Zielgruppe, Helfern und beobachtetem Gruppenzusammenschluss dokumentiert. Keine nachweislich robuste Gruppenregelkorrektur, weitere Prüfungen bleiben offen.
+
 ## Schritt 3 – Fortsetzung: Anschlussarbeit messbar, Gruppenregler offen
 
 Im Checkpoint-Diagnosemodus werden tatsächlich geleistete Sekunden und Kurbelarbeit unter Anschlussauftrag sowie an der unmittelbaren Gruppenspitze je Helfer erfasst. Der gepaarte Berglauf ergab identische Rennereignisse, Klassifikation und Messpunkte mit und ohne Zusatzmessung; der vollständige lokale Testlauf bestand mit 365/365 Tests und das Browsermodul ließ sich bauen und importieren. Zwei weitere Varianten des Gruppenreglers zeigten keine belastbare Verbesserung und wurden nicht übernommen. [Einzelheiten und offene Aufgaben](race/R24_SCHRITT3_GRUPPEN_UND_SPRINTER.md). Die Korrektur des Geländeübergangs und die Bewertung des Erfolgs einzelner Anschlussversuche bleiben offen; Schritt 3 ist insoweit nicht vollständig abgeschlossen.
