@@ -1,0 +1,6 @@
+{"kind":"durability","factor":0.85,"snapshots":[{"s":7200,"available":1,"carbKcal":760.9660631366045,"wPrimeJ":30000,"workKJ":2160},{"s":14400,"available":0.916764889155181,"carbKcal":322.032126273209,"wPrimeJ":30000,"workKJ":4320},{"s":21600,"available":0.8494117647058823,"carbKcal":0,"wPrimeJ":30000,"workKJ":6480}]}
+{"kind":"durability","factor":1,"snapshots":[{"s":7200,"available":1,"carbKcal":760.9660631366045,"wPrimeJ":30000,"workKJ":2160},{"s":14400,"available":0.9292501557819038,"carbKcal":322.032126273209,"wPrimeJ":30000,"workKJ":4320},{"s":21600,"available":0.872,"carbKcal":0,"wPrimeJ":30000,"workKJ":6480}]}
+{"kind":"durability","factor":1.15,"snapshots":[{"s":7200,"available":1,"carbKcal":760.9660631366045,"wPrimeJ":30000,"workKJ":2160},{"s":14400,"available":0.9384783963320903,"carbKcal":322.032126273209,"wPrimeJ":30000,"workKJ":4320},{"s":21600,"available":0.888695652173913,"carbKcal":0,"wPrimeJ":30000,"workKJ":6480}]}
+{"kind":"recovery","factor":0.85,"fullAtS":803}
+{"kind":"recovery","factor":1,"fullAtS":682}
+{"kind":"recovery","factor":1.15,"fullAtS":593}

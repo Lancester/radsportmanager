@@ -1,5 +1,9 @@
 # Entwicklungsstand
 
+## Erste individuelle Ermüdungskalibrierung – in Prüfung
+
+[Erste Ermüdungskalibrierung](race/R24_ERSTE_ERMUEDUNGSKALIBRIERUNG.md): unabhängige optionale Fahrerfaktoren für Langzeit-Ermüdungsresistenz und W′-Erholung, erste explizite Heuristik und reproduzierbare Belastungsszenarien. Historische Vergleichsmodelle bleiben unverändert; Talent-/Trainings- und Karrierefunktionen sind noch nicht implementiert. 16 gezielte Tests, der vollständige Lauf mit 374/374 und Browser-Build bestanden; ein anschließend ergänzter Renn-Integrationstest zur W′-Erholung bestand ebenfalls. Ein einzelner Vier-Profil-Vorher-Nachher-Lauf ist dokumentiert; beim Hügelrennen gewann ein Zeitfahrer nach einer Attacke. Der GitHub-PR-Test #302 lief beim letzten Abruf noch. Parameter und sportlicher Realismus bleiben unvalidiert; der größere `main`-Vergleich ist als eigener nächster Schritt vorgesehen.
+
 ## Schritt 4 – Belastung und Ermüdung, Zwischenstand
 
 [Schritt 4: Belastung und Ermüdungsmodell](race/R24_SCHRITT4_BELASTUNG_UND_ERMUEDUNG.md): CP/W′-Kern beibehalten, Langzeitermüdung und W′-Erholung vor sportlicher Realismusfreigabe gezielt weiterentwickeln und empirisch prüfen. Der abrupte Freigabesprung nach 90 min wurde im experimentellen stable-pack durch eine ausdrücklich vorläufige kontinuierliche Einblendung ersetzt; historische Vergleichsmodi bleiben unverändert. Attacken, Jagdarbeit und Modellfälle wurden untersucht; Kausalität einzelner Einholungen und physiologische Kalibrierung bleiben offen. Die gepaarten Vier-Profil-Vergleiche für drei Seeds und der vollständige lokale Testlauf sind abgeschlossen: 371/371 Tests und Browser-Build bestanden; der GitHub-PR-Lauf #299 lief beim letzten Abruf noch. Nicht als physiologische Realismusfreigabe interpretieren.
