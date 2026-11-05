@@ -32,7 +32,7 @@ import {cooperativeRelayYield,observedRelayFrontChange} from './bridge-relay.ts'
 import type {AttackPurpose} from './attack-purpose.ts';
 import {adaptiveAttackDraw,decideAdaptiveAttackOpportunity}
   from './adaptive-attack.ts';
-import {decideSprintPosition,SPRINT_POSITION} from './sprint-positioning.ts';
+import {decideSprintPosition,sprintPreparationStage,SPRINT_POSITION} from './sprint-positioning.ts';
 import {decideSprintLaunch,inferredSprintPeakPowerW,sprintPowerDemand}
   from './final-sprint.ts';
 import {decideSprintLeadoutPace,sprintLeadoutEligible,SPRINT_LEADOUT}
@@ -1093,7 +1093,7 @@ export function simulateRace(x:RaceInput):RaceResult {
         relayOffers.delete(formerId);
       }
     }
-    // Im letzten Viertel mehrere *wirklich nahe* Helfer koordinieren.
+    // Passend zur Situation mehrere *wirklich nahe* Helfer koordinieren.
     // Ohne reale 1D-Position in derselben Gruppe kann niemand helfen.
     const escortByTeam=new Map<string,Set<string>>();
     if(sprintFriendlyRace){
@@ -1101,9 +1101,12 @@ export function simulateRace(x:RaceInput):RaceResult {
         const target=targetByTeam.get(team.id);
         if(!target||target.rider.specialty!=='sprinter')continue;
         const group=physicalGroupOf.get(target.rider.id);
-        if(!group||group.length<SPRINT_POSITION.minGroupSize)continue;
-        const phase=target.positionM/totalM;
-        if(phase<SPRINT_POSITION.advanceFromProgress)continue;
+        if(!group||group.length<3||target.speedMps<=0)continue;
+        const stage=sprintPreparationStage({remainingM:Math.max(0,totalM-target.positionM),
+          speedMps:target.speedMps,
+          distanceFromGroupFrontM:Math.max(0,group[0].positionM-target.positionM),
+          wheelFindingSkill:target.rider.wheelFindingSkill});
+        if(stage==='wait')continue;
         const candidates=group.map(g=>byId.get(g.id)!).filter(r=>
           r.rider.teamId===team.id&&r.rider.role==='helfer'&&
           Math.abs(r.positionM-target.positionM)<=
@@ -1112,7 +1115,7 @@ export function simulateRace(x:RaceInput):RaceResult {
             Math.abs(a.positionM-target.positionM)-
               Math.abs(b.positionM-target.positionM)||
             a.rider.id.localeCompare(b.rider.id));
-        const wanted=phase>=SPRINT_POSITION.leadoutFromProgress?3:2;
+        const wanted=stage==='leadout'?3:2;
         escortByTeam.set(team.id,new Set(candidates.slice(0,wanted)
           .map(r=>r.rider.id)));
       }
