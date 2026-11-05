@@ -1,0 +1,42 @@
+--- a/src/engine/race/race-simulator.ts
++++ b/src/engine/race/race-simulator.ts
+@@ -869,6 +869,23 @@
+     const physicalGroups=pelotonGroups(ordered.map(s=>({
+       id:s.rider.id,positionM:s.positionM,
+     })));
++    if(physicalGroups.length>1&&t<4000){
++      const marker=(globalThis as any).__splitObserved??new Set();
++      for(let i=1;i<ordered.length;i++){
++        const ahead=ordered[i-1],behind=ordered[i];
++        const gap=ahead.positionM-behind.positionM;
++        const key=ahead.rider.id+'-'+behind.rider.id;
++        if(gap>42&&!marker.has(key)){
++          marker.add(key);
++          console.error(JSON.stringify({t,gap,headKm:ordered[0].positionM/1000,
++            ahead:{id:ahead.rider.id,pos:ahead.positionM,speed:ahead.speedMps,
++              power:lastPower.get(ahead.rider.id),cp:ahead.dayCpW,grade:x.segments[segmentFor(ahead,boundaries)].gradeFraction},
++            behind:{id:behind.rider.id,pos:behind.positionM,speed:behind.speedMps,
++              power:lastPower.get(behind.rider.id),cp:behind.dayCpW,grade:x.segments[segmentFor(behind,boundaries)].gradeFraction}}));
++        }
++      }
++      (globalThis as any).__splitObserved=marker;
++    }
+     // Echte relative Position in der eigenen 42-m-Abstandsgruppe.
+     const rankInPhysicalGroup=new Map<string,number>();
+     const physicalGroupOf=new Map<string,typeof physicalGroups[number]>();
+@@ -1551,6 +1568,15 @@
+       // Andere Gruppenmodelle behalten ihr bisheriges Vergleichsverhalten.
+       const availability=x.enduranceModel==='off'?1:
+         endurancePowerAvailability(s.endurance);
++      if(t>=1520&&t<=1590&&t%2===0&&s.rider.id==='F107'){
++        const ord=[...states].filter(q=>q.finishTimeS===null).sort((a,b)=>b.positionM-a.positionM);
++        const idx=ord.findIndex(q=>q.rider.id===s.rider.id);const a=ord[idx-1];
++        console.error('TRACE '+JSON.stringify({t,pos:s.positionM,v:s.speedMps,front:a?.rider.id,
++          gap:frontGap.get(s.rider.id),frontV:frontSpeed.get(s.rider.id),
++          aero:aeroFactor,commanded,intent:s.intent,mission:s.crewMission,
++          group:actualGroupSize.get(s.rider.id),pacer:groupPaceByRider.get(s.rider.id),
++          grade:segment.gradeFraction}));
++      }
+       const cp=x.groupRidingModel==='stable-pack'&&x.enduranceModel!=='off'?
+         applyEnduranceLimitedCpStep({profile:s.profile,state:s.physiology,
+           desiredPowerW:commanded,dt,availability,
