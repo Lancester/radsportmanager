@@ -4,7 +4,7 @@ import {endurancePowerAvailability,initialEnduranceState,R19_ENDURANCE}
   from '../src/engine/race/endurance.ts';
 import {applyCpWprimeStep,initialCpState} from '../src/engine/physiology/critical-power.ts';
 import {createReferenceFixture} from '../src/engine/race/reference-fixtures.ts';
-import {validateRace} from '../src/engine/race/race-simulator.ts';
+import {validateRace,simulateRace} from '../src/engine/race/race-simulator.ts';
 
 test('R24: Ausdauerresistenz reduziert Langzeitverlust individuell, Legacy bleibt gleich',()=>{
  const s={...initialEnduranceState(),elapsedS:18000,carbohydrateKcal:200,workloadHours:1.5};
@@ -37,4 +37,22 @@ test('R24: Referenzfahrer besitzen unabhängige dauerhafte Eigenschaften; ungül
    const riders=x.riders.map((r,i)=>i? r:{...r,[key]:1.31});
    assert.throws(()=>validateRace({...x,riders}),RangeError);
  }
+});
+
+
+test('R24: individuelle Erholung kommt in der realen Rennberechnung an',()=>{
+ const x=createReferenceFixture({routeId:'tdf25_lille',seed:2026}).input;
+ let remaining=30000;const segments=[];
+ for(const segment of x.segments){
+   if(remaining<=0)break;
+   const lengthM=Math.min(segment.lengthM,remaining);
+   segments.push({...segment,lengthM});remaining-=lengthM;
+ }
+ const race=factor=>simulateRace({...x,segments,groupRidingModel:'stable-pack',
+   riders:x.riders.map(r=>({...r,wPrimeRecoveryFactor:factor}))});
+ const slow=race(.7),fast=race(1.3);
+ const sum=(r,key)=>r.classification.reduce((a,x)=>a+x[key],0);
+ assert.ok(sum(slow,'spentWPrimeJ')>0);
+ assert.ok(sum(fast,'recoveredWPrimeJ')>sum(slow,'recoveredWPrimeJ'));
+ assert.ok(fast.classification.every(x=>x.finalWPrimeJ>=0));
 });
