@@ -10,6 +10,8 @@ export interface AdaptiveAttackObservation {
   effectiveCpW:number;wPrimeJ:number;reserveFraction:number;
   exposedHoldPowerW:number;lastAttackAgeS:number;currentIntent:string;
   breakawayEstablished:boolean;teammateAhead:boolean;draw:number;
+  /** 0 = eher gleichmäßig fahren, 1 = eher Tempowechsel suchen. */
+  climbingAttackPreference?:number;
 }
 export function adaptiveAttackDraw(seed:number,riderId:string,timeS:number):number{
   if(!Number.isSafeInteger(seed)||seed<0||!riderId||
@@ -30,7 +32,10 @@ export function decideAdaptiveAttackOpportunity(o:AdaptiveAttackObservation):boo
     !Number.isInteger(o.groupSize)||o.groupSize<1||o.gapToGroupFrontM<0||
     o.gapToRaceFrontM<0||o.effectiveCpW<=0||o.wPrimeJ<0||
     o.reserveFraction<0||o.reserveFraction>1.000001||
-    o.exposedHoldPowerW<0||o.draw<0||o.draw>=1)
+    o.exposedHoldPowerW<0||o.draw<0||o.draw>=1||
+    (o.climbingAttackPreference!==undefined&&
+      (!Number.isFinite(o.climbingAttackPreference)||
+        o.climbingAttackPreference<0||o.climbingAttackPreference>1)))
     throw new RangeError('R24: ungueltige Angriffslage');
   // Begonnene Attacken duerfen nach dem wirklichen Absetzen weiterlaufen.
   if(o.currentIntent==='angriff'&&o.lastAttackAgeS>=0&&
@@ -64,8 +69,12 @@ export function decideAdaptiveAttackOpportunity(o:AdaptiveAttackObservation):boo
   // ihren Teamauftrag. Ein Fitnessetikett alleine entscheidet nichts.
   const role=o.role==='kapitaen'?1:o.role==='sprinter'?.12:.16;
   const team=o.teammateAhead?.25:1;
+  // Eine taktische Neigung verändert nur die Wahl am Anstieg und
+  // schenkt weder Leistung noch zusätzliche W′-Reserve.
+  const mountainStyle=1+(o.climbingAttackPreference===undefined?0:
+    (o.climbingAttackPreference-.5)*.7*ramp);
   const probability=(.0008+.0048*ramp+.0032*finale+.0024*early)*
     (.35+.65*o.aggression)*Math.min(1,advantage/.18)*
-    readiness*position*raceGap*strategy*role*team;
+    readiness*position*raceGap*strategy*role*team*mountainStyle;
   return o.draw<Math.min(.08,Math.max(0,probability));
 }
