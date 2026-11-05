@@ -1,5 +1,9 @@
 # Entwicklungsstand
 
+## Zukunftsidee: Erholung zwischen Etappen
+
+[Erholung bei Etappenrennen und Manager-Idee](race/ETAPPENRENNEN_REGENERATION_MANAGER_IDEE.md) hält fest, was bereits existiert und was für mehrtägige Ermüdung, Zustandsübergabe, individuelle Tageserholung sowie mögliche Managerentscheidungen zu Betreuung und Schlafmaterial noch offen ist. Keine Umsetzung oder zugesicherte Wirkung; die geplante Diskussion über den Einzelrennen-Vergleich bleibt der nächste Schritt.
+
 ## Erste individuelle Ermüdungskalibrierung – in Prüfung
 
 [Erste Ermüdungskalibrierung](race/R24_ERSTE_ERMUEDUNGSKALIBRIERUNG.md): unabhängige optionale Fahrerfaktoren für Langzeit-Ermüdungsresistenz und W′-Erholung, erste explizite Heuristik und reproduzierbare Belastungsszenarien. Historische Vergleichsmodelle bleiben unverändert; Talent-/Trainings- und Karrierefunktionen sind noch nicht implementiert. 16 gezielte Tests, der vollständige Lauf mit 374/374 und Browser-Build bestanden; ein anschließend ergänzter Renn-Integrationstest zur W′-Erholung bestand ebenfalls. Ein einzelner Vier-Profil-Vorher-Nachher-Lauf ist dokumentiert; beim Hügelrennen gewann ein Zeitfahrer nach einer Attacke. Der GitHub-PR-Test #302 lief beim letzten Abruf noch. Parameter und sportlicher Realismus bleiben unvalidiert; der größere `main`-Vergleich ist als eigener nächster Schritt vorgesehen.
