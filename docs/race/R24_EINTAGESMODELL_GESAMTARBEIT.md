@@ -38,3 +38,14 @@ Aktuell weiterhin ausstehend: weitere Team-/Fahrertaktik, Gefährlichkeitsbeurte
 Im sprintfreundlichen stable-pack-Pfad erhält der einzelne Sprinter eine vorläufige positions-/geschwindigkeitsbasierte Vorbereitung statt nur der alten prozentualen Phasengrenze. Die verfügbare Zeit bis zum Ziel, Abstand zur Gruppenfront und Hinterradfindefähigkeit beeinflussen den voraussichtlichen Positionierungsbedarf. Für ältere Aufrufe ohne diese Angaben bleibt das alte Verhalten erhalten. In dem neuen Pfad kann auch eine kleinere tatsächliche Gruppe berücksichtigt werden.
 
 Die numerischen Schätzungen sind ungeeichte Heuristiken. Die Teamhelfer-Auswahl und andere Sprint-/Zugpfade enthalten weiterhin ältere Phasenbedingungen; Sprint aus sonstigen Profilen oder vollständige realistische Spurwahl sind damit nicht abgeschlossen. Sieben zielgerichtete Sprinttests liefen erfolgreich. Kein Mehrseed-Vergleich und keine Sportfreigabe.
+
+
+## Fortsetzung: Einzelreaktionen und gemeinsame Verfolgung
+
+- Fahrer können aufgrund einer beobachteten Attacke eines gefährlichen Gegners eine eigene Verfolgung erwägen. Die Einschätzung nutzt bekannte Eigenschaften, verfügbare Kräfte und die aktuelle Lage; ein erfolgreicher Anschluss wird dadurch nicht garantiert. Die Regel und ihre Gewichte sind vorläufig.
+- Fahrer mit einem gemeinsamen Ziel können sich einem tatsächlich existierenden Anschlussversuch anschließen. Ein experimenteller Führungswechsel senkt unter bestimmten Bedingungen den Leistungswunsch des bisherigen Führenden, damit ein naher Mitfahrer möglicherweise übernehmen kann. Ob die vorhandene eindimensionale Gruppenphysik daraus in Rennen zuverlässige und sinnvolle Wechsel erzeugt, ist ausdrücklich noch offen; die isolierten Tests belegen das nicht.
+- Nach diesen Änderungen bestanden 47 gezielte technische Tests aus mehreren Bereichen. Ein zusätzlicher technischer Berg-Kontrolllauf samt Integrationstest bestätigte weiterhin mindestens einen erfolgreichen Anschlussversuch von über zehn Minuten; die vier isolierten Kooperationstests bestanden ebenfalls. Dies ist keine vollständige Testsuite und kein Vergleich der sportlichen Ergebnisse.
+
+## Noch ausstehend und Wiederaufnahme
+
+Die Gesamtüberarbeitung ist nicht fertig. Insbesondere müssen die tatsächliche Zusammenarbeit im Rennverlauf, differenzierte individuelle Berg- und mentale Eigenschaften, die verbliebenen starren Sprint- und Angriffsbedingungen, weitere Teamstrategien sowie vereinbarte Ereignisse und Randbedingungen geprüft und gegebenenfalls ergänzt werden. Die Berichtsoberfläche ist noch nicht eingebunden. Einzelne vereinbarte spätere Funktionen und Rundfahrtregeln sind gesondert einzuordnen. Vor dem Mehrseed-Vergleich sind vollständige technische Prüfungen und eine kritische Prüfung der Aussagekraft aller Kennzahlen erforderlich. Keine bisherige Prüfung belegt die sportliche Realitätsnähe des Gesamtmodells.
