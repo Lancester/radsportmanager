@@ -307,6 +307,10 @@ function buildRider(archetype:Archetype,teamId:string,
     descentSkill:+(.55+hash(index,31)*.4).toFixed(3),
     aggression:+(.32+hash(index,37)*.55).toFixed(3),
     carbsGPerHour:70+(index%3)*10,
+    // Fiktive, reproduzierbare und voneinander unabhängige Eigenschaften;
+    // nicht aus Fahrertyp oder realer Person abgeleitet.
+    durabilityFactor:+(0.85+0.30*hash(index,151)).toFixed(3),
+    wPrimeRecoveryFactor:+(0.85+0.30*hash(index,199)).toFixed(3),
   };
 }
 export interface ReferenceFixture {

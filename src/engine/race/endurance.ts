@@ -38,6 +38,10 @@ export const R19_ENDURANCE=Object.freeze({
   graceSeconds:5400,
   maximumPowerReduction:0.40,
   fatiguePerHardHour:0.075,
+  /** Erste kalibrierbare Spielannahmen, keine individuellen Messwerte. */
+  baselinePenaltyScale:0.40,
+  minimumDurabilityFactor:0.7,
+  maximumDurabilityFactor:1.3,
 });
 const valid=(label:string,n:number,ok:boolean)=>{
   if(!Number.isFinite(n)||!ok)throw new RangeError('R-19: '+label);
@@ -49,8 +53,10 @@ export function initialEnduranceState():EnduranceState{
     workloadHours:0,elapsedS:0};
 }
 export function endurancePowerAvailability(state:EnduranceState,
-  onsetMode:'legacy'|'smooth'='legacy'):number{
+  onsetMode:'legacy'|'smooth'='legacy',durabilityFactor=1):number{
   const c=R19_ENDURANCE;
+  valid('durabilityFactor',durabilityFactor,
+    durabilityFactor>=c.minimumDurabilityFactor&&durabilityFactor<=c.maximumDurabilityFactor);
   const depletion=1-state.carbohydrateKcal/c.carbohydrateCapacityKcal;
   // Vermeidet einen unphysikalischen Leistungssprung bei exakt 90 Minuten.
   // Die lineare Einblendung ist ein expliziter vorläufiger Modellansatz,
@@ -59,13 +65,16 @@ export function endurancePowerAvailability(state:EnduranceState,
     state.elapsedS<=c.graceSeconds?0:1;
   const fuelPenalty=onset*0.32*Math.max(0,(depletion-0.40)/0.60);
   const wearPenalty=onset*Math.max(0,state.workloadHours-0.65)*c.fatiguePerHardHour;
+  // 1 ist Referenz; größer bedeutet weniger Langzeit-Leistungsverlust.
+  // Legacy bleibt exakt reproduzierbar. Kein zusätzlicher Energiegewinn.
+  const scale=onsetMode==='smooth'?c.baselinePenaltyScale/durabilityFactor:1;
   return Math.max(1-c.maximumPowerReduction,
-    1-Math.min(c.maximumPowerReduction,fuelPenalty+wearPenalty));
+    1-Math.min(c.maximumPowerReduction,(fuelPenalty+wearPenalty)*scale));
 }
 export function advanceEndurance(input:{
   state:EnduranceState; appliedPowerW:number;
   referenceCpW:number;dt:number;carbsGPerHour?:number;
-  onsetMode?:'legacy'|'smooth';
+  onsetMode?:'legacy'|'smooth';durabilityFactor?:number;
 }):EnduranceStep{
   const {state,appliedPowerW,referenceCpW,dt}=input;
   if(!state)throw new RangeError('R-19: Zustand fehlt');
@@ -103,6 +112,6 @@ export function advanceEndurance(input:{
     elapsedS:state.elapsedS+dt,
   };
   return {state:next,
-    powerAvailability:endurancePowerAvailability(next,input.onsetMode),
+    powerAvailability:endurancePowerAvailability(next,input.onsetMode,input.durabilityFactor),
     intakeKcal:intake,expenditureKcal:expenditure};
 }

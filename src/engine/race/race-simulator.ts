@@ -81,6 +81,8 @@ export interface RaceRider {
   specialty?:'sprinter'|'kletterer'|'klassiker'|'zeitfahrer'|'allrounder';
   /** R-19: verfügbare Kohlenhydratmenge je Fahrstunde (g/h). */
   carbsGPerHour?:number;
+  /** Individuelle Heuristiken: 1 Referenz, größer = widerstandsfähiger bzw. schnellere W′-Erholung. */
+  durabilityFactor?:number;wPrimeRecoveryFactor?:number;
   criticalPowerW:number;ftpW:number;wPrimeJ:number;
   massKg:number;bikeMassKg:number;dragAreaM2:number;
   descentSkill:number;sprintSkill:number;aggression:number;
@@ -301,6 +303,8 @@ export function validateRace(x:RaceInput):void {
     if(r.carbsGPerHour!==undefined)
       ensure('Verpflegung',r.carbsGPerHour,
         r.carbsGPerHour>=0&&r.carbsGPerHour<=110);
+    for(const k of ['durabilityFactor','wPrimeRecoveryFactor'] as const)
+      if(r[k]!==undefined)ensure(k,r[k],r[k]>=0.7&&r[k]<=1.3);
     for(const k of ['descentSkill','sprintSkill','aggression'] as const)
       ensure(k,r[k],r[k]>=0&&r[k]<=1);
     if(r.wheelFindingSkill!==undefined)
@@ -345,7 +349,8 @@ function buildStates(x:RaceInput):State[] {
     const dayCpW=r.criticalPowerW*hashForm(x.seed,r.id);
     const profile:CpWprimeProfile={
       riderId:r.id,criticalPowerW:dayCpW,wPrimeCapacityJ:r.wPrimeJ,
-      ftpW:r.ftpW,recoveryEfficiency:0.22,
+      ftpW:r.ftpW,recoveryEfficiency:0.22*(x.groupRidingModel==='stable-pack'?
+        (r.wPrimeRecoveryFactor??1):1),
     };
     const physical:CornerRider={
       riderMassKg:r.massKg,equipmentMassKg:r.bikeMassKg,
@@ -411,11 +416,12 @@ export function simulateRace(x:RaceInput):RaceResult {
   // Die sportliche Leitung nominiert den nach verfügbarer 3-Minuten-
   // Leistung pro Gesamtmasse geeigneten Fahrer jedes Teams. Das
   // Typ-Etikett verleiht keine zusätzlichen Watt.
-  const fatigueAvailability=(state:EnduranceState)=>endurancePowerAvailability(
-    state,x.groupRidingModel==='stable-pack'?'smooth':'legacy');
+  const fatigueAvailability=(state:EnduranceState,rider:RaceRider)=>endurancePowerAvailability(
+    state,x.groupRidingModel==='stable-pack'?'smooth':'legacy',
+    x.groupRidingModel==='stable-pack'?(rider.durabilityFactor??1):1);
   const rampScore=(r:State)=>{
     const availability=x.enduranceModel==='off'?1:
-      fatigueAvailability(r.endurance);
+      fatigueAvailability(r.endurance,r.rider);
     const cp=r.dayCpW*availability;
     const peak=Math.max(r.dayCpW,r.rider.sprintPeakPowerW??
       inferredSprintPeakPowerW({massKg:r.rider.massKg,
@@ -675,7 +681,7 @@ export function simulateRace(x:RaceInput):RaceResult {
                     (g?.[0].positionM??s.positionM)-s.positionM),
                   gapToRaceFrontM:Math.max(0,leader.positionM-s.positionM),
                   effectiveCpW:s.dayCpW*(x.enduranceModel==='off'?1:
-                    fatigueAvailability(s.endurance)),
+                    fatigueAvailability(s.endurance,s.rider)),
                   wPrimeJ:s.physiology.remainingWPrimeJ,
                   reserveFraction:s.physiology.remainingWPrimeJ/
                     s.profile.wPrimeCapacityJ,exposedHoldPowerW,
@@ -999,7 +1005,7 @@ export function simulateRace(x:RaceInput):RaceResult {
             pacer.dayCpW*R22_GROUP_RIDING.leaderCpFraction,
             referenceCp*1.04);
         const pacerAvailability=x.enduranceModel==='off'?1:
-          fatigueAvailability(pacer.endurance);
+          fatigueAvailability(pacer.endurance,pacer.rider);
         const pacerPeak=pacer.rider.sprintPeakPowerW??
           inferredSprintPeakPowerW({massKg:pacer.rider.massKg,
             sprintSkill:pacer.rider.sprintSkill});
@@ -1478,7 +1484,7 @@ export function simulateRace(x:RaceInput):RaceResult {
           // Dauerleistung bereits hier zugrunde; keine inverse R-19-
           // Kompensation mehr als vermeintlich gratis fuehrende Watt.
           cpW:s.dayCpW*(x.enduranceModel==='off'?1:
-            fatigueAvailability(s.endurance)),reserveFraction:
+            fatigueAvailability(s.endurance,s.rider)),reserveFraction:
             s.physiology.remainingWPrimeJ/s.profile.wPrimeCapacityJ,
           enduranceAvailability:1,
           originalRequestedW:commanded,
@@ -1552,7 +1558,7 @@ export function simulateRace(x:RaceInput):RaceResult {
       // wird fuer Verbrauch UND Erholung im selben CP/W′-Kern genutzt.
       // Andere Gruppenmodelle behalten ihr bisheriges Vergleichsverhalten.
       const availability=x.enduranceModel==='off'?1:
-        fatigueAvailability(s.endurance);
+        fatigueAvailability(s.endurance,s.rider);
       const cp=x.groupRidingModel==='stable-pack'&&x.enduranceModel!=='off'?
         applyEnduranceLimitedCpStep({profile:s.profile,state:s.physiology,
           desiredPowerW:commanded,dt,availability,
@@ -1588,6 +1594,8 @@ export function simulateRace(x:RaceInput):RaceResult {
           referenceCpW:s.dayCpW,dt,
           carbsGPerHour:s.rider.carbsGPerHour,
           onsetMode:x.groupRidingModel==='stable-pack'?'smooth':'legacy',
+          durabilityFactor:x.groupRidingModel==='stable-pack'?
+            (s.rider.durabilityFactor??1):1,
         });
         s.endurance=end.state;
         counters.maximumEndurancePenalty=Math.max(
@@ -1666,7 +1674,7 @@ export function simulateRace(x:RaceInput):RaceResult {
         appliedPowerW:s?(powers.get(s.rider.id)??0):0,
         criticalPowerW:s?.dayCpW??0,
         effectiveCriticalPowerW:s?s.dayCpW*(x.enduranceModel==='off'?1:
-          fatigueAvailability(s.endurance)):0});
+          fatigueAvailability(s.endurance,s.rider)):0});
     }
     for(const s of active){
       const before=s.positionM;
@@ -1800,7 +1808,7 @@ export function simulateRace(x:RaceInput):RaceResult {
               carbohydrateKcal:r.endurance.carbohydrateKcal,
               carbohydrateUnmetKcal:r.endurance.carbohydrateUnmetDemandKcal,
               enduranceAvailabilityPct:100*(x.enduranceModel==='off'?1:
-                fatigueAvailability(r.endurance)),
+                fatigueAvailability(r.endurance,r.rider)),
               aeroFactor:lastAero.get(r.rider.id)??1,
               segmentIndex:r.segmentIndex,
             };
@@ -1845,7 +1853,7 @@ export function simulateRace(x:RaceInput):RaceResult {
     carbohydrateOverflowKcal:s.endurance.carbohydrateOverflowKcal,
     carbohydrateUnmetDemandKcal:s.endurance.carbohydrateUnmetDemandKcal,
     endurancePowerAvailability:x.enduranceModel==='off'?1:
-      fatigueAvailability(s.endurance),
+      fatigueAvailability(s.endurance,s.rider),
   }));
   // s.finishTimeS ist bei exakt linear interpoliertem Zielstraßenpunkt
   // sub-sekündlich, während die CP/Arbeit des letzten Intervalls als
