@@ -94,6 +94,8 @@ export interface RaceRider {
   criticalPowerW:number;ftpW:number;wPrimeJ:number;
   massKg:number;bikeMassKg:number;dragAreaM2:number;
   descentSkill:number;sprintSkill:number;aggression:number;
+  /** 0..1: Neigung, eine aussichtsarme Verfolgung fortzusetzen; kein Leistungsbonus. */
+  pursuitPersistence?:number;
   /** 0..1: Taktisches Erkennen/Besetzen eines real vorausfahrenden Hinterrads. */
   wheelFindingSkill?:number;
   /** Früh-/Spätstart-Vorliebe: 0 = eher abwarten, 1 = eher früh; keine Sieggarantie. */
@@ -319,6 +321,9 @@ export function validateRace(x:RaceInput):void {
       if(r[k]!==undefined)ensure(k,r[k],r[k]>=0.7&&r[k]<=1.3);
     for(const k of ['descentSkill','sprintSkill','aggression'] as const)
       ensure(k,r[k],r[k]>=0&&r[k]<=1);
+    if(r.pursuitPersistence!==undefined)
+      ensure('pursuitPersistence',r.pursuitPersistence,
+        r.pursuitPersistence>=0&&r.pursuitPersistence<=1);
     if(r.wheelFindingSkill!==undefined)
       ensure('wheelFindingSkill',r.wheelFindingSkill,
         r.wheelFindingSkill>=0&&r.wheelFindingSkill<=1);
@@ -938,7 +943,8 @@ export function simulateRace(x:RaceInput):RaceResult {
             secondsWithoutProgress:t-bridgePlan.lastProgressS,ownSpeedMps:s.speedMps,
             targetSpeedMps:bridgeTarget?.speedMps??0,
             remainingM:Math.max(0,totalM-s.positionM),reserveFraction:obs.reserveFraction,
-            aggression:s.rider.aggression,assignedTeamDuty:s.rider.role==='helfer'&&!!crew,
+            aggression:s.rider.aggression,pursuitPersistence:s.rider.pursuitPersistence,
+            assignedTeamDuty:s.rider.role==='helfer'&&!!crew,
             favorableTerrainAhead});
           if(pursuit==='erreicht'||pursuit==='aufgeben'){
             bridgePlans.delete(s.rider.id);
