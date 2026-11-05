@@ -6,13 +6,14 @@
  * Die 42-m-Grenze ordnet nur aktuelle Strecken-Abstandsgruppen, nicht Aero.
  */
 import type {RaceRole,RaceStrategy} from './race-tactics.ts';
+import type {KnownRiderAbility} from './opponent-assessment.ts';
 
 export interface IntelligentRider {
   id:string;teamId:string;role:RaceRole;
   positionM:number;speedMps:number;
   criticalPowerW:number;reserveFraction:number;aggression:number;
   /** Opt-in: Helfer hat physisch viel Jagdarbeit geleistet und wird abgelöst. */
-  chaseSpent?:boolean;
+  chaseSpent?:boolean;knownAbility?:KnownRiderAbility;
 }
 export interface IntelligentTeam {
   id:string;strategy:RaceStrategy;
