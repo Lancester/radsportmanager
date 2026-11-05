@@ -30,6 +30,7 @@ import {decideRiderReaction} from './rider-reaction.ts';
 import {decideJoinBridge} from './bridge-cooperation.ts';
 import {cooperativeRelayYield,observedRelayFrontChange} from './bridge-relay.ts';
 import {decideBreakawayWork} from './breakaway-cooperation.ts';
+import {BreakawayFrontAudit} from './breakaway-front-audit.ts';
 import type {AttackPurpose} from './attack-purpose.ts';
 import {adaptiveAttackDraw,decideAdaptiveAttackOpportunity}
   from './adaptive-attack.ts';
@@ -221,6 +222,10 @@ export interface RaceResult {
     /** Tatsächlich geleistete Arbeit unter Anschlussauftrag; nur im Checkpoint-Modus. */
     rejoinWork?:Array<{riderId:string;teamId:string;assignedS:number;
       actualFrontS:number;appliedWorkJ:number;actualFrontWorkJ:number}>;
+    /** Reale Frontposition und abgerechnete Kurbelarbeit, nur Diagnostik. */
+    breakawayFrontWork?:ReturnType<BreakawayFrontAudit['report']>;
+    breakawayFormations?:Array<{timeS:number;km:number;riderIds:string[];
+      size:number;lengthM:number;maximumAdjacentGapM:number;gapToMainM:number}>;
     /** Reale Folgen von Angriffswuenschen; nur im Checkpoint-Modus. */
     attackTraces?:AttackTrace[];
     /** Nur in sprintfreundlichen stable-pack-Rennen aus echten Rennschritten. */
@@ -502,6 +507,9 @@ export function simulateRace(x:RaceInput):RaceResult {
   const rejoinRiders=checkpoints?new Set<string>():null;
   const rejoinWork=checkpoints?new Map<string,{riderId:string;teamId:string;
     assignedS:number;actualFrontS:number;appliedWorkJ:number;actualFrontWorkJ:number}>():null;
+  const breakawayFrontAudit=checkpoints?new BreakawayFrontAudit():null;
+  const breakawayFormations:NonNullable<RaceResult['diagnostics']['breakawayFormations']>|null=
+    checkpoints?[]:null;
   const lastPower=new Map<string,number>();
   const lastAero=new Map<string,number>();
   const dt=x.stepSeconds??1;
@@ -1965,6 +1973,18 @@ export function simulateRace(x:RaceInput):RaceResult {
         gradeFraction:segment.gradeFraction,aeroFactor,brakeForceN,
       }));
     }
+    if(breakawayFrontAudit){
+      const frontGroup=physicalGroups[0];
+      const gap=frontGroup!==largestPhysicalGroup?
+        frontGroup[frontGroup.length-1].positionM-largestPhysicalGroup[0].positionM:0;
+      const front=byId.get(frontGroup[0].id);
+      const eligible=breakawayActive&&frontGroup!==largestPhysicalGroup&&
+        frontGroup.length>=2&&gap>=75&&front&&
+        trackedBreakaway.escapeIds.includes(front.rider.id);
+      breakawayFrontAudit.observe(eligible?{riderId:front.rider.id,teamId:front.rider.teamId,
+        timeS:t,dt,appliedPowerW:powers.get(front.rider.id)??0,
+        aeroFactor:lastAero.get(front.rider.id)??1,groupSize:frontGroup.length}:null);
+    }
     if(sprintFriendlyRace){
       const nominated=previousFieldChaseLeader?.riderId??null;
       const s=nominated?byId.get(nominated):undefined;
@@ -2054,6 +2074,14 @@ export function simulateRace(x:RaceInput):RaceResult {
         breakawayActive=trackedBreakaway.escapeIds.length>0;
         if(nextBreakaway.event==='breakaway'){
           counters.breakaways++;
+          if(breakawayFormations){
+            const front=groups[0];
+            const gaps=front.slice(1).map((r,i)=>front[i].positionM-r.positionM);
+            breakawayFormations.push({timeS:t,km:best.positionM/1000,
+              riderIds:front.map(r=>r.rider.id),size:front.length,
+              lengthM:front[0].positionM-front[front.length-1].positionM,
+              maximumAdjacentGapM:Math.max(0,...gaps),gapToMainM:nextBreakaway.gapM});
+          }
           if(groups[0].every(r=>t-r.lastAttackS>180))
             unprovokedBreakawayCount++;
           if(events.length<100000)events.push({timeS:t,
@@ -2176,6 +2204,8 @@ export function simulateRace(x:RaceInput):RaceResult {
       ...(rejoinAttempts?{rejoinAttempts:rejoinAttempts.report(t)}:{}),
       ...(rejoinWork?{rejoinWork:[...rejoinWork.values()].sort((a,b)=>
         a.riderId.localeCompare(b.riderId))}:{}),
+      ...(breakawayFrontAudit?{breakawayFrontWork:breakawayFrontAudit.report()}:{}),
+      ...(breakawayFormations?{breakawayFormations}:{}),
       ...((x.groupRidingModel==='relays'||x.groupRidingModel==='relay-paced'||
           x.groupRidingModel==='front-gated'||x.groupRidingModel==='stable-pack')?{
         orderedRelayTeamSeconds,
