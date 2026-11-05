@@ -198,3 +198,7 @@ In einer lokalen 1-km-Diagnose des Hautacam-Seeds 2026 liegen F078 und F134 bere
 Gegenprobe mit `disableAttacks: true`: Bei km 20 besteht eine 144er- und eine 10er-Abstandsgruppe; bei km 30 melden die Gruppen 67/1/24/28/... Fahrer. In einem weiteren Sensitivitätslauf wurden für alle Streckensegmente nur die Technikalitätsparameter auf null gesetzt, Angriffe blieben ausgeschaltet: bei km 30 lauten die Gruppen 68/1/23/28/... . Die Abfahrts-Sicherheitsbegrenzung ist damit für diese frühe Teilung nicht hinreichend als Ursache belegt. Die Übergänge, tatsächlichen Watt und Windschatten-/Kontaktverluste der betroffenen Fahrer müssen zeitlich weiter untersucht werden. Keine Änderung wurde aus dieser Gegenprobe abgeleitet.
 
 Der Vier-Profil-Integrationstest auf dem korrigierten Sprintzugstand besteht lokal (2/2 Testfälle); ein neuer vollständiger Gesamtlauf wurde gestartet. Die frühere 358/359-Angabe betrifft den vorherigen Teststand.
+
+### Technischer Gesamttest nach der Korrektur
+
+Auf dem Code von Commit `3a1fea1` (mit den in den Folgecommits angepassten Profiltests) bestand der vollständige lokale Lauf mit `node --experimental-strip-types --test --test-concurrency=2 tests/*.test.mjs`: **360/360 Tests**, keine Fehler. Das ist keine GitHub-Actions- oder Android-Messung und kein Beweis für sportlichen Realismus. Insbesondere bleibt die frühe Bergfeldteilung aus der vorstehenden Gegenprobe offen.
