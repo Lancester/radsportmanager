@@ -86,3 +86,12 @@ Nächster Diskussionspunkt: Zusammenspiel und Verfolgung von Teams nach Etablier
 - Auch mehrere Helfer garantieren weder gleichmäßiges Tempo noch eine vollständig geschonte Reserve oder das Einholen: sie müssen real in Reichweite und einsetzbar sein, Führung übernehmen und Kräfte aufwenden. Gelände, Attackenstärke, Windschatten, Kräfte und Verhalten anderer bestimmen den Verlauf; bei Bedarf kann der Kapitän selbst reagieren und auch in den hohen Belastungsbereich kommen oder den Anschluss verlieren.
 - Die Zahl der Helfer wählt in diesem Stadium die Team-KI anhand der Rennlage; keine verpflichtende Manager-Live-Steuerung. Zusätzliche Daten über Reputation, Teamziele, Gesamtwertung und detaillierte Fahrer-/Personal-Eigenschaften sind später konzeptionell möglich, aber noch nicht als vorhandene Funktion behauptet.
 - Vereinbarte sportliche Zielbeschreibung; Umsetzung und Prüfung stehen aus. Regeln zunächst gemeinsam durchgehen, dann Entwicklungsmodell ändern und danach testen.
+
+## 10. Gefährlichkeit eines Gegners einschätzen — vereinbart
+
+- Ein Fahrer ist nicht in jedem Rennen und jeder Situation gleich gefährlich. Die KI bewertet seine bekannte bzw. geschätzte Eignung für Strecke und verbleibendes Gelände, insbesondere Flucht-/Solofähigkeit, Sprint und Bergstärke.
+- Sie berücksichtigt Art der Entscheidung (z. B. früher Angriff oder gemeinsamer Sprint), verbleibende Strecke, den aktuellen Abstand und dessen Entwicklung, Gruppenzusammensetzung, Team- und Eigenziel sowie aus dem Rennverlauf beobachtbares Verhalten.
+- Ein starker Zeitfahrer kann mit einem späten Soloangriff für Sprintteams gefährlich sein, auch wenn er kein Sprintfavorit ist; ein geschützter Sprinter kann bei gemeinsamer Ankunft gefährlich sein, auch ohne selbst zu attackieren.
+- Die Einschätzung ist unvollkommen und entwickelt sich im Rennen. Andere Fahrer kennen nicht automatisch exakte interne Energiereserven oder den Ausgang des Rennens; fehlende Information, Fehleinschätzung und unerwartete Leistungen bleiben möglich.
+- Für spätere Rundfahrten soll Gefährlichkeit für Etappensieg und Gesamtwertung getrennt betrachtet werden; die Gesamtwertungslogik ist noch nicht implementiert. Ein späteres Bekanntheits-/Bewertungssystem ist keine bereits existierende Funktion.
+- Keine garantierten Siegquoten, künstlichen Bonuspositionen oder Resultatvorgaben. Die sportliche Zielbeschreibung muss erst konkretisiert, implementiert und geprüft werden.
