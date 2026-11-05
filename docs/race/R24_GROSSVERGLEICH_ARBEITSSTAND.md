@@ -23,3 +23,13 @@ Das Diagnosewerkzeug `scripts/r24-grossvergleich.mjs` schreibt je Lauf atomar ei
 ## Offen
 
 Vereinbarte Mehrseed-Läufe abschließen, paarweise Hashes und Vollständigkeit prüfen; Ergebnisse und Favoritenränge auswerten, beobachtete Verläufe und Ursachen an ausgewählten Beispielen gezielt prüfen. Echtzeitdaten/Profi-Favoriten vor dem jeweiligen realen Rennen recherchieren. Zusätzlich Prüfen, ob ein synthetischer Seitenwind-Fall und Anstieg–Abfahrt–Flach auf beiden Versionen gleich abgebildet werden können. Resultate und Einschränkungen sichern; noch keine Gesamtaussage zum Ermüdungsmodell.
+
+## Zwischenstand: Lille, gemeinsames Fahrerfeld, zehn Seeds
+
+Die ersten zehn Paare sind abgeschlossen. Alle zehn Hashpaare gemeinsamer Eingaben stimmen überein. In dieser kleinen Auswahl gewinnen auf `main` neun Sprinter und ein Klassikerfahrer, auf dem Entwicklungsstand fünf Sprinter und fünf als Kletterer bezeichnete Fahrer. Nach der nachberechneten 1-s-Regel beträgt die mediane Siegergruppe 29 bzw. 23,5 Fahrer; die mediane jeweils größte Zielgruppe 90,5 bzw. 98. Das ist eine deskriptive Zwischenbilanz, weder eine repräsentative Siegwahrscheinlichkeit noch ein Beweis, dass der Entwicklungsstand besser oder schlechter ist. Die übrigen Profile und Ursachenanalysen laufen noch.
+
+Der stärkste Sprint-Proxy F023 belegt auf `main` in diesen zehn Rennen die Ränge 1, 21, 2, 1, 2, 3, 2, 2, 2, 3; auf dem Entwicklungsstand 95, 2, 17, 8, 2, 1, 2, 2, 2, 23 (Seeds in Reihenfolge 11, 42, 101, 123, 777, 2025, 2026, 2027, 9001, 31415). Der Proxy erfasst weder komplette Strecke noch Position und Teamtaktik; die Unterschiede verlangen Verlaufsprüfung.
+
+Beispiel Entwicklungsstand, Seed 11: Sieger F134 attackierte bei km 18,6 und km 177,1; bei Kontrollpunkten km 20–140 war er als einzelne führende Gruppe erfasst, bei km 160 gehörte er zu einer Gruppe mit 94 Fahrern und bei km 180 zu einer Zweiergruppe. F023 wurde 95. Diese Momentaufnahmen beweisen weder eine durchgehende Solofahrt noch, weshalb die Jagd erfolgte oder scheiterte. Eine engere Ursachenanalyse folgt. [Laufweise Kennzahlen und Eingabe-Hashes](r24-grossvergleich-daten/lille-common-10-seeds.csv).
+
+Die gezielten Favoriten-, Referenzfeld- und individuellen Ermüdungstests liefen mit **10/10 erfolgreich**. Erkenntnis zur Seedwirkung aus dem Code: In beiden Versionen bestimmt der Seed auch die individuelle Tages-CP über einen Faktor zwischen 0,98 und 1,02. Im Entwicklungsstand steuert er zusätzlich reproduzierbare, nach Fahrer und Zeittakt gebildete Angriffszufallswerte; keine Behauptung eines gemeinsam synchronen sequenziellen Zufallsstroms. Basiswerte, Feld und Strecke bleiben für ein Szenario gleich.
