@@ -198,3 +198,14 @@ Nächster Diskussionspunkt: Zusammenspiel und Verfolgung von Teams nach Etablier
 - Die simulierten individuellen Zielzeiten bleiben für Physik und Analyse nachvollziehbar; die für die jeweilige Wertung geltende Gruppenzeit wird in der Ergebnisliste verwendet.
 - Die maßgebliche zeitliche Lücke und mögliche Sonderregeln können von Wettbewerb und Rennart abhängen; konkrete Grenzen müssen für Tests und spätere Wettbewerbe ausdrücklich angegeben bzw. gesondert festgelegt werden. Keine Gleichsetzung der 1-s- und 3-s-Diagnostik mit einer vollständigen offiziellen Regelumsetzung.
 - Zielbeschreibung, keine Behauptung einer bereits vollständigen offiziellen Zeitwertung. Die tatsächlich gültigen Regelwerke zum Zeitpunkt der Umsetzung sind gesondert zu prüfen.
+
+## 22. Nachvollziehbarer Rennbericht — vereinbart
+
+- Das autonom durchgeführte Rennen wird für den Manager verständlich aufbereitet; eine Live-Steuerung des Rennens wird nicht vorausgesetzt.
+- Ergebnisliste: Zielreihenfolge, jeweils gewertete Gruppenzeiten und Platzierungen der eigenen Fahrer, unter Beachtung der separat vereinbarten Gruppenzeitregeln.
+- Rennverlauf: wichtige Fluchtgruppen, Nachführen und Verfolgung, entscheidende Attacken und Zusammenschlüsse, wenn erfasst mit Strecke bzw. Rennkilometer.
+- Teamauswertung: nach Möglichkeit belegt, wer in einer Flucht war, tatsächlich Führungsarbeit geleistet oder Teamkollegen unterstützt hat und wie Kapitän bzw. Sprinter das Finale erreichten.
+- Vor dem Rennen erfasste Favoriten und ihre Platzierungen sichtbar machen; eine Vorabeinschätzung ist keine sichere Vorhersage.
+- Entscheidende Momente knapp erklären; eine übersichtliche Darstellung zuerst und bei Bedarf weitergehende Fahrer- und Ereignisdetails.
+- Der Bericht darf keine Ursachen oder Ereignisse erfinden. Kann eine konkrete Ursache nicht aus erfassten Daten belegt werden, wird die Unsicherheit kenntlich gemacht oder die Ursache nicht behauptet.
+- Vereinbarte Zielbeschreibung; Vollständigkeit der aktuellen Telemetrie und Benutzeroberfläche sind noch gesondert zu prüfen. Implementierung und Tests nach der gemeinsamen Regeldurchsicht.
