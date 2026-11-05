@@ -21,4 +21,13 @@ test('Berglauf: Anschluss kann nach der Attacke viele Minuten dauern und gelinge
   assert.equal(result.classification.length,154);
   assert.ok(result.classification.every(r=>r.finalWPrimeJ>=0&&
     Math.abs(r.energyResidualJ)<.05),'physikalische und energetische Bilanz');
+  // In diesem konkreten Kontrollszenario muss mindestens ein tatsächlich
+  // beobachteter Positionswechsel auf ein passendes Angebot folgen.
+  const offers=result.events.filter(e=>e.type==='bridge-relay');
+  const changes=result.events.filter(e=>e.type==='bridge-relay-position-change');
+  assert.ok(changes.some(change=>offers.some(offer=>
+    offer.timeS<change.timeS&&offer.riderId&&change.riderId&&
+    offer.description.includes(change.riderId)&&
+    change.description.includes(`vor ${offer.riderId};`))),
+    'eine beobachtete Ablösung muss ein passendes Angebot haben');
 });
