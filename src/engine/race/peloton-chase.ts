@@ -6,6 +6,8 @@
  */
 import type {IntelligentTeam,IntelligentRider,RaceSituation}
   from './race-team-ai.ts';
+import {estimateOpponentThreat} from './opponent-assessment.ts';
+import type {ThreatProfile} from './opponent-assessment.ts';
 
 export interface ChaseCoordinatorState {
   active:readonly string[];sinceS:number;cooldownUntilS:number;
@@ -28,6 +30,7 @@ export function coordinatePelotonChase(input:{
   sprintFinaleMode?:boolean;
   /** Opt-in: groessere Spitzengruppen und reale Mannschaftsinteressen. */
   adaptiveChase?:boolean;
+  threatProfile?:ThreatProfile;
 }):{state:ChaseCoordinatorState;chasingTeamIds:ReadonlySet<string>}{
   const {timeS,remainingM,progress,mainGroupIds,teams,riders,situation,previous}=input;
   const sprintFinale=input.sprintFinaleMode===true;
@@ -69,9 +72,19 @@ export function coordinatePelotonChase(input:{
     return {state:previous,chasingTeamIds:new Set()};
   // Echte Mannschaftsinteressen: Sprintteams übernehmen zuerst Arbeit;
   // GC/ausgewogene Teams nur bei gefährlicher Flucht und freien Helfern.
-  const urgent=situation.gapFractionOfRemaining>.009||
-    situation.projectedGapM>Math.max(400,remainingM*.025);
   const leadingIds=new Set(situation.leadingRiderIds??[]);
+  const knownField=riders.flatMap(r=>r.knownAbility?[r.knownAbility]:[]);
+  const knownLeaders=riders.filter(r=>leadingIds.has(r.id)&&r.knownAbility)
+    .map(r=>r.knownAbility!);
+  // Öffentlich geschätzte Grundfähigkeiten, keine fremden aktuellen Reserven.
+  // Ohne geeignete Daten bleibt das bisherige Verhalten erhalten.
+  const assessed=adaptive&&!!input.threatProfile&&knownField.length>=2&&knownLeaders.length>0;
+  const danger=assessed?Math.max(...knownLeaders.map(opponent=>
+    estimateOpponentThreat({opponent,field:knownField,
+      profile:input.threatProfile!,situation:'flucht'}))):null;
+  const urgent=situation.gapFractionOfRemaining>.009||
+    situation.projectedGapM>Math.max(400,remainingM*.025)||
+    (danger!==null&&danger>=.8&&situation.gapM>=200);
   const choices=teams.map(team=>{
     const members=groupMembers.filter(r=>r.teamId===team.id);
     const helpers=members.filter(r=>r.role==='helfer'&&
@@ -94,7 +107,7 @@ export function coordinatePelotonChase(input:{
     const optedOut=(!adaptive&&sprintFinale&&team.chaseHelperCount===0)||
       ownLeadersAhead||(ownHelperAhead&&!urgent);
     const interested=!optedOut&&(
-      team.strategy==='sprint'&&hasSprinter||
+      team.strategy==='sprint'&&hasSprinter&&(!assessed||urgent)||
       urgent&&team.strategy==='kapitaen_schuetzen'&&hasCaptain||
       urgent&&team.strategy==='ausgewogen'&&hasCaptain||
       adaptive&&(urgent||wantsRepresentation)&&team.strategy==='offensiv'&&hasCaptain);
