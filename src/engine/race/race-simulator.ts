@@ -119,7 +119,7 @@ export interface RaceInput {
   disableAttacks?:boolean;
 }
 export type RaceEventType =
-  'start'|'attack'|'chase'|'sprint'|'recovery'|'segment'|'group-split'|'breakaway'|'breakaway-caught'|'finish'|'team-pace'|'team-chase'|'sprint-train';
+  'start'|'attack'|'chase'|'sprint'|'recovery'|'segment'|'group-split'|'breakaway'|'breakaway-caught'|'finish'|'team-pace'|'team-chase'|'sprint-train'|'bridge-start'|'bridge-stop';
 export interface RaceEvent {
   timeS:number;km:number;type:RaceEventType;
   riderId?:string;teamId?:string;description:string;
@@ -456,6 +456,8 @@ export function simulateRace(x:RaceInput):RaceResult {
       s.rider.criticalPowerW/(s.rider.massKg+s.rider.bikeMassKg)>=
         bestCaptainClimb*.97).map(s=>s.rider.id):[]);
   const activeAttackPurposes=new Map<string,AttackPurpose>();
+  const bridgePlans=new Map<string,{targetId:string;powerW:number;bestGapM:number;
+    lastProgressS:number}>();
   const events:RaceEvent[]=[{timeS:0,km:0,type:'start',
     description:`${states.length} Fahrer starten auf ${(totalM/1000).toFixed(1)} km`}];
   const snapshots:RaceSnapshot[]=[];
@@ -659,7 +661,7 @@ export function simulateRace(x:RaceInput):RaceResult {
         const targetRider=nextGroup?.[nextGroup.length-1];
         const nextGap=targetRider?Math.max(0,targetRider.positionM-s.positionM):null;
         const attackSegment=x.segments[segmentFor(s,boundaries)];
-        const bridge=targetRider&&nextGap!==null&&nextGap>=30&&nextGap<=500?
+        const bridge=targetRider&&nextGap!==null&&nextGap>=30?
           estimateBridge({gapM:nextGap,targetSpeedMps:targetRider.speedMps,
             effectiveCpW:s.dayCpW*(x.enduranceModel==='off'?1:
               fatigueAvailability(s.endurance,s.rider)),
@@ -670,7 +672,8 @@ export function simulateRace(x:RaceInput):RaceResult {
             drivetrainEfficiency:s.physical.drivetrainEfficiency,
             airDensityKgM3:s.physical.airDensityKgM3,
             headwindMps:attackSegment.headwindMps??0,
-            crosswindMps:attackSegment.crosswindMps??0}):null;
+            crosswindMps:attackSegment.crosswindMps??0,
+            remainingM:Math.max(0,totalM-s.positionM)}):null;
         const purpose=selectAttackPurpose({remainingM:Math.max(0,totalM-s.positionM),
           progress:Math.min(1,s.positionM/totalM),
           gradeFraction:x.segments[segmentFor(s,boundaries)].gradeFraction,
@@ -827,11 +830,33 @@ export function simulateRace(x:RaceInput):RaceResult {
             headwindMps:stageSegment.headwindMps??0,
             crosswindMps:stageSegment.crosswindMps??0,
           }):null;
-        const baseProposal:TacticDecision=classics?{
+        let baseProposal:TacticDecision=classics?{
           desiredPowerW:classics.powerW,intent:'angriff',
           reason:classics.reason,
         }:chooseRacePower(obs);
         const crew=planned?.orders.get(s.rider.id);
+        const bridgePlan=bridgePlans.get(s.rider.id);
+        if(bridgePlan){
+          const bridgeTarget=byId.get(bridgePlan.targetId);
+          const gap=bridgeTarget&&bridgeTarget.finishTimeS===null?
+            bridgeTarget.positionM-s.positionM:null;
+          if(gap!==null&&gap<bridgePlan.bestGapM-10){
+            bridgePlan.bestGapM=gap;bridgePlan.lastProgressS=t;
+          }
+          const reached=gap!==null&&gap<=15;
+          const stop=reached||gap===null||obs.reserveFraction<.20||
+            (s.rider.role==='helfer'&&!!crew)||t-bridgePlan.lastProgressS>120;
+          if(stop){
+            bridgePlans.delete(s.rider.id);
+            if(events.length<100000)events.push({timeS:t,km:s.positionM/1000,
+              type:'bridge-stop',riderId:s.rider.id,teamId:s.rider.teamId,
+              description:`Anschluss zu ${bridgePlan.targetId}: ${reached?'erreicht':'beendet'}`});
+          }else if(baseProposal.intent!=='angriff'&&baseProposal.intent!=='sprint'&&
+            baseProposal.intent!=='erholung'){
+            baseProposal={intent:'verfolgung',desiredPowerW:bridgePlan.powerW,
+              reason:`Individueller Anschlussversuch zu ${bridgePlan.targetId}`};
+          }
+        }
         const oldOrder=orders?.get(s.rider.id);
         const assignedKind:TeamPaceKind|null=crew?
           (crew.mission==='jagd'?'verfolgung':'fuehrung'):
@@ -890,6 +915,14 @@ export function simulateRace(x:RaceInput):RaceResult {
         if(decision.intent==='angriff'&&s.intent!=='angriff'){
           s.lastAttackS=t;
           if(purpose)activeAttackPurposes.set(s.rider.id,purpose);
+          if(purpose==='gruppe_erreichen'&&targetRider&&bridge?.reachable&&
+            nextGap!==null){
+            bridgePlans.set(s.rider.id,{targetId:targetRider.rider.id,
+              powerW:bridge.budgetW,bestGapM:nextGap,lastProgressS:t});
+            if(events.length<100000)events.push({timeS:t,km:s.positionM/1000,
+              type:'bridge-start',riderId:s.rider.id,teamId:s.rider.teamId,
+              description:`Ziel ${targetRider.rider.id}, Abstand ${Math.round(nextGap)} m, Prognose ${Math.round(bridge.estimatedSeconds??0)} s, ${Math.round(bridge.budgetW)} W`});
+          }
           attackTelemetry?.start({riderId:s.rider.id,timeS:t,
             positionM:s.positionM,groupIds:group?.map(r=>r.rider.id)??[s.rider.id],
             gapToRaceFrontM:Math.max(0,leader.positionM-s.positionM),
