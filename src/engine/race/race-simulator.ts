@@ -35,6 +35,7 @@ import {decideClassicsApproach,decideClassicsRampTempo}
 import {isAdaptiveHillyRoute,
   decideHillyRampTempo,HILLY_RACECRAFT} from './hilly-racecraft.ts';
 import {contiguousClimbRuns} from './climb-runs.ts';
+import {rampAbilityWPerKg} from './ramp-ability.ts';
 import {decideGroupRiding,decideChaseApproach,R22_GROUP_RIDING} from './group-riding.ts';
 import {decideTeamPace} from './team-pacing.ts';
 import {decideIntelligentCrew,analyzeRaceSituation} from './race-team-ai.ts';
@@ -405,10 +406,15 @@ export function simulateRace(x:RaceInput):RaceResult {
   // Leistung pro Gesamtmasse geeigneten Fahrer jedes Teams. Das
   // Typ-Etikett verleiht keine zusätzlichen Watt.
   const rampScore=(r:State)=>{
-    const cp=r.dayCpW*(x.enduranceModel==='off'?1:
-      endurancePowerAvailability(r.endurance));
-    return (cp+Math.min(r.physiology.remainingWPrimeJ/180,cp*.25))/
-      (r.rider.massKg+r.rider.bikeMassKg);
+    const availability=x.enduranceModel==='off'?1:
+      endurancePowerAvailability(r.endurance);
+    const cp=r.dayCpW*availability;
+    const peak=Math.max(r.dayCpW,r.rider.sprintPeakPowerW??
+      inferredSprintPeakPowerW({massKg:r.rider.massKg,
+        sprintSkill:r.rider.sprintSkill}))*availability;
+    return rampAbilityWPerKg({effectiveCpW:cp,
+      remainingWPrimeJ:r.physiology.remainingWPrimeJ,peakPowerW:peak,
+      riderMassKg:r.rider.massKg,bikeMassKg:r.rider.bikeMassKg});
   };
   const rampSpecialistByTeam=new Map(x.teams.map(team=>{
     const candidates=states.filter(r=>
