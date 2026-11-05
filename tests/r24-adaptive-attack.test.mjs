@@ -11,6 +11,17 @@ const attack={timeS:12000,remainingM:1500,progress:.97,gradeFraction:.08,
   wPrimeJ:18000,reserveFraction:.7,exposedHoldPowerW:360,
   lastAttackAgeS:3000,currentIntent:'windschatten',
   breakawayEstablished:false,teammateAhead:false,draw:0};
+test('Bergfahrstil verändert Angriffswahl ohne physische Fähigkeiten zu ändern',()=>{
+  const o={...attack,draw:.004};
+  assert.equal(decideAdaptiveAttackOpportunity({...o,climbingAttackPreference:0}),false);
+  assert.equal(decideAdaptiveAttackOpportunity({...o,climbingAttackPreference:1}),true);
+  assert.equal(decideAdaptiveAttackOpportunity({...o,climbingAttackPreference:1,
+    reserveFraction:.1}),false);
+  assert.equal(decideAdaptiveAttackOpportunity({...o,gradeFraction:0,
+    climbingAttackPreference:0}),decideAdaptiveAttackOpportunity({...o,
+    gradeFraction:0,climbingAttackPreference:1}));
+  assert.throws(()=>decideAdaptiveAttackOpportunity({...o,climbingAttackPreference:1.1}),RangeError);
+});
 test('R24: Kapitaen darf nach 88 und 96,5 Prozent auch aus kleiner Gruppe attackieren',()=>{
   assert.equal(decideAdaptiveAttackOpportunity(attack),true);
   const o={role:'kapitaen',strategy:'kapitaen_schuetzen',
