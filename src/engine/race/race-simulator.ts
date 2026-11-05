@@ -28,6 +28,7 @@ import {evaluatePursuit} from './pursuit-evaluation.ts';
 import {estimateOpponentThreat} from './opponent-assessment.ts';
 import {decideRiderReaction} from './rider-reaction.ts';
 import {decideJoinBridge} from './bridge-cooperation.ts';
+import {cooperativeRelayYield} from './bridge-relay.ts';
 import type {AttackPurpose} from './attack-purpose.ts';
 import {adaptiveAttackDraw,decideAdaptiveAttackOpportunity}
   from './adaptive-attack.ts';
@@ -127,7 +128,7 @@ export interface RaceInput {
   disableAttacks?:boolean;
 }
 export type RaceEventType =
-  'start'|'attack'|'chase'|'sprint'|'recovery'|'segment'|'group-split'|'breakaway'|'breakaway-caught'|'finish'|'team-pace'|'team-chase'|'sprint-train'|'bridge-start'|'bridge-stop';
+  'start'|'attack'|'chase'|'sprint'|'recovery'|'segment'|'group-split'|'breakaway'|'breakaway-caught'|'finish'|'team-pace'|'team-chase'|'sprint-train'|'bridge-start'|'bridge-stop'|'bridge-relay';
 export interface RaceEvent {
   timeS:number;km:number;type:RaceEventType;
   riderId?:string;teamId?:string;description:string;
@@ -467,6 +468,8 @@ export function simulateRace(x:RaceInput):RaceResult {
     states.filter(s=>s.rider.role==='kapitaen'&&bestCaptainClimb>0&&
       s.rider.criticalPowerW/(s.rider.massKg+s.rider.bikeMassKg)>=
         bestCaptainClimb*.97).map(s=>s.rider.id):[]);
+  const cooperativeFrontSeconds=new Map<string,number>();
+  const cooperativeYielding=new Set<string>();
   const activeAttackPurposes=new Map<string,AttackPurpose>();
   const bridgePlans=new Map<string,{targetId:string;powerW:number;bestGapM:number;
     lastProgressS:number}>();
@@ -1631,6 +1634,34 @@ export function simulateRace(x:RaceInput):RaceResult {
           commanded=pacing;hillyRampTempoSeconds+=dt;
           hillyRampTempoRiders.add(s.rider.id);
         }
+      }
+      // Gemeinsame Nachführarbeit: nur ein tatsächlich an der physischen
+      // Gruppenfront fahrender Fahrer kann freiwillig Tempo reduzieren,
+      // wenn ein real naher Partner dasselbe Anschlussziel verfolgt.
+      if(x.groupRidingModel==='stable-pack'){
+        const bp=bridgePlans.get(s.rider.id);
+        const group=physicalGroupOf.get(s.rider.id);
+        const isFront=!!group&&group[0].id===s.rider.id;
+        const partner=bp&&group?group.find(r=>r.id!==s.rider.id&&
+          bridgePlans.get(r.id)?.targetId===bp.targetId):undefined;
+        if(isFront&&partner&&bp&&s.intent==='verfolgung'){
+          const seconds=(cooperativeFrontSeconds.get(s.rider.id)??0)+dt;
+          cooperativeFrontSeconds.set(s.rider.id,seconds);
+          const result=cooperativeRelayYield({sharedTarget:true,isRealFront:true,
+            partnerGapM:Math.max(0,s.positionM-partner.positionM),frontSeconds:seconds,
+            reserveFraction:s.physiology.remainingWPrimeJ/s.profile.wPrimeCapacityJ,
+            cpW:s.dayCpW,requestedW:commanded});
+          if(result!==null){
+            commanded=result;
+            if(!cooperativeYielding.has(s.rider.id)&&events.length<100000)
+              events.push({timeS:t,km:s.positionM/1000,type:'bridge-relay',
+                riderId:s.rider.id,teamId:s.rider.teamId,
+                description:`Nach ${Math.round(seconds)} s gemeinsamer Führung wird die Ablösung angeboten`});
+            cooperativeYielding.add(s.rider.id);
+          }
+        }else {cooperativeFrontSeconds.delete(s.rider.id);
+          cooperativeYielding.delete(s.rider.id);}
+
       }
       if(Math.abs(pack.addedPowerW)>0.5)counters.paceSupportSteps++;
       let brakeForceN=0;
