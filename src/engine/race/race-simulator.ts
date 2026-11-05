@@ -1357,6 +1357,8 @@ export function simulateRace(x:RaceInput):RaceResult {
               specialty:s.rider.specialty,
               isTargetSprinter,isEscort:isEscort&&sameGroup,
               progress:s.positionM/totalM,
+              remainingM:Math.max(0,totalM-s.positionM),ownSpeedMps:s.speedMps,
+              wheelFindingSkill:s.rider.wheelFindingSkill,
               groupSize:ownGroup?.length??1,
               rankInGroup:rankInPhysicalGroup.get(s.rider.id)??1,
               distanceFromGroupFrontM:Math.max(0,
