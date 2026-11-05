@@ -22,7 +22,7 @@ import {captainEscortPower} from './captain-support.ts';
 import {decideStablePackRiding} from './stable-pack.ts';
 import {decideClimbTempo} from './climb-tempo.ts';
 import {decideGeneralAttackOpportunity} from './general-attack.ts';
-import {selectAttackPurpose} from './attack-purpose.ts';
+import {selectAttackPurpose,estimateBridge} from './attack-purpose.ts';
 import type {AttackPurpose} from './attack-purpose.ts';
 import {adaptiveAttackDraw,decideAdaptiveAttackOpportunity}
   from './adaptive-attack.ts';
@@ -656,15 +656,29 @@ export function simulateRace(x:RaceInput):RaceResult {
         const localAttackGroup=attackGroupByRider.get(s.rider.id);
         const groupIndex=localAttackGroup?attackGroups.indexOf(localAttackGroup):-1;
         const nextGroup=groupIndex>0?attackGroups[groupIndex-1]:undefined;
+        const targetRider=nextGroup?.[nextGroup.length-1];
+        const nextGap=targetRider?Math.max(0,targetRider.positionM-s.positionM):null;
+        const attackSegment=x.segments[segmentFor(s,boundaries)];
+        const bridge=targetRider&&nextGap!==null&&nextGap>=30&&nextGap<=500?
+          estimateBridge({gapM:nextGap,targetSpeedMps:targetRider.speedMps,
+            effectiveCpW:s.dayCpW*(x.enduranceModel==='off'?1:
+              fatigueAvailability(s.endurance,s.rider)),
+            wPrimeJ:s.physiology.remainingWPrimeJ,
+            massKg:s.rider.massKg+s.rider.bikeMassKg,dragAreaM2:s.rider.dragAreaM2,
+            gradeFraction:attackSegment.gradeFraction,
+            rollingCoefficient:attackSegment.rollingCoefficient??s.physical.rollingCoefficient,
+            drivetrainEfficiency:s.physical.drivetrainEfficiency,
+            airDensityKgM3:s.physical.airDensityKgM3,
+            headwindMps:attackSegment.headwindMps??0,
+            crosswindMps:attackSegment.crosswindMps??0}):null;
         const purpose=selectAttackPurpose({remainingM:Math.max(0,totalM-s.positionM),
           progress:Math.min(1,s.positionM/totalM),
           gradeFraction:x.segments[segmentFor(s,boundaries)].gradeFraction,
           role:s.rider.role,protectedFavorite:protectedMountainFavorites.has(s.rider.id),
           inMainGroup:localAttackGroup===mainAttackGroup&&!!localAttackGroup,
           gapToRaceFrontM:Math.max(0,leader.positionM-s.positionM),
-          gapToNextGroupM:nextGroup&&localAttackGroup?
-            Math.max(0,nextGroup[nextGroup.length-1].positionM-
-              localAttackGroup[0].positionM):null,
+          gapToNextGroupM:nextGap,bridgeReachable:bridge?.reachable??false,
+          assignedTeamDuty:s.rider.role==='helfer'&&!!planned?.orders.has(s.rider.id),
           breakawayEstablished:breakawayActive,
           teammateAhead:active.some(r=>r.rider.teamId===s.rider.teamId&&
             r.rider.id!==s.rider.id&&r.positionM>s.positionM+75),
