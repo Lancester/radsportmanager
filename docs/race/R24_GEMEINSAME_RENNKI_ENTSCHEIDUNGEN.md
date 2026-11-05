@@ -172,3 +172,12 @@ Nächster Diskussionspunkt: Zusammenspiel und Verfolgung von Teams nach Etablier
 - Rennergebnisse sollen aus dem Zusammenwirken von Fähigkeiten, Teamarbeit, Taktik, Rennlage, Physik und individueller Form entstehen; keine vorab ausgelosten Sieger oder alles dominierenden Zufallseffekte.
 - Für den späteren Karrieremodus werden Training, Entwicklung und Vorbelastung berücksichtigt; genaue langfristige Regeln werden gesondert vereinbart.
 - Die Frage einer mentalen Komponente wird als nächstes gemeinsam behandelt; Umfang, Werte, Bedingungen und Effekte sind noch nicht beschlossen. Beschreibung ist kein Nachweis vollständig umgesetzter Funktionen.
+
+## 19. Mentale und taktische Eigenschaften — vereinbart
+
+- Mentale Faktoren sollen vor allem Verhalten und Entscheidungen beeinflussen, nicht als automatischer zusätzlicher Watt-, Positions- oder Siegbonus wirken. Körperliche Leistung bleibt durch tatsächlich verfügbare Fähigkeiten, Reserven, Belastung und Physik begrenzt.
+- Mögliche Einflüsse sind unter anderem Beharrlichkeit bei Nachführarbeit, Ruhe/Entscheidungsverhalten unter Druck, Mut und Risikobereitschaft, Selbstvertrauen bzw. Einschätzung der eigenen Möglichkeiten sowie Verhalten gegenüber Teamaufträgen und eigenen Chancen.
+- Eine Eigenschaft führt nicht automatisch zu einer einzigen besten Entscheidung: Beharrlichkeit kann einen Anschluss ermöglichen oder unnötige Energie kosten; Abwarten kann klug sein oder eine Chance verspielen.
+- Fahrer sollen abhängig von Rennlage, Teamziel, Reserve, Gelände und persönlicher Neigung unterschiedlich reagieren können. Fehler und Fehleinschätzungen sind möglich, Ergebnisse bleiben offen.
+- Für spätere Karriereentwicklung können sich z. B. Selbstvertrauen oder Motivation über Rennen hinweg ändern; Mechanismen, betroffene Attribute und Stärke sowie der Einfluss von Team und Personal werden gesondert besprochen.
+- Konkrete Attribute, Wertebereiche, Verteilungen, Effekte und Implementierung sind noch nicht festgelegt oder validiert. Zielvorstellung; Regeln zunächst gemeinsam durchgehen, dann Entwicklungsmodell ändern und danach testen.
