@@ -95,3 +95,13 @@ Nächster Diskussionspunkt: Zusammenspiel und Verfolgung von Teams nach Etablier
 - Die Einschätzung ist unvollkommen und entwickelt sich im Rennen. Andere Fahrer kennen nicht automatisch exakte interne Energiereserven oder den Ausgang des Rennens; fehlende Information, Fehleinschätzung und unerwartete Leistungen bleiben möglich.
 - Für spätere Rundfahrten soll Gefährlichkeit für Etappensieg und Gesamtwertung getrennt betrachtet werden; die Gesamtwertungslogik ist noch nicht implementiert. Ein späteres Bekanntheits-/Bewertungssystem ist keine bereits existierende Funktion.
 - Keine garantierten Siegquoten, künstlichen Bonuspositionen oder Resultatvorgaben. Die sportliche Zielbeschreibung muss erst konkretisiert, implementiert und geprüft werden.
+
+## 11. Sprintvorbereitung und Sprint — vereinbart
+
+- Sprinter und Team versuchen zunächst im Feld zu bleiben und unnötige Arbeit zu vermeiden, sofern die Rennlage dies erlaubt.
+- Wird ein Sprint wahrscheinlich, suchen Sprinter und geeignete Helfer rechtzeitig eine gute Position. Der Zeitpunkt hängt von Strecke, Renntempo, Konkurrenz, Fahrern und Rennlage ab; kein immer gleicher verpflichtender Prozentwert.
+- Das Team wägt die Verfolgung von Ausreißern gegen verbleibende Kräfte für Sprintzug und Finale ab. Zu wenige oder verbrauchte Helfer können dazu führen, dass der Sprinter ohne vollständigen Zug auskommen muss.
+- Ein Sprinter kann auch ohne eigenen Zug das Hinterrad eines geeigneten Rivalen suchen; ob dies gelingt, hängt von tatsächlicher Position, Möglichkeiten und Fahrerfähigkeiten ab, ohne Positionsbonus oder Siegversprechen.
+- Den Sprintbeginn beeinflussen Position, Tempo, Wind, Reserven, Fahrereigenschaften und Konkurrenz. Fehler und unpassendes Timing sind möglich.
+- Grundsätze gelten auch für eine kleinere Gruppe. Ablauf und sinnvolle Unterstützung können sich gegenüber einem Massensprint unterscheiden.
+- Sportliche Zielbeschreibung; Regeln sind noch nicht vollständig umgesetzt oder validiert. Die vorhandene vereinfachte 1D-Gruppenposition begrenzt realistische Spurwahl und Einklemmen. Vor weiteren Tests die Regeln gemeinsam durchgehen.
