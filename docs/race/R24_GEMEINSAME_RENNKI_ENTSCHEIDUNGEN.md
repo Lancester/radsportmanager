@@ -154,3 +154,12 @@ Nächster Diskussionspunkt: Zusammenspiel und Verfolgung von Teams nach Etablier
 - Ein Anschluss nach Sturz oder Defekt hängt unter anderem von realem Zeitverlust, Gelände, Geschwindigkeit, verfügbaren Helfern, Fahrerzustand und Entscheidungen ab und ist nicht garantiert.
 - Verletzungsdauern und Folgen über ein Rennen hinaus können für einen späteren Karrieremodus relevant werden; Ausmaß, konkrete Mechanik und Detailtiefe sind gesondert zu entscheiden.
 - Diese Zielvorstellung ist kein Nachweis, dass Stürze, Defekte, Verletzungen oder deren reale Wahrscheinlichkeiten im gegenwärtigen Rennmotor bereits implementiert und kalibriert sind. Die weitere Regelbesprechung geht Änderungen und Tests voraus.
+
+## 17. Wind und Wetter — vereinbart
+
+- Gegenwind, Rückenwind und Seitenwind beeinflussen die physischen Fahrbedingungen, den Leistungsbedarf und die taktische Bedeutung von Windschatten und Position. Die Wirkung auf Flucht, Verfolgung und Feld ergibt sich aus tatsächlich simulierten Gruppen und Kräften; es gibt keine automatische Einholung oder keinen vorgegebenen Fluchterfolg je nach Windrichtung.
+- Seitenwind kann die Feldpositionierung wichtiger machen und unter passenden Umständen Gruppenteilungen begünstigen. Eine Windkante oder Teilung entsteht nicht bei jedem Seitenwind automatisch.
+- Regen und nasse Straßen können später die Einschätzung von Abfahrten, Kurven und Risiko beeinflussen. Detaillierung und Zusammenhang mit Stürzen sind noch zu konkretisieren.
+- Fahrer und Teams sollen die Bedingungen bei ihren Entscheidungen berücksichtigen können, ohne deren weitere Entwicklung und Auswirkungen perfekt vorherzusehen.
+- Das bisherige Modell berücksichtigt Wind nur vereinfacht; eine vollständige zweidimensionale Windstaffel ist nicht als bereits umgesetzt zu behaupten. Technische Umsetzung und Tiefe werden an den Modellmöglichkeiten geprüft.
+- Gemeinsam vereinbarte sportliche Zielbeschreibung; zusätzliche Wetterfähigkeiten und deren Effekte sind nicht sämtlich umgesetzt oder validiert.
