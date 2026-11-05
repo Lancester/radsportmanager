@@ -48,3 +48,18 @@ test('R24: alte manuelle Helferzahl begrenzt die autonome KI nicht',()=>{
   assert.ok([...plan.orders.values()].some(x=>x.mission==='jagd'&&
     main.find(r=>r.id===x.riderId)?.teamId==='A'));
 });
+
+test('Offensives Team ohne Fahrer vorne kann erreichbare Flucht zurückholen',()=>{
+  const c=[rider('C-CAP','C','kapitaen',990),rider('C-H','C','helfer',980)];
+  const leading=[rider('E','A','helfer',1150)];
+  const riders=[...leading,...main,...c];
+  const situation=analyzeRaceSituation(riders,80000,6,true);
+  const base={timeS:1800,remainingM:80000,progress:.15,
+    mainGroupIds:new Set([...main,...c].map(r=>r.id)),teams,riders,situation,
+    previous:{active:[],sinceS:0,cooldownUntilS:0},adaptiveChase:true};
+  assert.ok(coordinatePelotonChase(base).chasingTeamIds.has('C'));
+  const withOwn=[rider('E2','C','helfer',1151),...riders];
+  const situation2=analyzeRaceSituation(withOwn,80000,6,true);
+  assert.equal(coordinatePelotonChase({...base,riders:withOwn,situation:situation2})
+    .chasingTeamIds.has('C'),false);
+});
