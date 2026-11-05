@@ -24,6 +24,8 @@ export type CrewDuty='fuehrung'|'unterstuetzung';
 export interface CrewOrder {
   riderId:string;mission:CrewMission;duty:CrewDuty;
   desiredPowerW:number;reason:string;groupFrontM:number;
+  /** Auftrag zum Anschluss des eigenen abgehängten Kapitäns. */
+  isRejoin?:boolean;
 }
 export interface RaceSituation {
   leadingBreakaway:boolean;gapM:number;breakawaySize:number;
@@ -392,6 +394,7 @@ export function decideIntelligentCrew(input:{
           'Helfer hält sich für den Mannschaftseinsatz bereit');
       orders.set(rider.id,{riderId:rider.id,mission,duty,
         desiredPowerW:rider.criticalPowerW*effort,reason,
+        ...(rejoin?{isRejoin:true}:{}),
         groupFrontM:group[0].positionM});
     }
     // Mixed sprint mission: one or more HELPER riders still chase at

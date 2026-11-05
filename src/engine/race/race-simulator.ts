@@ -194,6 +194,9 @@ export interface RaceResult {
     namedChaseHandoffs?:Array<{km:number;from:string|null;
       to:string|null;reason:string;frontGapM:number|null;
       assignmentAgeS:number|null}>;
+    /** Tatsächlich geleistete Arbeit unter Anschlussauftrag; nur im Checkpoint-Modus. */
+    rejoinWork?:Array<{riderId:string;teamId:string;assignedS:number;
+      actualFrontS:number;appliedWorkJ:number;actualFrontWorkJ:number}>;
     /** Reale Folgen von Angriffswuenschen; nur im Checkpoint-Modus. */
     attackTraces?:AttackTrace[];
     /** Nur in sprintfreundlichen stable-pack-Rennen aus echten Rennschritten. */
@@ -434,6 +437,9 @@ export function simulateRace(x:RaceInput):RaceResult {
   const checkpoints:RaceCheckpoint[]|undefined=
     x.diagnosticLevel==='checkpoints'?[]:undefined;
   const attackTelemetry=checkpoints?new AttackTelemetry():null;
+  const rejoinRiders=checkpoints?new Set<string>():null;
+  const rejoinWork=checkpoints?new Map<string,{riderId:string;teamId:string;
+    assignedS:number;actualFrontS:number;appliedWorkJ:number;actualFrontWorkJ:number}>():null;
   const lastPower=new Map<string,number>();
   const lastAero=new Map<string,number>();
   const dt=x.stepSeconds??1;
@@ -558,6 +564,11 @@ export function simulateRace(x:RaceInput):RaceResult {
         timeS:t,progress:Math.min(1,leader.positionM/totalM),
         teams:teamRefs,riders:planningRiders,
       });
+      if(rejoinRiders){
+        rejoinRiders.clear();
+        for(const order of planned?.orders.values()??[])
+          if(order.isRejoin)rejoinRiders.add(order.riderId);
+      }
       if(planned){
         if(sprintFriendlyRace&&
           previousFieldChaseLeader?.riderId!==planned.fieldChaseLeader?.riderId&&
@@ -1608,6 +1619,19 @@ export function simulateRace(x:RaceInput):RaceResult {
           });
         }
       }
+      if(rejoinWork&&rejoinRiders?.has(s.rider.id)&&s.crewMission==='jagd'){
+        const entry=rejoinWork.get(s.rider.id)??{riderId:s.rider.id,
+          teamId:s.rider.teamId,assignedS:0,actualFrontS:0,
+          appliedWorkJ:0,actualFrontWorkJ:0};
+        entry.assignedS+=dt;
+        entry.appliedWorkJ+=cp.appliedPowerW*dt;
+        const front=actualGroupFront.get(s.rider.id);
+        if(front!==undefined&&front-s.positionM<=1){
+          entry.actualFrontS+=dt;
+          entry.actualFrontWorkJ+=cp.appliedPowerW*dt;
+        }
+        rejoinWork.set(s.rider.id,entry);
+      }
       powers.set(s.rider.id,cp.appliedPowerW);
       if(checkpoints){
         lastPower.set(s.rider.id,cp.appliedPowerW);
@@ -1825,6 +1849,8 @@ export function simulateRace(x:RaceInput):RaceResult {
     winnerId:sorted[0].rider.id,finisherCount:sorted.length,
     diagnostics:{...counters,maximumGroups,
       ...(attackTelemetry?{attackTraces:attackTelemetry.report(classification)}:{}),
+      ...(rejoinWork?{rejoinWork:[...rejoinWork.values()].sort((a,b)=>
+        a.riderId.localeCompare(b.riderId))}:{}),
       ...((x.groupRidingModel==='relays'||x.groupRidingModel==='relay-paced'||
           x.groupRidingModel==='front-gated'||x.groupRidingModel==='stable-pack')?{
         orderedRelayTeamSeconds,

@@ -23,6 +23,7 @@ test('R24: abgehängte Gruppe kann den eigenen Kapitän autonom nachführen',()=
   const result=plan({riders:before});
   const lead=result.orders.get('A1');
   assert.equal(lead?.mission,'jagd');
+  assert.equal(lead?.isRejoin,true);
   assert.equal(lead?.duty,'fuehrung');
   assert.equal(lead?.desiredPowerW,360*R24_REJOIN.leaderCpFraction);
   assert.match(lead.reason,/abgehängten Kapitän/);
