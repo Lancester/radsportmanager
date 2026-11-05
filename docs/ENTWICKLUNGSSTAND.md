@@ -1,5 +1,9 @@
 # Entwicklungsstand
 
+## Schritt 4 – Belastung und Ermüdung, Zwischenstand
+
+[Schritt 4: Belastung und Ermüdungsmodell](race/R24_SCHRITT4_BELASTUNG_UND_ERMUEDUNG.md): CP/W′-Kern beibehalten, Langzeitermüdung und W′-Erholung vor sportlicher Realismusfreigabe gezielt weiterentwickeln und empirisch prüfen. Der abrupte Freigabesprung nach 90 min wurde im experimentellen stable-pack durch eine ausdrücklich vorläufige kontinuierliche Einblendung ersetzt; historische Vergleichsmodi bleiben unverändert. Attacken, Jagdarbeit und Modellfälle wurden untersucht; Kausalität einzelner Einholungen und physiologische Kalibrierung bleiben offen. Weitere Tests und Mehrseed-Gegenproben laufen.
+
 ## Schritt 3 – gezielte Regelkorrektur, experimentell
 
 Die [Regelkorrektur](race/R24_SCHRITT3_REGELKORREKTUR.md) behandelt ein beobachtetes widersprüchliches Signal: ein schnelleres, nicht verzögerndes direktes Vorderrad und zugleich eine verzögernde entfernte Gruppenspitze. Es wird nur der Wattwunsch angepasst, keine Position oder Geschwindigkeit. In drei Kontroll-Seeds verringerte sich die räumliche Spreizung nach direktem Anstieg→Abfahrt; beim sanften Übergang zeigte sich auch ein schlechterer Gegenfall. Drei Seeds über alle vier Profile sind dokumentiert und ergeben unterschiedliche Rennverläufe. 369/369 lokale Tests bestanden; der ergänzte Watt-Reglertest und der Browser-Build bestanden separat. Dies ist ein begrenzter experimenteller Fix, keine vollständige Lösung oder Realismusfreigabe; weitere Terrain- und Mehrseed-Tests bleiben nötig.
