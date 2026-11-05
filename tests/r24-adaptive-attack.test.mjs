@@ -45,6 +45,13 @@ test('R24: physische Ueberlegenheit, Energie und laufende Teamarbeit zaehlen',()
   assert.ok(decideAdaptiveAttackOpportunity({...attack,groupSize:1,
     gapToRaceFrontM:20}));
 });
+test('Ein früher Versuch wird nicht allein durch eine Drei-Minuten-Sperre verhindert',()=>{
+  const early={...attack,timeS:60,remainingM:160000,progress:.01,
+    role:'helfer',strategy:'offensiv',groupSize:100,draw:0};
+  assert.equal(decideAdaptiveAttackOpportunity(early),true);
+  assert.equal(decideAdaptiveAttackOpportunity({...early,exposedHoldPowerW:600}),false);
+  assert.equal(decideAdaptiveAttackOpportunity({...early,currentIntent:'helferarbeit'}),false);
+});
 test('R24: Flachfinale ist nicht durch fixe 85-Prozent-Reserve gesperrt',()=>{
   assert.ok(decideAdaptiveAttackOpportunity({...attack,gradeFraction:0,
     reserveFraction:.6,remainingM:1000}));
