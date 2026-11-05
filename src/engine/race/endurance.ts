@@ -4,8 +4,8 @@
  * die mechanische Energie und die Bewegung bleiben unverändert.
  *
  * Alle Parameter sind Spiel-/Testheuristiken, KEINE physiologische
- * Profi-Kalibrierung. 50-km-Referenzläufe werden durch die erst nach
- * 90 Minuten einsetzende Belastungsdegradation nicht pauschal verzerrt.
+ * Profi-Kalibrierung. Die Ermüdungswirkung wird über 90 Minuten
+ * stetig eingeblendet, statt zu einem Zeitpunkt sprunghaft einzusetzen.
  */
 export interface EnduranceState {
   /** Verfügbare Kohlenhydratenergie, getrennt von mechanischer Energie. */
@@ -34,6 +34,7 @@ export const R19_ENDURANCE=Object.freeze({
   defaultCarbsGPerHour:65,
   maximumCarbsGPerHour:110,
   kcalPerGramCarb:4,
+  /** Dauer der kontinuierlichen Einblendung; kein kalibrierter Messwert. */
   graceSeconds:5400,
   maximumPowerReduction:0.40,
   fatiguePerHardHour:0.075,
@@ -50,10 +51,12 @@ export function initialEnduranceState():EnduranceState{
 export function endurancePowerAvailability(state:EnduranceState):number{
   const c=R19_ENDURANCE;
   const depletion=1-state.carbohydrateKcal/c.carbohydrateCapacityKcal;
-  const fuelPenalty=state.elapsedS<=c.graceSeconds?0:
-    0.32*Math.max(0,(depletion-0.40)/0.60);
-  const wearPenalty=state.elapsedS<=c.graceSeconds?0:
-    Math.max(0,state.workloadHours-0.65)*c.fatiguePerHardHour;
+  // Vermeidet einen unphysikalischen Leistungssprung bei exakt 90 Minuten.
+  // Die lineare Einblendung ist ein expliziter vorläufiger Modellansatz,
+  // keine experimentell kalibrierte Ermüdungskinetik.
+  const onset=Math.min(1,state.elapsedS/c.graceSeconds);
+  const fuelPenalty=onset*0.32*Math.max(0,(depletion-0.40)/0.60);
+  const wearPenalty=onset*Math.max(0,state.workloadHours-0.65)*c.fatiguePerHardHour;
   return Math.max(1-c.maximumPowerReduction,
     1-Math.min(c.maximumPowerReduction,fuelPenalty+wearPenalty));
 }
