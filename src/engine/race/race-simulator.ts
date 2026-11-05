@@ -29,6 +29,7 @@ import {estimateOpponentThreat} from './opponent-assessment.ts';
 import {decideRiderReaction} from './rider-reaction.ts';
 import {decideJoinBridge} from './bridge-cooperation.ts';
 import {cooperativeRelayYield,observedRelayFrontChange} from './bridge-relay.ts';
+import {decideBreakawayWork} from './breakaway-cooperation.ts';
 import type {AttackPurpose} from './attack-purpose.ts';
 import {adaptiveAttackDraw,decideAdaptiveAttackOpportunity}
   from './adaptive-attack.ts';
@@ -124,6 +125,8 @@ export interface RaceInput {
   /** Diagnostische konfigurierbare Nachbarlücke der Zielgruppen;
    * Standard 1 s, keine vollständige Wettbewerbssonderwertung. */
   finishGroupGapSeconds?:number;
+  /** Ungenaue, noch nicht sportlich freigegebene Fluchtgruppen-Zusammenarbeit. */
+  experimentalBreakawayCooperation?:boolean;
   stepSeconds?:number;
   maxRaceTimeS?:number;
   /** Nur Diagnostik: speichert alle aktiven Fahrer alle 5 km. */
@@ -132,7 +135,7 @@ export interface RaceInput {
   disableAttacks?:boolean;
 }
 export type RaceEventType =
-  'start'|'attack'|'chase'|'sprint'|'recovery'|'segment'|'group-split'|'breakaway'|'breakaway-caught'|'finish'|'team-pace'|'team-chase'|'sprint-train'|'bridge-start'|'bridge-stop'|'bridge-relay'|'bridge-relay-position-change';
+  'start'|'attack'|'chase'|'sprint'|'recovery'|'segment'|'group-split'|'breakaway'|'breakaway-caught'|'finish'|'team-pace'|'team-chase'|'sprint-train'|'bridge-start'|'bridge-stop'|'bridge-relay'|'bridge-relay-position-change'|'breakaway-work'|'breakaway-save';
 export interface RaceEvent {
   timeS:number;km:number;type:RaceEventType;
   riderId?:string;teamId?:string;description:string;
@@ -351,6 +354,9 @@ export function validateRace(x:RaceInput):void {
   if(x.finishGroupGapSeconds!==undefined)
     ensure('finishGroupGapSeconds',x.finishGroupGapSeconds,
       x.finishGroupGapSeconds>0&&x.finishGroupGapSeconds<=60);
+  if(x.experimentalBreakawayCooperation!==undefined&&
+    typeof x.experimentalBreakawayCooperation!=='boolean')
+    throw new RangeError('Rennsimulation: experimentalBreakawayCooperation ungültig');
   if(x.disableAttacks!==undefined&&typeof x.disableAttacks!=='boolean')
     throw new RangeError('Rennsimulation: disableAttacks ungültig');
   if(x.groupRidingModel!==undefined&&
@@ -480,6 +486,8 @@ export function simulateRace(x:RaceInput):RaceResult {
         bestCaptainClimb*.97).map(s=>s.rider.id):[]);
   const cooperativeFrontSeconds=new Map<string,number>();
   const cooperativeYielding=new Set<string>();
+  const breakawayFrontSeconds=new Map<string,number>();
+  const breakawayWorkModes=new Map<string,'work'|'save'>();
   const relayOffers=new Map<string,{partnerId:string;targetId:string}>();
   const activeAttackPurposes=new Map<string,AttackPurpose>();
   const bridgePlans=new Map<string,{targetId:string;powerW:number;bestGapM:number;
@@ -1132,6 +1140,7 @@ export function simulateRace(x:RaceInput):RaceResult {
     }
     const largestPhysicalGroup=physicalGroups.reduce((best,g)=>
       g.length>best.length?g:best,physicalGroups[0]);
+    if(!breakawayActive)breakawayWorkModes.clear();
     let namedLeaderAeroFactor:number|undefined;
     if((x.groupRidingModel==='relays'||x.groupRidingModel==='relay-paced'||
           x.groupRidingModel==='front-gated'||x.groupRidingModel==='stable-pack')&&chaseState.active.length){
@@ -1677,6 +1686,49 @@ export function simulateRace(x:RaceInput):RaceResult {
         if(pacing!==null){
           commanded=pacing;hillyRampTempoSeconds+=dt;
           hillyRampTempoRiders.add(s.rider.id);
+        }
+      }
+      // Kooperation nur an der realen Front einer erfassten Flucht mit
+      // mindestens einem tatsächlich nahen, ebenfalls erfassten Partner.
+      if(x.groupRidingModel==='stable-pack'&&x.experimentalBreakawayCooperation===true){
+        const group=physicalGroupOf.get(s.rider.id);
+        const breakawayGap=group&&group!==largestPhysicalGroup?
+          group[group.length-1].positionM-largestPhysicalGroup[0].positionM:0;
+        const isTracked=breakawayActive&&group===physicalGroups[0]&&
+          group!==largestPhysicalGroup&&breakawayGap>=75&&
+          trackedBreakaway.escapeIds.includes(s.rider.id);
+        const companion=isTracked&&group?.[0]?.id===s.rider.id?
+          group.find(r=>r.id!==s.rider.id&&trackedBreakaway.escapeIds.includes(r.id)&&
+            s.positionM-r.positionM>=0&&s.positionM-r.positionM<=15):undefined;
+        const teamTarget=targetByTeam.get(s.rider.teamId);
+        const teamSprinterBehind=!!teamTarget&&teamTarget.rider.role==='sprinter'&&
+          teamTarget.finishTimeS===null&&s.positionM-teamTarget.positionM>75;
+        const work=decideBreakawayWork({isTrackedEscape:isTracked,
+          isActualFront:group?.[0]?.id===s.rider.id,
+          nearbyTrackedCompanions:companion?1:0,
+          teamStrategy:teams.get(s.rider.teamId)!.strategy,teamSprinterBehind,
+          reserveFraction:s.physiology.remainingWPrimeJ/s.profile.wPrimeCapacityJ,
+          criticalPowerW:s.dayCpW,requestedPowerW:commanded,currentIntent:s.intent});
+        if(work&&companion){
+          const seconds=(breakawayFrontSeconds.get(s.rider.id)??0)+dt;
+          breakawayFrontSeconds.set(s.rider.id,seconds);
+          commanded=work.powerW;
+          if(work.intent==='work'){
+            const yieldPower=cooperativeRelayYield({sharedTarget:true,isRealFront:true,
+              partnerGapM:s.positionM-companion.positionM,frontSeconds:seconds,
+              reserveFraction:s.physiology.remainingWPrimeJ/s.profile.wPrimeCapacityJ,
+              cpW:s.dayCpW,requestedW:commanded});
+            if(yieldPower!==null)commanded=yieldPower;
+          }
+          if(breakawayWorkModes.get(s.rider.id)!==work.intent&&events.length<100000)
+            events.push({timeS:t,km:s.positionM/1000,
+              type:work.intent==='work'?'breakaway-work':'breakaway-save',
+              riderId:s.rider.id,teamId:s.rider.teamId,
+              description:work.intent==='work'?'Fahrer bietet Führungsarbeit in der Flucht an':
+                'Fahrer entscheidet sich für begrenzte Führungsarbeit in der Flucht'});
+          breakawayWorkModes.set(s.rider.id,work.intent);
+        }else{
+          breakawayFrontSeconds.delete(s.rider.id);
         }
       }
       // Gemeinsame Nachführarbeit: nur ein tatsächlich an der physischen
