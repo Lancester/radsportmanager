@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {evaluatePursuit} from '../src/engine/race/pursuit-evaluation.ts';
+import {evaluatePursuit,estimateTerrainOpportunity} from '../src/engine/race/pursuit-evaluation.ts';
 const base={gapM:400,bestGapM:400,secondsWithoutProgress:360,
   ownSpeedMps:10,targetSpeedMps:10,remainingM:35000,reserveFraction:.7,
   aggression:.5,assignedTeamDuty:false,favorableTerrainAhead:false};
@@ -32,4 +32,20 @@ test('Beharrlichkeit kann unabhängig von Angriffslust die Abwägung verändern'
     assignedTeamDuty:true}),'aufgeben');
   assert.equal(evaluatePursuit({...difficult,pursuitPersistence:1,
     reserveFraction:.05}),'schonen');
+});
+test('Geländechance hängt von Fahrertyp und erreichbarer Rennlage ab, nicht 8-km-Grenze',()=>{
+  const climb={distanceAheadM:12000,remainingM:50000,gapM:400,
+    ownSpeedMps:10,targetSpeedMps:10,gradeFraction:.06,
+    ownClimbWkg:5,targetClimbWkg:4,ownDescentSkill:.6,targetDescentSkill:.5};
+  assert.equal(estimateTerrainOpportunity(climb),true);
+  assert.equal(estimateTerrainOpportunity({...climb,ownClimbWkg:3}),false);
+  assert.equal(estimateTerrainOpportunity({...climb,targetSpeedMps:45}),false);
+  assert.equal(estimateTerrainOpportunity({...climb,gradeFraction:-.04}),true);
+  assert.equal(estimateTerrainOpportunity({...climb,gradeFraction:-.04,
+    ownDescentSkill:.4}),false);
+  assert.equal(estimateTerrainOpportunity({...climb,distanceAheadM:50000}),false);
+});
+test('Knappe Reserve kann vor geeignetem Gelände trotz wachsender Lücke geschont werden',()=>{
+  assert.equal(evaluatePursuit({...base,targetSpeedMps:10.4,
+    reserveFraction:.3,favorableTerrainAhead:true}),'schonen');
 });
