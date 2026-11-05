@@ -104,3 +104,21 @@ Der Teamplan nutzt für den Sprintzug im adaptiven Modus bei sprintfreundlichem 
 26 gezielte Tests zu Teamplanung, Sprint, Anschluss und Jagd bestanden; der TypeScript-Build für den aktuellen Simulator und Rennbericht bestand. Ein vollständiger technischer Testlauf des gegenwärtigen Stands wurde gestartet. Keine der Prüfungen ersetzt den noch ausstehenden reproduzierbaren Vergleich und die sportliche Kalibrierung.
 
 Der auf dem seit dem Sprintzug-Teamplan unveränderten Quellcode durchgeführte vollständige technische Testlauf endete mit 413 bestandenen und 0 fehlgeschlagenen Tests. Der TypeScript-Build bestand ebenfalls. Die technische Prüfung validiert nicht die sportliche Realitätsnähe; die vollständige Überarbeitung und der große Mehrseed-Modellvergleich stehen weiterhin aus.
+
+
+## Geländeausblick beim Anschluss
+
+Die frühere pauschale 8-km-Grenze für einen Geländeausblick wurde durch eine vorläufige Einschätzung ersetzt: Der Fahrer betrachtet persönliche Berg- beziehungsweise Abfahrtsfähigkeiten, die Strecke bis zum Gelände, den aktuellen Abstand und eine Fortschreibung der momentan beobachteten Geschwindigkeiten. Wenn der Gegner nach dieser vereinfachten Momentaufnahme das Ziel bereits vor Erreichen des Geländes erreichen würde, wird es nicht als spätere Anschlussmöglichkeit gewertet. Geschätzte künftige Tempi und Vorsprünge sind unsicher; vor allem bei Geländewechseln können sie stark vom wirklichen Verlauf abweichen. Knappe Reserven können vor einer so eingeschätzten Gelegenheit auch bei aktuell wachsender Lücke vorübergehend geschont werden. Kein Positions-, Tempo- oder Energiebonus.
+
+16 gezielte Tests zu Gelände, Anschlussmotiven und Gegnerreaktion bestanden; aktuelle technische Integrations- und Buildprüfungen laufen. Sportliche Kalibrierung und Mehrseed-Vergleich stehen aus.
+
+## Verbleibende große Arbeitsbereiche
+
+- Fluchtgruppen: situationsbezogene Zusammenarbeit, Verweigerung von Führungsarbeit und Interessenkonflikte zwischen Teams und Fahrern; bisher kein vollständiger Nachweis.
+- Weitere Team-/Angriffsentscheidungen und Gegenreaktionen: harte Schwellen reduzieren, tatsächliche Führungsarbeit, realistische Teamziele und nachvollziehbare Motivation im Rennverlauf prüfen.
+- Sprint-, Berg- und Abfahrtstaktik über verschiedene Profile und kleinere Gruppen; individuelle Fahrweisen und mentale Eigenschaften sinnvoll befüllen und kalibrieren.
+- Ereignisse und Bedingungen: Stürze und Defekte mit angemessenen Folgen fehlen; Wind ist vereinfacht vorhanden, Regen und detaillierte Seitenwindstaffeln sowie Materialverwaltung sind nicht vollständig. Einzelheiten, die über ein Rennen hinausgehen, gehören zum späteren Karrieremodell.
+- Darstellung: den vorhandenen Berichtsbaustein in eine benutzbare Ausgabe integrieren; wettbewerbsspezifische Wertungen und Sonderregeln bleiben gesondert zu klären.
+- Nach der Überarbeitung: vollständige technische Prüfung und dokumentierter gepaarter Vergleich der Modelle auf vier Profilen über mehrere Seeds, einschließlich Ursachenprüfung auffälliger Verläufe und Kalibrierung.
+
+Diese Liste ist eine Gliederung der offenen Arbeit, keine prozentuale Fertigstellungsmessung. Viele Bereiche sind teilweise implementiert und müssen zusammen getestet werden; ihre Restdauer und die Ergebnisse des späteren Vergleichs sind nicht zuverlässig vorherzusagen.
