@@ -39,3 +39,12 @@ Nächster Diskussionspunkt: Zusammenspiel und Verfolgung von Teams nach Etablier
 - Die Team-KI bestimmt zunächst autonom, wie viele verfügbare Helfer sie einsetzt; der Spieler muss dies nicht während des Rennens festlegen.
 - Gruppen- und Fahrertempo, Einholen, Erschöpfung und mögliche Niederlage entstehen durch tatsächliche simulierte Kräfte, Windschatten, individuelle Fähigkeiten und Reserven. Einholen ist nicht garantiert.
 - Taktische Zielvorstellung; keine Aussage, dass jede Einzelheit schon umgesetzt oder validiert ist. Weiterhin zuerst Regeln gemeinsam besprechen, dann Entwicklungsmodell ändern und erst danach testen.
+
+## 5. Zusammenarbeit in der Fluchtgruppe — vereinbart
+
+- Ausreißer können zunächst ein gemeinsames Interesse am Vorsprung haben, verfolgen aber zugleich individuelle und teambezogene Ziele.
+- Sie können Führungsarbeit übernehmen und sich abwechseln; Windschatten und Erholung entstehen durch tatsächliche Positionen, Geschwindigkeit, Leistung und vorhandenes Energiemodell.
+- Umfang und Dauer der Führung können sich nach Fähigkeiten, Position, Reserven und Rennlage unterscheiden. Ein erschöpfter Fahrer kann kürzer oder nicht mehr mitarbeiten; die Gruppe muss nicht auf ihn warten.
+- Ein Fahrer kann aus Team- oder Eigeninteresse Arbeit verweigern bzw. reduzieren, etwa weil sein Team hinten für einen Sprinter fährt oder er Kräfte spart. Dies beeinflusst den Rennverlauf physisch und garantiert keinen bestimmten Sieger.
+- Vor dem Ziel können Interessen auseinandergehen: etwa gemeinsames Ankommen bei Sprintchance oder eine frühere Attacke eines anderen Fahrers. Ungleiche Beteiligung kann die Flucht schwächen; Erfolg oder Scheitern ist nicht vorgegeben.
+- Zielbeschreibung, keine Zusicherung einer bereits fertig umgesetzten teamübergreifenden Kooperation oder Führungstaktik. Regeln zunächst gemeinsam besprechen, anschließend Modell ändern und erst danach testen.
