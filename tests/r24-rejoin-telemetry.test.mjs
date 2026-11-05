@@ -28,6 +28,9 @@ test('R24: Anschlussmessung ist optional, bilanziert reale Watt und ändert kein
   assert.ok(b.diagnostics.rejoinWork.length>0,'Kontrolllauf muss Anschlussaufträge enthalten');
   assert.deepEqual(b.classification,a.classification);
   assert.deepEqual(b.events,a.events);
+  assert.ok(b.events.filter(e=>e.type==='breakaway').every(e=>
+    e.timeS<=b.classification[0].finishTimeS),
+    'Nach dem ersten Zielankunft darf keine neue Flucht entstehen');
   for(const row of b.diagnostics.rejoinWork){
     assert.ok(row.assignedS>0&&row.actualFrontS>=0&&row.actualFrontS<=row.assignedS);
     assert.ok(row.appliedWorkJ>=0&&row.actualFrontWorkJ>=0&&row.actualFrontWorkJ<=row.appliedWorkJ);
