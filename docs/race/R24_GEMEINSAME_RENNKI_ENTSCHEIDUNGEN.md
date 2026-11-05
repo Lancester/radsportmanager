@@ -127,3 +127,11 @@ Nächster Diskussionspunkt: Zusammenspiel und Verfolgung von Teams nach Etablier
 - Tempowechsel erzeugen körperliche Belastung für Angreifer und reagierende Fahrer anhand der tatsächlich gefahrenen Leistung. W′-Verbrauch, Erholung und langfristige Ermüdung sollen im bestehenden Modell abgebildet und überprüft werden; kein automatischer zusätzlicher Ermüdungsabzug für Gegner allein wegen eines Angriffs.
 - Wiederholte Attacken können für den Angreifer ebenso negative Folgen haben; Gegner entscheiden situativ, ob sie direkt reagieren, dosiert nachfahren oder eigenes Tempo fahren.
 - Exakte zusätzliche Attribute, Datenmodell, Parameter, Individualverteilung und erforderliche Erweiterungen der bisherigen Energiebilanz sind noch nicht beschlossen bzw. getestet. Sportliche Zielbeschreibung, Implementierung nach gemeinsamer Regelbesprechung und vor späterer Testphase.
+
+## 14. Abfahrtstechnik und Risiko — vereinbart
+
+- Abfahrtstechnik und Risikobereitschaft werden sportlich getrennt betrachtet: Ein guter Abfahrer kann sich zurückhalten, ein risikofreudiger Fahrer ist nicht automatisch technisch stark.
+- Streckencharakter und fahrerische Fähigkeiten beeinflussen, welches Tempo ein Fahrer auf einer Abfahrt fahren kann. Ziel, Renndynamik und verbleibende Strecke können beeinflussen, wie viel Risiko er eingeht.
+- Ein Fahrer kann eine Abfahrt als Gelegenheit zum Angriff oder Anschluss ansehen. Zeit und Position ergeben sich aus tatsächlichem Fahrverhalten, Strecke und Verhalten anderer, nicht aus einem automatischen Bonus oder garantierten Erfolg.
+- Mögliche negative Folgen von Risiko einschließlich Sturz und deren Auswirkungen sollen gesondert besprochen werden; daraus folgt keine Annahme, dass das bestehende Modell sie bereits abbildet.
+- Zielbeschreibung, noch keine Festlegung zusätzlicher Attribute, Parameter, Sturzmodellierung oder Implementierung. Vor weiteren Tests Regeln gemeinsam besprechen.
