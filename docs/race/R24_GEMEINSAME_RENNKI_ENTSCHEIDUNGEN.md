@@ -163,3 +163,12 @@ Nächster Diskussionspunkt: Zusammenspiel und Verfolgung von Teams nach Etablier
 - Fahrer und Teams sollen die Bedingungen bei ihren Entscheidungen berücksichtigen können, ohne deren weitere Entwicklung und Auswirkungen perfekt vorherzusehen.
 - Das bisherige Modell berücksichtigt Wind nur vereinfacht; eine vollständige zweidimensionale Windstaffel ist nicht als bereits umgesetzt zu behaupten. Technische Umsetzung und Tiefe werden an den Modellmöglichkeiten geprüft.
 - Gemeinsam vereinbarte sportliche Zielbeschreibung; zusätzliche Wetterfähigkeiten und deren Effekte sind nicht sämtlich umgesetzt oder validiert.
+
+## 18. Fahrerwerte und Tagesform — vereinbart
+
+- Fahrer besitzen dauerhafte bzw. längerfristige Fähigkeiten, etwa Dauerleistung, kurzfristige Reserve, Masse, Sprint- und Bergfähigkeit sowie Technik und taktische Fähigkeiten; diese Eigenschaften und taktische Vorlieben dürfen sich unterscheiden.
+- Tagesform kann die Rennleistung gegenüber dem individuellen üblichen Niveau etwas beeinflussen. Ein Favorit bleibt grundsätzlich stark, sein Sieg ist aber nicht garantiert; Stärke, Verteilung und Korrelation der Schwankungen sind noch zu bestimmen und zu validieren.
+- Belastung, Erholung und Verpflegung können die im Rennen tatsächlich verfügbaren Kräfte verändern; früh geleistete Arbeit und energiesparende Fahrweise haben nachvollziehbare Auswirkungen.
+- Rennergebnisse sollen aus dem Zusammenwirken von Fähigkeiten, Teamarbeit, Taktik, Rennlage, Physik und individueller Form entstehen; keine vorab ausgelosten Sieger oder alles dominierenden Zufallseffekte.
+- Für den späteren Karrieremodus werden Training, Entwicklung und Vorbelastung berücksichtigt; genaue langfristige Regeln werden gesondert vereinbart.
+- Die Frage einer mentalen Komponente wird als nächstes gemeinsam behandelt; Umfang, Werte, Bedingungen und Effekte sind noch nicht beschlossen. Beschreibung ist kein Nachweis vollständig umgesetzter Funktionen.
