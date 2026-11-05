@@ -68,3 +68,5 @@ Im technischen Kontrolllauf Hautacam, Seed 777, traten bei 32 erfassten Anschlus
 
 
 Der zusätzliche reproduzierbare Integrationstest auf dem aktuellen Stand prüfte im selben Berglauf sowohl einen erfolgreichen Anschluss von über zehn Minuten als auch mindestens einen beobachteten Positionswechsel nach passendem Ablöseangebot; er bestand. Ein breiter Lauf mit 405 bestandenen Tests wurde während weiterer Änderungen durchgeführt und ist daher kein vollständiger Nachweis für einen unveränderten Endstand. Eine erneute Gesamtsuite auf dem eingefrorenen Code wurde gestartet; deren Ergebnis ist gesondert zu ergänzen.
+
+Zusätzlich bestand auf dem aktuellen Quellcode der TypeScript-Build mit TypeScript 5.8.3 für den Rennsimulator, seine Abhängigkeiten, die beiden Physik-Einstiege und den Rennbericht. Die erzeugten Dateien waren nur temporär; daraus folgt keine sportliche Validierung.
