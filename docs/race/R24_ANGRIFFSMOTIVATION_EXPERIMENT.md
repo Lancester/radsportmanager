@@ -31,7 +31,7 @@ Gesicherte [Vergleichskennzahlen](r24-grossvergleich-daten/angriffsmotivation-ve
 
 ## Prüfung
 
-Gezielte Motivationstests: 3/3; adaptive Attackentests: 4/4 erfolgreich. Die vollständige Testsuite läuft bei Erstellen dieses Zwischenstands noch; Ergebnis gesondert nachtragen. Keine Sportfreigabe.
+Gezielte Motivationstests: 3/3; adaptive Attackentests: 4/4 erfolgreich. Vollständige Testsuite: 378/378 erfolgreich (Node 24.22.1, begrenzte Testparallelität). Die Suite begann kurz vor Ergänzung der Sieger-im-Ziel-Sperre; diese wurde zusätzlich im gezielten Motivationstest erfolgreich geprüft. Keine Sportfreigabe.
 
 ## Fortsetzung
 
