@@ -15,9 +15,14 @@ export function selectAttackPurpose(o:AttackPurposeObservation):AttackPurpose|nu
   // verfolgt werden; ihr Abstand allein ist keine feste Zeitsperre.
   if(o.gapToNextGroupM!==null&&o.gapToNextGroupM>=30&&o.bridgeReachable)
     return 'gruppe_erreichen';
-  // Selektion für den Sieg ist auch auf einem frühen Schlussanstieg möglich.
+  // Eine bereits entstandene kleine Spitzengruppe kann an einem Anstieg
+  // auch weit vor dem Ziel eine begründete Siegchance eröffnen. Die
+  // Entscheidung selbst und ihre körperliche Machbarkeit folgen später.
+  const selectedClimbingGroup=o.breakawayEstablished&&o.gradeFraction>=.05&&
+    o.groupSize>1&&o.groupSize<=12;
   const deciding=o.remainingM<=60000||
-    (o.progress>=.5&&o.gradeFraction>=.05&&o.remainingM<=90000);
+    (o.progress>=.5&&o.gradeFraction>=.05&&o.remainingM<=90000)||
+    selectedClimbingGroup;
   if(deciding&&o.gapToRaceFrontM<=2000&&o.groupSize>1)
     return 'sieg_angreifen';
   // Früh eine Flucht bilden: nicht während geschützter Kapitänsarbeit,
