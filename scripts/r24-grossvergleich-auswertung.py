@@ -37,6 +37,9 @@ for route,roster in sorted({(x[0],x[1]) for x in pairs}):
           'topFavoriteRanks':[d['favorites']['profileFavorite']['finishRank'] for d in data],
           'meanAttacks':round(statistics.mean(d['diagnostics']['attacks'] for d in data),1),
           'breakaways':sum(d['diagnostics']['breakaways'] for d in data),'catches':sum(d['diagnostics']['caughtBreakaways'] for d in data),
-          'winnerIds':[d['classification'][0]['id'] for d in data]}
+          'winnerIds':[d['classification'][0]['id'] for d in data],
+          'medianOfFinishAvailabilityPct':med([statistics.median(x['endurancePowerAvailability']*100 for x in d['classification']) for d in data]),
+          'medianOfFinishWPrimePct':med([statistics.median(x['finalWPrimeJ']/rider[x['id']]['wPrimeJ']*100 for x in d['classification']) for d in data]),
+          'medianOfFinishCarbsKcal':med([statistics.median(x['carbohydrateRemainingKcal'] for x in d['classification']) for d in data])}
     summary.append({'route':route,'roster':roster,'pairs':len(same),'seeds':[p[2] for p in same],'versions':versions})
 print(json.dumps({'loaded':len(races),'paired':len(pairs),'summary':summary},ensure_ascii=False,indent=2))
