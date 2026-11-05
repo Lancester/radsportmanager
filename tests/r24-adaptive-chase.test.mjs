@@ -49,6 +49,16 @@ test('R24: weiteres interessiertes Team kann sich laufender Jagd anschließen',(
   assert.equal(chase.chasingTeamIds.has('B'),true);
   assert.equal(chase.state.sinceS,9900);
 });
+test('R24: erneute Flucht kann sofort nach Ende der vorherigen Jagd bewertet werden',()=>{
+  const leading=[rider('CAP','C','kapitaen',1500)];
+  const stopped=run(main,{active:['A'],sinceS:9800,cooldownUntilS:0}).chase;
+  assert.deepEqual(stopped.state.active,[]);
+  assert.equal(stopped.state.cooldownUntilS,10000);
+  const {chase}=run([...leading,...main],
+    {...stopped.state,cooldownUntilS:10060});
+  assert.equal(chase.chasingTeamIds.has('A'),true);
+  assert.equal(chase.chasingTeamIds.has('B'),true);
+});
 test('R24: alte manuelle Helferzahl begrenzt die autonome KI nicht',()=>{
   const leading=[rider('ESC','C','kapitaen',1500)];
   const {chase,plan}=run([...leading,...main]);
