@@ -27,6 +27,7 @@ import {selectAttackPurpose,estimateBridge} from './attack-purpose.ts';
 import {evaluatePursuit} from './pursuit-evaluation.ts';
 import {estimateOpponentThreat} from './opponent-assessment.ts';
 import {decideRiderReaction} from './rider-reaction.ts';
+import {decideJoinBridge} from './bridge-cooperation.ts';
 import type {AttackPurpose} from './attack-purpose.ts';
 import {adaptiveAttackDraw,decideAdaptiveAttackOpportunity}
   from './adaptive-attack.ts';
@@ -671,6 +672,7 @@ export function simulateRace(x:RaceInput):RaceResult {
         !best||g.length>best.length?g:best,undefined);
       // Momentaufnahme: Reaktionen dürfen nicht von der Reihenfolge der
       // späteren Fahrerverarbeitung in diesem 10-s-Takt abhängen.
+      const bridgePlanSnapshot=new Map(bridgePlans);
       const knownField=planningRiders.map(r=>r.knownAbility);
       const reactionProfile=sprintFriendlyRace?'flach':
         longClimbs.some(c=>c.lengthM>=5000&&c.endM>leader.positionM)?'berg':'gemischt';
@@ -864,6 +866,34 @@ export function simulateRace(x:RaceInput):RaceResult {
           reason:classics.reason,
         }:chooseRacePower(obs);
         const crew=planned?.orders.get(s.rider.id);
+        // Ein Fahrer kann sich einem beobachteten, real in seiner Gruppe
+        // begonnenen Anschluss anschließen. Gleiche Gruppe und Ziel sind
+        // notwendig; Physik entscheidet weiterhin über Windschatten/Erfolg.
+        if(x.groupRidingModel==='stable-pack'&&!bridgePlans.has(s.rider.id)&&
+          localAttackGroup&&localAttackGroup!==mainAttackGroup&&targetRider&&
+          baseProposal.intent!=='angriff'){
+          const peer=localAttackGroup.find(r=>r.rider.id!==s.rider.id&&
+            bridgePlanSnapshot.has(r.rider.id)&&
+            attackGroupByRider.get(bridgePlanSnapshot.get(r.rider.id)!.targetId)===nextGroup);
+          const peerPlan=peer?bridgePlanSnapshot.get(peer.rider.id):undefined;
+          const sharedTarget=peerPlan?byId.get(peerPlan.targetId):undefined;
+          if(peerPlan&&sharedTarget&&sharedTarget.finishTimeS===null&&
+            decideJoinBridge({sameActualGroup:true,targetAhead:sharedTarget.positionM>s.positionM,
+              teamHasOtherDuty:!!crew,teamHasRiderAhead:active.some(r=>
+                r.rider.teamId===s.rider.teamId&&r.rider.id!==s.rider.id&&
+                r.positionM>localAttackGroup[0].positionM+75),
+              role:s.rider.role,strategy:teams.get(s.rider.teamId)!.strategy,
+              reserveFraction:obs.reserveFraction,aggression:s.rider.aggression,
+              currentIntent:s.intent,draw:adaptiveAttackDraw(x.seed,s.rider.id,t)})){
+            const initialGap=Math.max(0,sharedTarget.positionM-s.positionM);
+            bridgePlans.set(s.rider.id,{targetId:sharedTarget.rider.id,
+              powerW:Math.min(peerPlan.powerW,s.dayCpW*1.05),bestGapM:initialGap,
+              lastProgressS:t});
+            if(events.length<100000)events.push({timeS:t,km:s.positionM/1000,
+              type:'bridge-start',riderId:s.rider.id,teamId:s.rider.teamId,
+              description:`Gemeinsames Nachführen zu ${sharedTarget.rider.id}, Abstand ${Math.round(initialGap)} m`});
+          }
+        }
         const bridgePlan=bridgePlans.get(s.rider.id);
         if(x.groupRidingModel==='stable-pack'&&!bridgePlan&&!crew&&
           ['grundtempo','windschatten'].includes(baseProposal.intent)){
