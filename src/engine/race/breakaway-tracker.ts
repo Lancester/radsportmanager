@@ -42,8 +42,13 @@ export function advanceBreakawayTracker<T extends {positionM:number}>(input:{
     best.filter(r=>mainIds.has(riderId(r))).length?g:best,groups[0]);
   const mainMembers=main.filter(r=>mainIds.has(riderId(r)));
   const joined=main.filter(r=>escapedIds.has(riderId(r)));
-  const escapedStillAhead=remaining.some(r=>!main.includes(r)&&
-    r.positionM>main[0].positionM+35);
+  // Eine Abstandsgruppe kann selbst hunderte Meter lang sein. Ein
+  // Ausreisser bleibt daher auch dann voraus, wenn eine 42-m-Kette ihn
+  // formal schon derselben Gruppe wie das alte Hauptfeld zuordnet.
+  const formerMainFront=mainMembers.length?
+    Math.max(...mainMembers.map(r=>r.positionM)):null;
+  const escapedStillAhead=formerMainFront!==null&&remaining.some(r=>
+    r.positionM>formerMainFront+35);
   let gap=Infinity;
   for(const a of joined)for(const b of mainMembers)
     gap=Math.min(gap,Math.abs(a.positionM-b.positionM));

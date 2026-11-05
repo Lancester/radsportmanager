@@ -42,7 +42,9 @@ Keine Aussage hier belegt die statistische Übereinstimmung mit realen Rennen.
    betrachtet. Das Team berücksichtigt eigene Kapitäne, Sprinter und
    Helfer vorne. Einholungen setzen eine reale Wiedervereinigung zuvor
    getrennter Beteiligter über eine Mindestdauer voraus; zurückliegende
-   Fahrer verhindern das Ereignis nicht mehr. Auch im Finale werden
+   Fahrer verhindern das Ereignis nicht mehr. Eine lange Kette innerhalb
+   einer Abstandsgruppe zählt nicht als Einholung, solange ein früherer
+   Ausreißer noch mehr als 35 m vor dem früheren Hauptfeld fährt. Auch im Finale werden
    Entscheidungen nicht durch die alte 94-/99,5-%-Sperre beendet.
 4. **Gelände und Gruppen:** Zusammenhängende Anstiege werden über mehrere
    Streckenabschnitte hinweg erkannt. Rampenfahrer werden nach verfügbarer
@@ -87,8 +89,11 @@ Strecken ist begrenzt.
   sowie die 5-km-Angriffsdiagnose wurden ergänzt; Code und Dokumentation
   befinden sich auf dem Entwicklungsbranch.
 - **Geprüft:** 40 gezielte Tests und die TypeScript-Typprüfung bestehen
-  nach den letzten Anpassungen. Ein Browser-ESM-Build bestand vor diesen
-  Anpassungen und wird wiederholt. Zwei temporäre Varianten mit
+  nach dem ersten Zwischenstand. Der Browser-ESM-Build wurde danach
+  wiederholt und besteht. Die korrigierte Diagnostik wurde für `legacy`
+  und `stable-pack` erneut erfolgreich geprüft. Vier spezialisierte
+  Einholungsfälle einschließlich langer Abstandsketten bestehen nach der
+  nachfolgenden Korrektur. Zwei temporäre Varianten mit
   300 und 500 m Feldkopf-Auslaufdistanz wurden in den Lille-Seeds 42 und
   2026 gegenübergestellt. Die 500-m-Variante erhielt bei ca. km 46,5 im
   größeren Feld 138 bzw. 153 Fahrer; bei 300 m waren es 125 bzw. 127.
@@ -99,8 +104,10 @@ Strecken ist begrenzt.
   optionalen Angriffsausgabe-Feld; der Test wurde danach angepasst und
   vergleicht nach dessen Entfernen weiterhin das gesamte Rennergebnis,
   einschließlich eines neuen `stable-pack`-Vergleichs. Während dieser
-  Gesamtserie wurden weitere Änderungen vorgenommen; deshalb ersetzt sie
-  keinen erneuten vollständigen Lauf auf einem eingefrorenen Stand.
+  Gesamtserie wurden weitere Änderungen vorgenommen; auch die zweite
+  laufende Serie begann vor der zusätzlichen Korrektur langer Ketten.
+  Deshalb ersetzt keine davon einen erneuten vollständigen Lauf auf einem
+  eingefrorenen Stand.
 - **Offen:** Endgültige Mehrseed-Referenzläufe mit dem zuletzt geänderten
   Code; gleiche Fahrer über alle vier Profile; Wirkung und Kosten der
   Angriffe; verbleibende Feldfragmentierung und große Rückstände auf

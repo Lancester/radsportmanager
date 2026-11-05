@@ -43,3 +43,21 @@ test('R24: Zielankunft des letzten Ausreissers ist keine Einholung',()=>{
   assert.equal(c.event,null);
   assert.equal(c.state.escapeIds.length,0);
 });
+
+test('R24: lange Abstandskette meldet keinen noch voraus fahrenden Ausreisser eingeholt',()=>{
+  const lead=group('L',2,2000),main=group('M',5,1600);
+  const first=advance(initialTrackedBreakaway(),[lead,main],0);
+  const active=advance(first.state,[lead,main],41);
+  const chain=[{id:'L0',positionM:2000},{id:'X',positionM:1960},
+    {id:'L1',positionM:1920},{id:'M0',positionM:1910},
+    ...group('M',5,1909).slice(1)];
+  const observation=advance(active.state,[chain],100);
+  const later=advance(observation.state,[chain],141);
+  assert.equal(later.event,null);
+  assert.equal(later.state.escapeIds.length,2);
+  const together=[{id:'L0',positionM:1930},{id:'L1',positionM:1920},
+    ...group('M',5,1910)];
+  const joined=advance(later.state,[together],142);
+  const caught=advance(joined.state,[together],183);
+  assert.equal(caught.event,'caught');
+});
