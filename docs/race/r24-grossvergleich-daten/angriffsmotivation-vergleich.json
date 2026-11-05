@@ -1,0 +1,312 @@
+[
+  {
+    "route": "hautacam",
+    "seed": 42,
+    "field": "profile",
+    "version": "alt",
+    "hash": "79b35fe5d7833d70b67435da829ecc488c2e2df58418c17de1086a75e5a7ea7b",
+    "winner": "F036",
+    "attacks": 49,
+    "goals": {},
+    "favorites": [
+      [
+        "F078",
+        73
+      ],
+      [
+        "F134",
+        2
+      ],
+      [
+        "F106",
+        11
+      ]
+    ],
+    "largestGroup1": 5,
+    "winnerGroup1": 1,
+    "r77": 677,
+    "f134early": 1,
+    "missingGoal": 49
+  },
+  {
+    "route": "hautacam",
+    "seed": 42,
+    "field": "profile",
+    "version": "motiv",
+    "hash": "79b35fe5d7833d70b67435da829ecc488c2e2df58418c17de1086a75e5a7ea7b",
+    "winner": "F134",
+    "attacks": 44,
+    "goals": {
+      "flucht_gruenden": 13,
+      "gruppe_erreichen": 14,
+      "sieg_angreifen": 17
+    },
+    "favorites": [
+      [
+        "F078",
+        28
+      ],
+      [
+        "F134",
+        1
+      ],
+      [
+        "F106",
+        2
+      ]
+    ],
+    "largestGroup1": 5,
+    "winnerGroup1": 1,
+    "r77": 858,
+    "f134early": 0,
+    "missingGoal": 0
+  },
+  {
+    "route": "hautacam",
+    "seed": 777,
+    "field": "profile",
+    "version": "alt",
+    "hash": "efc5328acceca3fde5f10f78d9bb39d1aef61188a025bd97fa339d893614573b",
+    "winner": "F134",
+    "attacks": 53,
+    "goals": {},
+    "favorites": [
+      [
+        "F078",
+        21
+      ],
+      [
+        "F134",
+        1
+      ],
+      [
+        "F106",
+        4
+      ]
+    ],
+    "largestGroup1": 14,
+    "winnerGroup1": 1,
+    "r77": 823,
+    "f134early": 1,
+    "missingGoal": 53
+  },
+  {
+    "route": "hautacam",
+    "seed": 777,
+    "field": "profile",
+    "version": "motiv",
+    "hash": "efc5328acceca3fde5f10f78d9bb39d1aef61188a025bd97fa339d893614573b",
+    "winner": "F134",
+    "attacks": 37,
+    "goals": {
+      "flucht_gruenden": 15,
+      "gruppe_erreichen": 6,
+      "sieg_angreifen": 16
+    },
+    "favorites": [
+      [
+        "F078",
+        66
+      ],
+      [
+        "F134",
+        1
+      ],
+      [
+        "F106",
+        4
+      ]
+    ],
+    "largestGroup1": 10,
+    "winnerGroup1": 1,
+    "r77": 795,
+    "f134early": 0,
+    "missingGoal": 0
+  },
+  {
+    "route": "lille",
+    "seed": 42,
+    "field": "common",
+    "version": "alt",
+    "hash": "e4a5e85c8de49235a9de260a9b4faaa703311501cec9e02258f5c6ff45f6270d",
+    "winner": "F009",
+    "attacks": 19,
+    "goals": {},
+    "favorites": [
+      [
+        "F023",
+        2
+      ],
+      [
+        "F043",
+        44
+      ],
+      [
+        "F078",
+        71
+      ]
+    ],
+    "largestGroup1": 98,
+    "winnerGroup1": 33,
+    "r77": 17,
+    "f134early": 1,
+    "missingGoal": 19
+  },
+  {
+    "route": "lille",
+    "seed": 42,
+    "field": "common",
+    "version": "motiv",
+    "hash": "e4a5e85c8de49235a9de260a9b4faaa703311501cec9e02258f5c6ff45f6270d",
+    "winner": "F114",
+    "attacks": 13,
+    "goals": {
+      "flucht_gruenden": 5,
+      "gruppe_erreichen": 2,
+      "sieg_angreifen": 6
+    },
+    "favorites": [
+      [
+        "F023",
+        2
+      ],
+      [
+        "F043",
+        45
+      ],
+      [
+        "F078",
+        60
+      ]
+    ],
+    "largestGroup1": 104,
+    "winnerGroup1": 30,
+    "r77": 20,
+    "f134early": 1,
+    "missingGoal": 0
+  },
+  {
+    "route": "boulogne",
+    "seed": 42,
+    "field": "profile",
+    "version": "alt",
+    "hash": "1e725df3473a71bd6ff97d2d626fc3e3e1f3d1d1510a05f4a10d6a1586f3410d",
+    "winner": "F015",
+    "attacks": 46,
+    "goals": {},
+    "favorites": [
+      [
+        "F135",
+        43
+      ],
+      [
+        "F111",
+        125
+      ],
+      [
+        "F020",
+        123
+      ]
+    ],
+    "largestGroup1": 20,
+    "winnerGroup1": 1,
+    "r77": 170,
+    "f134early": 1,
+    "missingGoal": 46
+  },
+  {
+    "route": "boulogne",
+    "seed": 42,
+    "field": "profile",
+    "version": "motiv",
+    "hash": "1e725df3473a71bd6ff97d2d626fc3e3e1f3d1d1510a05f4a10d6a1586f3410d",
+    "winner": "F015",
+    "attacks": 32,
+    "goals": {
+      "flucht_gruenden": 9,
+      "gruppe_erreichen": 10,
+      "sieg_angreifen": 13
+    },
+    "favorites": [
+      [
+        "F135",
+        130
+      ],
+      [
+        "F111",
+        140
+      ],
+      [
+        "F020",
+        129
+      ]
+    ],
+    "largestGroup1": 18,
+    "winnerGroup1": 2,
+    "r77": 88,
+    "f134early": 0,
+    "missingGoal": 0
+  },
+  {
+    "route": "liege",
+    "seed": 42,
+    "field": "profile",
+    "version": "alt",
+    "hash": "63727874b990a3061762bc0f924a070ecbef8965b773e1b8fdb086b25d75fad5",
+    "winner": "F134",
+    "attacks": 62,
+    "goals": {},
+    "favorites": [
+      [
+        "F135",
+        145
+      ],
+      [
+        "F111",
+        43
+      ],
+      [
+        "F020",
+        84
+      ]
+    ],
+    "largestGroup1": 31,
+    "winnerGroup1": 2,
+    "r77": 527,
+    "f134early": 1,
+    "missingGoal": 62
+  },
+  {
+    "route": "liege",
+    "seed": 42,
+    "field": "profile",
+    "version": "motiv",
+    "hash": "63727874b990a3061762bc0f924a070ecbef8965b773e1b8fdb086b25d75fad5",
+    "winner": "F092",
+    "attacks": 44,
+    "goals": {
+      "flucht_gruenden": 13,
+      "gruppe_erreichen": 20,
+      "sieg_angreifen": 11
+    },
+    "favorites": [
+      [
+        "F135",
+        141
+      ],
+      [
+        "F111",
+        60
+      ],
+      [
+        "F020",
+        144
+      ]
+    ],
+    "largestGroup1": 20,
+    "winnerGroup1": 1,
+    "r77": 598,
+    "f134early": 0,
+    "missingGoal": 0
+  }
+]
