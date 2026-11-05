@@ -29,13 +29,15 @@ test('Geschützter Favorit kann im Finale angreifen',()=>{
   assert.equal(selectAttackPurpose({...fin,winnerFinished:true}),null);
 });
 
-test('Selektierte Spitzengruppe am Berg ermöglicht einen Angriff auch weit vor dem Ziel',()=>{
+test('Selektierte Spitzengruppe ermöglicht eine Siegattacke auch weit vor dem Ziel',()=>{
   const group={...base,role:'kapitaen',protectedFavorite:true,
     remainingM:125000,progress:.3,gradeFraction:.07,groupSize:6,
     inMainGroup:false,breakawayEstablished:true,gapToRaceFrontM:50};
   assert.equal(selectAttackPurpose(group),'sieg_angreifen');
   assert.equal(selectAttackPurpose({...group,remainingM:90001}),'sieg_angreifen');
-  assert.equal(selectAttackPurpose({...group,gradeFraction:0}),null);
+  assert.equal(selectAttackPurpose({...group,gradeFraction:0}),'sieg_angreifen');
+  assert.equal(selectAttackPurpose({...group,teammateAhead:true}),null);
+  assert.equal(selectAttackPurpose({...group,inMainGroup:true}),null);
   assert.equal(selectAttackPurpose({...group,groupSize:80}),null);
   assert.equal(selectAttackPurpose({...group,assignedTeamDuty:true}),null);
 });
