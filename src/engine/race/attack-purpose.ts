@@ -15,14 +15,14 @@ export function selectAttackPurpose(o:AttackPurposeObservation):AttackPurpose|nu
   // verfolgt werden; ihr Abstand allein ist keine feste Zeitsperre.
   if(o.gapToNextGroupM!==null&&o.gapToNextGroupM>=30&&o.bridgeReachable)
     return 'gruppe_erreichen';
-  // Eine bereits entstandene kleine Spitzengruppe kann an einem Anstieg
-  // auch weit vor dem Ziel eine begründete Siegchance eröffnen. Die
-  // Entscheidung selbst und ihre körperliche Machbarkeit folgen später.
-  const selectedClimbingGroup=o.breakawayEstablished&&o.gradeFraction>=.05&&
-    o.groupSize>1&&o.groupSize<=12;
+  // Eine kleine Spitzengruppe kann auch weit vor dem Ziel Anlass sein,
+  // sich für den Sieg abzusetzen: auf Ebene ebenso wie am Berg. Ob die
+  // Attacke erfolgt und physisch gelingt, entscheidet die nachfolgende KI.
+  const selectedFrontGroup=o.breakawayEstablished&&!o.inMainGroup&&
+    !o.teammateAhead&&o.gapToRaceFrontM<=150&&o.groupSize>1&&o.groupSize<=12;
   const deciding=o.remainingM<=60000||
     (o.progress>=.5&&o.gradeFraction>=.05&&o.remainingM<=90000)||
-    selectedClimbingGroup;
+    selectedFrontGroup;
   if(deciding&&o.gapToRaceFrontM<=2000&&o.groupSize>1)
     return 'sieg_angreifen';
   // Früh eine Flucht bilden: nicht während geschützter Kapitänsarbeit,
