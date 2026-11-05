@@ -20,13 +20,24 @@ test('Konkrete erreichbare Vordergruppe erlaubt Anschließen',()=>{
   assert.equal(selectAttackPurpose({...chase,gapToNextGroupM:1000}), 'gruppe_erreichen');
   assert.equal(selectAttackPurpose({...chase,gapToRaceFrontM:5000}), 'gruppe_erreichen');
 });
-test('Geschützter Favorit darf frühestens später angreifen und Finale entscheiden',()=>{
+test('Geschützter Favorit kann im Finale angreifen',()=>{
   const fin={...base,role:'kapitaen',protectedFavorite:true,remainingM:50000,
     progress:.72,gradeFraction:.07,gapToRaceFrontM:100,groupSize:5};
   assert.equal(selectAttackPurpose(fin),'sieg_angreifen');
   assert.equal(selectAttackPurpose({...fin,gapToRaceFrontM:4000,inMainGroup:false}),null);
   assert.equal(selectAttackPurpose({...fin,remainingM:200}),null);
   assert.equal(selectAttackPurpose({...fin,winnerFinished:true}),null);
+});
+
+test('Selektierte Spitzengruppe am Berg ermöglicht einen Angriff auch weit vor dem Ziel',()=>{
+  const group={...base,role:'kapitaen',protectedFavorite:true,
+    remainingM:125000,progress:.3,gradeFraction:.07,groupSize:6,
+    inMainGroup:false,breakawayEstablished:true,gapToRaceFrontM:50};
+  assert.equal(selectAttackPurpose(group),'sieg_angreifen');
+  assert.equal(selectAttackPurpose({...group,remainingM:90001}),'sieg_angreifen');
+  assert.equal(selectAttackPurpose({...group,gradeFraction:0}),null);
+  assert.equal(selectAttackPurpose({...group,groupSize:80}),null);
+  assert.equal(selectAttackPurpose({...group,assignedTeamDuty:true}),null);
 });
 
 test('Anschluss benötigt Leistungs- und Energievorteil gegenüber der Zielgruppe',()=>{
