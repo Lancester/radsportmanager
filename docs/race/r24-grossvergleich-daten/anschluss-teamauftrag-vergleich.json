@@ -1,0 +1,495 @@
+[
+  {
+    "profil": "hautacam",
+    "seed": 42,
+    "stand": "alt",
+    "input": {
+      "commonInputs": "79b35fe5d7833d70b67435da829ecc488c2e2df58418c17de1086a75e5a7ea7b",
+      "fullRiders": "e4226440f8cb141e9bc2113dae9ba6b5e7b6da9154769086c646161391066d0a"
+    },
+    "winner": "F036",
+    "attacks": 49,
+    "goals": {},
+    "favorites": [
+      [
+        "F078",
+        73
+      ],
+      [
+        "F134",
+        2
+      ],
+      [
+        "F106",
+        11
+      ]
+    ],
+    "maxgroup1": 5,
+    "winnergroup1": 1,
+    "r77": 677
+  },
+  {
+    "profil": "hautacam",
+    "seed": 42,
+    "stand": "aktuell",
+    "input": {
+      "commonInputs": "79b35fe5d7833d70b67435da829ecc488c2e2df58418c17de1086a75e5a7ea7b",
+      "fullRiders": "e4226440f8cb141e9bc2113dae9ba6b5e7b6da9154769086c646161391066d0a"
+    },
+    "winner": "F134",
+    "attacks": 27,
+    "goals": {
+      "flucht_gruenden": 10,
+      "sieg_angreifen": 17
+    },
+    "favorites": [
+      [
+        "F078",
+        23
+      ],
+      [
+        "F134",
+        1
+      ],
+      [
+        "F106",
+        24
+      ]
+    ],
+    "maxgroup1": 9,
+    "winnergroup1": 1,
+    "r77": 1013
+  },
+  {
+    "profil": "hautacam",
+    "seed": 777,
+    "stand": "alt",
+    "input": {
+      "commonInputs": "efc5328acceca3fde5f10f78d9bb39d1aef61188a025bd97fa339d893614573b",
+      "fullRiders": "e4226440f8cb141e9bc2113dae9ba6b5e7b6da9154769086c646161391066d0a"
+    },
+    "winner": "F134",
+    "attacks": 53,
+    "goals": {},
+    "favorites": [
+      [
+        "F078",
+        21
+      ],
+      [
+        "F134",
+        1
+      ],
+      [
+        "F106",
+        4
+      ]
+    ],
+    "maxgroup1": 14,
+    "winnergroup1": 1,
+    "r77": 823
+  },
+  {
+    "profil": "hautacam",
+    "seed": 777,
+    "stand": "aktuell",
+    "input": {
+      "commonInputs": "efc5328acceca3fde5f10f78d9bb39d1aef61188a025bd97fa339d893614573b",
+      "fullRiders": "e4226440f8cb141e9bc2113dae9ba6b5e7b6da9154769086c646161391066d0a"
+    },
+    "winner": "F134",
+    "attacks": 38,
+    "goals": {
+      "flucht_gruenden": 15,
+      "sieg_angreifen": 19,
+      "gruppe_erreichen": 4
+    },
+    "favorites": [
+      [
+        "F078",
+        23
+      ],
+      [
+        "F134",
+        1
+      ],
+      [
+        "F106",
+        3
+      ]
+    ],
+    "maxgroup1": 13,
+    "winnergroup1": 1,
+    "r77": 1042
+  },
+  {
+    "profil": "lille",
+    "seed": 42,
+    "stand": "alt",
+    "input": {
+      "commonInputs": "e4a5e85c8de49235a9de260a9b4faaa703311501cec9e02258f5c6ff45f6270d",
+      "fullRiders": "4c595257f207535715fb6fcaa63203cbb80a138cf5603a75823389a581a11e31"
+    },
+    "winner": "F009",
+    "attacks": 19,
+    "goals": {},
+    "favorites": [
+      [
+        "F023",
+        2
+      ],
+      [
+        "F043",
+        44
+      ],
+      [
+        "F078",
+        71
+      ]
+    ],
+    "maxgroup1": 98,
+    "winnergroup1": 33,
+    "r77": 17
+  },
+  {
+    "profil": "lille",
+    "seed": 42,
+    "stand": "aktuell",
+    "input": {
+      "commonInputs": "e4a5e85c8de49235a9de260a9b4faaa703311501cec9e02258f5c6ff45f6270d",
+      "fullRiders": "4c595257f207535715fb6fcaa63203cbb80a138cf5603a75823389a581a11e31"
+    },
+    "winner": "F023",
+    "attacks": 11,
+    "goals": {
+      "flucht_gruenden": 6,
+      "sieg_angreifen": 5
+    },
+    "favorites": [
+      [
+        "F023",
+        1
+      ],
+      [
+        "F043",
+        47
+      ],
+      [
+        "F078",
+        74
+      ]
+    ],
+    "maxgroup1": 106,
+    "winnergroup1": 30,
+    "r77": 25
+  },
+  {
+    "profil": "lille",
+    "seed": 777,
+    "stand": "alt",
+    "input": {
+      "commonInputs": "f4d379861049dc4c59b9119880bec7ce96bc61e354e1dea3f61d4b307152fb11",
+      "fullRiders": "4c595257f207535715fb6fcaa63203cbb80a138cf5603a75823389a581a11e31"
+    },
+    "winner": "F085",
+    "attacks": 19,
+    "goals": {},
+    "favorites": [
+      [
+        "F023",
+        2
+      ],
+      [
+        "F043",
+        59
+      ],
+      [
+        "F078",
+        72
+      ]
+    ],
+    "maxgroup1": 138,
+    "winnergroup1": 138,
+    "r77": 12
+  },
+  {
+    "profil": "lille",
+    "seed": 777,
+    "stand": "aktuell",
+    "input": {
+      "commonInputs": "f4d379861049dc4c59b9119880bec7ce96bc61e354e1dea3f61d4b307152fb11",
+      "fullRiders": "4c595257f207535715fb6fcaa63203cbb80a138cf5603a75823389a581a11e31"
+    },
+    "winner": "F106",
+    "attacks": 12,
+    "goals": {
+      "flucht_gruenden": 8,
+      "gruppe_erreichen": 1,
+      "sieg_angreifen": 3
+    },
+    "favorites": [
+      [
+        "F023",
+        7
+      ],
+      [
+        "F043",
+        41
+      ],
+      [
+        "F078",
+        81
+      ]
+    ],
+    "maxgroup1": 110,
+    "winnergroup1": 10,
+    "r77": 11
+  },
+  {
+    "profil": "boulogne",
+    "seed": 42,
+    "stand": "alt",
+    "input": {
+      "commonInputs": "1e725df3473a71bd6ff97d2d626fc3e3e1f3d1d1510a05f4a10d6a1586f3410d",
+      "fullRiders": "51ec01ee55e27c72573c7dab88ee04c0ed8e3fac96caa4f68e4e9b3991bd9038"
+    },
+    "winner": "F015",
+    "attacks": 46,
+    "goals": {},
+    "favorites": [
+      [
+        "F135",
+        43
+      ],
+      [
+        "F111",
+        125
+      ],
+      [
+        "F020",
+        123
+      ]
+    ],
+    "maxgroup1": 20,
+    "winnergroup1": 1,
+    "r77": 170
+  },
+  {
+    "profil": "boulogne",
+    "seed": 42,
+    "stand": "aktuell",
+    "input": {
+      "commonInputs": "1e725df3473a71bd6ff97d2d626fc3e3e1f3d1d1510a05f4a10d6a1586f3410d",
+      "fullRiders": "51ec01ee55e27c72573c7dab88ee04c0ed8e3fac96caa4f68e4e9b3991bd9038"
+    },
+    "winner": "F148",
+    "attacks": 27,
+    "goals": {
+      "flucht_gruenden": 9,
+      "sieg_angreifen": 18
+    },
+    "favorites": [
+      [
+        "F135",
+        82
+      ],
+      [
+        "F111",
+        142
+      ],
+      [
+        "F020",
+        87
+      ]
+    ],
+    "maxgroup1": 15,
+    "winnergroup1": 1,
+    "r77": 78
+  },
+  {
+    "profil": "boulogne",
+    "seed": 777,
+    "stand": "alt",
+    "input": {
+      "commonInputs": "1d4295ef47147fac7f8305fc200482faf48075cb8688cddde4d7771f683bdf7a",
+      "fullRiders": "51ec01ee55e27c72573c7dab88ee04c0ed8e3fac96caa4f68e4e9b3991bd9038"
+    },
+    "winner": "F134",
+    "attacks": 42,
+    "goals": {},
+    "favorites": [
+      [
+        "F135",
+        108
+      ],
+      [
+        "F111",
+        118
+      ],
+      [
+        "F020",
+        131
+      ]
+    ],
+    "maxgroup1": 14,
+    "winnergroup1": 1,
+    "r77": 113
+  },
+  {
+    "profil": "boulogne",
+    "seed": 777,
+    "stand": "aktuell",
+    "input": {
+      "commonInputs": "1d4295ef47147fac7f8305fc200482faf48075cb8688cddde4d7771f683bdf7a",
+      "fullRiders": "51ec01ee55e27c72573c7dab88ee04c0ed8e3fac96caa4f68e4e9b3991bd9038"
+    },
+    "winner": "F106",
+    "attacks": 19,
+    "goals": {
+      "flucht_gruenden": 7,
+      "gruppe_erreichen": 2,
+      "sieg_angreifen": 10
+    },
+    "favorites": [
+      [
+        "F135",
+        65
+      ],
+      [
+        "F111",
+        104
+      ],
+      [
+        "F020",
+        94
+      ]
+    ],
+    "maxgroup1": 28,
+    "winnergroup1": 3,
+    "r77": 46
+  },
+  {
+    "profil": "liege",
+    "seed": 42,
+    "stand": "alt",
+    "input": {
+      "commonInputs": "63727874b990a3061762bc0f924a070ecbef8965b773e1b8fdb086b25d75fad5",
+      "fullRiders": "2bde9b758bb59f5517d333b2d22d46b1fe0de9f420d6bd7375057d3261511d96"
+    },
+    "winner": "F134",
+    "attacks": 62,
+    "goals": {},
+    "favorites": [
+      [
+        "F135",
+        145
+      ],
+      [
+        "F111",
+        43
+      ],
+      [
+        "F020",
+        84
+      ]
+    ],
+    "maxgroup1": 31,
+    "winnergroup1": 2,
+    "r77": 527
+  },
+  {
+    "profil": "liege",
+    "seed": 42,
+    "stand": "aktuell",
+    "input": {
+      "commonInputs": "63727874b990a3061762bc0f924a070ecbef8965b773e1b8fdb086b25d75fad5",
+      "fullRiders": "2bde9b758bb59f5517d333b2d22d46b1fe0de9f420d6bd7375057d3261511d96"
+    },
+    "winner": "F134",
+    "attacks": 18,
+    "goals": {
+      "flucht_gruenden": 5,
+      "gruppe_erreichen": 1,
+      "sieg_angreifen": 12
+    },
+    "favorites": [
+      [
+        "F135",
+        131
+      ],
+      [
+        "F111",
+        13
+      ],
+      [
+        "F020",
+        127
+      ]
+    ],
+    "maxgroup1": 43,
+    "winnergroup1": 1,
+    "r77": 556
+  },
+  {
+    "profil": "liege",
+    "seed": 777,
+    "stand": "alt",
+    "input": {
+      "commonInputs": "26aa8dc734330e0885b43e889ff6acea719574f3afccf209a6d2a14efdcf0737",
+      "fullRiders": "2bde9b758bb59f5517d333b2d22d46b1fe0de9f420d6bd7375057d3261511d96"
+    },
+    "winner": "F092",
+    "attacks": 55,
+    "goals": {},
+    "favorites": [
+      [
+        "F135",
+        114
+      ],
+      [
+        "F111",
+        31
+      ],
+      [
+        "F020",
+        36
+      ]
+    ],
+    "maxgroup1": 13,
+    "winnergroup1": 1,
+    "r77": 666
+  },
+  {
+    "profil": "liege",
+    "seed": 777,
+    "stand": "aktuell",
+    "input": {
+      "commonInputs": "26aa8dc734330e0885b43e889ff6acea719574f3afccf209a6d2a14efdcf0737",
+      "fullRiders": "2bde9b758bb59f5517d333b2d22d46b1fe0de9f420d6bd7375057d3261511d96"
+    },
+    "winner": "F092",
+    "attacks": 18,
+    "goals": {
+      "flucht_gruenden": 6,
+      "sieg_angreifen": 11,
+      "gruppe_erreichen": 1
+    },
+    "favorites": [
+      [
+        "F135",
+        2
+      ],
+      [
+        "F111",
+        7
+      ],
+      [
+        "F020",
+        118
+      ]
+    ],
+    "maxgroup1": 18,
+    "winnergroup1": 2,
+    "r77": 383
+  }
+]
