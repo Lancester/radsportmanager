@@ -83,13 +83,21 @@ export function coordinatePelotonChase(input:{
       (r.role==='kapitaen'||r.role==='sprinter'));
     const ownHelperAhead=adaptive&&riders.some(r=>
       leadingIds.has(r.id)&&r.teamId===team.id&&r.role==='helfer');
+    const ownRiderAhead=adaptive&&riders.some(r=>
+      leadingIds.has(r.id)&&r.teamId===team.id);
+    // Ein offensives Team ohne eigenen Fahrer kann eine erreichbare
+    // Spitzengruppe zurückholen, um eine erneute Fluchtbildung zu versuchen.
+    // Kein Einholen ohne verfügbare Helfer und keine Erfolgsgarantie.
+    const wantsRepresentation=adaptive&&team.strategy==='offensiv'&&
+      !ownRiderAhead&&situation.chaseViable&&
+      situation.gapFractionOfRemaining<.04&&situation.relativeSpeedMps<1.5;
     const optedOut=(!adaptive&&sprintFinale&&team.chaseHelperCount===0)||
       ownLeadersAhead||(ownHelperAhead&&!urgent);
     const interested=!optedOut&&(
       team.strategy==='sprint'&&hasSprinter||
       urgent&&team.strategy==='kapitaen_schuetzen'&&hasCaptain||
       urgent&&team.strategy==='ausgewogen'&&hasCaptain||
-      adaptive&&urgent&&team.strategy==='offensiv'&&hasCaptain);
+      adaptive&&(urgent||wantsRepresentation)&&team.strategy==='offensiv'&&hasCaptain);
     return {team:team.id,helpers:helpers.length,
       score:team.strategy==='sprint'?3:
         team.strategy==='kapitaen_schuetzen'?2:1,interested};
