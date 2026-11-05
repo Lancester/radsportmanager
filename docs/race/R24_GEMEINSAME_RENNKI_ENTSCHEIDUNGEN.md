@@ -20,3 +20,12 @@ Nächster Diskussionspunkt: Zusammenspiel und Verfolgung von Teams nach Etablier
 - Der Nutzer ergänzt: Besonders in der anfänglichen Phase einer Rundfahrtetappe, aber auch sonst je nach Rennlage, kann ein Team eine erste Flucht bewusst zurückholen, weil es unbedingt mit einem eigenen Fahrer in der späteren Flucht vertreten sein möchte. Die anschließende Fluchtbildung kann länger dauern und wiederholte Versuche umfassen.
 - Eine taktische Möglichkeit, keine Pflicht: Jagd und Nachsetzen müssen physisch erfolgen und Energie kosten; ihre Erfolgsaussichten sind nicht garantiert. Dauer, Anzahl von Fluchtgruppen und Teamaktionen nicht mit festen Sollwerten vorgeben.
 - Die genaue Entscheidung zwischen Nachsetzen, Zurückholen und Abwarten sowie Umsetzung und Kalibrierung sind gemeinsam weiter auszuarbeiten; noch kein Implementierungsnachweis.
+
+## 3. Flucht akzeptieren und Feldtempo — vereinbart
+
+- Jedes Team bewertet die Spitzengruppe aus seinem eigenen Rennziel heraus; eine gemeinsame einheitliche Entscheidung aller Teams wird nicht vorausgesetzt.
+- Ein Team kann auch ohne eigenen Fahrer eine kleine Gruppe zunächst bewusst fahren lassen, insbesondere ein Sprintteam, das seine Chancen auf einen Massensprint wahren und sie später einholen will. „Später einholbar“ ist eine Einschätzung und kein garantiertes Ergebnis.
+- Beurteilt werden unter anderem eigene Fahrer und ihre Chancen, Größe und voraussichtliche Stärke der Fluchtgruppe, aktuelle Lücke und deren Entwicklung, verbleibende Strecke, verfügbare Helfer und Reserven sowie das Verhalten und die Arbeit anderer Teams.
+- Wenn andere Teams ausreichend arbeiten, kann ein Team zunächst Kräfte sparen und später bei Bedarf helfen. Es kann ein kontrolliertes Feldtempo geben; das Feld muss nicht stehenbleiben oder sofort Vollgas fahren.
+- Der Abstand entsteht physisch aus dem tatsächlichen Tempo beider Gruppen und kann anders verlaufen als erwartet. Keine feste erlaubte Zeitspanne, garantierte Einholung oder vorgegebene Gruppengröße.
+- Diese Regeln sind gemeinsam beschlossene Ziele; sie sind noch nicht vollständig implementiert oder sportlich validiert. Vor weiteren Tests werden die Regeln gemeinsam durchgesprochen.
