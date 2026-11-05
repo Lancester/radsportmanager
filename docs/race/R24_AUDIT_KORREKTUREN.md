@@ -175,3 +175,18 @@ Im Lille-Seed 42 fiel unmittelbar vor dem Sieg von F120 ein abrupter Tempoabfall
 ## Sprintzug-Zuständigkeit korrigiert
 
 Eine zusätzliche Sekundenmessung im Lille-Seed 42 zeigte: F007 forderte bis Sekunde 14048 an der Feldspitze ca. 358 W an, ab Sekunde 14049 für drei Sekunden 0 W, während seine Absicht `grundtempo` und kein direkter Vordermann vorlagen. Ursache war die Sprintzug-Wattbegrenzung: Sie wurde bisher auch auf Helfer ohne Sprintzugauftrag angewendet, sobald der Sprinter innerhalb der allgemeinen Distanzgrenze war. Die Begrenzung ist jetzt an den tatsächlichen Sprintzugauftrag und die gleiche physische Gruppe gebunden. Keine Zielzeit oder Position wird vorgegeben. 17 gezielte Sprintzug-/Jagdtests bestanden; die vollständigen Rennvergleiche nach der Änderung laufen noch.
+
+### Vergleich nach Sprintzug-Korrektur (Code-Commit 3a1fea1)
+
+Lokale 154-Fahrer-Referenzen, Seed 2026; profileigene unterschiedliche Fahrerfelder. Alle vier Rennen beendeten die Simulation und bestanden die im Script geprüften Bilanzgrenzen. Aus diesen Einzelläufen folgt keine Realismusfreigabe.
+
+| Profil | Sieger | Fahrer innerhalb 60 s | Medianrückstand | Angriffsstarts |
+| --- | --- | ---: | ---: | ---: |
+| Flach Lille | F023, Sprinter | 154 | 17,19 s | 24 |
+| Hügel Boulogne | F099, Kletterer | 5 | 109,88 s | 51 |
+| Klassiker Liège | F078, Kletterer | 1 | 930,19 s | 73 |
+| Berg Hautacam | F117, Zeitfahrer | 6 | 955,77 s | 68 |
+
+Flach Seed 42: Nach dem Fix gewinnt Sprinter F009, 152 Fahrer liegen innerhalb 60 s; bei km 180 umfasst die führende Abstandsgruppe 152 Fahrer. Zuvor gewann F120 nach dem unbeauftragten Abbremsen von F007. Seed 2025 gewinnt weiterhin F134 (Kletterer): Sein Angriff bei km 174,31 dauerte 70 s, verbrauchte 7,31 kJ oberhalb der aktuellen CP und lag nach eigenen 5 km 225 m vor der früheren Gruppe. Bei km 180 liegen zwei Führende vor dem größten Feld; Jagd und Feldteilung sind weiter zu prüfen.
+
+Berg Seed 2026: F117 ist im unabhängigen Vorab-Bergfähigkeitsproxy Rang 55, gewinnt aber; die drei stärksten Kandidaten beenden das Rennen auf den Plätzen 15, 13 und 45. F117 attackiert bei km 169,83. Sein Erfolg kann auf Rennverlauf beruhen, ist aber im Zusammenhang mit vielen Zeitfahrern und Helfern unter den besten Zehn auffällig. Gruppenregel, Windschatten und Leistungs-/Ermüdungsbilanz am Schlussanstieg müssen vor der sportlichen Abnahme gezielt analysiert werden. Nicht durch Sieger- oder Typvorgaben korrigieren.
