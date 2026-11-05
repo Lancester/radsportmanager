@@ -35,6 +35,23 @@ test('R24: grosse Flucht und einzeln weiter vorn gebliebener Fahrer',()=>{
   assert.equal(step.event,null);
   assert.equal(step.state.escapeIds.length,20);
 });
+test('Nachgeführter Fahrer hält Flucht offen, wenn ursprüngliche Fahrer zurückfallen',()=>{
+  const lead=group('L',2,2000),main=group('M',20,1600);
+  const start=advance(initialTrackedBreakaway(),[lead,main],0);
+  const active=advance(start.state,[lead,main],41);
+  const expanded=[...lead,{id:'M0',positionM:1995}];
+  const mainWithoutJoiner=main.filter(r=>r.id!=='M0');
+  const joined=advance(active.state,[expanded,mainWithoutJoiner],60);
+  assert.ok(joined.state.escapeIds.includes('M0'));
+  assert.ok(!joined.state.mainIds.includes('M0'));
+  const ahead=[{id:'M0',positionM:2200}];
+  const originalBack=[...lead.map((r,i)=>({...r,positionM:1800-i})),
+    ...mainWithoutJoiner.map((r,i)=>({...r,positionM:1798-i}))];
+  const later=advance(joined.state,[ahead,originalBack],110);
+  const stillAhead=advance(later.state,[ahead,originalBack],160);
+  assert.notEqual(stillAhead.event,'caught');
+  assert.ok(stillAhead.state.escapeIds.includes('M0'));
+});
 test('R24: Zielankunft des letzten Ausreissers ist keine Einholung',()=>{
   const lead=group('L',2,2000),main=group('M',20,1600);
   const a=advance(initialTrackedBreakaway(),[lead,main],0);
