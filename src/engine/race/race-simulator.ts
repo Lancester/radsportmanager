@@ -23,6 +23,7 @@ import {decideStablePackRiding} from './stable-pack.ts';
 import {decideClimbTempo} from './climb-tempo.ts';
 import {decideGeneralAttackOpportunity} from './general-attack.ts';
 import {selectAttackPurpose,estimateBridge} from './attack-purpose.ts';
+import {evaluatePursuit} from './pursuit-evaluation.ts';
 import type {AttackPurpose} from './attack-purpose.ts';
 import {adaptiveAttackDraw,decideAdaptiveAttackOpportunity}
   from './adaptive-attack.ts';
@@ -843,17 +844,38 @@ export function simulateRace(x:RaceInput):RaceResult {
           if(gap!==null&&gap<bridgePlan.bestGapM-10){
             bridgePlan.bestGapM=gap;bridgePlan.lastProgressS=t;
           }
-          const reached=gap!==null&&gap<=15;
-          const stop=reached||gap===null||obs.reserveFraction<.20||
-            (s.rider.role==='helfer'&&!!crew)||t-bridgePlan.lastProgressS>120;
-          if(stop){
+          // Nur vorliegende Strecke und bekannte Fähigkeiten nutzen; kein
+          // Wissen über spätere Leistung oder W′ des vorausfahrenden Gegners.
+          let routeStart=0,favorableTerrainAhead=false;
+          for(const part of x.segments){
+            const end=routeStart+part.lengthM;
+            if(routeStart>s.positionM&&routeStart-s.positionM<=8000&&end>s.positionM){
+              const ownClimb=s.rider.criticalPowerW/(s.rider.massKg+s.rider.bikeMassKg);
+              const targetClimb=bridgeTarget?bridgeTarget.rider.criticalPowerW/
+                (bridgeTarget.rider.massKg+bridgeTarget.rider.bikeMassKg):ownClimb;
+              if((part.gradeFraction>=.04&&ownClimb>targetClimb*1.02)||
+                (part.gradeFraction<=-.03&&bridgeTarget&&
+                  s.rider.descentSkill>bridgeTarget.rider.descentSkill+.05))
+                favorableTerrainAhead=true;
+            }
+            routeStart=end;
+          }
+          const pursuit=evaluatePursuit({gapM:gap,bestGapM:bridgePlan.bestGapM,
+            secondsWithoutProgress:t-bridgePlan.lastProgressS,ownSpeedMps:s.speedMps,
+            targetSpeedMps:bridgeTarget?.speedMps??0,
+            remainingM:Math.max(0,totalM-s.positionM),reserveFraction:obs.reserveFraction,
+            aggression:s.rider.aggression,assignedTeamDuty:s.rider.role==='helfer'&&!!crew,
+            favorableTerrainAhead});
+          if(pursuit==='erreicht'||pursuit==='aufgeben'){
             bridgePlans.delete(s.rider.id);
             if(events.length<100000)events.push({timeS:t,km:s.positionM/1000,
               type:'bridge-stop',riderId:s.rider.id,teamId:s.rider.teamId,
-              description:`Anschluss zu ${bridgePlan.targetId}: ${reached?'erreicht':'beendet'}`});
-          }else if(baseProposal.intent!=='angriff'&&baseProposal.intent!=='sprint'&&
-            baseProposal.intent!=='erholung'){
-            baseProposal={intent:'verfolgung',desiredPowerW:bridgePlan.powerW,
+              description:`Anschluss zu ${bridgePlan.targetId}: ${pursuit==='erreicht'?'erreicht':'beendet'}`});
+          }else if(baseProposal.intent!=='angriff'&&baseProposal.intent!=='sprint'){
+            baseProposal=pursuit==='schonen'?{
+              intent:'erholung',desiredPowerW:s.dayCpW*.82,
+              reason:`Kräfte für Anschluss zu ${bridgePlan.targetId} einteilen`,
+            }:{intent:'verfolgung',desiredPowerW:bridgePlan.powerW,
               reason:`Individueller Anschlussversuch zu ${bridgePlan.targetId}`};
           }
         }
