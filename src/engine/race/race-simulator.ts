@@ -1,4 +1,5 @@
 import {RejoinAttemptTelemetry} from './rejoin-attempt-telemetry.ts';
+import {assignFinishGroupTimes} from './finish-groups.ts';
 /**
  * R-09 – erster vollständig durchgerechneter Rennprototyp.
  *
@@ -112,6 +113,9 @@ export interface RaceInput {
   /** R-22 experimentell: autonome Gruppenkoordination mit Wattsollwert,
    * Legacy als bisheriger Standard bis vollständiger empirischer Abnahme. */
   groupRidingModel?:'legacy'|'cohesive'|'coordinated'|'relays'|'relay-paced'|'front-gated'|'stable-pack';
+  /** Diagnostische konfigurierbare Nachbarlücke der Zielgruppen;
+   * Standard 1 s, keine vollständige Wettbewerbssonderwertung. */
+  finishGroupGapSeconds?:number;
   stepSeconds?:number;
   maxRaceTimeS?:number;
   /** Nur Diagnostik: speichert alle aktiven Fahrer alle 5 km. */
@@ -133,7 +137,8 @@ export interface RaceSnapshot {
 }
 export interface RaceClassification {
   rank:number;id:string;name:string;teamId:string;role:RaceRole;
-  finishTimeS:number;gapS:number;averageCrankPowerW:number;
+  finishTimeS:number;gapS:number;groupIndex:number;groupTimeS:number;groupGapS:number;
+  averageCrankPowerW:number;
   finalWPrimeJ:number;spentWPrimeJ:number;recoveredWPrimeJ:number;
   distanceM:number;finalSpeedKmh:number;peakSpeedKmh:number;
   brakeLossJ:number;driveWorkJ:number;energyResidualJ:number;
@@ -329,6 +334,9 @@ export function validateRace(x:RaceInput):void {
   if(x.diagnosticLevel!==undefined&&
     x.diagnosticLevel!=='checkpoints')
     throw new RangeError('Rennsimulation: diagnosticLevel ungültig');
+  if(x.finishGroupGapSeconds!==undefined)
+    ensure('finishGroupGapSeconds',x.finishGroupGapSeconds,
+      x.finishGroupGapSeconds>0&&x.finishGroupGapSeconds<=60);
   if(x.disableAttacks!==undefined&&typeof x.disableAttacks!=='boolean')
     throw new RangeError('Rennsimulation: disableAttacks ungültig');
   if(x.groupRidingModel!==undefined&&
@@ -1939,7 +1947,7 @@ export function simulateRace(x:RaceInput):RaceResult {
   const sorted=[...states].sort((a,b)=>a.finishTimeS!-b.finishTimeS!||
     a.rider.id.localeCompare(b.rider.id));
   const winTime=sorted[0].finishTimeS!;
-  const classification:RaceClassification[]=sorted.map((s,i)=>({
+  const individualClassification=sorted.map((s,i)=>({
     rank:i+1,id:s.rider.id,name:s.rider.name,teamId:s.rider.teamId,
     role:s.rider.role,finishTimeS:s.finishTimeS!,
     gapS:s.finishTimeS!-winTime,
@@ -1959,6 +1967,8 @@ export function simulateRace(x:RaceInput):RaceResult {
     endurancePowerAvailability:x.enduranceModel==='off'?1:
       fatigueAvailability(s.endurance,s.rider),
   }));
+  const classification:RaceClassification[]=assignFinishGroupTimes(
+    individualClassification,x.finishGroupGapSeconds??1);
   // s.finishTimeS ist bei exakt linear interpoliertem Zielstraßenpunkt
   // sub-sekündlich, während die CP/Arbeit des letzten Intervalls als
   // konservative volle Schrittbilanz geführt wird (Fehler <1 s).
