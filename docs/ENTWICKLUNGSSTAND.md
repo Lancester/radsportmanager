@@ -2,7 +2,7 @@
 
 ## Schritt 4 – Belastung und Ermüdung, Zwischenstand
 
-[Schritt 4: Belastung und Ermüdungsmodell](race/R24_SCHRITT4_BELASTUNG_UND_ERMUEDUNG.md): CP/W′-Kern beibehalten, Langzeitermüdung und W′-Erholung vor sportlicher Realismusfreigabe gezielt weiterentwickeln und empirisch prüfen. Der abrupte Freigabesprung nach 90 min wurde im experimentellen stable-pack durch eine ausdrücklich vorläufige kontinuierliche Einblendung ersetzt; historische Vergleichsmodi bleiben unverändert. Attacken, Jagdarbeit und Modellfälle wurden untersucht; Kausalität einzelner Einholungen und physiologische Kalibrierung bleiben offen. Weitere Tests und Mehrseed-Gegenproben laufen.
+[Schritt 4: Belastung und Ermüdungsmodell](race/R24_SCHRITT4_BELASTUNG_UND_ERMUEDUNG.md): CP/W′-Kern beibehalten, Langzeitermüdung und W′-Erholung vor sportlicher Realismusfreigabe gezielt weiterentwickeln und empirisch prüfen. Der abrupte Freigabesprung nach 90 min wurde im experimentellen stable-pack durch eine ausdrücklich vorläufige kontinuierliche Einblendung ersetzt; historische Vergleichsmodi bleiben unverändert. Attacken, Jagdarbeit und Modellfälle wurden untersucht; Kausalität einzelner Einholungen und physiologische Kalibrierung bleiben offen. Die gepaarten Vier-Profil-Vergleiche für drei Seeds und der vollständige lokale Testlauf sind abgeschlossen: 371/371 Tests und Browser-Build bestanden; der GitHub-PR-Lauf #299 lief beim letzten Abruf noch. Nicht als physiologische Realismusfreigabe interpretieren.
 
 ## Schritt 3 – gezielte Regelkorrektur, experimentell
 
