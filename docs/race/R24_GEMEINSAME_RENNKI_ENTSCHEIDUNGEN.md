@@ -135,3 +135,13 @@ Nächster Diskussionspunkt: Zusammenspiel und Verfolgung von Teams nach Etablier
 - Ein Fahrer kann eine Abfahrt als Gelegenheit zum Angriff oder Anschluss ansehen. Zeit und Position ergeben sich aus tatsächlichem Fahrverhalten, Strecke und Verhalten anderer, nicht aus einem automatischen Bonus oder garantierten Erfolg.
 - Mögliche negative Folgen von Risiko einschließlich Sturz und deren Auswirkungen sollen gesondert besprochen werden; daraus folgt keine Annahme, dass das bestehende Modell sie bereits abbildet.
 - Zielbeschreibung, noch keine Festlegung zusätzlicher Attribute, Parameter, Sturzmodellierung oder Implementierung. Vor weiteren Tests Regeln gemeinsam besprechen.
+
+## 15. Feldpositionierung und Windschatten — vereinbart
+
+- Die Position eines Fahrers im Feld beeinflusst Windschutz, erforderliche Leistung und seine Möglichkeiten, auf Attacken, Gruppenbewegungen und kommende Anstiege zu reagieren. Im Windschatten spart ein Fahrer abhängig von realer Lage und Umgebung Arbeit; Tempo und Gelände zählen.
+- Vorrücken setzt eine geeignete Gelegenheit und physisch erbrachte Leistung voraus; es ist keine kostenlose Änderung der Rennposition. Ein hohes Gruppentempo und andere Fahrer können das Vorrücken erschweren.
+- Die Fähigkeit, ein Rad zu finden und Position zu halten, darf zwischen Fahrern variieren. Ungeschickte Fahrer können Position verlieren und zusätzliche Arbeit aufwenden müssen; ein Ergebnis ist nicht vorgegeben.
+- Die KI wägt ab, wann eine vordere Position zum Rennziel, Teamauftrag und kommenden Gelände passt und wann energiesparendes Mitfahren günstiger ist. Nicht alle Fahrer streben zu jeder Zeit an die Spitze.
+- Eine Lücke kann beispielsweise durch Attacken, Tempoverschärfung und Wind entstehen. Reaktion, Anschluss oder Zurückfallen ergeben sich aus tatsächlicher Position, Leistung, Energie und Gruppenfahrt, nicht aus einer Gratisversetzung.
+- Das bestehende vereinfachte 1D-Modell bildet keine realistischen seitlichen Fahrspuren und komplexe Überholmanöver vollständig ab. Die sportlichen Effekte sollen im Rahmen der realen Modellmöglichkeiten nachvollziehbar entstehen; eine bestimmte 2D-Implementierung ist nicht beschlossen.
+- Gemeinsam vereinbartes Ziel, noch keine vollständige Implementierung oder Sportfreigabe. Die technische 42-m-Gruppengrenze ist bei der späteren Prüfung als Modellannahme separat zu beurteilen.
