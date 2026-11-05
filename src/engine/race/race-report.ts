@@ -19,7 +19,8 @@ export function createRaceReport(o:{result:Pick<RaceResult,'classification'|'eve
   const limit=o.eventLimit??100;
   if(!Number.isInteger(limit)||limit<1)throw new RangeError('Rennbericht: Ereignislimit');
   const classified=new Map(riders.map(r=>[r.id,r]));
-  const noteworthy=new Set(['attack','bridge-start','bridge-stop','bridge-relay','breakaway',
+  const noteworthy=new Set(['attack','bridge-start','bridge-stop','bridge-relay',
+    'bridge-relay-position-change','breakaway',
     'breakaway-caught','team-chase','team-pace','sprint-train']);
   const events=o.result.events.filter(e=>noteworthy.has(e.type)&&
     (!o.focusTeamId||!e.teamId||e.teamId===o.focusTeamId));
