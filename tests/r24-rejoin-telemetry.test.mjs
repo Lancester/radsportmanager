@@ -15,6 +15,9 @@ test('R24: Anschlussmessung ist optional, bilanziert reale Watt und ändert kein
   const input={...f.input,segments,groupRidingModel:'stable-pack'};
   const a=simulateRace(input),b=simulateRace({...input,diagnosticLevel:'checkpoints'});
   assert.equal(a.diagnostics.rejoinWork,undefined);
+  assert.equal(a.diagnostics.breakawayFrontWork,undefined);
+  assert.ok(Array.isArray(b.diagnostics.breakawayFrontWork.riders));
+  assert.ok(Array.isArray(b.diagnostics.breakawayFormations));
   assert.ok(Array.isArray(b.diagnostics.rejoinWork));
   assert.ok(Array.isArray(b.diagnostics.rejoinAttempts));
   assert.ok(b.diagnostics.rejoinAttempts.length>0);
@@ -28,5 +31,13 @@ test('R24: Anschlussmessung ist optional, bilanziert reale Watt und ändert kein
   for(const row of b.diagnostics.rejoinWork){
     assert.ok(row.assignedS>0&&row.actualFrontS>=0&&row.actualFrontS<=row.assignedS);
     assert.ok(row.appliedWorkJ>=0&&row.actualFrontWorkJ>=0&&row.actualFrontWorkJ<=row.appliedWorkJ);
+  }
+  for(const row of b.diagnostics.breakawayFrontWork.riders){
+    assert.ok(row.frontSeconds>0&&row.crankWorkJ>=0&&
+      row.windExposedSeconds<=row.frontSeconds);
+  }
+  for(const group of b.diagnostics.breakawayFormations){
+    assert.equal(group.riderIds.length,group.size);
+    assert.ok(group.lengthM>=group.maximumAdjacentGapM&&group.gapToMainM>=75);
   }
 });
