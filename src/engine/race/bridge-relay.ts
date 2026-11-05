@@ -13,3 +13,10 @@ export function cooperativeRelayYield(o:{sharedTarget:boolean;isRealFront:boolea
   const yieldPower=Math.min(o.requestedW,o.cpW*.78);
   return yieldPower<o.requestedW-1?yieldPower:null;
 }
+
+/** Nur beobachteter Positionswechsel; kein Beleg für spätere Führungsdauer. */
+export function observedRelayFrontChange(o:{sameGroup:boolean;sameTarget:boolean;
+  formerFrontPositionM:number;partnerPositionM:number}):boolean{
+  return o.sameGroup&&o.sameTarget&&
+    o.partnerPositionM>o.formerFrontPositionM;
+}
