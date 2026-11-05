@@ -1,0 +1,10 @@
+--- a/src/engine/race/local-group-reference.ts
++++ b/src/engine/race/local-group-reference.ts
+@@ -15,6 +15,5 @@
+   const localSpeed=input.frontSpeedMps??input.ownSpeedMps;
+   const localAcceleration=input.frontAccelerationMps2??0;
+   return {speedMps:localSpeed+weight*(input.groupSpeedMps-localSpeed),
+-    accelerationMps2:localAcceleration+weight*
+-      (input.groupAccelerationMps2-localAcceleration)};
++    accelerationMps2:localAcceleration};
+ }

@@ -24,6 +24,8 @@ export interface TacticObservation {
   coordinatedTeamPace?:boolean;
   /** R-16: opportunistische Angriffsentscheidung statt fixer Streckenfenster. */
   attackOpportunity?:boolean;
+  /** R-24: Teamstrategie beeinflusst die Chance, sperrt den Fahrer nicht. */
+  autonomousAttack?:boolean;
   /** Nur R-22-Flach-Sprint: alter gemeinsamer 250-m-Automat AUS. */
   suppressAutomaticSprint?:boolean;
 }
@@ -65,9 +67,10 @@ export function chooseRacePower(o:TacticObservation):TacticDecision {
   // Klar definierte Ausreißfenster: keine mehrstündige harte Attacke.
   const inWindow=(o.progress>=0.22&&o.progress<0.245) ||
      (o.progress>=0.64&&o.progress<0.66);
-  if(o.strategy==='offensiv' && o.role==='kapitaen' &&
+  if((o.autonomousAttack===true||
+      (o.strategy==='offensiv'&&o.role==='kapitaen')) &&
      (o.attackOpportunity??inWindow) &&
-     o.reserveFraction>0.32){
+     o.reserveFraction>(o.autonomousAttack===true?.28:.32)){
     return {intent:'angriff',desiredPowerW:cp+65+55*o.aggression,
       reason:o.attackOpportunity===undefined?
         'Vorab gewählte offensive Leitlinie: begrenzte Attacke':

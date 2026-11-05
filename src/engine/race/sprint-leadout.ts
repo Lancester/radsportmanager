@@ -16,6 +16,10 @@ export const SPRINT_LEADOUT=Object.freeze({
   wattsRecoveryPerMissingMps:55,
   maxCpFraction:1.04,
 });
+/** Ein Helfer koordiniert nur seinen echten Auftrag in derselben Gruppe. */
+export function sprintLeadoutEligible(mission:string|null,sameGroup:boolean):boolean{
+  return mission==='sprintzug'&&sameGroup;
+}
 export interface SprintLeadoutObservation {
   enabled:boolean;
   currentIntent:string;

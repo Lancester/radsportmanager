@@ -1,5 +1,10 @@
 # START HIER – Arbeitsanweisung für alle zukünftigen Chats
 
+**Hinweis für diesen Entwicklungsbranch:** Der R-24-Auditkandidat und seine
+offenen Prüfungen sind in [R24_AUDIT_KORREKTUREN.md](race/R24_AUDIT_KORREKTUREN.md)
+beschrieben. Er ist experimentell und noch nicht nach `main` übernommen.
+Der unten folgende R-23-Abschnitt bleibt die Beschreibung von `main`.
+
 **Projekt:** Radsportmanager. **Sprache:** Deutsch. **Verbindlicher Projektstand:** GitHub, nicht einzelne Chat-Unterhaltungen.
 
 ## Aktueller verbindlicher Stand – R-23 integriert und Work-Gesamtaudit vorbereitet (04.11.2026)

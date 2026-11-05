@@ -29,6 +29,12 @@ export interface ClassicsPunchObservation {
   /** Aktuell nach Watt/kg bester verfügbarer Puncheur der physischen Gruppe. */
   attackRankInGroup:number;
   gapToActualRaceFrontM:number;
+  /** R-24: das situative Modell besitzt keine pauschale 96,5-%-Sperre. */
+  allowLateAttacks?:boolean;
+  /** Geometrie statt starre Grenze bei 220 km fuer R-24. */
+  allowAnyRaceLength?:boolean;
+  /** R-24: Eignung nach Leistung, nicht nach Fahrer-Etikett. */
+  abilityBased?:boolean;
   speedMps:number;riderMassKg:number;bikeMassKg:number;
   dragAreaM2:number;airDensityKgM3:number;rollingCoefficient:number;
   drivetrainEfficiency:number;headwindMps:number;crosswindMps:number;
@@ -46,10 +52,10 @@ export function decideClassicsPunch(o:ClassicsPunchObservation):
   // wegen groupSize<4 ungewollt ab.
   const continuing=o.currentIntent==='angriff'&&
     o.lastAttackAgeS>=0&&o.lastAttackAgeS<c.continueAttackS;
-  if(o.specialty!=='klassiker'||!o.designatedRampRider||
-    o.raceLengthM<c.minRaceM||
+  if((!o.abilityBased&&o.specialty!=='klassiker')||!o.designatedRampRider||
+    (!o.allowAnyRaceLength&&o.raceLengthM<c.minRaceM)||
     o.shortSteepClimbs<c.minShortSteepClimbs||
-    o.progress<c.minProgress||o.progress>c.maxProgress||
+    o.progress<c.minProgress||(!o.allowLateAttacks&&o.progress>c.maxProgress)||
     o.segmentLengthM<c.minClimbM||o.segmentLengthM>c.maxClimbM||
     o.gradeFraction<c.minGrade||
     o.reserveFraction<(continuing?.20:c.minWprimeFraction)||

@@ -1,3 +1,4 @@
+import {RejoinAttemptTelemetry} from './rejoin-attempt-telemetry.ts';
 /**
  * R-09 – erster vollständig durchgerechneter Rennprototyp.
  *
@@ -15,24 +16,35 @@ import {initialCpState,applyCpWprimeStep} from '../physiology/critical-power.ts'
 import type {CpWprimeState,CpWprimeProfile} from '../physiology/critical-power.ts';
 import {chooseRacePower,stabilizeRaceDecision} from './race-tactics.ts';
 import {decidePackInstruction,pelotonGroups} from './peloton.ts';
-import {formationAeroFactors} from './formation-aero.ts';
+import {formationAeroFactors,raceAeroFactor} from './formation-aero.ts';
+import {localGroupReference} from './local-group-reference.ts';
+import {captainEscortPower} from './captain-support.ts';
 import {decideStablePackRiding} from './stable-pack.ts';
 import {decideClimbTempo} from './climb-tempo.ts';
 import {decideGeneralAttackOpportunity} from './general-attack.ts';
+import {adaptiveAttackDraw,decideAdaptiveAttackOpportunity}
+  from './adaptive-attack.ts';
 import {decideSprintPosition,SPRINT_POSITION} from './sprint-positioning.ts';
 import {decideSprintLaunch,inferredSprintPeakPowerW,sprintPowerDemand}
   from './final-sprint.ts';
-import {decideSprintLeadoutPace,SPRINT_LEADOUT} from './sprint-leadout.ts';
+import {decideSprintLeadoutPace,sprintLeadoutEligible,SPRINT_LEADOUT}
+  from './sprint-leadout.ts';
 import {chooseIndependentSprintWheel,SPRINT_WHEEL} from './sprint-wheel-choice.ts';
 import {decideClassicsPunch,CLASSICS_PUNCH} from './classics-punch.ts';
 import {decideClassicsApproach,decideClassicsRampTempo}
   from './classics-racecraft.ts';
-import {isSelectiveHillyRoute,decideHillyAttackOpportunity,
+import {isAdaptiveHillyRoute,
   decideHillyRampTempo,HILLY_RACECRAFT} from './hilly-racecraft.ts';
+import {contiguousClimbRuns} from './climb-runs.ts';
+import {rampAbilityWPerKg} from './ramp-ability.ts';
 import {decideGroupRiding,decideChaseApproach,R22_GROUP_RIDING} from './group-riding.ts';
 import {decideTeamPace} from './team-pacing.ts';
 import {decideIntelligentCrew,analyzeRaceSituation} from './race-team-ai.ts';
 import {coordinatePelotonChase} from './peloton-chase.ts';
+import {advanceBreakawayTracker,initialTrackedBreakaway}
+  from './breakaway-tracker.ts';
+import {AttackTelemetry} from './attack-telemetry.ts';
+import type {AttackTrace} from './attack-telemetry.ts';
 import {ChaseLeaderTelemetry} from './chase-leader-telemetry.ts';
 import {initialChaseHelperLoad,advanceChaseHelperLoad,
   spentHelperRetreatPower,decideCommittedChasePull} from './chase-helper-fatigue.ts';
@@ -40,6 +52,8 @@ import type {ChaseHelperLoad} from './chase-helper-fatigue.ts';
 import type {ChaseCoordinatorState} from './peloton-chase.ts';
 import {initialEnduranceState,advanceEndurance,endurancePowerAvailability}
   from './endurance.ts';
+import {applyEnduranceLimitedCpStep,enduranceLimitedCapacity}
+  from './effort-capacity.ts';
 import type {EnduranceState} from './endurance.ts';
 import type {CrewMission,CrewDuty} from './race-team-ai.ts';
 import type {TeamPaceKind} from './team-pacing.ts';
@@ -58,7 +72,7 @@ export interface RaceSegment {
 }
 export interface RaceTeam {
   id:string;name:string;strategy:RaceStrategy;
-  /** Manager-Vorgabe: Anzahl Helfer für die Fluchtjagd, 0..5; fehlend = autonome KI. */
+  /** Veraltete Vergleichs-API; stable-pack bestimmt die Helferzahl autonom. */
   chaseHelperCount?:number;
 }
 export interface RaceRider {
@@ -67,6 +81,8 @@ export interface RaceRider {
   specialty?:'sprinter'|'kletterer'|'klassiker'|'zeitfahrer'|'allrounder';
   /** R-19: verfügbare Kohlenhydratmenge je Fahrstunde (g/h). */
   carbsGPerHour?:number;
+  /** Individuelle Heuristiken: 1 Referenz, größer = widerstandsfähiger bzw. schnellere W′-Erholung. */
+  durabilityFactor?:number;wPrimeRecoveryFactor?:number;
   criticalPowerW:number;ftpW:number;wPrimeJ:number;
   massKg:number;bikeMassKg:number;dragAreaM2:number;
   descentSkill:number;sprintSkill:number;aggression:number;
@@ -97,6 +113,8 @@ export interface RaceInput {
   maxRaceTimeS?:number;
   /** Nur Diagnostik: speichert alle aktiven Fahrer alle 5 km. */
   diagnosticLevel?:'checkpoints';
+  /** Nur fuer explizite Gruppen-/Physikkontrollen ohne Angriffsversuche. */
+  disableAttacks?:boolean;
 }
 export type RaceEventType =
   'start'|'attack'|'chase'|'sprint'|'recovery'|'segment'|'group-split'|'breakaway'|'breakaway-caught'|'finish'|'team-pace'|'team-chase'|'sprint-train';
@@ -179,6 +197,13 @@ export interface RaceResult {
     namedChaseHandoffs?:Array<{km:number;from:string|null;
       to:string|null;reason:string;frontGapM:number|null;
       assignmentAgeS:number|null}>;
+    /** Ereignisse im 10-s-Takt; Ziel ist ein Fahrer der ursprünglich vorausliegenden Gruppe. */
+    rejoinAttempts?:ReturnType<RejoinAttemptTelemetry['report']>;
+    /** Tatsächlich geleistete Arbeit unter Anschlussauftrag; nur im Checkpoint-Modus. */
+    rejoinWork?:Array<{riderId:string;teamId:string;assignedS:number;
+      actualFrontS:number;appliedWorkJ:number;actualFrontWorkJ:number}>;
+    /** Reale Folgen von Angriffswuenschen; nur im Checkpoint-Modus. */
+    attackTraces?:AttackTrace[];
     /** Nur in sprintfreundlichen stable-pack-Rennen aus echten Rennschritten. */
     finalSprintAttempts?:Array<{riderId:string;launchRemainingM:number;
       launchTimeS:number;peakAppliedW:number;sprintSeconds:number;
@@ -194,6 +219,7 @@ interface State {
   rider:RaceRider;physical:CornerRider;profile:CpWprimeProfile;
   physiology:CpWprimeState;dayCpW:number;positionM:number;
   speedMps:number;peakMps:number;finishTimeS:number|null;
+  lastAccelerationMps2:number;
   segmentIndex:number;decision:TacticDecision;intent:RaceIntent;
   driveWorkJ:number;brakeLossJ:number;energyResidualJ:number;
   crankWorkJ:number;intentSinceS:number;lastChaseEndS:number;
@@ -277,6 +303,8 @@ export function validateRace(x:RaceInput):void {
     if(r.carbsGPerHour!==undefined)
       ensure('Verpflegung',r.carbsGPerHour,
         r.carbsGPerHour>=0&&r.carbsGPerHour<=110);
+    for(const k of ['durabilityFactor','wPrimeRecoveryFactor'] as const)
+      if(r[k]!==undefined)ensure(k,r[k],r[k]>=0.7&&r[k]<=1.3);
     for(const k of ['descentSkill','sprintSkill','aggression'] as const)
       ensure(k,r[k],r[k]>=0&&r[k]<=1);
     if(r.wheelFindingSkill!==undefined)
@@ -298,6 +326,8 @@ export function validateRace(x:RaceInput):void {
   if(x.diagnosticLevel!==undefined&&
     x.diagnosticLevel!=='checkpoints')
     throw new RangeError('Rennsimulation: diagnosticLevel ungültig');
+  if(x.disableAttacks!==undefined&&typeof x.disableAttacks!=='boolean')
+    throw new RangeError('Rennsimulation: disableAttacks ungültig');
   if(x.groupRidingModel!==undefined&&
     !['legacy','cohesive','coordinated','relays','relay-paced','front-gated','stable-pack'].includes(x.groupRidingModel))
     throw new RangeError('Rennsimulation: groupRidingModel ungültig');
@@ -319,7 +349,8 @@ function buildStates(x:RaceInput):State[] {
     const dayCpW=r.criticalPowerW*hashForm(x.seed,r.id);
     const profile:CpWprimeProfile={
       riderId:r.id,criticalPowerW:dayCpW,wPrimeCapacityJ:r.wPrimeJ,
-      ftpW:r.ftpW,recoveryEfficiency:0.22,
+      ftpW:r.ftpW,recoveryEfficiency:0.22*(x.groupRidingModel==='stable-pack'?
+        (r.wPrimeRecoveryFactor??1):1),
     };
     const physical:CornerRider={
       riderMassKg:r.massKg,equipmentMassKg:r.bikeMassKg,
@@ -328,7 +359,7 @@ function buildStates(x:RaceInput):State[] {
     };
     return {rider:r,physical,profile,dayCpW,
       physiology:initialCpState(profile),positionM:0,speedMps:10,
-      peakMps:10,finishTimeS:null,segmentIndex:0,
+      peakMps:10,finishTimeS:null,segmentIndex:0,lastAccelerationMps2:0,
       decision:{desiredPowerW:dayCpW,intent:'grundtempo',reason:'Rennstart'},
       intent:'grundtempo',driveWorkJ:0,brakeLossJ:0,energyResidualJ:0,
       crankWorkJ:0,intentSinceS:0,lastChaseEndS:-1e9,
@@ -367,31 +398,41 @@ export function simulateRace(x:RaceInput):RaceResult {
     totalM>=SPRINT_POSITION.minRaceM&&
     ascentM<=SPRINT_POSITION.maxAscentM;
   const hillyRace=x.groupRidingModel==='stable-pack'&&
-    isSelectiveHillyRoute({raceLengthM:totalM,ascentM,segments:x.segments});
+    isAdaptiveHillyRoute({raceLengthM:totalM,ascentM,segments:x.segments});
   const boundaries:number[]=[];
   // Nicht der Rennname, sondern ein langes Profil mit mehreren
   // kurzen Steilrampen aktiviert die separate Puncheur-Entscheidung.
-  const shortSteepClimbs=x.segments.filter(seg=>
-    seg.lengthM>=CLASSICS_PUNCH.minClimbM&&
-    seg.lengthM<=CLASSICS_PUNCH.maxClimbM&&
-    seg.gradeFraction>=CLASSICS_PUNCH.minGrade).length;
+  const shortClimbs=contiguousClimbRuns(x.segments,CLASSICS_PUNCH.minGrade)
+    .filter(seg=>seg.lengthM>=CLASSICS_PUNCH.minClimbM&&
+      seg.lengthM<=CLASSICS_PUNCH.maxClimbM);
+  const hillyClimbs=contiguousClimbRuns(x.segments,HILLY_RACECRAFT.minRampGrade);
+  const longClimbs=contiguousClimbRuns(x.segments,.05);
+  const shortSteepClimbs=shortClimbs.length;
   let sum=0;
   for(const segment of x.segments){sum+=segment.lengthM;boundaries.push(sum);}
   const states=buildStates(x);
   const byId=new Map(states.map(s=>[s.rider.id,s]));
   const teams=new Map(x.teams.map(t=>[t.id,t]));
-  // Die sportliche Leitung nominiert bei langen Rampenklassikern den
-  // nach tatsächlich verfügbarer kurzzeitiger Leistung am besten
-  // geeigneten Klassikerspezialisten JEDES Teams: der kann bislang
-  // auch als Helfer eingetragen sein. Keine Änderung der Fahrerrolle
-  // oder seiner physikalischen Fähigkeiten.
-  const rampScore=(r:State)=>
-    (r.dayCpW+Math.min(r.physiology.remainingWPrimeJ/180,
-      r.dayCpW*0.25))*endurancePowerAvailability(r.endurance)/
-    (r.rider.massKg+r.rider.bikeMassKg);
+  // Die sportliche Leitung nominiert den nach verfügbarer 3-Minuten-
+  // Leistung pro Gesamtmasse geeigneten Fahrer jedes Teams. Das
+  // Typ-Etikett verleiht keine zusätzlichen Watt.
+  const fatigueAvailability=(state:EnduranceState,rider:RaceRider)=>endurancePowerAvailability(
+    state,x.groupRidingModel==='stable-pack'?'smooth':'legacy',
+    x.groupRidingModel==='stable-pack'?(rider.durabilityFactor??1):1);
+  const rampScore=(r:State)=>{
+    const availability=x.enduranceModel==='off'?1:
+      fatigueAvailability(r.endurance,r.rider);
+    const cp=r.dayCpW*availability;
+    const peak=Math.max(r.dayCpW,r.rider.sprintPeakPowerW??
+      inferredSprintPeakPowerW({massKg:r.rider.massKg,
+        sprintSkill:r.rider.sprintSkill}))*availability;
+    return rampAbilityWPerKg({effectiveCpW:cp,
+      remainingWPrimeJ:r.physiology.remainingWPrimeJ,peakPowerW:peak,
+      riderMassKg:r.rider.massKg,bikeMassKg:r.rider.bikeMassKg});
+  };
   const rampSpecialistByTeam=new Map(x.teams.map(team=>{
     const candidates=states.filter(r=>
-      r.rider.teamId===team.id&&r.rider.specialty==='klassiker')
+      r.rider.teamId===team.id)
       .sort((a,b)=>rampScore(b)-rampScore(a)||
         a.rider.id.localeCompare(b.rider.id));
     return [team.id,candidates[0]?.rider.id??null] as const;
@@ -406,6 +447,11 @@ export function simulateRace(x:RaceInput):RaceResult {
   const snapshots:RaceSnapshot[]=[];
   const checkpoints:RaceCheckpoint[]|undefined=
     x.diagnosticLevel==='checkpoints'?[]:undefined;
+  const attackTelemetry=checkpoints?new AttackTelemetry():null;
+  const rejoinAttempts=checkpoints?new RejoinAttemptTelemetry():null;
+  const rejoinRiders=checkpoints?new Set<string>():null;
+  const rejoinWork=checkpoints?new Map<string,{riderId:string;teamId:string;
+    assignedS:number;actualFrontS:number;appliedWorkJ:number;actualFrontWorkJ:number}>():null;
   const lastPower=new Map<string,number>();
   const lastAero=new Map<string,number>();
   const dt=x.stepSeconds??1;
@@ -418,6 +464,7 @@ export function simulateRace(x:RaceInput):RaceResult {
   let lastGroupEventS=-Infinity;
   let breakawaySinceS:number|null=null,catchSinceS:number|null=null;
   let breakawayActive=false;
+  let trackedBreakaway=initialTrackedBreakaway();
   let aeroFactorSum=0,aeroFactorSamples=0,minimumAeroFactor=1;
   let chaseState:ChaseCoordinatorState={active:[],sinceS:0,cooldownUntilS:0};
   let unprovokedBreakawayCount=0;
@@ -456,10 +503,16 @@ export function simulateRace(x:RaceInput):RaceResult {
     const leader=ordered[0];
     const frontGap=new Map<string,number|null>();
     const frontSpeed=new Map<string,number|null>();
+    const frontAcceleration=new Map<string,number|null>();
+    const rearGap=new Map<string,number|null>();
     for(let i=0;i<ordered.length;i++){
       frontGap.set(ordered[i].rider.id,i===0?null:
         Math.max(0,ordered[i-1].positionM-ordered[i].positionM));
       frontSpeed.set(ordered[i].rider.id,i===0?null:ordered[i-1].speedMps);
+      frontAcceleration.set(ordered[i].rider.id,i===0?null:
+        ordered[i-1].lastAccelerationMps2);
+      rearGap.set(ordered[i].rider.id,i===ordered.length-1?null:
+        Math.max(0,ordered[i].positionM-ordered[i+1].positionM));
     }
     // Regulärer Windschatten mit lokaler Mehrfahrer-Abschirmung.
     // Nur explizites 'legacy' schaltet für alte A/B-Referenzen zurück.
@@ -495,9 +548,10 @@ export function simulateRace(x:RaceInput):RaceResult {
           mainGroupIds:new Set(main.map(r=>r.id)),teams:teamRefs,
           riders:planningRiders,situation:analyzeRaceSituation(
             planningRiders,Math.max(0,totalM-leader.positionM),
-            sprintFriendlyRace?12:6),
+            sprintFriendlyRace?12:6,x.groupRidingModel==='stable-pack'),
           previous:chaseState,
           sprintFinaleMode:sprintFriendlyRace,
+          adaptiveChase:x.groupRidingModel==='stable-pack',
         });
         chaseState=next.state;
         return next;
@@ -508,6 +562,7 @@ export function simulateRace(x:RaceInput):RaceResult {
         teams:teamRefs,riders:planningRiders,
         previousLeaders,previousFieldChaseLeader,
         sprintFinaleMode:sprintFriendlyRace,
+        adaptiveChase:x.groupRidingModel==='stable-pack',
         ...(teamRefsAndChase?{
           chasingTeamIds:teamRefsAndChase.chasingTeamIds,
           restInPeloton:true,
@@ -521,6 +576,12 @@ export function simulateRace(x:RaceInput):RaceResult {
         timeS:t,progress:Math.min(1,leader.positionM/totalM),
         teams:teamRefs,riders:planningRiders,
       });
+      if(rejoinAttempts&&planned)rejoinAttempts.observe(t,planningRiders,planned.orders);
+      if(rejoinRiders){
+        rejoinRiders.clear();
+        for(const order of planned?.orders.values()??[])
+          if(order.isRejoin)rejoinRiders.add(order.riderId);
+      }
       if(planned){
         if(sprintFriendlyRace&&
           previousFieldChaseLeader?.riderId!==planned.fieldChaseLeader?.riderId&&
@@ -571,32 +632,9 @@ export function simulateRace(x:RaceInput):RaceResult {
           counters.maxSimultaneousTeamHelpers,...counts.values(),0);
       }
       const attackGroups=coordinated?splitGroups(active):[];
-      // Nur fuer geometrisch erkannte Huegeletappen: pro echter
-      // Abstandsgruppe ein derzeit einsatzbereiter Offensivkapitaen
-      // fuer moegliche neue Attacken. Begonnene Angriffe bleiben
-      // unabhaengig von einer neuen Nominierung physisch aktiv.
-      const hillyAttackNominee=new Map<string,string>();
-      if(hillyRace){
-        for(const g of attackGroups){
-          if(g.length<HILLY_RACECRAFT.minimumGroupSize)continue;
-          const eligible=g.filter(r=>
-            r.rider.role==='kapitaen'&&
-            teams.get(r.rider.teamId)?.strategy==='offensiv'&&
-            r.physiology.remainingWPrimeJ/
-              r.profile.wPrimeCapacityJ>=
-                HILLY_RACECRAFT.reserveAtStart-
-                (HILLY_RACECRAFT.reserveAtStart-
-                 HILLY_RACECRAFT.reserveAtFinish)*
-                Math.min(1,r.positionM/totalM)&&
-            t-r.lastAttackS>=HILLY_RACECRAFT.minimumRepeatAttackAgeS&&
-            g[0].positionM-r.positionM<=HILLY_RACECRAFT.maxPositionGapM&&
-            leader.positionM-r.positionM<=HILLY_RACECRAFT.maxRaceGapM);
-          eligible.sort((a,b)=>rampScore(b)-rampScore(a)||
-            a.rider.id.localeCompare(b.rider.id));
-          if(eligible[0])hillyAttackNominee.set(g[0].rider.id,
-            eligible[0].rider.id);
-        }
-      }
+      const attackGroupByRider=new Map<string,State[]>();
+      for(const group of attackGroups)for(const member of group)
+        attackGroupByRider.set(member.rider.id,group);
       for(const s of states){
         if(s.finishTimeS!==null)continue;
         const cap=captainByTeam.get(s.rider.teamId);
@@ -612,54 +650,52 @@ export function simulateRace(x:RaceInput):RaceResult {
           deficitToLeaderM:Math.max(0,leader.positionM-s.positionM),
           reserveFraction:s.physiology.remainingWPrimeJ/s.profile.wPrimeCapacityJ,
           coordinatedTeamPace:true,
+          autonomousAttack:coordinated&&x.groupRidingModel==='stable-pack',
           suppressAutomaticSprint:sprintFriendlyRace&&
             s.rider.specialty==='sprinter',
-          ...(coordinated?{
+          ...(coordinated||x.disableAttacks?{
             attackOpportunity:(()=>{
-              // Für lange Ardennenklassiker die knappe W′-Reserve der
-              // Klassiker-Kapitäne bis zu den entscheidenden Rampen
-              // schonen. Nur dort kann decideClassicsPunch später
-              // physisch bezahlte Angriffe auslösen.
-              if(x.groupRidingModel==='stable-pack'&&
-                totalM>=CLASSICS_PUNCH.minRaceM&&
-                shortSteepClimbs>=CLASSICS_PUNCH.minShortSteepClimbs&&
-                s.rider.specialty==='klassiker'&&
-                s.rider.role==='kapitaen')
-                return false;
-              if(hillyRace){
-                const g=attackGroups.find(g=>g.includes(s));
+              if(x.disableAttacks)return false;
+              if(x.groupRidingModel==='stable-pack'){
+                const g=attackGroupByRider.get(s.rider.id);
                 const si=segmentFor(s,boundaries);
                 const seg=x.segments[si];
-                return decideHillyAttackOpportunity({
-                  enabled:true,role:s.rider.role,
+                const v=g?.[0].speedMps??s.speedMps;
+                const theta=Math.atan(seg.gradeFraction);
+                const airV=Math.hypot(Math.max(0,v+(seg.headwindMps??0)),
+                  seg.crosswindMps??0);
+                const mass=s.rider.massKg+s.rider.bikeMassKg;
+                const exposedHoldPowerW=Math.max(0,v/
+                  s.physical.drivetrainEfficiency*(mass*9.80665*(
+                    Math.sin(theta)+(seg.rollingCoefficient??
+                      s.physical.rollingCoefficient)*Math.cos(theta))+
+                    .5*s.physical.airDensityKgM3*s.rider.dragAreaM2*airV**2));
+                const ownTarget=targetByTeam.get(s.rider.teamId);
+                return decideAdaptiveAttackOpportunity({
+                  timeS:t,remainingM:Math.max(0,totalM-s.positionM),
+                  progress:Math.min(1,s.positionM/totalM),
+                  gradeFraction:seg.gradeFraction,role:s.rider.role,
                   strategy:teams.get(s.rider.teamId)!.strategy,
-                  specialty:s.rider.specialty,
-                  progress:s.positionM/totalM,timeS:t,
-                  segmentLengthM:seg.lengthM,
-                  segmentProgress:Math.max(0,Math.min(1,
-                    (s.positionM-(si?boundaries[si-1]:0))/
-                      seg.lengthM)),
-                  gradeFraction:seg.gradeFraction,
-                  groupSize:g?.length??1,
+                  aggression:s.rider.aggression,groupSize:g?.length??1,
                   gapToGroupFrontM:Math.max(0,
                     (g?.[0].positionM??s.positionM)-s.positionM),
-                  gapToRaceFrontM:Math.max(0,
-                    leader.positionM-s.positionM),
+                  gapToRaceFrontM:Math.max(0,leader.positionM-s.positionM),
+                  effectiveCpW:s.dayCpW*(x.enduranceModel==='off'?1:
+                    fatigueAvailability(s.endurance,s.rider)),
+                  wPrimeJ:s.physiology.remainingWPrimeJ,
                   reserveFraction:s.physiology.remainingWPrimeJ/
-                    s.profile.wPrimeCapacityJ,
-                  lastAttackAgeS:t-s.lastAttackS,
-                  currentIntent:s.intent,
+                    s.profile.wPrimeCapacityJ,exposedHoldPowerW,
+                  lastAttackAgeS:t-s.lastAttackS,currentIntent:s.intent,
                   breakawayEstablished:breakawayActive,
-                  isGroupNominee:!!g&&
-                    hillyAttackNominee.get(g[0].rider.id)===s.rider.id,
-                  criticalPowerW:s.dayCpW,
-                  requestedPowerW:s.decision.desiredPowerW,
+                  teammateAhead:!!ownTarget&&ownTarget!==s&&
+                    ownTarget.positionM>s.positionM+75,
+                  draw:adaptiveAttackDraw(x.seed,s.rider.id,t),
                 });
               }
               // Generische Offensiv-KI hat kein 88%-Angriffsverbot:
               // echte Position, Gruppenleistung, Reserve und
               // Streckensteigung bestimmen den Versuch auch im Finale.
-              const group=attackGroups.find(g=>g.includes(s));
+              const group=attackGroupByRider.get(s.rider.id);
               const groupFront=group?.[0].positionM??s.positionM;
               const meanCp=group?
                 group.reduce((n,r)=>n+r.dayCpW,0)/group.length:
@@ -687,10 +723,14 @@ export function simulateRace(x:RaceInput):RaceResult {
             })(),
           }:{})
         };
-        const group=attackGroups.find(g=>g.includes(s));
+        const group=attackGroupByRider.get(s.rider.id);
         const segmentId=segmentFor(s,boundaries);
         const stageSegment=x.segments[segmentId];
-        const segmentStartM=segmentId>0?boundaries[segmentId-1]:0;
+        const classicClimb=shortClimbs.find(c=>s.positionM>=c.startM&&
+          s.positionM<c.endM);
+        const segmentStartM=classicClimb?.startM??
+          (segmentId>0?boundaries[segmentId-1]:0);
+        const tacticalSegmentLength=classicClimb?.lengthM??stageSegment.lengthM;
         // Maximal ein neuer, nach aktueller 3-Minuten-Watt/kg-Stärke
         // ausgewählter Puncheur pro tatsächlich zusammenhängender
         // Gruppe. Bereits gestartete Angriffe dürfen unabhängig davon
@@ -699,7 +739,7 @@ export function simulateRace(x:RaceInput):RaceResult {
           s.rider.id;
         const nearbyRampLeaders=group&&isRampLeader?
           group.filter(r=>rampSpecialistByTeam.get(r.rider.teamId)===
-            r.rider.id&&r.rider.specialty==='klassiker'&&
+            r.rider.id&&
             group[0].positionM-r.positionM<=
               CLASSICS_PUNCH.maxFrontDistanceM&&
             r.physiology.remainingWPrimeJ/r.profile.wPrimeCapacityJ>=
@@ -709,14 +749,14 @@ export function simulateRace(x:RaceInput):RaceResult {
               a.rider.id.localeCompare(b.rider.id)):[];
         const attackRankInGroup=nearbyRampLeaders.findIndex(r=>
           r.rider.id===s.rider.id)+1;
-        const classics=x.groupRidingModel==='stable-pack'?
+        const classics=x.groupRidingModel==='stable-pack'&&obs.attackOpportunity?
           decideClassicsPunch({
             specialty:s.rider.specialty,role:s.rider.role,
             strategy:teams.get(s.rider.teamId)!.strategy,
             raceLengthM:totalM,shortSteepClimbs,
             progress:s.positionM/totalM,
-            segmentLengthM:stageSegment.lengthM,
-            segmentProgress:(s.positionM-segmentStartM)/stageSegment.lengthM,
+            segmentLengthM:tacticalSegmentLength,
+            segmentProgress:(s.positionM-segmentStartM)/tacticalSegmentLength,
             gradeFraction:stageSegment.gradeFraction,
             groupSize:group?.length??1,
             distanceFromGroupFrontM:group?
@@ -725,6 +765,9 @@ export function simulateRace(x:RaceInput):RaceResult {
             reserveFraction:obs.reserveFraction,
             lastAttackAgeS:t-s.lastAttackS,currentIntent:s.intent,
             designatedRampRider:isRampLeader,attackRankInGroup,
+            allowLateAttacks:true,
+            allowAnyRaceLength:true,
+            abilityBased:true,
             gapToActualRaceFrontM:Math.max(0,leader.positionM-s.positionM),
             speedMps:group?.[0].speedMps??s.speedMps,
             riderMassKg:s.rider.massKg,bikeMassKg:s.rider.bikeMassKg,
@@ -796,8 +839,14 @@ export function simulateRace(x:RaceInput):RaceResult {
           if(before==='verfolgung')s.lastChaseEndS=t;
           s.intentSinceS=t;
         }
-        if(decision.intent==='angriff'&&s.intent!=='angriff')
+        if(decision.intent==='angriff'&&s.intent!=='angriff'){
           s.lastAttackS=t;
+          attackTelemetry?.start({riderId:s.rider.id,timeS:t,
+            positionM:s.positionM,groupIds:group?.map(r=>r.rider.id)??[s.rider.id],
+            gapToRaceFrontM:Math.max(0,leader.positionM-s.positionM),
+            wPrimeJ:s.physiology.remainingWPrimeJ,
+            wPrimeCapacityJ:s.profile.wPrimeCapacityJ});
+        }
         s.decision=decision;s.intent=decision.intent;
         if(before!==decision.intent && events.length<100000){
           const kind=decision.intent==='angriff'?'attack':
@@ -861,6 +910,7 @@ export function simulateRace(x:RaceInput):RaceResult {
     }
     const largestPhysicalGroup=physicalGroups.reduce((best,g)=>
       g.length>best.length?g:best,physicalGroups[0]);
+    let namedLeaderAeroFactor:number|undefined;
     if((x.groupRidingModel==='relays'||x.groupRidingModel==='relay-paced'||
           x.groupRidingModel==='front-gated'||x.groupRidingModel==='stable-pack')&&chaseState.active.length){
       orderedRelayTeamSeconds+=dt;
@@ -899,8 +949,6 @@ export function simulateRace(x:RaceInput):RaceResult {
             HILLY_RACECRAFT.tempoMaxRaceFrontGapM)continue;
         const eligible=group.map(g=>byId.get(g.id)!).filter(r=>
           r.rider.role==='kapitaen'&&
-          ['klassiker','allrounder','kletterer','zeitfahrer']
-            .includes(r.rider.specialty??'')&&
           group[0].positionM-r.positionM<=
             HILLY_RACECRAFT.tempoMaxGroupFrontGapM&&
           r.physiology.remainingWPrimeJ/r.profile.wPrimeCapacityJ>=
@@ -913,13 +961,12 @@ export function simulateRace(x:RaceInput):RaceResult {
     }
     const classicRampPacerByGroup=new Map<string,string>();
     const classicsEnabled=x.groupRidingModel==='stable-pack'&&
-      totalM>=220000&&shortSteepClimbs>=4;
+      shortSteepClimbs>=4;
     if(classicsEnabled){
       for(const group of physicalGroups){
         if(group.length<4||leader.positionM-group[0].positionM>240)
           continue;
         const eligible=group.map(g=>byId.get(g.id)!).filter(r=>
-          r.rider.specialty==='klassiker'&&
           rampSpecialistByTeam.get(r.rider.teamId)===r.rider.id&&
           group[0].positionM-r.positionM<=70&&
           r.physiology.remainingWPrimeJ/r.profile.wPrimeCapacityJ>=.22);
@@ -957,8 +1004,20 @@ export function simulateRace(x:RaceInput):RaceResult {
           Math.min(pacer.decision.desiredPowerW,
             pacer.dayCpW*R22_GROUP_RIDING.leaderCpFraction,
             referenceCp*1.04);
-        const availablePacerPower=pacerPower*(x.enduranceModel==='off'?
-          1:endurancePowerAvailability(pacer.endurance));
+        const pacerAvailability=x.enduranceModel==='off'?1:
+          fatigueAvailability(pacer.endurance,pacer.rider);
+        const pacerPeak=pacer.rider.sprintPeakPowerW??
+          inferredSprintPeakPowerW({massKg:pacer.rider.massKg,
+            sprintSkill:pacer.rider.sprintSkill});
+        const pacerCapacity=x.groupRidingModel==='stable-pack'&&
+          x.enduranceModel!=='off'?
+          enduranceLimitedCapacity({profile:pacer.profile,
+            availability:pacerAvailability,freshPeakPowerW:pacerPeak}):null;
+        const availablePacerPower=pacerCapacity?
+          Math.min(pacerPower,pacerCapacity.maximumPowerW,
+            pacerCapacity.effectiveCpW+
+              pacer.physiology.remainingWPrimeJ/dt):
+          pacerPower*pacerAvailability;
         const acc=Math.max(-.8,Math.min(.8,
           (availablePacerPower*pacer.physical.drivetrainEfficiency/
             Math.max(pacer.speedMps,3)-resistance)/mass));
@@ -1035,14 +1094,17 @@ export function simulateRace(x:RaceInput):RaceResult {
       // R-20: Seitenwind schwächt die rein längsgerichtete
       // Windschatten-Proxywirkung. Wind und Untergrund wirken nur über
       // Luft-/Rollwiderstand des identischen Bewegungsintegrators.
-      const baseAero=formationFactors?
-        Math.min(pack.aeroFactor,formationFactors.get(s.rider.id)!):
-        pack.aeroFactor;
+      const baseAero=raceAeroFactor({
+        formation:formationFactors?.get(s.rider.id)??null,
+        legacyPack:pack.aeroFactor,
+        stablePack:x.groupRidingModel==='stable-pack'});
       const crosswind=segment.crosswindMps??0;
       const headwind=segment.headwindMps??0;
       const shelterShare=s.speedMps/Math.max(1,
         Math.hypot(s.speedMps,crosswind));
       const aeroFactor=1-(1-baseAero)*shelterShare;
+      if(s.rider.id===previousFieldChaseLeader?.riderId)
+        namedLeaderAeroFactor=aeroFactor;
       // Effektive Luftdichte setzt F_luft ~ |v_rel|² um.
       // Bei Windstille genau der alte Luftwiderstand. Ein
       // Rückenwind schneller als die Fahrgeschwindigkeit erzeugt
@@ -1065,16 +1127,24 @@ export function simulateRace(x:RaceInput):RaceResult {
         x.groupRidingModel==='coordinated'||
         (x.groupRidingModel==='relays'||x.groupRidingModel==='relay-paced'||
           x.groupRidingModel==='front-gated'||x.groupRidingModel==='stable-pack')){
+        const paceReference=localGroupReference({
+          stablePack:x.groupRidingModel==='stable-pack',
+          distanceFromGroupFrontM:Math.max(0,
+            (actualGroupFront.get(s.rider.id)??s.positionM)-s.positionM),
+          ownSpeedMps:s.speedMps,
+          frontSpeedMps:frontSpeed.get(s.rider.id)??null,
+          frontAccelerationMps2:frontAcceleration.get(s.rider.id)??null,
+          groupSpeedMps:groupPaceByRider.get(s.rider.id)?.speedMps??s.speedMps,
+          groupAccelerationMps2:groupPaceByRider.get(s.rider.id)?.
+            accelerationMps2??0});
         const observation={
           groupSize:actualGroupSize.get(s.rider.id)??1,
           distanceFromGroupFrontM:Math.max(0,
             (actualGroupFront.get(s.rider.id)??s.positionM)-s.positionM),
           frontGapM:frontGap.get(s.rider.id)??null,
           frontSpeedMps:frontSpeed.get(s.rider.id)??null,
-          referenceSpeedMps:groupPaceByRider.get(s.rider.id)?.speedMps??
-            s.speedMps,
-          referenceAccelerationMps2:groupPaceByRider.get(s.rider.id)?.
-            accelerationMps2??0,
+          referenceSpeedMps:paceReference.speedMps,
+          referenceAccelerationMps2:paceReference.accelerationMps2,
           isPacer:groupPaceByRider.get(s.rider.id)?.pacerId===s.rider.id,
           groupPacerPowerW:groupPaceByRider.get(s.rider.id)?.pacerPowerW??
             commanded,
@@ -1100,7 +1170,9 @@ export function simulateRace(x:RaceInput):RaceResult {
           s.positionM/totalM>=2/3&&s.crewMission==='jagd'&&
           s.crewDuty==='unterstuetzung'&&
           s.rider.id!==previousFieldChaseLeader?.riderId;
-        const groupObservation=shelteredChaseSupport?
+        const captainEscort=x.groupRidingModel==='stable-pack'&&
+          s.crewMission==='schutz'&&s.rider.role==='helfer';
+        const groupObservation=shelteredChaseSupport||captainEscort?
           {...observation,tacticalIntent:'windschatten'}:observation;
         const stableMission=x.groupRidingModel==='stable-pack'&&
           (s.intent==='verfolgung'||
@@ -1110,6 +1182,16 @@ export function simulateRace(x:RaceInput):RaceResult {
             groupPaceByRider.get(s.rider.id)?.pacerId===s.rider.id):
           decideGroupRiding(groupObservation);
         commanded=group.powerW;
+        if(captainEscort&&target){
+          const escort=captainEscortPower({
+            sameGroup:physicalGroupOf.get(s.rider.id)===
+              physicalGroupOf.get(target.rider.id),mission:s.crewMission,
+            helperPositionM:s.positionM,captainPositionM:target.positionM,
+            followPowerW:commanded,criticalPowerW:s.dayCpW,
+            reserveFraction:s.physiology.remainingWPrimeJ/
+              s.profile.wPrimeCapacityJ});
+          if(escort!==null)commanded=escort;
+        }
         // Nach Abgabe der Führung ist der Vorgänger nicht länger
         // zwangsläufig im Wind. Ein einziger frischer, wirklich im
         // Hauptfeld befindlicher Jagd-Nachrücker darf zur Spitze
@@ -1132,10 +1214,13 @@ export function simulateRace(x:RaceInput):RaceResult {
         // machen statt blind einem schwereren Pacesetter zu folgen.
         // Ausschließlich Watt: keine Positions-/Zeitkorrektur.
         if(x.groupRidingModel==='stable-pack'){
+          const climbRun=longClimbs.find(c=>s.positionM>=c.startM&&
+            s.positionM<c.endM);
           const climb=decideClimbTempo({...observation,
             specialty:s.rider.specialty,role:s.rider.role,
             remainingM:Math.max(0,totalM-s.positionM),
-            climbLengthM:segment.lengthM});
+            climbLengthM:climbRun?.lengthM??segment.lengthM,
+            abilityBased:true});
           if(climb!==null&&climb>commanded+0.5){
             commanded=climb;
             climbingTempoSeconds+=dt;
@@ -1183,7 +1268,10 @@ export function simulateRace(x:RaceInput):RaceResult {
           // um für den Sprinter ein wirklich nutzbares Rad anzubieten.
           if(s.rider.role==='helfer'&&
             teams.get(s.rider.teamId)?.strategy==='sprint'&&
-            sprintTarget?.rider.specialty==='sprinter'){
+            sprintTarget?.rider.specialty==='sprinter'&&
+            sprintLeadoutEligible(s.crewMission,
+              physicalGroupOf.get(s.rider.id)!==undefined&&
+              physicalGroupOf.get(s.rider.id)===physicalGroupOf.get(sprintTarget.rider.id))){
             const leadout=decideSprintLeadoutPace({
               enabled:true,
               currentIntent:s.intent,
@@ -1291,20 +1379,25 @@ export function simulateRace(x:RaceInput):RaceResult {
       }
       // Frühzeitige echte Positionierung der nominierten Puncheure
       // plus nachhaltig selektives Rampentempo (Watt, kein Bonus).
+      let classicControlApplied=false;
       if(classicsEnabled){
         const group=physicalGroupOf.get(s.rider.id);
         const groupFront=group?.[0];
+        const classicClimb=shortClimbs.find(c=>s.positionM>=c.startM&&
+          s.positionM<c.endM);
         const observation={
           enabled:true,specialty:s.rider.specialty,role:s.rider.role,
+          abilityBased:true,allowLateRamp:true,
           isDesignatedRider:rampSpecialistByTeam.get(s.rider.teamId)===
             s.rider.id,
           isSelectedGroupPacer:!!groupFront&&
             classicRampPacerByGroup.get(groupFront.id)===s.rider.id,
           progress:s.positionM/totalM,
-          segmentProgress:(s.positionM-
-            (index>0?boundaries[index-1]:0))/segment.lengthM,
+          segmentProgress:(s.positionM-(classicClimb?.startM??
+            (index>0?boundaries[index-1]:0)))/
+              (classicClimb?.lengthM??segment.lengthM),
           gradeFraction:segment.gradeFraction,
-          segmentLengthM:segment.lengthM,
+          segmentLengthM:classicClimb?.lengthM??segment.lengthM,
           physicalGroupSize:group?.length??1,
           rankInPhysicalGroup:rankInPhysicalGroup.get(s.rider.id)??1,
           gapToGroupFrontM:Math.max(0,
@@ -1318,6 +1411,7 @@ export function simulateRace(x:RaceInput):RaceResult {
         const approach=decideClassicsApproach(observation);
         if(approach!==null){
           commanded=approach;classicsApproachSeconds+=dt;
+          classicControlApplied=true;
         }
         const pacing=decideClassicsRampTempo({
           ...observation,requestedPowerW:commanded,
@@ -1325,20 +1419,23 @@ export function simulateRace(x:RaceInput):RaceResult {
         if(pacing!==null){
           commanded=pacing;classicsRampTempoSeconds+=dt;
           classicsRampTempoRiders.add(s.rider.id);
+          classicControlApplied=true;
         }
       }
-      if(hillyRace){
+      if(hillyRace&&!classicControlApplied){
         const group=physicalGroupOf.get(s.rider.id);
         const front=group?.[0];
+        const climb=hillyClimbs.find(c=>s.positionM>=c.startM&&
+          s.positionM<c.endM);
         const pacing=decideHillyRampTempo({
           enabled:true,role:s.rider.role,
           strategy:teams.get(s.rider.teamId)!.strategy,
           specialty:s.rider.specialty,
           progress:Math.min(1,s.positionM/totalM),timeS:t,
-          segmentLengthM:segment.lengthM,
+          segmentLengthM:climb?.lengthM??segment.lengthM,
           segmentProgress:Math.max(0,Math.min(1,
-            (s.positionM-(index?boundaries[index-1]:0))/
-              segment.lengthM)),
+            (s.positionM-(climb?.startM??(index?boundaries[index-1]:0)))/
+              (climb?.lengthM??segment.lengthM))),
           gradeFraction:segment.gradeFraction,
           groupSize:group?.length??1,
           gapToGroupFrontM:Math.max(0,
@@ -1351,6 +1448,7 @@ export function simulateRace(x:RaceInput):RaceResult {
           isGroupNominee:!!front&&
             hillyRampPacerByGroup.get(front.id)===s.rider.id,
           criticalPowerW:s.dayCpW,requestedPowerW:commanded,
+          abilityBased:true,
         });
         if(pacing!==null){
           commanded=pacing;hillyRampTempoSeconds+=dt;
@@ -1382,10 +1480,13 @@ export function simulateRace(x:RaceInput):RaceResult {
           escapeGapM:Math.max(0,leader.positionM-
             (actualGroupFront.get(s.rider.id)??s.positionM)),
           remainingM:Math.max(0,totalM-s.positionM),
-          cpW:s.dayCpW,reserveFraction:
+          // Der neue Kapazitaetsansatz legt die tatsaechlich verfuegbare
+          // Dauerleistung bereits hier zugrunde; keine inverse R-19-
+          // Kompensation mehr als vermeintlich gratis fuehrende Watt.
+          cpW:s.dayCpW*(x.enduranceModel==='off'?1:
+            fatigueAvailability(s.endurance,s.rider)),reserveFraction:
             s.physiology.remainingWPrimeJ/s.profile.wPrimeCapacityJ,
-          enduranceAvailability:x.enduranceModel==='off'?1:
-            endurancePowerAvailability(s.endurance),
+          enduranceAvailability:1,
           originalRequestedW:commanded,
         }):null;
       if(pull!==null)commanded=pull;
@@ -1408,6 +1509,8 @@ export function simulateRace(x:RaceInput):RaceResult {
         s.sprintLaunchedAtS===null){
         const g=physicalGroupOf.get(s.rider.id);
         const frontState=g?.length?byId.get(g[0].id):undefined;
+        const nearbyRiderGapM=Math.min(frontGap.get(s.rider.id)??Infinity,
+          rearGap.get(s.rider.id)??Infinity);
         const start=decideSprintLaunch({
           remainingM:Math.max(0,totalM-s.positionM),
           launchPreference:s.rider.sprintLaunchPreference??.5,
@@ -1420,6 +1523,7 @@ export function simulateRace(x:RaceInput):RaceResult {
           aeroFactor,ownSpeedMps:s.speedMps,
           groupFrontSpeedMps:frontState?.speedMps??s.speedMps,
           headwindMps:headwind,
+          nearbyRiderGapM:Number.isFinite(nearbyRiderGapM)?nearbyRiderGapM:null,
           reserveFraction:s.physiology.remainingWPrimeJ/
             s.profile.wPrimeCapacityJ,
         });
@@ -1449,26 +1553,39 @@ export function simulateRace(x:RaceInput):RaceResult {
           elapsedS:Math.max(0,t-s.sprintLaunchedAtS),
         });
       }
-      // R-19: langfristige LeistungsVERFÜGBARKEIT vor CP/W′. Keine
-      // Energie-/Positions- oder Geschwindigkeit-Gutschrift.
-      if(x.enduranceModel!=='off'){
-        commanded*=endurancePowerAvailability(s.endurance);
-      }
-      const cp=applyCpWprimeStep(s.profile,s.physiology,commanded,dt);
+      // Nur stable-pack: R-19 reduziert die VERFUEGBARE Leistung, nicht
+      // jeden zum Mitfahren benoetigten Wattwunsch. Die reduzierte CP
+      // wird fuer Verbrauch UND Erholung im selben CP/W′-Kern genutzt.
+      // Andere Gruppenmodelle behalten ihr bisheriges Vergleichsverhalten.
+      const availability=x.enduranceModel==='off'?1:
+        fatigueAvailability(s.endurance,s.rider);
+      const cp=x.groupRidingModel==='stable-pack'&&x.enduranceModel!=='off'?
+        applyEnduranceLimitedCpStep({profile:s.profile,state:s.physiology,
+          desiredPowerW:commanded,dt,availability,
+          freshPeakPowerW:s.rider.sprintPeakPowerW??
+            inferredSprintPeakPowerW({massKg:s.rider.massKg,
+              sprintSkill:s.rider.sprintSkill})}):
+        applyCpWprimeStep(s.profile,s.physiology,
+          commanded*availability,dt);
+      if(s.intent==='angriff')attackTelemetry?.observePower({
+        riderId:s.rider.id,startTimeS:s.lastAttackS,dt,
+        requestedPowerW:commanded,appliedPowerW:cp.appliedPowerW,
+        effectiveCpW:s.dayCpW*(x.groupRidingModel==='stable-pack'?
+          availability:1)});
       if(sprintFriendlyRace&&s.sprintLaunchedAtS!==null){
         s.sprintPeakAppliedW=Math.max(s.sprintPeakAppliedW,
           cp.appliedPowerW);
         s.sprintCrankJ+=cp.appliedPowerW*dt;
         s.sprintSeconds+=dt;
       }
-      if(pull!==null&&cp.appliedPowerW>=s.dayCpW*.86){
+      if(pull!==null&&cp.appliedPowerW>=s.dayCpW*availability*.86){
         committedChasePullSeconds+=dt;
       }
       if(sprintFriendlyRace&&s.crewMission==='jagd'&&
         s.crewDuty==='fuehrung'&&
         (actualGroupFront.get(s.rider.id)??s.positionM)-s.positionM<=18&&
         (actualGroupSize.get(s.rider.id)??1)>=8&&
-        cp.appliedPowerW>=s.dayCpW*.86&&
+        cp.appliedPowerW>=s.dayCpW*availability*.86&&
         s.positionM/totalM>=2/3)realFrontChaseCpSeconds+=dt;
       s.physiology=cp.state;
       if(x.enduranceModel!=='off'){
@@ -1476,6 +1593,9 @@ export function simulateRace(x:RaceInput):RaceResult {
           state:s.endurance,appliedPowerW:cp.appliedPowerW,
           referenceCpW:s.dayCpW,dt,
           carbsGPerHour:s.rider.carbsGPerHour,
+          onsetMode:x.groupRidingModel==='stable-pack'?'smooth':'legacy',
+          durabilityFactor:x.groupRidingModel==='stable-pack'?
+            (s.rider.durabilityFactor??1):1,
         });
         s.endurance=end.state;
         counters.maximumEndurancePenalty=Math.max(
@@ -1492,11 +1612,13 @@ export function simulateRace(x:RaceInput):RaceResult {
           distanceFromRealGroupFrontM:Math.max(0,
             (actualGroupFront.get(s.rider.id)??s.positionM)-s.positionM),
           physicalGroupSize:actualGroupSize.get(s.rider.id)??1,
-          criticalPowerW:s.dayCpW,appliedCrankPowerW:cp.appliedPowerW,
+          actualWindExposure:aeroFactor>=.95&&
+            Math.abs((actualGroupFront.get(s.rider.id)??s.positionM)-
+              s.positionM)<1,
+          criticalPowerW:s.dayCpW*availability,appliedCrankPowerW:cp.appliedPowerW,
           reserveFraction:s.physiology.remainingWPrimeJ/
             s.profile.wPrimeCapacityJ,
-          enduranceAvailability:x.enduranceModel==='off'?1:
-            endurancePowerAvailability(s.endurance),
+          enduranceAvailability:availability,
         });
         s.chaseLoad=load.state;
         if(load.retireNow){
@@ -1509,9 +1631,22 @@ export function simulateRace(x:RaceInput):RaceResult {
           if(events.length<100000)events.push({
             timeS:t+dt,km:s.positionM/1000,type:'recovery',
             riderId:s.rider.id,teamId:s.rider.teamId,
-            description:`${s.rider.name}: nach ${Math.round(load.state.realFrontSeconds)} s realer Führungsarbeit und ${Math.round(load.state.highLoadJ)} J überschwelliger Arbeit ausrollen`,
+            description:`${s.rider.name}: nach ${Math.round(load.state.realFrontSeconds)} s Frontarbeit im Wind und ${Math.round(load.state.highLoadJ)} J Arbeit oberhalb 82 % aktueller CP ausrollen`,
           });
         }
+      }
+      if(rejoinWork&&rejoinRiders?.has(s.rider.id)&&s.crewMission==='jagd'){
+        const entry=rejoinWork.get(s.rider.id)??{riderId:s.rider.id,
+          teamId:s.rider.teamId,assignedS:0,actualFrontS:0,
+          appliedWorkJ:0,actualFrontWorkJ:0};
+        entry.assignedS+=dt;
+        entry.appliedWorkJ+=cp.appliedPowerW*dt;
+        const front=actualGroupFront.get(s.rider.id);
+        if(front!==undefined&&front-s.positionM<=1){
+          entry.actualFrontS+=dt;
+          entry.actualFrontWorkJ+=cp.appliedPowerW*dt;
+        }
+        rejoinWork.set(s.rider.id,entry);
       }
       powers.set(s.rider.id,cp.appliedPowerW);
       if(checkpoints){
@@ -1534,13 +1669,18 @@ export function simulateRace(x:RaceInput):RaceResult {
           largestPhysicalGroup[0].positionM-s.positionM:Infinity,
         mission:s?.crewMission??null,duty:s?.crewDuty??null,
         intent:s?.intent??'grundtempo',
+        isAtWindFront:!!s&&Math.abs(largestPhysicalGroup[0].positionM-
+          s.positionM)<1,aeroFactor:namedLeaderAeroFactor,
         appliedPowerW:s?(powers.get(s.rider.id)??0):0,
-        criticalPowerW:s?.dayCpW??0});
+        criticalPowerW:s?.dayCpW??0,
+        effectiveCriticalPowerW:s?s.dayCpW*(x.enduranceModel==='off'?1:
+          fatigueAvailability(s.endurance,s.rider)):0});
     }
     for(const s of active){
       const before=s.positionM;
       const step=next.get(s.rider.id)!;
       s.positionM+=step.distanceM;
+      s.lastAccelerationMps2=(step.endSpeedMps-s.speedMps)/dt;
       s.speedMps=step.endSpeedMps;
       s.peakMps=Math.max(s.peakMps,s.speedMps);
       s.driveWorkJ+=step.driveWorkJ;
@@ -1570,6 +1710,21 @@ export function simulateRace(x:RaceInput):RaceResult {
           type:'segment',description:`Spitze erreicht Abschnitt: ${x.segments[segIndex].name}`});
       }
       const groups=splitGroups(inRace);
+      if(attackTelemetry){
+        const membership=new Map<string,number>();
+        for(const group of groups)for(const rider of group)
+          membership.set(rider.rider.id,group.length);
+        for(const rider of inRace){
+          if(!attackTelemetry.needsSample(rider.rider.id,rider.positionM))continue;
+          attackTelemetry.sample({riderId:rider.rider.id,timeS:t,
+            positionM:rider.positionM,groupSize:membership.get(rider.rider.id)??1,
+            gapToRaceFrontM:Math.max(0,best.positionM-rider.positionM),
+            wPrimeJ:rider.physiology.remainingWPrimeJ,
+            wPrimeCapacityJ:rider.profile.wPrimeCapacityJ,
+            positionOf:id=>{const old=byId.get(id);
+              return old&&old.finishTimeS===null?old.positionM:null;}});
+        }
+      }
       maximumGroups=Math.max(maximumGroups,groups.length);
       // Abstandsgruppen sind nur Diagnose; keinen Abstand künstlich
       // zusammenziehen. Meldungen erst nach einer Mindestdauer.
@@ -1586,12 +1741,32 @@ export function simulateRace(x:RaceInput):RaceResult {
         groups[0].at(-1)!.positionM-groups[1][0].positionM:0;
       const escaped=groups.length>1&&groups[0].length<=6&&
         leadGap>=75&&best.positionM>1000;
-      if(!breakawayActive){
+      if(x.groupRidingModel==='stable-pack'){
+        const nextBreakaway=advanceBreakawayTracker({state:trackedBreakaway,
+          groups,riderId:r=>r.rider.id,timeS:t});
+        trackedBreakaway=nextBreakaway.state;
+        breakawayActive=trackedBreakaway.escapeIds.length>0;
+        if(nextBreakaway.event==='breakaway'){
+          counters.breakaways++;
+          if(groups[0].every(r=>t-r.lastAttackS>180))
+            unprovokedBreakawayCount++;
+          if(events.length<100000)events.push({timeS:t,
+            km:best.positionM/1000,type:'breakaway',
+            gapM:nextBreakaway.gapM,
+            description:`Fluchtgruppe (${groups[0].length} Fahrer) hat ${nextBreakaway.gapM.toFixed(0)} m Vorsprung`});
+        }else if(nextBreakaway.event==='caught'){
+          counters.caughtBreakaways++;
+          if(events.length<100000)events.push({timeS:t,
+            km:best.positionM/1000,type:'breakaway-caught',
+            gapM:nextBreakaway.gapM,
+            description:`Fluchtgruppe vom verfolgenden Feld eingeholt: Abstand ${nextBreakaway.gapM.toFixed(0)} m`});
+        }
+      }else if(!breakawayActive){
         if(escaped){
           if(breakawaySinceS===null)breakawaySinceS=t;
           if(t-breakawaySinceS>=40){
             breakawayActive=true;catchSinceS=null;counters.breakaways++;
-            if((x.groupRidingModel==='front-gated'||x.groupRidingModel==='stable-pack')&&
+            if(x.groupRidingModel==='front-gated'&&
               groups[0].every(r=>t-r.lastAttackS>180))
               unprovokedBreakawayCount++;
             if(events.length<100000)events.push({timeS:t,
@@ -1633,7 +1808,7 @@ export function simulateRace(x:RaceInput):RaceResult {
               carbohydrateKcal:r.endurance.carbohydrateKcal,
               carbohydrateUnmetKcal:r.endurance.carbohydrateUnmetDemandKcal,
               enduranceAvailabilityPct:100*(x.enduranceModel==='off'?1:
-                endurancePowerAvailability(r.endurance)),
+                fatigueAvailability(r.endurance,r.rider)),
               aeroFactor:lastAero.get(r.rider.id)??1,
               segmentIndex:r.segmentIndex,
             };
@@ -1678,7 +1853,7 @@ export function simulateRace(x:RaceInput):RaceResult {
     carbohydrateOverflowKcal:s.endurance.carbohydrateOverflowKcal,
     carbohydrateUnmetDemandKcal:s.endurance.carbohydrateUnmetDemandKcal,
     endurancePowerAvailability:x.enduranceModel==='off'?1:
-      endurancePowerAvailability(s.endurance),
+      fatigueAvailability(s.endurance,s.rider),
   }));
   // s.finishTimeS ist bei exakt linear interpoliertem Zielstraßenpunkt
   // sub-sekündlich, während die CP/Arbeit des letzten Intervalls als
@@ -1689,6 +1864,10 @@ export function simulateRace(x:RaceInput):RaceResult {
     ...(checkpoints?{checkpoints}:{}),
     winnerId:sorted[0].rider.id,finisherCount:sorted.length,
     diagnostics:{...counters,maximumGroups,
+      ...(attackTelemetry?{attackTraces:attackTelemetry.report(classification)}:{}),
+      ...(rejoinAttempts?{rejoinAttempts:rejoinAttempts.report(t)}:{}),
+      ...(rejoinWork?{rejoinWork:[...rejoinWork.values()].sort((a,b)=>
+        a.riderId.localeCompare(b.riderId))}:{}),
       ...((x.groupRidingModel==='relays'||x.groupRidingModel==='relay-paced'||
           x.groupRidingModel==='front-gated'||x.groupRidingModel==='stable-pack')?{
         orderedRelayTeamSeconds,

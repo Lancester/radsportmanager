@@ -1,0 +1,126 @@
+{
+  "route": "tdf25_boulogne",
+  "winnerId": "F110",
+  "winnerType": "zeitfahrer",
+  "trace": [
+    {
+      "km": 55.01,
+      "leaderId": "F008",
+      "leaderType": "sprinter",
+      "winnerRank": 44,
+      "winnerGapM": 118.05,
+      "winnerWprimePct": 100,
+      "winnerPowerW": 230.15,
+      "winnerAero": 0.4,
+      "largestGroup": 153,
+      "groupCount": 2
+    },
+    {
+      "km": 105.01,
+      "leaderId": "F127",
+      "leaderType": "allrounder",
+      "winnerRank": 45,
+      "winnerGapM": 110.83,
+      "winnerWprimePct": 100,
+      "winnerPowerW": 229.39,
+      "winnerAero": 0.4,
+      "largestGroup": 151,
+      "groupCount": 3
+    },
+    {
+      "km": 160,
+      "leaderId": "F127",
+      "leaderType": "allrounder",
+      "winnerRank": 68,
+      "winnerGapM": 104.76,
+      "winnerWprimePct": 100,
+      "winnerPowerW": 232.65,
+      "winnerAero": 0.4,
+      "largestGroup": 132,
+      "groupCount": 4
+    },
+    {
+      "km": 190.01,
+      "leaderId": "F110",
+      "leaderType": "zeitfahrer",
+      "winnerRank": 1,
+      "winnerGapM": 0,
+      "winnerWprimePct": 83.22,
+      "winnerPowerW": 409.2,
+      "winnerAero": 1,
+      "largestGroup": 127,
+      "groupCount": 6
+    },
+    {
+      "km": 205.01,
+      "leaderId": "F110",
+      "leaderType": "zeitfahrer",
+      "winnerRank": 1,
+      "winnerGapM": 0,
+      "winnerWprimePct": 96.87,
+      "winnerPowerW": 409.2,
+      "winnerAero": 1,
+      "largestGroup": 128,
+      "groupCount": 7
+    }
+  ],
+  "winnerEvents": [
+    {
+      "km": 179.15,
+      "type": "attack",
+      "timeS": 14760
+    }
+  ],
+  "top10": [
+    {
+      "id": "F110",
+      "type": "zeitfahrer",
+      "gapS": 0
+    },
+    {
+      "id": "F026",
+      "type": "zeitfahrer",
+      "gapS": 38.49
+    },
+    {
+      "id": "F027",
+      "type": "allrounder",
+      "gapS": 38.85
+    },
+    {
+      "id": "F012",
+      "type": "zeitfahrer",
+      "gapS": 39.18
+    },
+    {
+      "id": "F099",
+      "type": "kletterer",
+      "gapS": 50.64
+    },
+    {
+      "id": "F010",
+      "type": "klassiker",
+      "gapS": 51.39
+    },
+    {
+      "id": "F082",
+      "type": "zeitfahrer",
+      "gapS": 52.19
+    },
+    {
+      "id": "F117",
+      "type": "zeitfahrer",
+      "gapS": 52.74
+    },
+    {
+      "id": "F017",
+      "type": "klassiker",
+      "gapS": 53
+    },
+    {
+      "id": "F018",
+      "type": "allrounder",
+      "gapS": 53.22
+    }
+  ]
+}

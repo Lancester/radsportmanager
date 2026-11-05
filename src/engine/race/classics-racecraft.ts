@@ -34,6 +34,10 @@ export interface ClassicsRacecraftObservation {
   gapToGroupFrontM:number;gapToRaceFrontM:number;
   criticalPowerW:number;reserveFraction:number;
   requestedPowerW:number;intent:string;
+  /** R-24: Nominierung nach Fahrvermögen statt nach Typ-Etikett. */
+  abilityBased?:boolean;
+  /** R-24: auch Rampen nahe am Ziel können entscheidend sein. */
+  allowLateRamp?:boolean;
 }
 function valid(o:ClassicsRacecraftObservation):boolean{
   return Number.isFinite(o.progress)&&o.progress>=0&&o.progress<=1&&
@@ -57,9 +61,9 @@ export function decideClassicsApproach(
 ):number|null{
   if(!valid(o))throw new RangeError('R22 Klassiker: ungültige Annäherung');
   const c=CLASSICS_RACECRAFT;
-  if(!o.enabled||o.specialty!=='klassiker'||!o.isDesignatedRider||
+  if(!o.enabled||(!o.abilityBased&&o.specialty!=='klassiker')||!o.isDesignatedRider||
     o.progress<c.positioningFromProgress||
-    o.progress>=c.positioningUntilProgress||
+    (!o.allowLateRamp&&o.progress>=c.positioningUntilProgress)||
     o.physicalGroupSize<c.positioningGroupSize||
     o.rankInPhysicalGroup<=Math.ceil(
       o.physicalGroupSize*c.positioningRankShare)||
@@ -82,10 +86,10 @@ export function decideClassicsRampTempo(
 ):number|null{
   if(!valid(o))throw new RangeError('R22 Klassiker: ungültiges Rampentempo');
   const c=CLASSICS_RACECRAFT;
-  if(!o.enabled||o.specialty!=='klassiker'||!o.isDesignatedRider||
+  if(!o.enabled||(!o.abilityBased&&o.specialty!=='klassiker')||!o.isDesignatedRider||
     !o.isSelectedGroupPacer||
     o.progress<c.selectionFromProgress||
-    o.progress>c.selectionUntilProgress||
+    (!o.allowLateRamp&&o.progress>c.selectionUntilProgress)||
     o.segmentLengthM<c.minRampLengthM||
     o.segmentLengthM>c.maxRampLengthM||
     o.gradeFraction<c.minRampGrade||
