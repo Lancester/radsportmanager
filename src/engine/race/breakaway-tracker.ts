@@ -12,12 +12,15 @@ export const initialTrackedBreakaway=():TrackedBreakaway=>({
 });
 export function advanceBreakawayTracker<T extends {positionM:number}>(input:{
   state:TrackedBreakaway;groups:readonly (readonly T[])[];
-  riderId:(r:T)=>string;timeS:number;
+  riderId:(r:T)=>string;timeS:number;raceWinnerFinished?:boolean;
 }):{state:TrackedBreakaway;event:'breakaway'|'caught'|null;gapM:number}{
   const {state,groups,riderId,timeS}=input;
   if(!groups.length||!Number.isFinite(timeS)||timeS<0)
     throw new RangeError('R24: ungueltige Fluchtbeobachtung');
   const reset=initialTrackedBreakaway;
+  // Nach dem Zielsieg sind die verbleibenden Fahrer keine neue Flucht
+  // im noch laufenden Rennen; Zielankunft ist auch keine Einholung.
+  if(input.raceWinnerFinished)return {state:reset(),event:null,gapM:0};
   if(!state.escapeIds.length){
     const main=groups.reduce((a,b)=>b.length>a.length?b:a,groups[0]);
     const lead=groups[0];
