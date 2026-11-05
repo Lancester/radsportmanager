@@ -60,6 +60,19 @@ test('R24: Zielankunft des letzten Ausreissers ist keine Einholung',()=>{
   assert.equal(c.event,null);
   assert.equal(c.state.escapeIds.length,0);
 });
+test('Nach dem Zielsieg bilden zurückliegende Fahrer keine neue Rennflucht',()=>{
+  const lead=group('L',2,2000),main=group('M',20,1600);
+  const initial=advance(initialTrackedBreakaway(),[lead,main],0);
+  const after=advanceBreakawayTracker({state:initial.state,groups:[lead,main],
+    riderId:r=>r.id,timeS:60,raceWinnerFinished:true});
+  assert.equal(after.event,null);
+  assert.deepEqual(after.state,initialTrackedBreakaway());
+  const active=advance(initial.state,[lead,main],41);
+  const finished=advanceBreakawayTracker({state:active.state,groups:[lead,main],
+    riderId:r=>r.id,timeS:80,raceWinnerFinished:true});
+  assert.equal(finished.event,null);
+  assert.deepEqual(finished.state,initialTrackedBreakaway());
+});
 
 test('R24: lange Abstandskette meldet keinen noch voraus fahrenden Ausreisser eingeholt',()=>{
   const lead=group('L',2,2000),main=group('M',5,1600);
