@@ -45,7 +45,7 @@ export function decideAdaptiveAttackOpportunity(o:AdaptiveAttackObservation):boo
   // seiner Gruppe heraus attackieren; er faehrt das Solotempo weiter.
   // Ein allein zurueckliegender Fahrer darf dagegen weiterhin nachsetzen.
   if(o.groupSize===1&&o.gapToRaceFrontM<5)return false;
-  if(o.timeS<180||o.remainingM<=250||o.reserveFraction<.28||
+  if(o.remainingM<=250||o.reserveFraction<.28||
     o.lastAttackAgeS<120||
     ['sprint','erholung','verfolgung','helferarbeit'].includes(o.currentIntent))
     return false;
