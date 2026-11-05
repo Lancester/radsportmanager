@@ -1,7 +1,11 @@
-Warning: truncated output (original token count: 49313)
-Total output lines: 1783
+Warning: truncated output (original token count: 49379)
+Total output lines: 1787
 
 # Entwicklungsstand
+
+## Großer Rennvergleich läuft
+
+[Testaufbau und Zwischenstand](race/R24_GROSSVERGLEICH_ARBEITSSTAND.md): GitHub-Stände fixiert, gepaarter Pilot auf beiden Versionen erfolgreich; 160 Mehrseed-Läufe und die Auswertung sind offen. Ergebnisse nicht vorwegnehmen.
 
 ## Profirennen als Vergleichsbasis
 
@@ -236,7 +240,54 @@ Die vier neuen Integrationstests zeigen, dass **Anstieg, Abfahrt, Kurvenvorschau
 
 **Erster reproduzierbarer Node-Benchmark (dreimal je Größe, mittlerer Wert):** 1 Fahrer/4 km ca. 7,14 ms, 20 Fahrer/4 km 126,15 ms, 160 **unabhängige** Fahrer/4 km **960,46 ms**. **Kein Peloton, keine Positions-KI, kein 200-km-/Android-Benchmark; keine Hochrechnung zulässig.** Es wurden keine GitHub Actions aktiviert.
 
-**Neue beschlossene Spielanforderung:** Fahrer besitzen später trainierbare Fahrtechnik, individuelle Risikobereitschaft und unterschiedliches fahrerisches T…33313 tokens truncated…nd 27 innerhalb einer Minute statt zuvor 41 und 21), obwohl noch ein Sprinter gewinnt. Die alte PR #67 wurde wegen GitHub-Mergeblockade als **in #69 übertragen und ersetzt** geschlossen.
+**Neue beschlossene Spielanforderung:** Fahrer besitzen später trainierbare Fahrtechnik, individuelle Risikobereitschaft und unterschiedliches fahrerisches Talent. Noch **nicht** in der Simulation umgesetzt, siehe Issue #19.
+
+**Technische Erklärung:** [physik/GEMEINSAMER_KERN.md](physik/GEMEINSAMER_KERN.md).
+
+**Nächster konkreter Schritt:** R-03 mit **zwei Fahrern und positionsabhängigem Windschatten** als isolierbarem Test beginnen; danach kleine Gruppen/Positionswechsel. Parallel einen echten Android-Web-Worker-Benchmark vorbereiten, bevor wir eine vollständige 160-Fahrer-/200-km-Simulation versprechen.
+
+
+## Abschluss der Integrationsphase und nächste Aufgabe (03.11.2026)
+
+Die Zusammenführung wurde über [PR #20](https://github.com/Lancester/radsportmanager/pull/20) erfolgreich auf `main` übernommen. Der gemeinsame Kern ist [motion-core.ts](../src/engine/physics/motion-core.ts). [Issue #18](https://github.com/Lancester/radsportmanager/issues/18) wurde **abgeschlossen**.
+
+**49/49 lokale Tests bestanden**, vollständige TypeScript-Typprüfung erfolgreich; manuelle Node-Kurzmessung mit 1/20/160 unabhängig gerechneten Fahrern über 4 km dokumentiert. Noch kein Browser-/Web-Worker-/Android-Test; keine GitHub Actions aktiviert.
+
+**Verbindlicher nächster technischer Arbeitsauftrag:** [Issue #21 – R-03 Windschatten zunächst mit zwei Fahrern](https://github.com/Lancester/radsportmanager/issues/21). Erst physikalische Aero-Reduktion mit echtem gemeinsamem Fahrzustand, dann Führungswechsel und wachsende Gruppen. Der Android-Benchmark gehört zu den ersten weiteren Nachweisen, **bevor** 160 Fahrer über 200 km als technisch machbar gelten.
+
+**Spätere Spielanforderung, gesichert unter [Issue #19](https://github.com/Lancester/radsportmanager/issues/19):** individuelle Fahrtechnik, Risikobereitschaft, fahrerisches Talent und spezielles Training. Noch keine Gameplay- oder Fahrer-KI-Implementierung.
+
+## Neuester Stand: R-03 – zwei Fahrer mit Windschatten (03.11.2026)
+
+**Erledigt:** Im neuen `src/engine/physics/drafting-pair.ts` werden erstmals zwei Fahrer **auf derselben Simulationsuhr** berechnet. Beide haben eigene longitudinalen/lateralen Positionen, Geschwindigkeiten, Pedalleistungen und mechanische Energiebilanzen. Der gemeinsame dynamische Physiksolver `motion-core.ts` wurde um einen nur auf den Luftwiderstand wirkenden Aero-Faktor erweitert. Alle vorherigen APIs bleiben erhalten.
+
+**Statische R-03-Referenz (39,6 km/h, flach, windstill, 80 kg, CdA 0,30, Crr 0,004, η 0,975):** Im Wind braucht der fiktive Fahrer **281,14 W am Pedal**; dicht dahinter bei 0,5 m Modell-Radabstand **216,00 W**. Die 65,14 W Ersparnis folgen nur aus reduziertem Luftwiderstand – der Rollwiderstand bleibt gleich. Die 35-%-Maximalreduktion und exponentielle Abstandsfunktion sind **vorläufige und noch nicht gemessene Testannahmen**, keine endgültigen Radsport-Koeffizienten.
+
+**Dynamische Tests:** Der Schutz nimmt bei größerer Lücke ab. Ein natürlicher Führungswechsel ist durch Längsüberholen auf einer versetzten Spur protokollierbar. In derselben Spur wird eine geometrische Überlappung **als Fehler gemeldet**, da noch keine sichere Spur- oder Kollisionsvermeidung implementiert ist.
+
+**Tatsächlich lokal ausgeführt:** **49 alte + 15 neue = 64/64 Tests bestanden**, Node.js 22.16.0; TypeScript-Typprüfung (`tsc 5.8.3`) ohne Fehler. Keine GitHub Actions gestartet. Manueller Node-Kurzbenchmark mit unabhängigen 12-s-Zweierläufen: 1 / 10 / 100 Läufe, Median **0,82 / 8,39 / 41,15 ms**. **Nicht** auf 160 Fahrer / 200 km extrapolieren.
+
+**Dokumentation:** [physik/R03_WINDSCHATTEN_ZWEI_FAHRER.md](physik/R03_WINDSCHATTEN_ZWEI_FAHRER.md).
+
+**Noch nicht entwickelt:** Querwind, mehrere Nachbarn, natürliche seitliche Bewegung, automatische Positions-KI, Fahrerphysiologie, Peloton mit 160 Fahrern oder Android-Web-Worker-Test.
+
+**Nächster konk…31379 tokens truncated…suchen, pauschal die Anzahl der Berggruppen zu reduzieren. Stattdessen Schlüsselanstieg-Checkpoints und Sieger-/Favoritenabstände mit der echten Etappenlogik vergleichen. Quellen im neuen KI-Nachschlagewerk.
+
+**Priorität nach der Dokumentation:** Kurze steile Klassikeranstiege (insbesondere Liège/La Redoute/Roche-aux-Faucons) mit passender, physisch begrenzter Klassiker-/Puncheur-Entscheidung durch kleine vierprofilige Gegenproben untersuchen. Sprint-Finish nach 250 km in der bisherigen Modellierung ist ein konkretes Warnsignal, aber keine Rechtfertigung für künstliche Klassikersieger. `legacy` Default nicht ändern; keine große Vorab-Monte-Carlo-Serie. R-22/Issue #54 offen, R-23 nicht freigegeben.
+
+
+## R-22 – objektive Vorab-Favoriten und deren Zielränge als neues Diagnose-Gate (04.11.2026)
+
+**Nutzerwunsch umgesetzt im Testbranch:** Für jede ohnehin durchgeführte der **vier** Referenzetappen `stable-pack`/Seed 2026 werden die nach **vor Rennstart vorhandenen Fähigkeiten** stärksten Kletterer, Klassikerfahrer, Sprinter, Zeitfahrer und Allrounder sowie ihre tatsächlichen Zielränge und Rückstände ausgewiesen. Zusätzlich je Profil die drei physisch stärksten Fahrer des **gesamten** Starterfelds – damit auch über Kategorien hinweg nachvollziehbar ist, ob die objektiven Favoriten vorne liegen. Rangliste nutzt ausschließlich Fahrerwerte; das Endergebnis wird **nur zur Anzeige** zugeordnet, nicht zur Erstellung oder Manipulation der Leistungsrangfolge. Klassenvergleich: 8-%-Bergtempo aus CP/Masse/CdA, 3-Minuten-Power/W′ pro Gesamtgewicht, Sprint-Wattanfrage, Solo-Flachtempo und kombinierter Allroundindex. [Technische Definition](race/R22_FAHRERSTAERKE_FAVORITEN_AUSWERTUNG.md). Noch keine statistische Prognose und kein Ziel, jeden Favoriten zum Sieger zu machen. Bestehender Physikkern und `legacy`-Standard unverändert.
+
+**Nächster Schritt:** CI der vier kleinen Rennen mit den neuen `R22-FAVORITES`-Logs prüfen und konkrete Kandidaten/Ergebnisränge dokumentieren; die bereits fachlich verbesserte Klassiker-KI aus PR #67 getrennt integrieren, sobald deren PR-Merge vollständig bestätigt ist. Anschließend bessere individuelle, W′- und Positions-abhängige Rampenangriffsentscheidungen statt nahezu simultanen zehn Attacken. Kein großes Mehrseed-Raster.
+
+
+## R-22 – Verifizierter Favoritencheck + Klassiker-KI zusammen auf main (04.11.2026)
+
+**Auf Nutzerwunsch jetzt dauerhaft in jedem Vierprofil-Regressionstest:** objektiver Vorab-Stärkerang der fünf Fahrertypen `sprinter`, `kletterer`, `klassiker`, `zeitfahrer`, `allrounder` mit tatsächlicher Zielplatzierung und Rückstand. Zusätzlich pro Strecke stärkste 3 Fahrer des ganzen Feldes und Vorab-Fähigkeitsrang des tatsächlichen Siegers. Die Fähigkeit wird ausschließlich aus vor dem Start gemeldeten CP, W′, Gewicht, CdA und Sprintspezialisierung ermittelt. **Keine Steuerung der KI, keine Erfolgsboni.** [PR #68](https://github.com/Lancester/radsportmanager/pull/68) zunächst 276/276 grün. Nach kombinierter Integration mit der bereits geprüften Klassiker-KI [PR #69](https://github.com/Lancester/radsportmanager/pull/69), Squash `02ac58185f9f88ed2b109393bf15fd2717968458`, [CI #41811008468](https://github.com/Lancester/radsportmanager/actions/runs/41811008468) **279/279 Tests grün**. [Vollständige Methodik und echte Zahlen](race/R22_FAHRERSTAERKE_FAVORITEN_AUSWERTUNG.md).
+
+**Gemessene stärkste Spezialisten (ein Seed 2026, je 154 Fahrer):** Lille: stärkster Sprinter **F023 auf Platz 150**, +267,50s; Boulogne: stärkster Klassiker **F003 auf Platz 109**, +237,73s; Lüttich: derselbe starke Klassiker-/Helfer **F003 auf Platz 120**, +1019,59s; Hautacam: stärkster Kletterer **F078 auf Platz 1**. Gerade die schlechten Flach-/Klassikerfavoritenränge zeigen eine verbleibende **Taktik-/Rollen-/Positionierungs-Frage**, keinen Beweis für defekte Schwerkraftphysik. Lüttichs Schonung und späte, echte CP/W′-Attacken verbessern den Rennverlauf (52 Attacken und 27 innerhalb einer Minute statt zuvor 41 und 21), obwohl noch ein Sprinter gewinnt. Die alte PR #67 wurde wegen GitHub-Mergeblockade als **in #69 übertragen und ersetzt** geschlossen.
 
 **Neuester weiterer Versuch:** [PR #70](https://github.com/Lancester/radsportmanager/pull/70) testet separat, je Team den nach 3-Minuten-W/kg körperlich stärksten Klassikerfahrer (auch bisheriger Helfer) als geeigneten Rampenangreifer auszuwählen und jeweils nur den aktuell stärksten Kandidaten einer physischen Gruppe starten zu lassen. **GitHub lieferte bislang keinen zugeordneten CI-Lauf für diesen PR; NICHT auf main und NICHT als erfolgreich bewerten.** Bei dessen Prüfung unbedingt vier Profile (nicht mehr Seeds) und `R22-FAVORITES` inklusive F003 betrachten. Danach Lille-Sprinter F023 separat hinsichtlich Gruppendynamik/Sprintzug untersuchen, Boulogne-Attacken (108) später. Große statistische Validierung weiterhin erst zum Schluss, nur manuell. `legacy` bleibt Default, `stable-pack` opt-in; R-22 offen, R-23 gesperrt.
 
