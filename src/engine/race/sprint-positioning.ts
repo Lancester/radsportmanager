@@ -61,6 +61,21 @@ export type SprintPositionDecision={
   reason:'protect_peloton_contact'|'advance_for_sprint'|
     'leadout_position'|'escort_sprinter';
 };
+/** Gemeinsame Einschätzung für Sprinter und Helfer; keine Positionsänderung. */
+export function sprintPreparationStage(o:{remainingM:number;speedMps:number;
+  distanceFromGroupFrontM:number;wheelFindingSkill?:number}):'wait'|'advance'|'leadout'{
+  if(!Number.isFinite(o.remainingM)||o.remainingM<0||
+    !Number.isFinite(o.speedMps)||o.speedMps<=0||
+    !Number.isFinite(o.distanceFromGroupFrontM)||o.distanceFromGroupFrontM<0||
+    (o.wheelFindingSkill!==undefined&&(!Number.isFinite(o.wheelFindingSkill)||
+      o.wheelFindingSkill<0||o.wheelFindingSkill>1)))
+    throw new RangeError('Sprintvorbereitung: ungültige Rennlage');
+  const skill=o.wheelFindingSkill??.5;
+  const timeToFinish=o.remainingM/o.speedMps;
+  const neededPositionTime=300+o.distanceFromGroupFrontM*3+(1-skill)*180;
+  if(timeToFinish>neededPositionTime)return 'wait';
+  return timeToFinish<=120+o.distanceFromGroupFrontM?'leadout':'advance';
+}
 /** Ausschließlich Watt, keine direkte Beschleunigung oder Teleportation. */
 export function decideSprintPosition(
   o:SprintPositionObservation,
@@ -91,11 +106,10 @@ export function decideSprintPosition(
   // Kein Drang in die Top 20 bei km 20.
   // Zeit bis Ziel gegenüber geschätztem Positionsbedarf: dynamischer,
   // aber ausdrücklich vorläufiger Plan, keine Prozent-Schranke.
-  const skill=Math.max(0,Math.min(1,o.wheelFindingSkill??.5));
-  const timeToFinish=dynamic?o.remainingM!/o.ownSpeedMps!:Infinity;
-  const neededPositionTime=dynamic?300+Math.max(0,o.distanceFromGroupFrontM)*3+
-    (1-skill)*180:0;
-  const shelter=dynamic?timeToFinish>neededPositionTime:
+  const stage=dynamic?sprintPreparationStage({remainingM:o.remainingM!,
+    speedMps:o.ownSpeedMps!,distanceFromGroupFrontM:Math.max(0,o.distanceFromGroupFrontM),
+    wheelFindingSkill:o.wheelFindingSkill}):null;
+  const shelter=dynamic?stage==='wait':
     o.progress<c.advanceFromProgress;
   if(shelter){
     if(!sprinter||(!dynamic&&o.progress<c.shelterFromProgress)||
@@ -106,7 +120,7 @@ export function decideSprintPosition(
     return powerW>o.followPowerW+1?
       {powerW,reason:'protect_peloton_contact'}:null;
   }
-  const leadout=dynamic?timeToFinish<=120+Math.max(0,o.distanceFromGroupFrontM):
+  const leadout=dynamic?stage==='leadout':
     o.progress>=c.leadoutFromProgress;
   const wanted=Math.ceil(o.groupSize*(leadout?
     c.leadoutFrontShare:c.advanceFrontShare));
