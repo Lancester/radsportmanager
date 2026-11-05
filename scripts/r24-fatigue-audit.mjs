@@ -12,7 +12,7 @@ for(const [name,load,carbs=90] of cases){
  for(let t=1;t<=21600;t++){
   const step=applyCpWprimeStep(profile,cp,load(t-1),1);cp=step.state;work+=step.appliedPowerW;
   state=advanceEndurance({state,appliedPowerW:step.appliedPowerW,referenceCpW:400,dt:1,carbsGPerHour:carbs}).state;
-  if(t%3600===0||t===5400||t===5401)rows.push({s:t,availability:endurancePowerAvailability(state),
+  if(t%3600===0||t===5400||t===5401)rows.push({s:t,availability:endurancePowerAvailability(state,'smooth'),
     carbsKcal:state.carbohydrateKcal,wearHours:state.workloadHours,wPrimeJ:cp.remainingWPrimeJ,workKJ:work/1000});
  }
  console.log(JSON.stringify({kind:'endurance',name,carbs,rows}));
@@ -29,10 +29,10 @@ for(const [name,wish,carbs] of [['gekoppelt-300-fed',300,90],['gekoppelt-360-fed
  let end=initialEnduranceState(),cp=initialCpState(profile),work=0;const rows=[];
  const {applyEnduranceLimitedCpStep}=await import('../src/engine/race/effort-capacity.ts');
  for(let t=1;t<=21600;t++){
-  const step=applyEnduranceLimitedCpStep({profile,state:cp,desiredPowerW:wish,dt:1,availability:endurancePowerAvailability(end),freshPeakPowerW:1200});
+  const step=applyEnduranceLimitedCpStep({profile,state:cp,desiredPowerW:wish,dt:1,availability:endurancePowerAvailability(end,'smooth'),freshPeakPowerW:1200});
   cp=step.state;work+=step.appliedPowerW;
   end=advanceEndurance({state:end,appliedPowerW:step.appliedPowerW,referenceCpW:400,dt:1,carbsGPerHour:carbs}).state;
-  if(t%3600===0||t===5400||t===5401)rows.push({s:t,availability:endurancePowerAvailability(end),
+  if(t%3600===0||t===5400||t===5401)rows.push({s:t,availability:endurancePowerAvailability(end,'smooth'),
     effectiveCpW:step.effectiveCpW,appliedW:step.appliedPowerW,carbsKcal:end.carbohydrateKcal,
     wearHours:end.workloadHours,wPrimeJ:cp.remainingWPrimeJ,workKJ:work/1000});
  }

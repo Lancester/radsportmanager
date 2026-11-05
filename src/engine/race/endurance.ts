@@ -48,13 +48,15 @@ export function initialEnduranceState():EnduranceState{
     carbohydrateOverflowKcal:0,carbohydrateUnmetDemandKcal:0,
     workloadHours:0,elapsedS:0};
 }
-export function endurancePowerAvailability(state:EnduranceState):number{
+export function endurancePowerAvailability(state:EnduranceState,
+  onsetMode:'legacy'|'smooth'='legacy'):number{
   const c=R19_ENDURANCE;
   const depletion=1-state.carbohydrateKcal/c.carbohydrateCapacityKcal;
   // Vermeidet einen unphysikalischen Leistungssprung bei exakt 90 Minuten.
   // Die lineare Einblendung ist ein expliziter vorläufiger Modellansatz,
   // keine experimentell kalibrierte Ermüdungskinetik.
-  const onset=Math.min(1,state.elapsedS/c.graceSeconds);
+  const onset=onsetMode==='smooth'?Math.min(1,state.elapsedS/c.graceSeconds):
+    state.elapsedS<=c.graceSeconds?0:1;
   const fuelPenalty=onset*0.32*Math.max(0,(depletion-0.40)/0.60);
   const wearPenalty=onset*Math.max(0,state.workloadHours-0.65)*c.fatiguePerHardHour;
   return Math.max(1-c.maximumPowerReduction,
@@ -63,6 +65,7 @@ export function endurancePowerAvailability(state:EnduranceState):number{
 export function advanceEndurance(input:{
   state:EnduranceState; appliedPowerW:number;
   referenceCpW:number;dt:number;carbsGPerHour?:number;
+  onsetMode?:'legacy'|'smooth';
 }):EnduranceStep{
   const {state,appliedPowerW,referenceCpW,dt}=input;
   if(!state)throw new RangeError('R-19: Zustand fehlt');
@@ -100,6 +103,6 @@ export function advanceEndurance(input:{
     elapsedS:state.elapsedS+dt,
   };
   return {state:next,
-    powerAvailability:endurancePowerAvailability(next),
+    powerAvailability:endurancePowerAvailability(next,input.onsetMode),
     intakeKcal:intake,expenditureKcal:expenditure};
 }
