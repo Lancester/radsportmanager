@@ -5,6 +5,8 @@ export interface PursuitObservation {
   gapM:number|null;bestGapM:number;secondsWithoutProgress:number;
   ownSpeedMps:number;targetSpeedMps:number;remainingM:number;
   reserveFraction:number;aggression:number;assignedTeamDuty:boolean;
+  /** Beharrlichkeit beeinflusst die Entscheidung, nicht die Leistung. */
+  pursuitPersistence?:number;
   /** Einschätzung absehbaren Geländes; keine Voraussage von Gegnerzuständen. */
   favorableTerrainAhead:boolean;
 }
@@ -20,7 +22,8 @@ export function evaluatePursuit(o:PursuitObservation):PursuitAction{
   const poorProspect=opening>Math.max(300,o.remainingM*.04)&&worsening;
   // Verstreichen von Zeit genügt nie alleine für einen Abbruch.
   if(poorProspect&&!o.favorableTerrainAhead&&
-    o.secondsWithoutProgress>180&&o.reserveFraction<(.25+.15*(1-o.aggression)))
+    o.secondsWithoutProgress>180&&o.reserveFraction<
+      (.25+.15*(1-(o.pursuitPersistence??o.aggression))))
     return 'aufgeben';
   if(o.favorableTerrainAhead&&o.reserveFraction<.45&&!worsening)
     return 'schonen';
