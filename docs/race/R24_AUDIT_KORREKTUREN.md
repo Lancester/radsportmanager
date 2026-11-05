@@ -122,3 +122,36 @@ Strecken ist begrenzt.
   bis zur sportlichen Abnahme unverändert lassen.
 
 Eine grüne technische Testsuite ist keine Realismusabnahme.
+
+## Mehrseed-Stand auf Code-Commit 7e4446c
+
+Fünf Seeds mit je vier Profilen und 154 fiktiven Fahrern wurden vollständig lokal durchgerechnet. Die normalen Profile verwenden streckenabhängig unterschiedliche Fahrerfelder. 1-s-Zielgruppen und 60-s-Rückstände sind Modellausgaben, keine offiziellen Zeitnahmewerte.
+
+| Seed | Profil | Siegertyp | Fahrer innerhalb 60 s | Medianrückstand s | Angriffsstarts |
+| --- | --- | --- | ---: | ---: | ---: |
+| 42 | flach | kletterer | 152 | 26.93 | 13 |
+| 42 | huegelig | kletterer | 30 | 169.86 | 41 |
+| 42 | klassiker | kletterer | 24 | 1120.31 | 74 |
+| 42 | berg | kletterer | 2 | 1108.44 | 45 |
+| 123 | flach | sprinter | 135 | 28.81 | 12 |
+| 123 | huegelig | klassiker | 25 | 115.69 | 28 |
+| 123 | klassiker | kletterer | 13 | 925.36 | 78 |
+| 123 | berg | kletterer | 1 | 1244.40 | 58 |
+| 2025 | flach | kletterer | 145 | 41.09 | 14 |
+| 2025 | huegelig | sprinter | 43 | 173.00 | 43 |
+| 2025 | klassiker | allrounder | 15 | 841.74 | 63 |
+| 2025 | berg | kletterer | 1 | 1273.86 | 53 |
+| 2026 | flach | sprinter | 154 | 17.29 | 24 |
+| 2026 | huegelig | kletterer | 5 | 109.88 | 51 |
+| 2026 | klassiker | kletterer | 1 | 930.19 | 73 |
+| 2026 | berg | zeitfahrer | 6 | 955.77 | 68 |
+| 2027 | flach | sprinter | 154 | 20.43 | 19 |
+| 2027 | huegelig | sprinter | 35 | 104.62 | 44 |
+| 2027 | klassiker | kletterer | 8 | 799.32 | 53 |
+| 2027 | berg | kletterer | 1 | 1143.60 | 55 |
+
+Auffällig: Zwei Kletterersiege auf der Flachetappe; im Seed 42 gewinnt F120 4,37 s vor dem ersten Sprinter, im Seed 2025 gewinnt F134 13,17 s vor dem ersten Sprinter. Die Umstände und Sprint-/Jagdlogik sind weiter zu untersuchen; ein Kletterersieg allein beweist keinen Fehler. Bei Liège liegen die Medianrückstände zwischen 799 und 1120 s. Auch diese Verteilung ist nicht sportlich validiert.
+
+Gleiches Fahrerfeld (Seed 2026, `--roster flach`): Sieger Flach Sprinter, Hügel Sprinter, Klassiker Zeitfahrer, Berg Kletterer; auf Klassiker und Berg kein Sprinter in den ersten zehn. Ein Seed belegt keine Wahrscheinlichkeiten.
+
+Die Gesamttestsuite wurde bei paralleler hoher Last vorzeitig ohne Gesamtergebnis beendet und wird mit zwei Testprozessen erneut ausgeführt.
