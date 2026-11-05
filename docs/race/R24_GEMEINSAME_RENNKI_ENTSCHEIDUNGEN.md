@@ -181,3 +181,12 @@ Nächster Diskussionspunkt: Zusammenspiel und Verfolgung von Teams nach Etablier
 - Fahrer sollen abhängig von Rennlage, Teamziel, Reserve, Gelände und persönlicher Neigung unterschiedlich reagieren können. Fehler und Fehleinschätzungen sind möglich, Ergebnisse bleiben offen.
 - Für spätere Karriereentwicklung können sich z. B. Selbstvertrauen oder Motivation über Rennen hinweg ändern; Mechanismen, betroffene Attribute und Stärke sowie der Einfluss von Team und Personal werden gesondert besprochen.
 - Konkrete Attribute, Wertebereiche, Verteilungen, Effekte und Implementierung sind noch nicht festgelegt oder validiert. Zielvorstellung; Regeln zunächst gemeinsam durchgehen, dann Entwicklungsmodell ändern und danach testen.
+
+## 20. Material und Fahrphysik — vereinbart
+
+- Aerodynamische Eigenschaften von Fahrrad/Komponenten, Kleidung und Fahrerposition können den Luftwiderstand und den physisch notwendigen Leistungsbedarf beeinflussen. Ein Materialvorteil ist kein pauschaler Ergebnis- oder Siegbonus.
+- Fahrer- und Fahrradmasse wirken über die Fahrphysik; bei längeren Anstiegen kann die Masse besonders relevant sein. Gewicht ergibt keine künstliche pauschale Zeitgutschrift.
+- Reifen und Streckenuntergrund können den Rollwiderstand und damit den Leistungsbedarf beeinflussen. Streckenprofil und Bedingungen sollen bei der Materialwahl relevant sein.
+- Es gibt keine für jeden Fahrer und jede Strecke automatisch beste Ausstattung. Konkrete individuelle Parameter, Wechselwirkungen, Auswahlmöglichkeiten, Kosten und Implementierung sind noch festzulegen und zu prüfen.
+- Für einen späteren Karrieremodus können Ausstattungswahl, Materialentwicklung und zuständiges Personal gesondert vertieft werden; daraus folgt nicht, dass diese Managerfunktion derzeit bereits besteht.
+- Die vorhandene Rennphysik berücksichtigt bereits einzelne Eingangsgrößen wie Masse und Luftwiderstand, aber kein vollständiges fertiggestelltes Materialmanagement. Gemeinsam vereinbarte Zielbeschreibung, noch keine vollständige Umsetzung oder Validierung.
