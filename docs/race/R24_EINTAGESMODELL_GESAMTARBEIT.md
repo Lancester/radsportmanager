@@ -122,3 +122,10 @@ Die frühere pauschale 8-km-Grenze für einen Geländeausblick wurde durch eine 
 - Nach der Überarbeitung: vollständige technische Prüfung und dokumentierter gepaarter Vergleich der Modelle auf vier Profilen über mehrere Seeds, einschließlich Ursachenprüfung auffälliger Verläufe und Kalibrierung.
 
 Diese Liste ist eine Gliederung der offenen Arbeit, keine prozentuale Fertigstellungsmessung. Viele Bereiche sind teilweise implementiert und müssen zusammen getestet werden; ihre Restdauer und die Ergebnisse des späteren Vergleichs sind nicht zuverlässig vorherzusagen.
+
+
+## Später aufgeschlossene Fahrer in der Fluchterkennung
+
+Die Fluchterkennung ergänzt einen später aufgeschlossenen Fahrer, wenn er sich tatsächlich nahe bei einem bereits erfassten Ausreißer und vor dem ursprünglichen Hauptfeld befindet. Damit bleibt die Flucht in diesem Fall aktiv, selbst wenn die ursprünglich erfassten Ausreißer zurückfallen. Die räumliche Zuordnung bleibt eine vereinfachte Heuristik; insbesondere bei langen Abstandsgruppen und stark wechselnden Gruppen muss sie weiter überprüft werden. Es handelt sich um Fluchterkennung, nicht um die vollständige Zusammenarbeit innerhalb der Flucht.
+
+25 gezielte technische Prüfungen für Fluchterkennung, Angriffsziele, Teamjagd und Geländeentscheidungen bestanden. Ein zunächst aufgedeckter Konflikt mit einer langen Abstandskette wurde behoben und der bestehende Test anschließend bestanden. Aktuelle Integrations- und Buildprüfungen laufen; der frühere Gesamtlauf mit 413 Tests bezieht sich auf den vorherigen Stand.
