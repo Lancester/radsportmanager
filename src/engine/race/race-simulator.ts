@@ -571,6 +571,7 @@ export function simulateRace(x:RaceInput):RaceResult {
         reserveFraction:s.physiology.remainingWPrimeJ/
           s.profile.wPrimeCapacityJ,
         aggression:s.rider.aggression,
+        wheelFindingSkill:s.rider.wheelFindingSkill,
         knownAbility:{id:s.rider.id,knownCpW:s.rider.criticalPowerW,
           massKg:s.rider.massKg,bikeMassKg:s.rider.bikeMassKg,
           dragAreaM2:s.rider.dragAreaM2,sprintSkill:s.rider.sprintSkill},
