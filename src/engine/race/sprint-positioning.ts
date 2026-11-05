@@ -44,6 +44,8 @@ export interface SprintPositionObservation {
   strategy:string;specialty:string|undefined;
   isTargetSprinter:boolean;isEscort:boolean;
   progress:number;
+  /** Optional: dynamische Planung anhand realer Reststrecke/-geschwindigkeit. */
+  remainingM?:number;ownSpeedMps?:number;wheelFindingSkill?:number;
   groupSize:number;rankInGroup:number;
   distanceFromGroupFrontM:number;
   targetRankInGroup:number|null;
@@ -64,9 +66,11 @@ export function decideSprintPosition(
   o:SprintPositionObservation,
 ):SprintPositionDecision|null {
   const c=SPRINT_POSITION;
+  const dynamic=o.remainingM!==undefined&&o.ownSpeedMps!==undefined&&
+    Number.isFinite(o.remainingM)&&Number.isFinite(o.ownSpeedMps)&&o.ownSpeedMps>0;
   if(!o.sprintFriendlyRace||
-    o.strategy!=='sprint'||o.progress>=c.finishCutoffProgress||
-    o.groupSize<c.minGroupSize||
+    o.strategy!=='sprint'||(dynamic?o.remainingM!<=250:o.progress>=c.finishCutoffProgress)||
+    o.groupSize<(dynamic?3:c.minGroupSize)||
     o.rankInGroup<1||o.rankInGroup>o.groupSize||
     o.frontGapM===null||o.frontGapM>42||
     o.reserveFraction<c.minReserveFraction||
@@ -85,9 +89,16 @@ export function decideSprintPosition(
 
   // Vor dem letzten Viertel NUR rückwärtige Abrissgefahr entschärfen.
   // Kein Drang in die Top 20 bei km 20.
-  const shelter=o.progress<c.advanceFromProgress;
+  // Zeit bis Ziel gegenüber geschätztem Positionsbedarf: dynamischer,
+  // aber ausdrücklich vorläufiger Plan, keine Prozent-Schranke.
+  const skill=Math.max(0,Math.min(1,o.wheelFindingSkill??.5));
+  const timeToFinish=dynamic?o.remainingM!/o.ownSpeedMps!:Infinity;
+  const neededPositionTime=dynamic?300+Math.max(0,o.distanceFromGroupFrontM)*3+
+    (1-skill)*180:0;
+  const shelter=dynamic?timeToFinish>neededPositionTime:
+    o.progress<c.advanceFromProgress;
   if(shelter){
-    if(!sprinter||o.progress<c.shelterFromProgress||
+    if(!sprinter||(!dynamic&&o.progress<c.shelterFromProgress)||
       o.rankInGroup<=Math.ceil(o.groupSize*c.rearSafetyFraction))
       return null;
     const powerW=Math.min(o.criticalPowerW*c.safetyCpFraction,
@@ -95,10 +106,11 @@ export function decideSprintPosition(
     return powerW>o.followPowerW+1?
       {powerW,reason:'protect_peloton_contact'}:null;
   }
-  const leadout=o.progress>=c.leadoutFromProgress;
-  const threshold=Math.max(c.minRankToPosition,
-    Math.ceil(o.groupSize*(leadout?
-      c.leadoutFrontShare:c.advanceFrontShare)));
+  const leadout=dynamic?timeToFinish<=120+Math.max(0,o.distanceFromGroupFrontM):
+    o.progress>=c.leadoutFromProgress;
+  const wanted=Math.ceil(o.groupSize*(leadout?
+    c.leadoutFrontShare:c.advanceFrontShare));
+  const threshold=dynamic?Math.max(1,wanted):Math.max(c.minRankToPosition,wanted);
   if(sprinter&&o.rankInGroup<=threshold)return null;
   if(escort&&(o.targetRankInGroup===null||
     o.targetRankInGroup<=threshold))return null;
