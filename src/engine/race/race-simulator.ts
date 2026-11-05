@@ -28,7 +28,7 @@ import {evaluatePursuit} from './pursuit-evaluation.ts';
 import {estimateOpponentThreat} from './opponent-assessment.ts';
 import {decideRiderReaction} from './rider-reaction.ts';
 import {decideJoinBridge} from './bridge-cooperation.ts';
-import {cooperativeRelayYield} from './bridge-relay.ts';
+import {cooperativeRelayYield,observedRelayFrontChange} from './bridge-relay.ts';
 import type {AttackPurpose} from './attack-purpose.ts';
 import {adaptiveAttackDraw,decideAdaptiveAttackOpportunity}
   from './adaptive-attack.ts';
@@ -132,7 +132,7 @@ export interface RaceInput {
   disableAttacks?:boolean;
 }
 export type RaceEventType =
-  'start'|'attack'|'chase'|'sprint'|'recovery'|'segment'|'group-split'|'breakaway'|'breakaway-caught'|'finish'|'team-pace'|'team-chase'|'sprint-train'|'bridge-start'|'bridge-stop'|'bridge-relay';
+  'start'|'attack'|'chase'|'sprint'|'recovery'|'segment'|'group-split'|'breakaway'|'breakaway-caught'|'finish'|'team-pace'|'team-chase'|'sprint-train'|'bridge-start'|'bridge-stop'|'bridge-relay'|'bridge-relay-position-change';
 export interface RaceEvent {
   timeS:number;km:number;type:RaceEventType;
   riderId?:string;teamId?:string;description:string;
@@ -480,6 +480,7 @@ export function simulateRace(x:RaceInput):RaceResult {
         bestCaptainClimb*.97).map(s=>s.rider.id):[]);
   const cooperativeFrontSeconds=new Map<string,number>();
   const cooperativeYielding=new Set<string>();
+  const relayOffers=new Map<string,{partnerId:string;targetId:string}>();
   const activeAttackPurposes=new Map<string,AttackPurpose>();
   const bridgePlans=new Map<string,{targetId:string;powerW:number;bestGapM:number;
     lastProgressS:number}>();
@@ -1074,6 +1075,24 @@ export function simulateRace(x:RaceInput):RaceResult {
       rankInPhysicalGroup.set(g.id,i+1);
       physicalGroupOf.set(g.id,group);
     });
+    // Ein Angebot ist noch keine Übernahme: Positionswechsel werden nur
+    // bei weiterhin real zusammen fahrenden Verfolgern protokolliert.
+    for(const [formerId,offer] of relayOffers){
+      const former=byId.get(formerId),partner=byId.get(offer.partnerId);
+      const sameGroup=!!physicalGroupOf.get(formerId)&&
+        physicalGroupOf.get(formerId)===physicalGroupOf.get(offer.partnerId);
+      const sameTarget=bridgePlans.get(formerId)?.targetId===offer.targetId&&
+        bridgePlans.get(offer.partnerId)?.targetId===offer.targetId;
+      if(!former||!partner||!sameGroup||!sameTarget){relayOffers.delete(formerId);continue;}
+      if(observedRelayFrontChange({sameGroup,sameTarget,
+        formerFrontPositionM:former.positionM,partnerPositionM:partner.positionM})){
+        if(events.length<100000)events.push({timeS:t,km:partner.positionM/1000,
+          type:'bridge-relay-position-change',riderId:partner.rider.id,
+          teamId:partner.rider.teamId,
+          description:`${partner.rider.id} liegt nach Ablöseangebot vor ${formerId}; Ziel ${offer.targetId}`});
+        relayOffers.delete(formerId);
+      }
+    }
     // Im letzten Viertel mehrere *wirklich nahe* Helfer koordinieren.
     // Ohne reale 1D-Position in derselben Gruppe kann niemand helfen.
     const escortByTeam=new Map<string,Set<string>>();
@@ -1665,10 +1684,12 @@ export function simulateRace(x:RaceInput):RaceResult {
             cpW:s.dayCpW,requestedW:commanded});
           if(result!==null){
             commanded=result;
-            if(!cooperativeYielding.has(s.rider.id)&&events.length<100000)
+            if(!cooperativeYielding.has(s.rider.id)&&events.length<100000){
               events.push({timeS:t,km:s.positionM/1000,type:'bridge-relay',
                 riderId:s.rider.id,teamId:s.rider.teamId,
-                description:`Nach ${Math.round(seconds)} s gemeinsamer Führung wird die Ablösung angeboten`});
+                description:`Nach ${Math.round(seconds)} s gemeinsamer Führung wird ${partner.id} die Ablösung angeboten`});
+              relayOffers.set(s.rider.id,{partnerId:partner.id,targetId:bp.targetId});
+            }
             cooperativeYielding.add(s.rider.id);
           }
         }else {cooperativeFrontSeconds.delete(s.rider.id);
