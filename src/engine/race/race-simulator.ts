@@ -554,6 +554,9 @@ export function simulateRace(x:RaceInput):RaceResult {
         reserveFraction:s.physiology.remainingWPrimeJ/
           s.profile.wPrimeCapacityJ,
         aggression:s.rider.aggression,
+        knownAbility:{id:s.rider.id,knownCpW:s.rider.criticalPowerW,
+          massKg:s.rider.massKg,bikeMassKg:s.rider.bikeMassKg,
+          dragAreaM2:s.rider.dragAreaM2,sprintSkill:s.rider.sprintSkill},
         chaseSpent:sprintFriendlyRace&&s.chaseLoad.spent,
       }));
       const teamRefs=x.teams.map(team=>({
@@ -577,6 +580,8 @@ export function simulateRace(x:RaceInput):RaceResult {
           previous:chaseState,
           sprintFinaleMode:sprintFriendlyRace,
           adaptiveChase:x.groupRidingModel==='stable-pack',
+          threatProfile:sprintFriendlyRace?'flach':
+            longClimbs.some(c=>c.lengthM>=5000&&c.endM>leader.positionM)?'berg':'gemischt',
         });
         chaseState=next.state;
         return next;
