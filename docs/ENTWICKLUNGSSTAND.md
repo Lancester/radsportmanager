@@ -1,5 +1,9 @@
 # Entwicklungsstand
 
+## Schritt 2 – Rennverläufe untersucht (05.11.2026)
+
+Die gepaarten Liège- und Hautacam-Läufe sowie ein Berg-Kontrolllauf ohne Attacken sind in [Schritt 2: Rennverläufe](race/R24_SCHRITT2_RENNVERLAEUFE.md) mit Skript und Rohdaten dokumentiert. Der Sprintersieg trat auf dem Stand vor der Kapitänsjagd auf; aktuell liegt derselbe Fahrer im Einzelbeispiel auf Platz 15. Eine frühe Berggruppenteilung tritt auch ohne Attacken auf. Die stark unterschiedlichen Resultate der Kletterer gehen mit früh auseinanderlaufenden Gruppenverläufen einher, ihre unmittelbaren Ursachen sind mit 5-km-Messpunkten nicht abschließend bewiesen. Mess- und Modellgrenzen sowie nächste Untersuchungen stehen im Bericht. Keine Engineänderung; nach Nutzerwunsch hier anhalten und Feedback abwarten.
+
 ## Schritt 1 – technische Absicherung (05.11.2026)
 
 Der auf GitHub gespeicherte Entwicklungsstand `fc64c6b781c5696b88911e2f010845bbc244e17d` hat den vollständigen PR-Testlauf [GitHub Actions #286](https://github.com/Lancester/radsportmanager/actions/runs/41987212329) erfolgreich bestanden. Das Browsermodul wurde lokal mit TypeScript 5.8.3 neu erzeugt und als ES-Modul erfolgreich geladen. Der vollständige lokale Lauf auf demselben Code bestand mit **363/363 Tests** (Node 24.22.1, 139 s); keine der beiden expliziten R24-Warnungen zur Feldteilung wurde in diesem Lauf ausgegeben. Auch der Syntaxcheck des Diagnose-Skripts bestand.
