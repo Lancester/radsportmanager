@@ -190,3 +190,11 @@ Nächster Diskussionspunkt: Zusammenspiel und Verfolgung von Teams nach Etablier
 - Es gibt keine für jeden Fahrer und jede Strecke automatisch beste Ausstattung. Konkrete individuelle Parameter, Wechselwirkungen, Auswahlmöglichkeiten, Kosten und Implementierung sind noch festzulegen und zu prüfen.
 - Für einen späteren Karrieremodus können Ausstattungswahl, Materialentwicklung und zuständiges Personal gesondert vertieft werden; daraus folgt nicht, dass diese Managerfunktion derzeit bereits besteht.
 - Die vorhandene Rennphysik berücksichtigt bereits einzelne Eingangsgrößen wie Masse und Luftwiderstand, aber kein vollständiges fertiggestelltes Materialmanagement. Gemeinsam vereinbarte Zielbeschreibung, noch keine vollständige Umsetzung oder Validierung.
+
+## 21. Zielreihenfolge und gewertete Gruppenzeiten — vereinbart
+
+- Die Platzierung ergibt sich aus der tatsächlichen Zielreihenfolge der Fahrer.
+- Fahrer, die ohne relevante zeitliche Lücke zwischen aufeinanderfolgenden Fahrern ins Ziel kommen, bilden eine Zielgruppe und erhalten die gewertete Zeit des ersten Fahrers dieser Gruppe. Eine ausreichend große Nachbarlücke beginnt eine weitere Gruppe mit eigener Zeit.
+- Die simulierten individuellen Zielzeiten bleiben für Physik und Analyse nachvollziehbar; die für die jeweilige Wertung geltende Gruppenzeit wird in der Ergebnisliste verwendet.
+- Die maßgebliche zeitliche Lücke und mögliche Sonderregeln können von Wettbewerb und Rennart abhängen; konkrete Grenzen müssen für Tests und spätere Wettbewerbe ausdrücklich angegeben bzw. gesondert festgelegt werden. Keine Gleichsetzung der 1-s- und 3-s-Diagnostik mit einer vollständigen offiziellen Regelumsetzung.
+- Zielbeschreibung, keine Behauptung einer bereits vollständigen offiziellen Zeitwertung. Die tatsächlich gültigen Regelwerke zum Zeitpunkt der Umsetzung sind gesondert zu prüfen.
