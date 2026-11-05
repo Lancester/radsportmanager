@@ -24,7 +24,7 @@ import {decideStablePackRiding} from './stable-pack.ts';
 import {decideClimbTempo} from './climb-tempo.ts';
 import {decideGeneralAttackOpportunity} from './general-attack.ts';
 import {selectAttackPurpose,estimateBridge} from './attack-purpose.ts';
-import {evaluatePursuit} from './pursuit-evaluation.ts';
+import {evaluatePursuit,estimateTerrainOpportunity} from './pursuit-evaluation.ts';
 import {estimateOpponentThreat} from './opponent-assessment.ts';
 import {decideRiderReaction} from './rider-reaction.ts';
 import {decideJoinBridge} from './bridge-cooperation.ts';
@@ -942,13 +942,16 @@ export function simulateRace(x:RaceInput):RaceResult {
           let routeStart=0,favorableTerrainAhead=false;
           for(const part of x.segments){
             const end=routeStart+part.lengthM;
-            if(routeStart>s.positionM&&routeStart-s.positionM<=8000&&end>s.positionM){
+            if(routeStart>s.positionM&&end>s.positionM&&bridgeTarget&&gap!==null){
               const ownClimb=s.rider.criticalPowerW/(s.rider.massKg+s.rider.bikeMassKg);
-              const targetClimb=bridgeTarget?bridgeTarget.rider.criticalPowerW/
-                (bridgeTarget.rider.massKg+bridgeTarget.rider.bikeMassKg):ownClimb;
-              if((part.gradeFraction>=.04&&ownClimb>targetClimb*1.02)||
-                (part.gradeFraction<=-.03&&bridgeTarget&&
-                  s.rider.descentSkill>bridgeTarget.rider.descentSkill+.05))
+              const targetClimb=bridgeTarget.rider.criticalPowerW/
+                (bridgeTarget.rider.massKg+bridgeTarget.rider.bikeMassKg);
+              if(estimateTerrainOpportunity({distanceAheadM:routeStart-s.positionM,
+                remainingM:Math.max(0,totalM-s.positionM),gapM:Math.max(0,gap),
+                ownSpeedMps:s.speedMps,targetSpeedMps:bridgeTarget.speedMps,
+                gradeFraction:part.gradeFraction,ownClimbWkg:ownClimb,
+                targetClimbWkg:targetClimb,ownDescentSkill:s.rider.descentSkill,
+                targetDescentSkill:bridgeTarget.rider.descentSkill}))
                 favorableTerrainAhead=true;
             }
             routeStart=end;
