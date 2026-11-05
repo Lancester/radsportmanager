@@ -105,3 +105,16 @@ Nächster Diskussionspunkt: Zusammenspiel und Verfolgung von Teams nach Etablier
 - Den Sprintbeginn beeinflussen Position, Tempo, Wind, Reserven, Fahrereigenschaften und Konkurrenz. Fehler und unpassendes Timing sind möglich.
 - Grundsätze gelten auch für eine kleinere Gruppe. Ablauf und sinnvolle Unterstützung können sich gegenüber einem Massensprint unterscheiden.
 - Sportliche Zielbeschreibung; Regeln sind noch nicht vollständig umgesetzt oder validiert. Die vorhandene vereinfachte 1D-Gruppenposition begrenzt realistische Spurwahl und Einklemmen. Vor weiteren Tests die Regeln gemeinsam durchgehen.
+
+## 12. Fahren an längeren Anstiegen — vereinbart
+
+- Das gefahrene Tempo entsteht aus tatsächlicher Führungsarbeit und der physikalischen Bewegung. Jeder Fahrer fordert die Leistung an, die zum Mitfahren nötig ist; wer sie nicht aufbringen oder durchhalten kann, kann zurückfallen.
+- Fahrer können Attacken unmittelbar beantworten oder ein gleichmäßigeres eigenes Tempo wählen und eine zeitweilige Lücke akzeptieren. Individuelle Fähigkeiten, Masse, W′, bisherige Ermüdung, taktisches Ziel und die Rennsituation wirken zusammen.
+- Geeignete, tatsächlich anwesende Helfer können ihren Kapitän unterstützen, bis ihr Einsatz endet oder ihre Kräfte nachlassen. Eigenes Tempo oder ein Antritt des Kapitäns bleibt möglich.
+- Bergstärke bzw. ein Fahreretikett gibt keinen automatischen Positions- oder Siegbonus. Auch ein Sprinter kann abhängig von individuellen Werten und tatsächlichem Tempo mitfahren; spätere Abfahrt und Flachstrecke können erneuten Anschluss ermöglichen.
+- Sportliche Zielbeschreibung, noch kein Nachweis vollständiger Umsetzung oder Validierung. Erst Regeln gemeinsam durchgehen, dann Modell ändern und testen.
+
+## Offene Diskussionsidee: verschiedene Bergfahrertypen
+
+- Nutzer fragt, ob sich Fahrer unterscheiden sollten, die besonders gut gleichmäßiges Tempo fahren oder halten, und Fahrer, die bewusst wiederholt attackieren und Konkurrenten durch Tempowechsel belasten können, vergleichbar mit beobachtetem offensivem Fahrstil.
+- Zu klären sind die Trennung zwischen körperlicher Fähigkeit und taktischer Neigung, die Rolle von tatsächlichem Energieverbrauch und Erholung, Reaktionen der Gegner sowie das Risiko eigener Erschöpfung. Noch keine konkreten Parameter, zusätzliche Attribute oder Implementierung vereinbart.
