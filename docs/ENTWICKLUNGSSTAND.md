@@ -1,5 +1,13 @@
 # Entwicklungsstand
 
+## Schritt 1 – technische Absicherung (05.11.2026)
+
+Der auf GitHub gespeicherte Entwicklungsstand `fc64c6b781c5696b88911e2f010845bbc244e17d` hat den vollständigen PR-Testlauf [GitHub Actions #286](https://github.com/Lancester/radsportmanager/actions/runs/41987212329) erfolgreich bestanden. Das Browsermodul wurde lokal mit TypeScript 5.8.3 neu erzeugt und als ES-Modul erfolgreich geladen. Der vollständige lokale Lauf auf demselben Code bestand mit **363/363 Tests** (Node 24.22.1, 139 s); keine der beiden expliziten R24-Warnungen zur Feldteilung wurde in diesem Lauf ausgegeben. Auch der Syntaxcheck des Diagnose-Skripts bestand.
+
+**Kritische Bewertung der Teständerungen:** Die isolierten Klassiker-Tests prüfen die Rampenentscheidung bei geeigneter Situation sowie Gegenbeispiele; der kontrollierte 20-km-Flachtest verlangt ohne Wind und Attacken eine zusammenhängende 154er-Zielgruppe. Im echten Profiltest sind eine große Zielgruppe, die fehlende Feldteilung ohne erneute Attacke und eine feste Obergrenze des Hügel-Medianrückstands jedoch keine harten Gates mehr. Warnungen bzw. reine Gültigkeitsprüfungen können sportliche Regressionen deshalb nicht zuverlässig erkennen. Auch eine funktionslose Einbindung der Spezial-Rampenarbeit kann trotz isoliertem Funktionstest unentdeckt bleiben, wenn der Referenzlauf keine geeignete Gruppe enthält. Diese Lücken bleiben offen und müssen mit gezielten, situationsabhängigen Integrationstests und ausgewerteten Mehrseed-Vergleichen geschlossen werden; eine feste Wunsch-Zielgruppe oder ein pauschales Rückstandslimit wären dafür keine ausreichende fachliche Begründung.
+
+**Vereinbarung:** Nach Abschluss jedes Schritts anhalten und den Nutzer informieren. Nächster Schritt nach Freigabe: detaillierte Diagnose der ausgewählten Rennverläufe, noch keine vorgezogene Änderung an der Renn-KI.
+
 ## Wiederaufnehmbarer Zwischenstand – R-24 (05.11.2026)
 
 **Entwicklungsbranch:** `feature/r24-rennki-audit`, [Entwurf PR #81](https://github.com/Lancester/radsportmanager/pull/81). Dieser Stand ist experimentell; `main` bleibt unverändert. Die ausführliche Chronik steht in [R-24 Auditkorrekturen](race/R24_AUDIT_KORREKTUREN.md), der Abgleich mit echten Rennen in [R-24 Realrennen](race/R24_REALRENNEN_ABGLEICH.md).
@@ -8,7 +16,7 @@
 
 **Sportlicher Zwischenstand:** Im kontrollierten Vergleich mit demselben fiktiven Fahrerfeld und Seed 2026 lagen die Medianrückstände `main` → aktueller Kandidat bei Lille 26,9 → 17,2 s, Boulogne 344,7 → 205,4 s, Liège 791,2 → 600,6 s und Hautacam 1931,7 → 936,2 s. Das sind Einzelbeobachtungen, keine Zielwerte und kein Nachweis einer allgemeinen Verbesserung. Andere Zusammensetzungen und Seeds ergeben andere Ergebnisse; insbesondere variiert die Wirkung der Kapitänsjagd. Große Rückstände sind für sich genommen kein Fehler: Der Finishermedian des echten Liège betrug 2024 +13:10 und 2025 +5:41. Die unterschiedlichen Teilnehmer, Ausfälle und Zeitmessungen begrenzen den Vergleich.
 
-**Geprüft:** 17 gezielte Tests zur Rampenbewertung und 19 zur Jagd-/Schutzlogik bestanden; nach Anpassung situationsabhängiger Integrationserwartungen bestanden 12 gezielte Profil-/Klassiktests. TypeScript wurde geprüft. Der letzte Gesamtlauf vor der Testanpassung ergab 362/363; der einzelne Fehltest verlangte Rampenarbeit auch ohne passende Rennsituation. Die Testannahme wurde transparent angepasst und durch unabhängige situative Tests ergänzt; ein neuer vollständiger Gesamtlauf steht noch aus. Keine Realismusfreigabe.
+**Geprüft:** 17 gezielte Tests zur Rampenbewertung und 19 zur Jagd-/Schutzlogik bestanden; nach Anpassung situationsabhängiger Integrationserwartungen bestanden 12 gezielte Profil-/Klassiktests. TypeScript wurde geprüft. Der letzte Gesamtlauf vor der Testanpassung ergab 362/363; der einzelne Fehltest verlangte Rampenarbeit auch ohne passende Rennsituation. Die Testannahme wurde transparent angepasst und durch unabhängige situative Tests ergänzt; der spätere vollständige Gesamtlauf bestand mit 363/363 Tests (siehe Schritt 1 oben). Keine Realismusfreigabe.
 
 **Als Nächstes:** Vollständige Tests und CI auf dem jeweiligen Branchstand prüfen; vier Profile mit mehreren Seeds und gleichen Feldern nachvollziehbar gegenüberstellen; Rennverläufe und Leistung insbesondere bei frühen Berg-Gruppentrennungen, Anschlüssen, Sprintern und Klassikern untersuchen. Erst danach Auswirkungen und dokumentierte Schwellen bewerten. Noch kein Merge nach `main`.
 

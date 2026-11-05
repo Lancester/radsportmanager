@@ -255,3 +255,7 @@ Auf ausdrücklichen Nutzerwunsch werden außerdem keine pauschalen Obergrenzen f
 ### Wiederaufnahme nach Unterbrechung (05.11.2026)
 
 Der aktuelle wiederaufnehmbare Gesamtstand mit den nächsten Schritten steht am Anfang von [ENTWICKLUNGSSTAND.md](../ENTWICKLUNGSSTAND.md). Die nach der oben erläuterten Testanpassung ausgeführten Profil- und Klassiktests bestanden mit **12/12**; ein vollständiger erneuter Testlauf ist weiterhin offen. Die zwei vorher untersuchten Dämpfungsvarianten des Fernbezugs wurden nicht integriert. Die Kapitänsjagd und ihre Schwellen sind dagegen im Entwicklungsbranch enthalten. Nach Wiederaufnahme zuerst den aktuellen GitHub-Branch und CI-Status prüfen und anschließend die offenen kausalen und Mehrseed-Prüfungen fortführen.
+
+### Schritt 1 abgeschlossen (05.11.2026)
+
+Auf dem gesicherten Stand bestand der vollständige lokale Testlauf mit **363/363 Tests**, dazu der Browsermodul-Build und ESM-Import sowie der Syntaxcheck des Diagnose-Skripts. Der [PR-CI-Lauf #286](https://github.com/Lancester/radsportmanager/actions/runs/41987212329) für `fc64c6b781c5696b88911e2f010845bbc244e17d` war erfolgreich. Die kritische Einordnung der seit R-24 gelockerten Testannahmen und der damit verbleibenden Lücken steht im [Entwicklungsstand](../ENTWICKLUNGSSTAND.md). Die früheren Hinweise auf einen noch ausstehenden vollständigen Lauf sind durch diesen Eintrag überholt. Nach Nutzerwunsch an dieser Stelle stoppen.
