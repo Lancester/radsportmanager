@@ -26,7 +26,8 @@ import {adaptiveAttackDraw,decideAdaptiveAttackOpportunity}
 import {decideSprintPosition,SPRINT_POSITION} from './sprint-positioning.ts';
 import {decideSprintLaunch,inferredSprintPeakPowerW,sprintPowerDemand}
   from './final-sprint.ts';
-import {decideSprintLeadoutPace,SPRINT_LEADOUT} from './sprint-leadout.ts';
+import {decideSprintLeadoutPace,sprintLeadoutEligible,SPRINT_LEADOUT}
+  from './sprint-leadout.ts';
 import {chooseIndependentSprintWheel,SPRINT_WHEEL} from './sprint-wheel-choice.ts';
 import {decideClassicsPunch,CLASSICS_PUNCH} from './classics-punch.ts';
 import {decideClassicsApproach,decideClassicsRampTempo}
@@ -1237,7 +1238,10 @@ export function simulateRace(x:RaceInput):RaceResult {
           // um für den Sprinter ein wirklich nutzbares Rad anzubieten.
           if(s.rider.role==='helfer'&&
             teams.get(s.rider.teamId)?.strategy==='sprint'&&
-            sprintTarget?.rider.specialty==='sprinter'){
+            sprintTarget?.rider.specialty==='sprinter'&&
+            sprintLeadoutEligible(s.crewMission,
+              physicalGroupOf.get(s.rider.id)!==undefined&&
+              physicalGroupOf.get(s.rider.id)===physicalGroupOf.get(sprintTarget.rider.id))){
             const leadout=decideSprintLeadoutPace({
               enabled:true,
               currentIntent:s.intent,
