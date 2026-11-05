@@ -61,6 +61,14 @@ test('R15: Sprintzug mit mehreren Helfern und geschütztem Sprinter',()=>{
   assert.ok(assigned.every(o=>o.desiredPowerW>300));
   assert.ok(!p.orders.has('SPR-S'),'Sprinter wird nicht als eigener Helfer eingeplant');
 });
+test('R24: Sprintzug orientiert sich an Zielzeit und Position statt Rennprozent',()=>{
+  const create=(remainingM,progress)=>decideIntelligentCrew({riders:pack,teams,
+    timeS:1200,progress,remainingM,adaptiveChase:true,sprintFinaleMode:true,
+    restInPeloton:true,physicalRelayMode:true,chasingTeamIds:new Set()});
+  assert.ok([...create(4000,.6).orders.values()].some(o=>o.mission==='sprintzug'));
+  assert.equal([...create(40000,.9).orders.values()].some(o=>o.mission==='sprintzug'),false);
+  assert.equal([...create(4000,.6).orders.values()].some(o=>o.riderId==='SPR-S'),false);
+});
 test('R15: echte Führungsposition, Rollen und Wprime-Reserve begrenzen den Einsatz',()=>{
   const riders=[
     ...pack.map(r=>r.id==='SPR-H0'?{...r,reserveFraction:0.04}:r),
