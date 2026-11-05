@@ -916,8 +916,14 @@ export function simulateRace(x:RaceInput):RaceResult {
             r.positionM>=s.positionM&&r.positionM-s.positionM<=150)
             .sort((a,b)=>b.threat-a.threat||a.positionM-b.positionM||
               a.id.localeCompare(b.id))[0];
+          const nearbyChaseHelpers=s.rider.role==='kapitaen'?
+            (localAttackGroup??[]).filter(r=>r.rider.teamId===s.rider.teamId&&
+              r.rider.role==='helfer'&&r.positionM>=s.positionM&&
+              r.positionM-s.positionM<=40&&
+              planned?.orders.get(r.rider.id)?.mission==='jagd').length:0;
           if(rival&&decideRiderReaction({gapM:rival.positionM-s.positionM,
             threat:rival.threat,reserveFraction:obs.reserveFraction,
+            nearbyChaseHelpers,
             aggression:s.rider.aggression,isTeammate:false,hasTeamDuty:false,
             currentIntent:s.intent,draw:adaptiveAttackDraw(x.seed,s.rider.id,t)}))
             baseProposal={intent:'verfolgung',desiredPowerW:s.dayCpW*1.08,
