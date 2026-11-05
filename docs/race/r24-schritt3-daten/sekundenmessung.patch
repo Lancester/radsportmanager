@@ -1,0 +1,21 @@
+--- a/src/engine/race/race-simulator.ts
++++ b/src/engine/race/race-simulator.ts
+@@ -1535,6 +1535,18 @@
+       // Andere Gruppenmodelle behalten ihr bisheriges Vergleichsverhalten.
+       const availability=x.enduranceModel==='off'?1:
+         endurancePowerAvailability(s.endurance);
++      if(t>=2000&&t<=2500&&t%2===0&&['F078','F134'].includes(s.rider.id)){
++        const ordered=[...states].filter(q=>q.finishTimeS===null).sort((a,b)=>b.positionM-a.positionM);
++        const index=ordered.findIndex(q=>q.rider.id===s.rider.id);
++        const ahead=ordered[index-1]; const head=groupPaceByRider.get(s.rider.id);
++        console.error(JSON.stringify({t,id:s.rider.id,pos:s.positionM,ownSpeed:s.speedMps,
++          frontId:ahead?.rider.id??null,frontPos:ahead?.positionM??null,
++          frontSpeed:frontSpeed.get(s.rider.id),frontAccel:frontAcceleration.get(s.rider.id),
++          frontGap:frontGap.get(s.rider.id),head,grade:segment.gradeFraction,
++          command:commanded,intent:s.intent,mission:s.crewMission,duty:s.crewDuty,
++          group:actualGroupSize.get(s.rider.id),aero:aeroFactor,
++          reserve:s.physiology.remainingWPrimeJ/s.profile.wPrimeCapacityJ}));
++      }
+       const cp=x.groupRidingModel==='stable-pack'&&x.enduranceModel!=='off'?
+         applyEnduranceLimitedCpStep({profile:s.profile,state:s.physiology,
+           desiredPowerW:commanded,dt,availability,

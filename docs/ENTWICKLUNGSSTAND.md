@@ -1,5 +1,9 @@
 # Entwicklungsstand
 
+## Schritt 3 – Gruppenübergang und Sprinter geprüft (05.11.2026)
+
+[Schritt 3: Gruppen und Sprinter](race/R24_SCHRITT3_GRUPPEN_UND_SPRINTER.md) enthält aktuelle Sekundenmessung, gepaarte Gegenprobe, reale Auftragsereignisse im fiktiven Rennen und einen Test zu individuell unterschiedlichen Sprintern. Eine einfache lokale Beschleunigungsreferenz veränderte die Renndynamik stark und wurde nicht in die Engine übernommen. Der Gruppenübergang und die tatsächliche Dauer und Wirksamkeit der Kapitänsjagd sind daher **noch nicht abschließend gelöst**. Fünf zielgerichtete Tests bestanden. Diagnose, Messdaten und verworfene Versuchsänderung sind gesichert; für Nutzerfeedback hier anhalten.
+
 ## Schritt 2 – Rennverläufe untersucht (05.11.2026)
 
 Die gepaarten Liège- und Hautacam-Läufe sowie ein Berg-Kontrolllauf ohne Attacken sind in [Schritt 2: Rennverläufe](race/R24_SCHRITT2_RENNVERLAEUFE.md) mit Skript und Rohdaten dokumentiert. Der Sprintersieg trat auf dem Stand vor der Kapitänsjagd auf; aktuell liegt derselbe Fahrer im Einzelbeispiel auf Platz 15. Eine frühe Berggruppenteilung tritt auch ohne Attacken auf. Die stark unterschiedlichen Resultate der Kletterer gehen mit früh auseinanderlaufenden Gruppenverläufen einher, ihre unmittelbaren Ursachen sind mit 5-km-Messpunkten nicht abschließend bewiesen. Mess- und Modellgrenzen sowie nächste Untersuchungen stehen im Bericht. Keine Engineänderung; nach Nutzerwunsch hier anhalten und Feedback abwarten.

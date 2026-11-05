@@ -1,0 +1,550 @@
+{
+  "scenario": "berg",
+  "seed": 2026,
+  "events": [
+    {
+      "timeS": 0,
+      "km": 0,
+      "type": "team-pace",
+      "riderId": "F135",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 135: Helfer hält sich für den Mannschaftseinsatz bereit"
+    },
+    {
+      "timeS": 10,
+      "km": 0.1034756061741423,
+      "type": "team-pace",
+      "riderId": "F080",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 080: Helfer hält sich für den Mannschaftseinsatz bereit"
+    },
+    {
+      "timeS": 40,
+      "km": 0.42981754493609065,
+      "type": "team-pace",
+      "riderId": "F136",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 136: Helfer hält sich für den Mannschaftseinsatz bereit"
+    },
+    {
+      "timeS": 780,
+      "km": 9.01950683965676,
+      "type": "team-pace",
+      "riderId": "F084",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 084: Helfer hält sich für den Mannschaftseinsatz bereit"
+    },
+    {
+      "timeS": 850,
+      "km": 10.282132248633499,
+      "type": "team-pace",
+      "riderId": "F080",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 080: Helfer hält sich für den Mannschaftseinsatz bereit"
+    },
+    {
+      "timeS": 990,
+      "km": 12.863323025927489,
+      "type": "team-pace",
+      "riderId": "F137",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 137: Helfer hält sich für den Mannschaftseinsatz bereit"
+    },
+    {
+      "timeS": 1280,
+      "km": 17.241192241108735,
+      "type": "team-chase",
+      "riderId": "F080",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 080: Team hilft dem abgehängten Kapitän beim Anschluss"
+    },
+    {
+      "timeS": 1280,
+      "km": 17.287617724132552,
+      "type": "team-chase",
+      "riderId": "F084",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 084: Team hilft dem abgehängten Kapitän beim Anschluss"
+    },
+    {
+      "timeS": 1360,
+      "km": 17.99319475149738,
+      "type": "team-pace",
+      "riderId": "F080",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 080: Helfer hält sich für den Mannschaftseinsatz bereit"
+    },
+    {
+      "timeS": 1520,
+      "km": 19.615730930170134,
+      "type": "team-pace",
+      "riderId": "F137",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 137: Helfer hält sich für den Mannschaftseinsatz bereit"
+    },
+    {
+      "timeS": 1560,
+      "km": 20.019125279636715,
+      "type": "team-pace",
+      "riderId": "F137",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 137: Helfer hält sich für den Mannschaftseinsatz bereit"
+    },
+    {
+      "timeS": 1690,
+      "km": 21.167332809861026,
+      "type": "attack",
+      "riderId": "F081",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 081: Rennlage, Fahrerposition und W′-Reserve erlauben Angriff"
+    },
+    {
+      "timeS": 2070,
+      "km": 24.615893705255967,
+      "type": "team-chase",
+      "riderId": "F080",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 080: Team hilft dem abgehängten Kapitän beim Anschluss"
+    },
+    {
+      "timeS": 2070,
+      "km": 24.520376636581556,
+      "type": "team-chase",
+      "riderId": "F135",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 135: Team hilft dem abgehängten Kapitän beim Anschluss"
+    },
+    {
+      "timeS": 2070,
+      "km": 24.515520953052768,
+      "type": "team-chase",
+      "riderId": "F136",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 136: Team hilft dem abgehängten Kapitän beim Anschluss"
+    },
+    {
+      "timeS": 2520,
+      "km": 33.12212812494765,
+      "type": "team-chase",
+      "riderId": "F081",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 081: Team hilft dem abgehängten Kapitän beim Anschluss"
+    },
+    {
+      "timeS": 2980,
+      "km": 37.837593401022616,
+      "type": "team-pace",
+      "riderId": "F081",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 081: Helfer hält sich für den Mannschaftseinsatz bereit"
+    },
+    {
+      "timeS": 3310,
+      "km": 41.04953000211185,
+      "type": "team-pace",
+      "riderId": "F081",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 081: Helfer hält sich für den Mannschaftseinsatz bereit"
+    },
+    {
+      "timeS": 3320,
+      "km": 41.208943227191135,
+      "type": "team-chase",
+      "riderId": "F080",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 080: Team hilft dem abgehängten Kapitän beim Anschluss"
+    },
+    {
+      "timeS": 3320,
+      "km": 41.19957584979507,
+      "type": "team-chase",
+      "riderId": "F081",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 081: Team hilft dem abgehängten Kapitän beim Anschluss"
+    },
+    {
+      "timeS": 3340,
+      "km": 41.509728259038354,
+      "type": "team-pace",
+      "riderId": "F081",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 081: Helfer hält sich für den Mannschaftseinsatz bereit"
+    },
+    {
+      "timeS": 3350,
+      "km": 41.68165242993332,
+      "type": "team-chase",
+      "riderId": "F080",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 080: Team hilft dem abgehängten Kapitän beim Anschluss"
+    },
+    {
+      "timeS": 3350,
+      "km": 41.66651756659044,
+      "type": "team-chase",
+      "riderId": "F081",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 081: Team hilft dem abgehängten Kapitän beim Anschluss"
+    },
+    {
+      "timeS": 3960,
+      "km": 50.68009436985589,
+      "type": "team-pace",
+      "riderId": "F081",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 081: Helfer hält sich für den Mannschaftseinsatz bereit"
+    },
+    {
+      "timeS": 4370,
+      "km": 54.95806434382526,
+      "type": "team-chase",
+      "riderId": "F079",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 079: Helfer unterstützt die organisierte Verfolgung"
+    },
+    {
+      "timeS": 4370,
+      "km": 54.88441802049895,
+      "type": "team-chase",
+      "riderId": "F080",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 080: Helfer unterstützt die organisierte Verfolgung"
+    },
+    {
+      "timeS": 4370,
+      "km": 54.95786521782488,
+      "type": "team-chase",
+      "riderId": "F082",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 082: Team übernimmt Verfolgung an der Feldspitze"
+    },
+    {
+      "timeS": 4370,
+      "km": 54.95306448854626,
+      "type": "team-chase",
+      "riderId": "F084",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 084: Helfer unterstützt die organisierte Verfolgung"
+    },
+    {
+      "timeS": 4530,
+      "km": 56.568175389377046,
+      "type": "team-chase",
+      "riderId": "F080",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 080: Team hilft dem abgehängten Kapitän beim Anschluss"
+    },
+    {
+      "timeS": 4530,
+      "km": 56.49857154357914,
+      "type": "team-chase",
+      "riderId": "F081",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 081: Team hilft dem abgehängten Kapitän beim Anschluss"
+    },
+    {
+      "timeS": 4850,
+      "km": 61.52372247182152,
+      "type": "team-chase",
+      "riderId": "F080",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 080: Team hilft dem abgehängten Kapitän beim Anschluss"
+    },
+    {
+      "timeS": 4910,
+      "km": 62.53823517796726,
+      "type": "team-chase",
+      "riderId": "F080",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 080: Team hilft dem abgehängten Kapitän beim Anschluss"
+    },
+    {
+      "timeS": 4930,
+      "km": 62.87565463441722,
+      "type": "team-chase",
+      "riderId": "F080",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 080: Team hilft dem abgehängten Kapitän beim Anschluss"
+    },
+    {
+      "timeS": 5820,
+      "km": 72.934880576242,
+      "type": "team-chase",
+      "riderId": "F079",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 079: Helfer unterstützt die organisierte Verfolgung"
+    },
+    {
+      "timeS": 5820,
+      "km": 72.86878658097355,
+      "type": "team-chase",
+      "riderId": "F080",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 080: Helfer unterstützt die organisierte Verfolgung"
+    },
+    {
+      "timeS": 5820,
+      "km": 72.93644687184619,
+      "type": "team-chase",
+      "riderId": "F082",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 082: Helfer unterstützt die organisierte Verfolgung"
+    },
+    {
+      "timeS": 5820,
+      "km": 72.9314627915348,
+      "type": "team-chase",
+      "riderId": "F084",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 084: Helfer unterstützt die organisierte Verfolgung"
+    },
+    {
+      "timeS": 5820,
+      "km": 72.93366012823023,
+      "type": "team-chase",
+      "riderId": "F137",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 137: Helfer unterstützt die organisierte Verfolgung"
+    },
+    {
+      "timeS": 5820,
+      "km": 72.91277144886938,
+      "type": "team-chase",
+      "riderId": "F138",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 138: Helfer unterstützt die organisierte Verfolgung"
+    },
+    {
+      "timeS": 5820,
+      "km": 72.94715936504105,
+      "type": "team-chase",
+      "riderId": "F140",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 140: Helfer unterstützt die organisierte Verfolgung"
+    },
+    {
+      "timeS": 5920,
+      "km": 73.89380755414544,
+      "type": "team-chase",
+      "riderId": "F081",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 081: Team hilft dem abgehängten Kapitän beim Anschluss"
+    },
+    {
+      "timeS": 5950,
+      "km": 74.46237140854136,
+      "type": "team-chase",
+      "riderId": "F080",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 080: Team hilft dem abgehängten Kapitän beim Anschluss"
+    },
+    {
+      "timeS": 5950,
+      "km": 74.51817174494239,
+      "type": "team-chase",
+      "riderId": "F138",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 138: Team hilft dem abgehängten Kapitän beim Anschluss"
+    },
+    {
+      "timeS": 6390,
+      "km": 82.79131078149587,
+      "type": "team-chase",
+      "riderId": "F137",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 137: Helfer unterstützt die organisierte Verfolgung"
+    },
+    {
+      "timeS": 6390,
+      "km": 82.79092181579476,
+      "type": "team-chase",
+      "riderId": "F140",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 140: Team übernimmt Verfolgung an der Feldspitze"
+    },
+    {
+      "timeS": 6650,
+      "km": 85.50977726626084,
+      "type": "team-chase",
+      "riderId": "F137",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 137: Helfer unterstützt die organisierte Verfolgung"
+    },
+    {
+      "timeS": 6650,
+      "km": 85.44241064019023,
+      "type": "team-chase",
+      "riderId": "F138",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 138: Helfer unterstützt die organisierte Verfolgung"
+    },
+    {
+      "timeS": 6650,
+      "km": 85.5096299510043,
+      "type": "team-chase",
+      "riderId": "F140",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 140: Helfer unterstützt die organisierte Verfolgung"
+    },
+    {
+      "timeS": 7230,
+      "km": 91.05617000114655,
+      "type": "team-chase",
+      "riderId": "F137",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 137: Helfer unterstützt die organisierte Verfolgung"
+    },
+    {
+      "timeS": 7230,
+      "km": 90.92165276285958,
+      "type": "team-chase",
+      "riderId": "F138",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 138: Helfer unterstützt die organisierte Verfolgung"
+    },
+    {
+      "timeS": 7230,
+      "km": 91.02983129686798,
+      "type": "team-chase",
+      "riderId": "F140",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 140: Helfer unterstützt die organisierte Verfolgung"
+    },
+    {
+      "timeS": 7640,
+      "km": 96.9130191577273,
+      "type": "team-chase",
+      "riderId": "F137",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 137: Team hilft dem abgehängten Kapitän beim Anschluss"
+    },
+    {
+      "timeS": 7640,
+      "km": 96.87861422983936,
+      "type": "team-chase",
+      "riderId": "F140",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 140: Team hilft dem abgehängten Kapitän beim Anschluss"
+    },
+    {
+      "timeS": 7990,
+      "km": 100.05713416326698,
+      "type": "attack",
+      "riderId": "F078",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 078: Rennlage, Fahrerposition und W′-Reserve erlauben Angriff"
+    },
+    {
+      "timeS": 8350,
+      "km": 105.4824855163034,
+      "type": "team-chase",
+      "riderId": "F137",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 137: Team hilft dem abgehängten Kapitän beim Anschluss"
+    },
+    {
+      "timeS": 8670,
+      "km": 109.99742602789063,
+      "type": "team-chase",
+      "riderId": "F137",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 137: Team hilft dem abgehängten Kapitän beim Anschluss"
+    },
+    {
+      "timeS": 8750,
+      "km": 111.36141433859412,
+      "type": "team-chase",
+      "riderId": "F137",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 137: Team hilft dem abgehängten Kapitän beim Anschluss"
+    },
+    {
+      "timeS": 11180,
+      "km": 131.54198194499943,
+      "type": "team-pace",
+      "riderId": "F139",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 139: Helfer hält sich für den Mannschaftseinsatz bereit"
+    },
+    {
+      "timeS": 11700,
+      "km": 132.90357966800303,
+      "type": "team-chase",
+      "riderId": "F080",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 080: Helfer unterstützt die organisierte Verfolgung"
+    },
+    {
+      "timeS": 11700,
+      "km": 133.0274608889846,
+      "type": "team-chase",
+      "riderId": "F081",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 081: Helfer unterstützt die organisierte Verfolgung"
+    },
+    {
+      "timeS": 12370,
+      "km": 144.44220013280423,
+      "type": "attack",
+      "riderId": "F134",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 134: Rennlage, Fahrerposition und W′-Reserve erlauben Angriff"
+    },
+    {
+      "timeS": 16200,
+      "km": 173.53087699942594,
+      "type": "team-chase",
+      "riderId": "F080",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 080: Helfer unterstützt die organisierte Verfolgung"
+    },
+    {
+      "timeS": 16200,
+      "km": 173.41893689352355,
+      "type": "team-chase",
+      "riderId": "F081",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 081: Helfer unterstützt die organisierte Verfolgung"
+    },
+    {
+      "timeS": 16900,
+      "km": 176.68498341817028,
+      "type": "team-chase",
+      "riderId": "F080",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 080: Helfer unterstützt die organisierte Verfolgung"
+    },
+    {
+      "timeS": 16900,
+      "km": 176.55928705099234,
+      "type": "team-chase",
+      "riderId": "F081",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 081: Helfer unterstützt die organisierte Verfolgung"
+    },
+    {
+      "timeS": 17090,
+      "km": 177.5214722096577,
+      "type": "team-chase",
+      "riderId": "F080",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 080: Team übernimmt Verfolgung an der Feldspitze"
+    },
+    {
+      "timeS": 17090,
+      "km": 177.40524393462232,
+      "type": "team-chase",
+      "riderId": "F081",
+      "teamId": "T12",
+      "description": "Fiktiver Profi 081: Helfer unterstützt die organisierte Verfolgung"
+    },
+    {
+      "timeS": 18870,
+      "km": 180.25389729585928,
+      "type": "attack",
+      "riderId": "F135",
+      "teamId": "T20",
+      "description": "Fiktiver Profi 135: Rennlage, Fahrerposition und W′-Reserve erlauben Angriff"
+    }
+  ]
+}
