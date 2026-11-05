@@ -16,6 +16,8 @@ test('R-22 Diagnostik greift nicht in Ergebnis/Physik ein',()=>{
     delete withoutTrace.diagnostics.attackTraces;
     delete withoutTrace.diagnostics.rejoinWork;
     delete withoutTrace.diagnostics.rejoinAttempts;
+    delete withoutTrace.diagnostics.breakawayFrontWork;
+    delete withoutTrace.diagnostics.breakawayFormations;
     assert.deepEqual(withoutTrace,normal);
     assert.ok(Array.isArray(traced.diagnostics.attackTraces));
     assert.ok(Array.isArray(traced.diagnostics.rejoinWork));
