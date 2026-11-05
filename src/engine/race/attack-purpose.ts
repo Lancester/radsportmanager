@@ -30,7 +30,7 @@ export function selectAttackPurpose(o:AttackPurposeObservation):AttackPurpose|nu
   return null;
 }
 
-/** Vereinfacht Vorgriff auf mögliche eigene Leistung für maximal drei Minuten.
+/** Vereinfacht Vorgriff auf mögliche eigene Leistung für eine einminütige Attacke.
  * Konstante lokale Steigung, Wind und aktuelle Zielgruppengeschwindigkeit;
  * weder Vorhersage noch Bewegungsänderung. Keine Prüfung auf Abfahrten. */
 export function estimateBridge(o:{gapM:number;targetSpeedMps:number;effectiveCpW:number;
@@ -38,8 +38,11 @@ export function estimateBridge(o:{gapM:number;targetSpeedMps:number;effectiveCpW
   rollingCoefficient:number;drivetrainEfficiency:number;airDensityKgM3:number;
   headwindMps:number;crosswindMps:number}):{reachable:boolean;closingMps:number;
   speedMps:number;budgetW:number}{
-  const durationS=180;
-  const budgetW=o.effectiveCpW+Math.min(o.wPrimeJ/durationS,o.effectiveCpW*.2);
+  // Die Angriffsentscheidung hält derzeit ca. 40–70 s an. Die Prognose
+  // darf deshalb nicht mit drei Minuten Höchstleistung rechnen. Maximal
+  // 35 % der aktuellen W′-Reserve für die Schätzung einsetzen.
+  const durationS=60;
+  const budgetW=o.effectiveCpW+Math.min(.35*o.wPrimeJ/durationS,o.effectiveCpW*.28);
   const theta=Math.atan(o.gradeFraction);
   const power=(v:number)=>{
     const airV=Math.hypot(Math.max(0,v+o.headwindMps),o.crosswindMps);
