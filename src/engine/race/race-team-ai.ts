@@ -50,6 +50,13 @@ export const R15_R16=Object.freeze({
   maximumSupportDistanceToTargetM:65,
   relaySeconds:75,
 });
+/** Vorläufige Entscheidungsgrenzen für den Anschluss des geschützten
+ * Kapitäns. Sie begrenzen nur die freiwillige Wattanforderung; ob die
+ * Gruppe wirklich aufschließt, entscheidet die bestehende Rennphysik. */
+export const R24_REJOIN=Object.freeze({
+  minimumGroupSize:4,maximumGapM:1500,maximumRemainingFraction:.10,
+  minimumCaptainReserve:.27,leaderCpFraction:1.045,supportCpFraction:1,
+});
 export interface CrewPlan {
   orders:Map<string,CrewOrder>;
   /** Tatsächlich nominierter Führender; im nächsten Entscheid weiterführen. */
@@ -201,7 +208,24 @@ export function decideIntelligentCrew(input:{
         targetRemainingM>250&&targetRemainingM<=10000:
         input.remainingM>250&&input.remainingM<=10000)&&
       group.length>=3;
-    const chase=(input.chasingTeamIds!==undefined?
+    // Ein abgehängter Kapitän darf seine Helfer in der eigenen Gruppe
+    // zum realen Aufschließen einsetzen. Die größte Gruppe muss dazu
+    // nicht ebenfalls hinter der Spitze liegen. Angreifende Teams und
+    // eigene vorn liegende Kapitäne werden nicht blind zurückgeholt.
+    const groupIndex=groups.indexOf(group);
+    const preceding=groupIndex>0?groups[groupIndex-1]:null;
+    const precedingGap=preceding?
+      preceding.at(-1)!.positionM-group[0].positionM:0;
+    const ownLeaderAhead=members.some(r=>
+      r.role===target.role&&r!==target&&
+      r.positionM>group[0].positionM+R15_R16.groupBreakM);
+    const rejoin=input.adaptiveChase===true&&
+      team.strategy==='kapitaen_schuetzen'&&target.role==='kapitaen'&&
+      !isMain&&preceding!==null&&group.length>=R24_REJOIN.minimumGroupSize&&
+      precedingGap>R15_R16.groupBreakM&&precedingGap<=R24_REJOIN.maximumGapM&&
+      precedingGap/Math.max(1,targetRemainingM)<R24_REJOIN.maximumRemainingFraction&&
+      target.reserveFraction>=R24_REJOIN.minimumCaptainReserve&&!ownLeaderAhead;
+    const chase=rejoin||((input.chasingTeamIds!==undefined?
       situation.leadingBreakaway:situation.chaseViable)&&
       isMain&&
       input.progress<(input.adaptiveChase?1:
@@ -210,7 +234,7 @@ export function decideIntelligentCrew(input:{
       !(input.sprintFinaleMode&&!input.adaptiveChase&&team.chaseHelperCount===0)&&
       (!sprintTrain||input.sprintFinaleMode===true)&&
       (team.strategy!=='offensiv'||input.adaptiveChase===true)&&
-      (team.strategy!=='ausgewogen'||!sprintTeamReady||urgentChase);
+      (team.strategy!=='ausgewogen'||!sprintTeamReady||urgentChase));
     const mission:CrewMission=chase?'jagd':
       sprintTrain?'sprintzug':'schutz';
     // Keine permanente Phantom-Tempoarbeit im grossen Feld. Bei einer
@@ -348,7 +372,8 @@ export function decideIntelligentCrew(input:{
       const duty:CrewDuty=leader!==null&&rider.id===leader.id&&frontEligible?
         'fuehrung':'unterstuetzung';
       const effort=mission==='jagd'?
-        (input.physicalRelayMode?
+        (rejoin?(duty==='fuehrung'?R24_REJOIN.leaderCpFraction:
+          R24_REJOIN.supportCpFraction):input.physicalRelayMode?
           (duty==='fuehrung'?1.15:
             gapToFront(rider)>R15_R16.frontWorkRadiusM?1.10:1.045):
           duty==='fuehrung'?1.12:1.055):
@@ -356,7 +381,8 @@ export function decideIntelligentCrew(input:{
         (duty==='fuehrung'?1.12:1.055):
         (duty==='fuehrung'?1.065:
           rider.positionM<=target.positionM?1.045:0.98);
-      const reason=mission==='jagd'?
+      const reason=rejoin?'Team hilft dem abgehängten Kapitän beim Anschluss':
+        mission==='jagd'?
         (duty==='fuehrung'?'Team übernimmt Verfolgung an der Feldspitze':
           'Helfer unterstützt die organisierte Verfolgung'):
         mission==='sprintzug'?
@@ -450,7 +476,7 @@ export function decideIntelligentCrew(input:{
         previous!.sinceS:input.timeS,
     };
     for(const order of orders.values()){
-      if(order.mission!=='jagd')continue;
+      if(order.mission!=='jagd'||!mainIds.has(order.riderId))continue;
       const r=input.riders.find(r=>r.id===order.riderId)!;
       const frontDistance=frontM-r.positionM;
       const targetRole=input.teams.find(t=>t.id===r.teamId)!.
