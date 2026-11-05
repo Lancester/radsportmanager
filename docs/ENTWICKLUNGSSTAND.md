@@ -2,7 +2,7 @@
 
 ## Schritt 3 – kontrollierte Geländeversuche und Einzelanschlüsse
 
-[Kontrollierte Terrain- und Anschlussprüfung](race/R24_SCHRITT3_TERRAIN_UND_ANSCHLUSS.md): In 30-km-Kontrollstrecken blieb das Modellfeld bei Ebene und Anstieg→Ebene zusammen, teilte sich jedoch zeitweise beim Übergang in eine Abfahrt. Eine begrenzte Beschleunigungsreferenz reduzierte die Spreizung in drei Kontroll-Seeds, bewirkte aber Änderungen in Vollrennen und bleibt eine nicht übernommene Heuristik. Einzelne Kapitäns-Anschlussversuche werden im Checkpoint-Modus mit ursprünglicher Zielgruppe, Helfern und beobachtetem Gruppenzusammenschluss dokumentiert. Keine nachweislich robuste Gruppenregelkorrektur, weitere Prüfungen bleiben offen.
+[Kontrollierte Terrain- und Anschlussprüfung](race/R24_SCHRITT3_TERRAIN_UND_ANSCHLUSS.md): In 30-km-Kontrollstrecken blieb das Modellfeld bei Ebene und Anstieg→Ebene zusammen, teilte sich jedoch zeitweise beim Übergang in eine Abfahrt. Eine begrenzte Beschleunigungsreferenz reduzierte die Spreizung in drei Kontroll-Seeds, bewirkte aber Änderungen in Vollrennen und bleibt eine nicht übernommene Heuristik. Einzelne Kapitäns-Anschlussversuche werden im Checkpoint-Modus mit ursprünglicher Zielgruppe, Helfern und beobachtetem Gruppenzusammenschluss dokumentiert. Zusätzliche Vollrennen mit Seeds 42/123 bestätigen erhebliche Rennverlauf-Unterschiede; die Korrektur ist nicht übernommen. Im Berg-Seed 123 mit Flachfahrerfeld stehen zwei Sprinter unter den Top 10, im bergtypischen Feld keiner – gesondert offen. 368/368 Tests und PR-CI erfolgreich. Keine nachweislich robuste Gruppenregelkorrektur, weitere Prüfungen bleiben offen.
 
 ## Schritt 3 – Fortsetzung: Anschlussarbeit messbar, Gruppenregler offen
 
