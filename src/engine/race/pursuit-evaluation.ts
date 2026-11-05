@@ -10,6 +10,24 @@ export interface PursuitObservation {
   /** Einschätzung absehbaren Geländes; keine Voraussage von Gegnerzuständen. */
   favorableTerrainAhead:boolean;
 }
+/** Grobe Vorausschau unter Annahme momentan gleichbleibender Tempi.
+ * Sie kennt weder spätere Gegnerleistung noch garantiert sie einen Anschluss. */
+export function estimateTerrainOpportunity(o:{distanceAheadM:number;remainingM:number;
+  gapM:number;ownSpeedMps:number;targetSpeedMps:number;gradeFraction:number;
+  ownClimbWkg:number;targetClimbWkg:number;ownDescentSkill:number;
+  targetDescentSkill:number}):boolean{
+  if(!Object.values(o).every(Number.isFinite)||o.distanceAheadM<=0||
+    o.distanceAheadM>=o.remainingM||o.gapM<0||o.ownSpeedMps<=0||
+    o.targetSpeedMps<0)return false;
+  const favorable=(o.gradeFraction>=.04&&o.ownClimbWkg>o.targetClimbWkg*1.02)||
+    (o.gradeFraction<=-.03&&o.ownDescentSkill>o.targetDescentSkill+.05);
+  if(!favorable)return false;
+  const travelS=o.distanceAheadM/o.ownSpeedMps;
+  const projectedGap=Math.max(0,o.gapM+(o.targetSpeedMps-o.ownSpeedMps)*travelS);
+  // Ist der Gegner unter dieser Momentanschätzung schon im Ziel, kann
+  // das vorgesehene Gelände keinen späteren Anschluss mehr ermöglichen.
+  return projectedGap<o.remainingM-o.distanceAheadM;
+}
 export function evaluatePursuit(o:PursuitObservation):PursuitAction{
   if(o.gapM===null||o.assignedTeamDuty)return 'aufgeben';
   if(o.gapM<=15)return 'erreicht';
@@ -25,7 +43,7 @@ export function evaluatePursuit(o:PursuitObservation):PursuitAction{
     o.secondsWithoutProgress>180&&o.reserveFraction<
       (.25+.15*(1-(o.pursuitPersistence??o.aggression))))
     return 'aufgeben';
-  if(o.favorableTerrainAhead&&o.reserveFraction<.45&&!worsening)
+  if(o.favorableTerrainAhead&&o.reserveFraction<.45)
     return 'schonen';
   return 'fortsetzen';
 }
