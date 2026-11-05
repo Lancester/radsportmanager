@@ -23,3 +23,13 @@ test('erreichtes Ziel und vorrangiger Auftrag beenden den individuellen Plan',()
   assert.equal(evaluatePursuit({...base,gapM:5}),'erreicht');
   assert.equal(evaluatePursuit({...base,assignedTeamDuty:true}),'aufgeben');
 });
+test('Beharrlichkeit kann unabhängig von Angriffslust die Abwägung verändern',()=>{
+  const difficult={...base,gapM:2400,bestGapM:400,targetSpeedMps:11,
+    reserveFraction:.32,aggression:.5};
+  assert.equal(evaluatePursuit({...difficult,pursuitPersistence:0}),'aufgeben');
+  assert.equal(evaluatePursuit({...difficult,pursuitPersistence:1}),'fortsetzen');
+  assert.equal(evaluatePursuit({...difficult,pursuitPersistence:1,
+    assignedTeamDuty:true}),'aufgeben');
+  assert.equal(evaluatePursuit({...difficult,pursuitPersistence:1,
+    reserveFraction:.05}),'schonen');
+});
