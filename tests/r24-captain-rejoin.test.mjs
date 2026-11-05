@@ -26,6 +26,7 @@ test('R24: abgehängte Gruppe kann den eigenen Kapitän autonom nachführen',()=
   assert.equal(lead?.isRejoin,true);
   assert.equal(lead?.duty,'fuehrung');
   assert.equal(lead?.desiredPowerW,360*R24_REJOIN.leaderCpFraction);
+  assert.equal(result.orders.get('A2')?.isRejoin,true);
   assert.match(lead.reason,/abgehängten Kapitän/);
   assert.deepEqual(before,[...main,...trailing],
     'Aufträge dürfen keine Fahrerposition oder Reserve verändern');
@@ -33,12 +34,26 @@ test('R24: abgehängte Gruppe kann den eigenen Kapitän autonom nachführen',()=
 
 test('R24: Anschlussversuch braucht Kapitän, Helfer und erreichbare Lücke',()=>{
   const exhausted=trailing.map(r=>r.id==='CAP'?{...r,reserveFraction:.1}:r);
-  assert.notEqual(plan({riders:[...main,...exhausted]}).orders.get('A1')?.mission,'jagd');
+  assert.equal(plan({riders:[...main,...exhausted]}).orders.get('A1')?.isRejoin,true);
   assert.notEqual(plan({teams:[{id:'A',strategy:'offensiv'},teams[1]]})
     .orders.get('A1')?.mission,'jagd');
   assert.notEqual(plan({adaptiveChase:false}).orders.get('A1')?.mission,'jagd');
   assert.notEqual(plan({riders:[...main.map(r=>({...r,
-    positionM:r.positionM+2000})),...trailing]}).orders.get('A1')?.mission,'jagd');
+    positionM:r.positionM+4000})),...trailing]}).orders.get('A1')?.mission,'jagd');
   assert.notEqual(plan({riders:[...main,...trailing.filter(r=>r.role!=='helfer')]} )
     .orders.get('A1')?.mission,'jagd');
+});
+
+test('Ein Helfer kann einem erschöpften Kapitän in kleiner Gruppe beistehen',()=>{
+  const pair=[rider('A1','A','helfer',858),rider('CAP','A','kapitaen',850,.05)];
+  const realOrder=plan({riders:[...main,...pair]}).orders.get('A1');
+  assert.equal(realOrder?.isRejoin,true);
+  assert.equal(realOrder?.duty,'fuehrung');
+  assert.equal(plan({riders:[...main,...pair.map(r=>r.id==='A1'?
+    {...r,reserveFraction:.01}:r)]}).orders.get('A1')?.isRejoin,undefined);
+});
+
+test('Ein Abstand über 1500 Meter ist keine automatische Sperre',()=>{
+  const distant=main.map(r=>({...r,positionM:r.positionM+2000}));
+  assert.equal(plan({riders:[...distant,...trailing]}).orders.get('A1')?.isRejoin,true);
 });
