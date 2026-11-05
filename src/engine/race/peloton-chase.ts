@@ -64,11 +64,11 @@ export function coordinatePelotonChase(input:{
     }
     if(!breakaway){
       const ended={active:[],sinceS:timeS,
-        cooldownUntilS:timeS+R22_CHASE.cooldownSeconds};
+        cooldownUntilS:adaptive?timeS:timeS+R22_CHASE.cooldownSeconds};
       return {state:ended,chasingTeamIds:new Set()};
     }
   }
-  if(!breakaway||timeS<previous.cooldownUntilS)
+  if(!breakaway||(!adaptive&&timeS<previous.cooldownUntilS))
     return {state:previous,chasingTeamIds:new Set()};
   // Echte Mannschaftsinteressen: Sprintteams übernehmen zuerst Arbeit;
   // GC/ausgewogene Teams nur bei gefährlicher Flucht und freien Helfern.
