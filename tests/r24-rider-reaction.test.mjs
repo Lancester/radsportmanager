@@ -12,3 +12,9 @@ test('Reaktion garantiert keinen Anschluss und respektiert eigene Lage',()=>{
   {...o,reserveFraction:.1},{...o,gapM:200},{...o,currentIntent:'erholung'}])
    assert.equal(decideRiderReaction(x),false);
 });
+test('Bereits eingesetzte Helfer senken die eigene Reaktionsneigung',()=>{
+ const situation={...o,threat:.9,draw:.29};
+ assert.equal(decideRiderReaction({...situation,nearbyChaseHelpers:0}),true);
+ assert.equal(decideRiderReaction({...situation,nearbyChaseHelpers:2}),false);
+ assert.equal(decideRiderReaction({...situation,nearbyChaseHelpers:2,threat:1}),true);
+});
