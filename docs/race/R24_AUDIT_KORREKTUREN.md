@@ -155,3 +155,9 @@ Auffällig: Zwei Kletterersiege auf der Flachetappe; im Seed 42 gewinnt F120 4,3
 Gleiches Fahrerfeld (Seed 2026, `--roster flach`): Sieger Flach Sprinter, Hügel Sprinter, Klassiker Zeitfahrer, Berg Kletterer; auf Klassiker und Berg kein Sprinter in den ersten zehn. Ein Seed belegt keine Wahrscheinlichkeiten.
 
 Die Gesamttestsuite wurde bei paralleler hoher Last vorzeitig ohne Gesamtergebnis beendet und wird mit zwei Testprozessen erneut ausgeführt.
+
+## Gesamttest auf Code-Commit 7e4446c
+
+Der vollständige lokale Lauf mit zwei Testprozessen ergab **358/359 bestanden**. Der Integrationstest `R-22: stable-pack auf den vier vorhandenen Einzelrenn-Profilen` scheitert im Lille-Seed 2026 an der erwarteten benannten Jagd-Führungszeit: `actualNamedChaseFrontS = 0`, obwohl 23 individuelle Sprints und je eine bestätigte Flucht und Einholung protokolliert wurden. Die Bedingung wurde bewusst nicht entfernt. Zu untersuchen ist, ob echte Führungsarbeit fehlt oder die Zuordnung/Erfassung versagt; dafür Watt, Abstand, Auftrag, Windexposition und Wechsel des nominierten Helfers zeitlich auswerten. Bis zur Klärung bleibt dies ein Abnahmeblocker.
+
+Der weitere Stand ist ein Entwurf. Keine Android-Laufzeitmessung und keine empirische Sportvalidierung; nicht nach `main` übernehmen, bevor der fehlgeschlagene Test und die dokumentierten sportlichen Auffälligkeiten geklärt sind.
