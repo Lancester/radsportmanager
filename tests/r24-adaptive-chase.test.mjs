@@ -63,3 +63,20 @@ test('Offensives Team ohne Fahrer vorne kann erreichbare Flucht zurückholen',()
   assert.equal(coordinatePelotonChase({...base,riders:withOwn,situation:situation2})
     .chasingTeamIds.has('C'),false);
 });
+
+test('Bei gleicher Rennlage beeinflusst einschätzbare Gefahr die frühe Sprintteam-Jagd',()=>{
+  const mk=(id,teamId,role,pos,cp)=>({...rider(id,teamId,role,pos),
+    knownAbility:{id,knownCpW:cp,massKg:75,bikeMassKg:7.5,dragAreaM2:.28,sprintSkill:.5}});
+  const pack=Array.from({length:25},(_,i)=>mk('X'+i,'A',i===0?'sprinter':'helfer',1000-i,300+i));
+  const compare=(leaderCp)=>{
+    const lead=mk('L','B','kapitaen',1500,leaderCp), riders=[lead,...pack];
+    const situation=analyzeRaceSituation(riders,100000,6,true);
+    return coordinatePelotonChase({timeS:2000,remainingM:100000,progress:.2,
+      mainGroupIds:new Set(pack.map(r=>r.id)),teams:[{id:'A',strategy:'sprint'},
+        {id:'B',strategy:'offensiv'}],riders,situation,
+      previous:{active:[],sinceS:0,cooldownUntilS:0},adaptiveChase:true,
+      threatProfile:'flach'}).chasingTeamIds.has('A');
+  };
+  assert.equal(compare(250),false);
+  assert.equal(compare(430),true);
+});
