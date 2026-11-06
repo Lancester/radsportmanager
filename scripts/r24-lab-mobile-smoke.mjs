@@ -58,11 +58,28 @@ try {
  const fullRows=await page.locator('#results tr').count();
  if(fullRows!==154)throw Error('Volles Android-Rennen fehlgeschlagen: '+fullRows);
  const fullStatus=await page.locator('#status').textContent();
+ // Service worker: Alle Module vorab lokal cachen und offline erneut starten.
+ await page.waitForFunction(()=>document.querySelector('#offlineInfo')?.textContent?.includes('Offline bereit'),
+   undefined,{timeout:30000});
+ const cachedState=await page.locator('#offlineInfo').textContent();
+ const onlineResultRows=fullRows;
+ await context.setOffline(true);
+ await page.reload({waitUntil:'domcontentloaded'});
+ await page.locator('#teams select').first().waitFor();
+ if(!await page.locator('#offlineInfo').textContent().then(t=>t.includes('Offline bereit')))
+   throw Error('Offline-Status nach Neustart nicht bereit');
+ await page.locator('#teamCount').fill('2');
+ await page.locator('#teamCount').dispatchEvent('change');
+ await page.locator('#run').click();
+ await page.waitForFunction(()=>document.querySelector('#status')?.textContent?.includes('Rennen abgeschlossen'),
+   undefined,{timeout:90000});
+ const offlineRows=await page.locator('#results tr').count();
+ if(offlineRows!==14)throw Error('Offline-Rennberechnung gescheitert: '+offlineRows);
  if(errors.length)throw Error('Browserkonsole: '+errors.join('; '));
  await page.screenshot({path:'rennlabor-mobile-smoke.png',fullPage:true});
  console.log(JSON.stringify({mobile:'Pixel 7 Chromium',teams:teamDropdowns,
-   riderControls:controls,testFinishers:rows,fullFinishers:fullRows,
-   reportLines:report,scrollWidth,inner,smallStatus,fullStatus}));
+   riderControls:controls,testFinishers:rows,fullFinishers:onlineResultRows,
+   offlineFinishers:offlineRows,cachedState,reportLines:report,scrollWidth,inner,smallStatus,fullStatus}));
 }finally{
  await browser?.close();await new Promise(ok=>server.close(ok));
 }
