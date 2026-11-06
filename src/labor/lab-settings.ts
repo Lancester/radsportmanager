@@ -75,7 +75,7 @@ export function buildLabRace(s:LabSettings):{input:RaceInput;changes:string[]} {
     !['formation','legacy','formation-experiment'].includes(e.aeroModel)||
     !['r14','r15-r16'].includes(e.tacticModel)||
     !['long','off'].includes(e.enduranceModel)||
-    typeof e.disableAttacks!=='boolean'||![1,2].includes(e.stepSeconds))
+    typeof e.disableAttacks!=='boolean'||![.5,1].includes(e.stepSeconds))
     throw new RangeError('Rennlabor: Engine-Option');
   if(!['road-1s','bunch-3s'].includes(s.timingRule))
     throw new RangeError('Rennlabor: Zielgruppenregel');
