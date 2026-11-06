@@ -7,6 +7,7 @@ on:
       - 'docs/labor/**'
       - 'tests/r24-lab-settings.test.mjs'
       - 'tests/r24-lab-integration.test.mjs'
+      - 'scripts/r24-lab-mobile-smoke.mjs'
       - '.github/workflows/r24-browser-labor.yml'
   workflow_dispatch:
 permissions:
@@ -52,6 +53,14 @@ jobs:
           npm install --no-save --ignore-scripts --no-audit --no-fund playwright@1.58.2
           npx playwright install --with-deps chromium
           node scripts/r24-lab-mobile-smoke.mjs
+      - name: Sichtprüfung im Mobilformat sichern
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rennlabor-android-screenshot
+          path: rennlabor-mobile-smoke.png
+          retention-days: 14
+          if-no-files-found: ignore
       - name: Fertiges Upload-ZIP exportieren
         if: always()
         uses: actions/upload-artifact@v4
