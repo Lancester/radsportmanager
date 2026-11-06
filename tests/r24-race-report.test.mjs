@@ -35,3 +35,11 @@ test('Gemessene Frontarbeit ist von nicht durchgeführter Messung unterscheidbar
  assert.deepEqual(zero.breakawayFrontWork,[]);
  assert.match(formatRaceReport(zero),/keine Frontarbeit aufgezeichnet/);
 });
+
+test('Bericht unterscheidet Angebot und beobachteten Positionswechsel',()=>{
+ const relay=[{type:'breakaway-relay-request',timeS:40,km:4,description:'Angebot'},
+  {type:'breakaway-relay-position-change',timeS:45,km:4.1,description:'Positionswechsel'}];
+ const result=createRaceReport({result:{classification,events:relay}});
+ assert.deepEqual(result.events.map(e=>e.type),
+  ['breakaway-relay-request','breakaway-relay-position-change']);
+});
