@@ -1,0 +1,47 @@
+name: Rennlabor – Browser-Build und echte Engine-Tests
+on:
+  pull_request:
+    branches: [release/race-engine-1.0-rc1]
+    paths:
+      - 'src/labor/**'
+      - 'docs/labor/**'
+      - 'tests/r24-lab-settings.test.mjs'
+      - '.github/workflows/r24-browser-labor.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reine Konfigurations- und Ergebniszeit-Tests
+        run: |
+          node --experimental-strip-types --test tests/r24-lab-settings.test.mjs tests/r24-finish-time-groups.test.mjs
+      - name: Browser-JS (alle abhängigen originalen Engine-Module)
+        run: |
+          npx --yes --package typescript@5.9.3 tsc \
+            --target ES2022 --module ES2022 --moduleResolution Bundler \
+            --rewriteRelativeImportExtensions true --skipLibCheck \
+            --rootDir src --outDir docs/labor/generated \
+            src/labor/lab-settings.ts \
+            src/engine/race/race-simulator.ts \
+            src/engine/race/finish-time-groups.ts
+      - name: Syntax und Browserpaket überprüfen
+        run: |
+          node --check docs/labor/app.js
+          node --check docs/labor/worker.js
+          test -s docs/labor/generated/labor/lab-settings.js
+          test -s docs/labor/generated/engine/race/race-simulator.js
+          test -s docs/labor/generated/engine/race/finish-time-groups.js
+          test -s docs/labor/generated/engine/race/reference-fixtures.js
+      - name: Browserpaket exportieren
+        uses: actions/upload-artifact@v4
+        with:
+          name: rennlabor-browser-rc1
+          path: docs/labor/
+          retention-days: 14
