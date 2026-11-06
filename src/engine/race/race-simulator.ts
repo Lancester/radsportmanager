@@ -599,8 +599,47 @@ export function simulateRace(x:RaceInput):RaceResult {
             if(stopped)chaseDecisionAudit.stops++;
             if(a.length>0&&b.length>0)chaseDecisionAudit.replacements++;
             if(valid)chaseDecisionAudit.changesWhileGapValid++;
-            if(stopped&&valid&&t-before.sinceS<150)
+            if(stopped&&valid&&t-before.sinceS<150){
               chaseDecisionAudit.shortStopsWhileGapValid++;
+              // Nur verdächtige kurze Stopps dokumentieren; keine KI-Wirkung.
+              if(totalM-leader.positionM>5000&&
+                situation.gapFractionOfRemaining<.10){
+                const leaders=new Set(situation.leadingRiderIds??[]);
+                const urgent=situation.gapFractionOfRemaining>.009||
+                  situation.projectedGapM>Math.max(400,
+                    (totalM-leader.positionM)*.025);
+                const teams=before.active.map(id=>{
+                  const team=teamRefs.find(q=>q.id===id)!;
+                  const members=planningRiders.filter(q=>
+                    q.teamId===id&&main.some(g=>g.id===q.id));
+                  const helpers=members.filter(q=>q.role==='helfer'&&
+                    q.reserveFraction>.32);
+                  const ownLeadersAhead=planningRiders.some(q=>
+                    q.teamId===id&&leaders.has(q.id)&&
+                    (q.role==='kapitaen'||q.role==='sprinter'));
+                  const ownHelperAhead=planningRiders.some(q=>
+                    q.teamId===id&&leaders.has(q.id)&&q.role==='helfer');
+                  const interested=!ownLeadersAhead&&
+                    !(ownHelperAhead&&!urgent)&&(
+                      team.strategy==='sprint'&&members.some(q=>q.role==='sprinter')||
+                      urgent&&team.strategy==='kapitaen_schuetzen'&&
+                        members.some(q=>q.role==='kapitaen')||
+                      urgent&&team.strategy==='ausgewogen'&&
+                        members.some(q=>q.role==='kapitaen')||
+                      urgent&&team.strategy==='offensiv'&&
+                        members.some(q=>q.role==='kapitaen'));
+                  return {id,strategy:team.strategy,members:members.length,
+                    helpers:helpers.length,ownLeadersAhead,ownHelperAhead,
+                    interested,viable:interested&&helpers.length>0};
+                });
+                console.log('R24_CHASE_SHORT_STOP '+JSON.stringify({
+                  t,km:+(leader.positionM/1000).toFixed(2),
+                  ageS:t-before.sinceS,mainSize:main.length,
+                  frontSize:grouped[0].length,gapM:+situation.gapM.toFixed(1),
+                  urgent,teams,
+                }));
+              }
+            }
             const reason=!situation.leadingBreakaway?'no-leading-breakaway':
               situation.gapM<65?'gap-below-65m':
               started?'new-chase':
