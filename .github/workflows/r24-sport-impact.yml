@@ -1,0 +1,44 @@
+name: R24 Sportliche Gegenprobe Boulogne Hautacam
+on:
+  pull_request:
+    branches: [develop/manager-mvp]
+    paths:
+      - 'scripts/r24-sport-impact-ab.mjs'
+      - '.github/workflows/r24-sport-impact.yml'
+permissions:
+  contents: read
+jobs:
+  paired:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        seed: [2026, 42, 123]
+    steps:
+      - name: Variante auschecken
+        uses: actions/checkout@v4
+        with:
+          path: variant
+      - name: Audit-MVP-Engine auschecken
+        uses: actions/checkout@v4
+        with:
+          ref: develop/manager-mvp
+          path: audit
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Skript auf Syntax prüfen
+        run: node --check variant/scripts/r24-sport-impact-ab.mjs
+      - name: Beide Rennen paarig rechnen und protokollieren
+        run: |
+          node --experimental-strip-types variant/scripts/r24-sport-impact-ab.mjs "$PWD/audit" "$PWD/variant" ${{ matrix.seed }} tdf25_boulogne | tee sport-${{ matrix.seed }}.jsonl
+          node --experimental-strip-types variant/scripts/r24-sport-impact-ab.mjs "$PWD/audit" "$PWD/variant" ${{ matrix.seed }} tdf25_hautacam | tee -a sport-${{ matrix.seed }}.jsonl
+      - name: Belege sichern
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r24-sport-impact-${{ matrix.seed }}
+          path: sport-${{ matrix.seed }}.jsonl
+          retention-days: 7
+          if-no-files-found: ignore
