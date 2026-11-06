@@ -1,7 +1,9 @@
 /** Reproduzierbarer technischer Kontrolllauf, kein sportlicher Mehrseed-Test. */
 import {createReferenceFixture} from '../src/engine/race/reference-fixtures.ts';
 import {simulateRace} from '../src/engine/race/race-simulator.ts';
-const fixture=createReferenceFixture({routeId:'tdf25_hautacam',seed:777});
+const seed=Number(process.argv[2]??777);
+if(!Number.isSafeInteger(seed)||seed<0)throw new RangeError('Seed muss eine nichtnegative Ganzzahl sein');
+const fixture=createReferenceFixture({routeId:'tdf25_hautacam',seed});
 for(const enabled of [false,true]){
   const result=simulateRace({...fixture.input,groupRidingModel:'stable-pack',
     diagnosticLevel:'checkpoints',experimentalBreakawayCooperation:enabled});
@@ -9,7 +11,7 @@ for(const enabled of [false,true]){
   const formations=result.diagnostics.breakawayFormations.map(g=>({timeS:g.timeS,
     km:+g.km.toFixed(2),size:g.size,lengthM:+g.lengthM.toFixed(1),
     maxGapM:+g.maximumAdjacentGapM.toFixed(1),gapToMainM:+g.gapToMainM.toFixed(1)}));
-  console.log(JSON.stringify({enabled,winner:result.winnerId,
+  console.log(JSON.stringify({seed,enabled,winner:result.winnerId,
     finisherCount:result.finisherCount,formations,frontRiders:audit.riders.length,
     totalFrontSeconds:audit.riders.reduce((n,v)=>n+v.frontSeconds,0),
     totalFrontCrankJ:audit.riders.reduce((n,v)=>n+v.crankWorkJ,0),
