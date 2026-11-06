@@ -8,6 +8,7 @@ on:
       - 'tests/r24-lab-settings.test.mjs'
       - 'tests/r24-lab-integration.test.mjs'
       - 'scripts/r24-lab-mobile-smoke.mjs'
+      - 'scripts/r24-lab-offline-assets.mjs'
       - '.github/workflows/r24-browser-labor.yml'
   workflow_dispatch:
 permissions:
@@ -37,15 +38,18 @@ jobs:
         run: |
           node --check docs/labor/app.js
           node --check docs/labor/worker.js
+          node --check docs/labor/service-worker.js
           test -s docs/labor/generated/labor/lab-settings.js
           test -s docs/labor/generated/engine/race/race-simulator.js
           test -s docs/labor/generated/engine/race/finish-time-groups.js
           test -s docs/labor/generated/engine/race/reference-fixtures.js
           node --input-type=module -e "import('./docs/labor/generated/labor/lab-settings.js').then(m => {const x=m.buildLabRace(m.initialLabSettings());if(x.input.riders.length!==154)process.exit(1);console.log('Browser ESM geladen:',x.input.riders.length)})"
+      - name: Lokale Offline-Dateien inklusive aller Engine-Module erfassen
+        run: node scripts/r24-lab-offline-assets.mjs
       - name: Auslieferbares Paket mit eindeutiger ZIP-Struktur erstellen
         run: |
           cd docs/labor
-          zip -qr ../../rennlabor-android-rc1.zip index.html app.js worker.js generated README.md
+          zip -qr ../../rennlabor-android-rc1.zip index.html app.js worker.js service-worker.js manifest.webmanifest icon.svg offline-assets.json generated README.md
           cd ../..
           unzip -t rennlabor-android-rc1.zip | tail -2
       - name: HTML/Worker im mobilen Chromium wirklich starten
