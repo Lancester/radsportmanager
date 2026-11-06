@@ -22,7 +22,7 @@ const [fixture,baseline,experiment]=await Promise.all([
  m(experimentDir,'race-simulator'),
 ]);
 const input={...fixture.createReferenceFixture({routeId,seed}).input,
- groupRidingModel:'stable-pack',diagnosticLevel:'none'};
+ groupRidingModel:'stable-pack'};
 const toResult=(result)=>{
  const raw=result.classification;
  const grouped=scoreFinishGroups(raw.map(r=>({
