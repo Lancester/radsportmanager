@@ -86,6 +86,10 @@ export interface RaceTeam {
   /** Veraltete Vergleichs-API; stable-pack bestimmt die Helferzahl autonom. */
   chaseHelperCount?:number;
 }
+/** Explizit vorgegebener Testfall; kein zufälliges Defektmodell. */
+export interface PlannedMechanicalIncident {
+  riderId:string;atTimeS:number;serviceDurationS:number;
+}
 export interface RaceRider {
   id:string;name:string;teamId:string;role:RaceRole;
   /** R-20: semantisches Profil für Testdaten; kein versteckter Zeitbonus. */
@@ -129,6 +133,8 @@ export interface RaceInput {
   finishGroupGapSeconds?:number;
   /** Ungenaue, noch nicht sportlich freigegebene Fluchtgruppen-Zusammenarbeit. */
   experimentalBreakawayCooperation?:boolean;
+  /** Optionale, reproduzierbare Defekte für technische Szenarien. */
+  plannedMechanicalIncidents?:readonly PlannedMechanicalIncident[];
   stepSeconds?:number;
   maxRaceTimeS?:number;
   /** Nur Diagnostik: speichert alle aktiven Fahrer alle 5 km. */
@@ -137,7 +143,7 @@ export interface RaceInput {
   disableAttacks?:boolean;
 }
 export type RaceEventType =
-  'start'|'attack'|'chase'|'sprint'|'recovery'|'segment'|'group-split'|'breakaway'|'breakaway-caught'|'finish'|'team-pace'|'team-chase'|'sprint-train'|'bridge-start'|'bridge-stop'|'bridge-relay'|'bridge-relay-position-change'|'breakaway-work'|'breakaway-save';
+  'start'|'attack'|'chase'|'sprint'|'recovery'|'segment'|'group-split'|'breakaway'|'breakaway-caught'|'finish'|'team-pace'|'team-chase'|'sprint-train'|'bridge-start'|'bridge-stop'|'bridge-relay'|'bridge-relay-position-change'|'breakaway-work'|'breakaway-save'|'mechanical-incident'|'mechanical-service'|'mechanical-resume';
 export interface RaceEvent {
   timeS:number;km:number;type:RaceEventType;
   riderId?:string;teamId?:string;description:string;
@@ -351,6 +357,21 @@ export function validateRace(x:RaceInput):void {
       ensure('sprintDecayTimeS',r.sprintDecayTimeS,
         r.sprintDecayTimeS>=8&&r.sprintDecayTimeS<=40);
   }
+  if(x.plannedMechanicalIncidents!==undefined){
+    if(!Array.isArray(x.plannedMechanicalIncidents)||
+      x.plannedMechanicalIncidents.length>x.riders.length)
+      throw new RangeError('Rennsimulation: geplante Defekte ungültig');
+    const affected=new Set<string>();
+    for(const incident of x.plannedMechanicalIncidents){
+      if(!incident||!riderIds.has(incident.riderId)||affected.has(incident.riderId))
+        throw new RangeError('Rennsimulation: Defektfahrer ungültig oder doppelt');
+      affected.add(incident.riderId);
+      ensure('Defektzeit',incident.atTimeS,incident.atTimeS>=0&&
+        incident.atTimeS<(x.maxRaceTimeS??30000));
+      ensure('Reparaturdauer',incident.serviceDurationS,
+        incident.serviceDurationS>=1&&incident.serviceDurationS<=3600);
+    }
+  }
   if(x.enduranceModel!==undefined&&
     x.enduranceModel!=='off'&&x.enduranceModel!=='long')
     throw new RangeError('Rennsimulation: enduranceModel ungültig');
@@ -499,6 +520,10 @@ export function simulateRace(x:RaceInput):RaceResult {
   const activeAttackPurposes=new Map<string,AttackPurpose>();
   const bridgePlans=new Map<string,{targetId:string;powerW:number;bestGapM:number;
     lastProgressS:number}>();
+  const plannedMechanical=new Map((x.plannedMechanicalIncidents??[])
+    .map(i=>[i.riderId,i] as const));
+  const activeMechanical=new Map<string,{incident:PlannedMechanicalIncident;
+    serviceStartS:number|null}>();
   const events:RaceEvent[]=[{timeS:0,km:0,type:'start',
     description:`${states.length} Fahrer starten auf ${(totalM/1000).toFixed(1)} km`}];
   const snapshots:RaceSnapshot[]=[];
@@ -558,6 +583,36 @@ export function simulateRace(x:RaceInput):RaceResult {
   while(states.some(s=>s.finishTimeS===null)){
     if(t>=(x.maxRaceTimeS??30000))throw new RangeError('Rennsimulation: Zeitlimit überschritten');
     const active=states.filter(s=>s.finishTimeS===null);
+    // Ein Defekt hält zuerst physisch an; die Reparaturzeit beginnt erst
+    // danach. Es erfolgt keine Positions- oder Zeitkorrektur.
+    if(plannedMechanical.size||activeMechanical.size)for(const s of active){
+      const planned=plannedMechanical.get(s.rider.id);
+      if(planned&&t>=planned.atTimeS){
+        plannedMechanical.delete(s.rider.id);
+        activeMechanical.set(s.rider.id,{incident:planned,serviceStartS:null});
+        bridgePlans.delete(s.rider.id);activeAttackPurposes.delete(s.rider.id);
+        s.intent='erholung';s.intentSinceS=t;
+        s.decision={intent:'erholung',desiredPowerW:0,reason:'Defekt: anhalten'};
+        s.sprintLaunchedAtS=null;s.crewMission=null;s.crewDuty=null;s.teamPaceKind=null;
+        if(events.length<100000)events.push({timeS:t,km:s.positionM/1000,
+          type:'mechanical-incident',riderId:s.rider.id,teamId:s.rider.teamId,
+          description:`${s.rider.name}: Defekt, Fahrer hält an`});
+      }
+      const state=activeMechanical.get(s.rider.id);
+      if(!state)continue;
+      if(state.serviceStartS===null&&s.speedMps<=.05){
+        state.serviceStartS=t;
+        if(events.length<100000)events.push({timeS:t,km:s.positionM/1000,
+          type:'mechanical-service',riderId:s.rider.id,teamId:s.rider.teamId,
+          description:`${s.rider.name}: Reparatur beginnt nach Stillstand`});
+      }
+      if(state.serviceStartS!==null&&t-state.serviceStartS>=state.incident.serviceDurationS){
+        activeMechanical.delete(s.rider.id);
+        if(events.length<100000)events.push({timeS:t,km:s.positionM/1000,
+          type:'mechanical-resume',riderId:s.rider.id,teamId:s.rider.teamId,
+          description:`${s.rider.name}: Reparatur beendet, Weiterfahrt`});
+      }
+    }
     const ordered=[...active].sort((a,b)=>b.positionM-a.positionM||
       a.rider.id.localeCompare(b.rider.id));
     const leader=ordered[0];
@@ -594,6 +649,7 @@ export function simulateRace(x:RaceInput):RaceResult {
           massKg:s.rider.massKg,bikeMassKg:s.rider.bikeMassKg,
           dragAreaM2:s.rider.dragAreaM2,sprintSkill:s.rider.sprintSkill},
         chaseSpent:sprintFriendlyRace&&s.chaseLoad.spent,
+        unavailable:activeMechanical.has(s.rider.id),
       }));
       const teamRefs=x.teams.map(team=>({
         id:team.id,strategy:team.strategy,
@@ -718,7 +774,7 @@ export function simulateRace(x:RaceInput):RaceResult {
           profile:reactionProfile,situation:'flucht'}),
       }));
       for(const s of states){
-        if(s.finishTimeS!==null)continue;
+        if(s.finishTimeS!==null||activeMechanical.has(s.rider.id))continue;
         const localAttackGroup=attackGroupByRider.get(s.rider.id);
         const groupIndex=localAttackGroup?attackGroups.indexOf(localAttackGroup):-1;
         const nextGroup=groupIndex>0?attackGroups[groupIndex-1]:undefined;
@@ -1140,7 +1196,7 @@ export function simulateRace(x:RaceInput):RaceResult {
           wheelFindingSkill:target.rider.wheelFindingSkill});
         if(stage==='wait')continue;
         const candidates=group.map(g=>byId.get(g.id)!).filter(r=>
-          r.rider.teamId===team.id&&r.rider.role==='helfer'&&
+          r.rider.teamId===team.id&&r.rider.role==='helfer'&&!activeMechanical.has(r.rider.id)&&
           Math.abs(r.positionM-target.positionM)<=
             SPRINT_POSITION.escortMaxDistanceM)
           .sort((a,b)=>
@@ -1830,7 +1886,7 @@ export function simulateRace(x:RaceInput):RaceResult {
       // fester Startpunkt: Vorliebe, physische Position in DER eigenen
       // Gruppe, echtes Hinterrad, Tempo und Wind beeinflussen den
       // Start. Nur Sprinterspezialisten, nicht heimlich alle Fahrer.
-      if(sprintFriendlyRace&&s.rider.specialty==='sprinter'&&
+      if(sprintFriendlyRace&&!activeMechanical.has(s.rider.id)&&s.rider.specialty==='sprinter'&&
         s.sprintLaunchedAtS===null){
         const g=physicalGroupOf.get(s.rider.id);
         const frontState=g?.length?byId.get(g[0].id):undefined;
@@ -1877,6 +1933,13 @@ export function simulateRace(x:RaceInput):RaceResult {
           sprintDecayTimeS:s.rider.sprintDecayTimeS,
           elapsedS:Math.max(0,t-s.sprintLaunchedAtS),
         });
+      }
+      if(activeMechanical.has(s.rider.id)){
+        commanded=0;
+        // Bremskraft über den vorhandenen Bewegungsintegrator: auch am
+        // Hang hält der Fahrer während der Reparatur seine Position.
+        brakeForceN=Math.max(brakeForceN,(s.rider.massKg+s.rider.bikeMassKg)*
+          (2.5+9.80665*Math.abs(segment.gradeFraction)));
       }
       // Nur stable-pack: R-19 reduziert die VERFUEGBARE Leistung, nicht
       // jeden zum Mitfahren benoetigten Wattwunsch. Die reduzierte CP
