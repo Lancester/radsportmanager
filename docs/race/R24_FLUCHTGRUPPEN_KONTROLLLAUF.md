@@ -44,3 +44,24 @@ Bei der Erkennung ohne Experiment lagen 40 Fahrer laut eindimensionaler Position
 Ein konkreter Auswertungsfehler wurde korrigiert: Nach der ersten Zielankunft erkannte der Tracker weitere Gruppen unter den zurückliegenden Fahrern als neue Rennfluchten. Diese falschen Meldungen werden jetzt unterdrückt; die tatsächliche Zielankunft wird nicht als Einholung bezeichnet. Vor der Korrektur meldete derselbe Lauf 8 bzw. 14 Fluchten, nach ihr 4 bzw. 5. Die ältere Tabelle oben ist damit ein historischer Zwischenstand.
 
 11 gezielte technische Prüfungen inklusive Diagnostik und Regression sowie ein unabhängiger Transparenztest bestanden; dieser prüft, dass eingeschaltete Diagnostik Ergebnis und Ereignisse nicht verändert. Der TypeScript-Build bestand. Das Experiment bleibt deaktiviert; ein erneuter vollständiger technischer Gesamttest und der sportliche Vergleich stehen aus.
+
+
+## Frontlage und Positionswechsel – Folgestand
+
+Erneuter gepaarter Kontrolllauf, Hautacam-Referenz, 154 Fahrer, Seed 777; Renncode mit vorsichtigem Frontkontext und korrigierter Bestätigung der Fluchtgruppe. Die Daten stehen in `docs/race/r24-flucht-frontwechsel-seed-777.jsonl`, reproduzierbar mit `node scripts/r24-breakaway-audit.mjs`. Beide Läufe kamen mit 154 Fahrern ins Ziel, die mechanische Energiebilanz blieb innerhalb des geprüften Toleranzwerts.
+
+| Beobachtung | Experiment aus | Experiment an |
+|---|---:|---:|
+| Erkannte Fluchten bis zum Zielsieg | 4 | 4 |
+| Beobachtete Frontzeit in der definierten Situation | 10.152 s | 6.670 s |
+| Davon Frontlage im 0,5-m-Band unklar | 2.213 s | 1.802 s |
+| Roh gezählte Änderungen der vordersten Längsposition | 1.254 | 1.000 |
+| Davon mit mindestens 5 s vor und nach dem Wechsel | 17 | 31 |
+| Davon beim Übergang nicht im 0,5-m-Band unklar | 3 | 3 |
+| Protokollierte Absichten Arbeit / Schonung | 0 / 0 | 16 / 0 |
+
+Rohwechsel sind **keine** realen taktischen Ablösungen: Die Sortierung des 1D-Modells kann bei fast gleicher Längsposition häufig wechseln. Das 0,5-m-Band und die fünf Sekunden sind vorläufige diagnostische Maßstäbe, keine Regel des Profiradsports. Selbst ein unter diesen Kriterien als klarer Positionswechsel erfasster Vorgang beweist keine Absprache und keine längerfristige Mitarbeit. Da sich Rennverlauf und erfasste Situationen unterscheiden und nur ein Seed vorliegt, belegen die Zahlen weder eine Verbesserung noch allgemeine Häufigkeiten. Die experimentelle Zusammenarbeit bleibt ausgeschaltet.
+
+Gegenüber der ersten Versuchsfassung werden unklare Frontsituationen vorsichtiger behandelt; der Fahrer erhält dort keine besondere experimentelle Fluchtarbeitsanweisung. Die vorhandene Rennphysik bleibt unverändert. Zusätzlich wurde korrigiert, dass eine völlig neu entstandene Spitzengruppe nicht die bereits verstrichene Beobachtungszeit der vorherigen Gruppe übernimmt. Eine Gruppe, deren Zusammensetzung sich mit mindestens einem gemeinsamen Fahrer verändert, kann die bestehende Beobachtungszeit behalten.
+
+17 gezielte Tests und die vorhandene Integrationsprüfung für einen längeren Berg-Anschluss bestanden; ebenso der TypeScript-Build und ein Diagnostik-Transparenztest. Der vollständige technische Testsatz wird auf diesem Stand separat geprüft. Die nötige sportliche Prüfung der Gruppenbildung, Zusammenarbeit, Gegenreaktionen und Wirksamkeit bleibt offen.
