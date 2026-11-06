@@ -115,6 +115,8 @@ export interface RaceInput {
   diagnosticLevel?:'checkpoints';
   /** Nur fuer explizite Gruppen-/Physikkontrollen ohne Angriffsversuche. */
   disableAttacks?:boolean;
+  /** Temporäre R24-Diagnose: erster physischer 42-m-Gruppenriss als Sekundenprotokoll. */
+  diagnosticFirstSplit?:boolean;
 }
 export type RaceEventType =
   'start'|'attack'|'chase'|'sprint'|'recovery'|'segment'|'group-split'|'breakaway'|'breakaway-caught'|'finish'|'team-pace'|'team-chase'|'sprint-train';
@@ -461,6 +463,9 @@ export function simulateRace(x:RaceInput):RaceResult {
   const namedLeaderAudit=new ChaseLeaderTelemetry();
   const namedChaseHandoffs:NonNullable<RaceResult['diagnostics']['namedChaseHandoffs']>=[];
   let oldGroups=1,maximumGroups=1,lastSection=0;
+  // Nur experimentelle Diagnostik, keine Wirkung auf Rennentscheidungen.
+  const firstGapHistory:Array<Array<Record<string,unknown>>>=[];
+  let firstGapReported=false;
   let lastGroupEventS=-Infinity;
   let breakawaySinceS:number|null=null,catchSinceS:number|null=null;
   let breakawayActive=false;
@@ -1062,7 +1067,11 @@ export function simulateRace(x:RaceInput):RaceResult {
         sprintFinaleObserved.add(target.rider.id);
       }
     }
+    const firstGapCurrent:Array<Record<string,unknown>>=[];
     for(const s of active){
+      let firstGapRule='pack';
+      let firstGapRefA:number|null=null;
+      let firstGapRemoteA:number|null=null;
       if(sprintFriendlyRace){
         const protectedSprinter=targetByTeam.get(s.rider.teamId);
         if(s.crewMission==='sprintzug'){
@@ -1137,6 +1146,8 @@ export function simulateRace(x:RaceInput):RaceResult {
           groupSpeedMps:groupPaceByRider.get(s.rider.id)?.speedMps??s.speedMps,
           groupAccelerationMps2:groupPaceByRider.get(s.rider.id)?.
             accelerationMps2??0});
+        firstGapRefA=paceReference.accelerationMps2;
+        firstGapRemoteA=groupPaceByRider.get(s.rider.id)?.accelerationMps2??null;
         const observation={
           groupSize:actualGroupSize.get(s.rider.id)??1,
           distanceFromGroupFrontM:Math.max(0,
@@ -1177,6 +1188,7 @@ export function simulateRace(x:RaceInput):RaceResult {
         const stableMission=x.groupRidingModel==='stable-pack'&&
           (s.intent==='verfolgung'||
             (actualGroupSize.get(s.rider.id)??1)<R22_GROUP_RIDING.minGroupSize);
+        firstGapRule=stableMission?'stable-pack-follow':'group-riding';
         const group=stableMission?
           decideStablePackRiding(groupObservation,
             groupPaceByRider.get(s.rider.id)?.pacerId===s.rider.id):
@@ -1567,6 +1579,18 @@ export function simulateRace(x:RaceInput):RaceResult {
               sprintSkill:s.rider.sprintSkill})}):
         applyCpWprimeStep(s.profile,s.physiology,
           commanded*availability,dt);
+      if(x.diagnosticFirstSplit===true&&!firstGapReported){
+        firstGapCurrent.push({t,id:s.rider.id,pos:s.positionM,
+          v:s.speedMps,wheelGap:frontGap.get(s.rider.id)??null,
+          wheelA:frontAcceleration.get(s.rider.id)??null,
+          referenceA:firstGapRefA,remoteA:firstGapRemoteA,
+          rule:firstGapRule,group:actualGroupSize.get(s.rider.id)??1,
+          requested:commanded,applied:cp.appliedPowerW,
+          effectiveCp:s.dayCpW*availability,
+          wprime:s.physiology.remainingWPrimeJ,
+          aero:aeroFactor,grade:segment.gradeFraction,intent:s.intent,
+          mission:s.crewMission,duty:s.crewDuty});
+      }
       if(s.intent==='angriff')attackTelemetry?.observePower({
         riderId:s.rider.id,startTimeS:s.lastAttackS,dt,
         requestedPowerW:commanded,appliedPowerW:cp.appliedPowerW,
@@ -1710,6 +1734,30 @@ export function simulateRace(x:RaceInput):RaceResult {
           type:'segment',description:`Spitze erreicht Abschnitt: ${x.segments[segIndex].name}`});
       }
       const groups=splitGroups(inRace);
+      if(x.diagnosticFirstSplit===true&&!firstGapReported){
+        firstGapHistory.push(firstGapCurrent);
+        if(firstGapHistory.length>90)firstGapHistory.shift();
+        if(groups.length>1){
+          const positions=[...inRace].sort((a,b)=>b.positionM-a.positionM||
+            a.rider.id.localeCompare(b.rider.id));
+          const splitAt=positions.findIndex((s,i)=>i>0&&
+            positions[i-1].positionM-s.positionM>42);
+          if(splitAt>=1){
+            const focus=positions.slice(Math.max(0,splitAt-2),
+              Math.min(positions.length,splitAt+2)).map(s=>s.rider.id);
+            const rows=firstGapHistory.flat().filter(r=>
+              focus.includes(r.id as string)&&
+              ((r.t as number)%5===0||(r.t as number)>=t-12));
+            console.log('R24_FIRST_GAP_TRACE '+JSON.stringify({timeS:t,
+              km:best.positionM/1000,
+              gapM:positions[splitAt-1].positionM-positions[splitAt].positionM,
+              ahead:positions[splitAt-1].rider.id,
+              behind:positions[splitAt].rider.id,
+              focus,rows}));
+            firstGapReported=true;
+          }
+        }
+      }
       if(attackTelemetry){
         const membership=new Map<string,number>();
         for(const group of groups)for(const rider of group)
