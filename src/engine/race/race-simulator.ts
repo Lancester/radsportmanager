@@ -493,6 +493,7 @@ export function simulateRace(x:RaceInput):RaceResult {
   const cooperativeFrontSeconds=new Map<string,number>();
   const cooperativeYielding=new Set<string>();
   const breakawayFrontSeconds=new Map<string,number>();
+  const breakawayStartReserve=new Map<string,number>();
   const breakawayWorkModes=new Map<string,'work'|'save'>();
   const relayOffers=new Map<string,{partnerId:string;targetId:string}>();
   const activeAttackPurposes=new Map<string,AttackPurpose>();
@@ -916,6 +917,9 @@ export function simulateRace(x:RaceInput):RaceResult {
                 r.rider.teamId===s.rider.teamId&&r.rider.id!==s.rider.id&&
                 r.positionM>localAttackGroup[0].positionM+75),
               role:s.rider.role,strategy:teams.get(s.rider.teamId)!.strategy,
+              sprinterInSameGroup:!!targetByTeam.get(s.rider.teamId)&&
+                targetByTeam.get(s.rider.teamId)!.rider.role==='sprinter'&&
+                localAttackGroup.includes(targetByTeam.get(s.rider.teamId)!),
               reserveFraction:obs.reserveFraction,aggression:s.rider.aggression,
               currentIntent:s.intent,draw:adaptiveAttackDraw(x.seed,s.rider.id,t)})){
             const initialGap=Math.max(0,sharedTarget.positionM-s.positionM);
@@ -1723,11 +1727,14 @@ export function simulateRace(x:RaceInput):RaceResult {
         if(work&&companion){
           const seconds=(breakawayFrontSeconds.get(s.rider.id)??0)+dt;
           breakawayFrontSeconds.set(s.rider.id,seconds);
+          const reserve=s.physiology.remainingWPrimeJ/s.profile.wPrimeCapacityJ;
+          if(!breakawayStartReserve.has(s.rider.id))
+            breakawayStartReserve.set(s.rider.id,reserve);
           commanded=work.powerW;
           if(work.intent==='work'){
             const yieldPower=cooperativeRelayYield({sharedTarget:true,isRealFront:true,
               partnerGapM:s.positionM-companion.positionM,frontSeconds:seconds,
-              reserveFraction:s.physiology.remainingWPrimeJ/s.profile.wPrimeCapacityJ,
+              reserveFraction:reserve,initialReserveFraction:breakawayStartReserve.get(s.rider.id),
               cpW:s.dayCpW,requestedW:commanded});
             if(yieldPower!==null)commanded=yieldPower;
           }
@@ -1740,6 +1747,7 @@ export function simulateRace(x:RaceInput):RaceResult {
           breakawayWorkModes.set(s.rider.id,work.intent);
         }else{
           breakawayFrontSeconds.delete(s.rider.id);
+          breakawayStartReserve.delete(s.rider.id);
         }
       }
       // Gemeinsame Nachführarbeit: nur ein tatsächlich an der physischen
