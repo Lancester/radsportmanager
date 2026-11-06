@@ -85,7 +85,16 @@ export function coordinatePelotonChase(input:{
       leadingIds.has(r.id)&&r.teamId===team.id&&r.role==='helfer');
     const optedOut=(!adaptive&&sprintFinale&&team.chaseHelperCount===0)||
       ownLeadersAhead||(ownHelperAhead&&!urgent);
-    const interested=!optedOut&&(
+    // R24: ein laufendes, noch physisch berechtigtes Jagdmandat darf
+    // unter 150 s nicht allein durch einen knappen Urgency-Schwellenwechsel
+    // abreißen. Keine Weiterfahrt ohne abgesetzte Spitze, verfügbare
+    // Feldfahrer/Helfer oder bei eigenem Kapitän vorne: diese Regeln gelten
+    // weiter über breakaway, groupMembers, optedOut und den Helferfilter.
+    const minimumMandate=adaptive&&breakaway&&
+      previous.active.includes(team.id)&&
+      timeS-previous.sinceS<R22_CHASE.minimumActionSeconds&&
+      (hasCaptain||hasSprinter);
+    const interested=!optedOut&&(minimumMandate||
       team.strategy==='sprint'&&hasSprinter||
       urgent&&team.strategy==='kapitaen_schuetzen'&&hasCaptain||
       urgent&&team.strategy==='ausgewogen'&&hasCaptain||
