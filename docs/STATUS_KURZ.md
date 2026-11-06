@@ -24,6 +24,9 @@
 
 **Abgetrennter Versuch angelegt:** [Draft-PR #82](https://github.com/Lancester/radsportmanager/pull/82), Branch `experiment/r24-feldkohaesion-referenz-20261106`. Dort liegen eine eng begrenzte Referenzschutz-Regel, gezielte Testfälle und ein manueller A/B-Lauf-Runner. **Noch keine bestätigten Tests oder neue Rennresultate**, kein Merge und keine Änderung an der aktiven Audit-Engine. Experiment nur übernehmen, wenn gepaarte vollständige Rennen den Nutzen belegen.
 
+
+**Erster A/B-Test abgeschlossen (06.11.):** [Bericht](race/R24_FELDKOHAESION_AB_TEST_20261106.md), [Actions 42222177699](https://github.com/Lancester/radsportmanager/actions/runs/42222177699). **7/7 Unit-Tests und 8 Kontrollsimulationsläufe erfolgreich**, aber in den vier paarigen 30-km-Szenarien **keine Verbesserung** der ausgewerteten Gruppen oder Resultate. Daher **PR #82 nicht mergen**; der vorzeitige Feldzerfall bleibt offen. Keine Vollrennserie gestartet. Nächster nur bei Bedarf: Ursache am ersten echten 42-m-Riss sekundengenau instrumentieren, statt die nicht wirksame Heuristik zu erweitern.
+
 ## Nächste klar begrenzte Arbeitsaufgabe
 
 1. Audit-Checkout auf dem neuen Branch: Build/Tests und vorhandene Baseline-Szenarien prüfen; Ausgangswerte einfrieren.
