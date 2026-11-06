@@ -28,3 +28,10 @@ Plan vor Laufbeginn dokumentiert. Keine abschließende Entscheidung; die elf Neu
 Das Manifest fixiert die Quellen und Einzeldatei-Prüfsummen der 16 wiederverwendeten Daten. Neue Blöcke enthalten die ursprünglichen Ergebnisdateien und Einzelprüfsummen sowie die Prüfsumme des komprimierten Blocks und die Kennung des Manifests. `scripts/r24-dreistaende-wiederherstellen.py` rekonstruiert neu berechnete Ergebnisse aus den Blöcken; die Wiederherstellung zweier tatsächlicher Ergebnisse wurde lokal geprüft. Die wiederverwendeten Dateien müssen separat aus den im Manifest benannten Archiven wiederhergestellt und geprüft werden. `scripts/r24-dreistaende-kurzvergleich.py` berechnet fehlende Läufe nur bei passenden Engine- und Skriptprüfsummen. Seine momentan verwendeten absoluten Arbeitsverzeichnisse müssen bei Wiederaufnahme an die Umgebung angepasst werden.
 
 Keine sportliche Gesamtaussage oder Festlegung auf einen Modellstand vor dem kompletten Kurzvergleich.
+
+
+## Abschluss des Kurzvergleichs
+
+Alle 27 Aufgaben liegen vor: 16 wiederverwendete und elf neue Rennen. In neun Sicherungsblöcken wurden die elf neuen Originaldateien manifestgebunden gespeichert. Alle neun Blockdateien und Metadaten stimmen bytegleich mit dem lokalen Stand überein; die elf Ergebnisse wurden wiederhergestellt und bytegleich mit den Originalen verglichen. Die drei Engine-Inhaltshashes und der Runner wurden nach den Rechenblöcken erneut geprüft.
+
+Der [Ergebnisbericht und die begründete Arbeitsentscheidung](R24_DREI_STAENDE_ERGEBNIS_UND_ENTSCHEIDUNG.md) empfiehlt den Auditstand `1945e2d` als **vorläufige** Basis für den ersten spielbaren Manager-Prototyp. Frühere Regeln, Gesamtbranch und Ergebnisse bleiben erhalten. Die offene sportliche Kalibrierung, der vollständige technische Standardtest, Android-Messung und Schnittstellen für Rundfahrten bleiben ausdrücklich zu bearbeiten.
