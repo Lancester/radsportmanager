@@ -40,6 +40,25 @@ jobs:
           test -s docs/labor/generated/engine/race/race-simulator.js
           test -s docs/labor/generated/engine/race/finish-time-groups.js
           test -s docs/labor/generated/engine/race/reference-fixtures.js
+          node --input-type=module -e "import('./docs/labor/generated/labor/lab-settings.js').then(m => {const x=m.buildLabRace(m.initialLabSettings());if(x.input.riders.length!==154)process.exit(1);console.log('Browser ESM geladen:',x.input.riders.length)})"
+      - name: Auslieferbares Paket mit eindeutiger ZIP-Struktur erstellen
+        run: |
+          cd docs/labor
+          zip -qr ../../rennlabor-android-rc1.zip index.html app.js worker.js generated README.md
+          cd ../..
+          unzip -t rennlabor-android-rc1.zip | tail -2
+      - name: HTML/Worker im mobilen Chromium wirklich starten
+        run: |
+          npx --yes playwright@1.58.2 install --with-deps chromium
+          node --experimental-strip-types scripts/r24-lab-mobile-smoke.mjs
+      - name: Fertiges Upload-ZIP exportieren
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rennlabor-android-upload-zip
+          path: rennlabor-android-rc1.zip
+          retention-days: 14
+          if-no-files-found: ignore
       - name: Browserpaket exportieren
         uses: actions/upload-artifact@v4
         with:
