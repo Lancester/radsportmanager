@@ -16,6 +16,11 @@
 - Noch kein spielbarer Manager, keine fortsetzbaren Etappen-/Regenerationszustände.
 - Die bei der Sichtung offenen PRs #79 und #81 bleiben ohne automatische Übernahme.
 
+
+## Aktuelle Feldkohäsionsdiagnose (06.11.2026)
+
+[Gesicherter Sekundenbefund und begrenzter Folgeauftrag](race/R24_FELDZUSAMMENHALT_DIAGNOSE_20261106.md): Historisch nachgewiesene Leistungssprünge bei Geländeübergängen und anschließende Gruppenfragmentierung ohne Attacken. Ursache noch nicht kausal isoliert. **Keine Engine-Änderung und kein neuer Rennlauf** in dieser Runde; nächster Schritt nur temporäre Sekundeninstrumentierung, dann minimaler A/B-Versuch und Abnahmekriterien. Alte nicht erfolgreiche ±0,1-m/s²-Pauschalbegrenzung nicht übernehmen.
+
 ## Nächste klar begrenzte Arbeitsaufgabe
 
 1. Audit-Checkout auf dem neuen Branch: Build/Tests und vorhandene Baseline-Szenarien prüfen; Ausgangswerte einfrieren.
