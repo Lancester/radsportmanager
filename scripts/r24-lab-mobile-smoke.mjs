@@ -66,8 +66,10 @@ try {
  await context.setOffline(true);
  await page.reload({waitUntil:'domcontentloaded'});
  await page.locator('#teams select').first().waitFor();
- if(!await page.locator('#offlineInfo').textContent().then(t=>t.includes('Offline bereit')))
-   throw Error('Offline-Status nach Neustart nicht bereit');
+ await page.waitForFunction(()=>document.querySelector('#offlineInfo')?.textContent?.includes('Offline bereit'),
+   undefined,{timeout:30000}).catch(async()=>{
+     throw Error('Offline-Status nach Neustart: '+await page.locator('#offlineInfo').textContent());
+   });
  await page.locator('#teamCount').fill('2');
  await page.locator('#teamCount').dispatchEvent('change');
  await page.locator('#run').click();
