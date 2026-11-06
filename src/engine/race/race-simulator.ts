@@ -31,6 +31,7 @@ import {decideJoinBridge} from './bridge-cooperation.ts';
 import {cooperativeRelayYield,observedRelayFrontChange} from './bridge-relay.ts';
 import {decideBreakawayWork} from './breakaway-cooperation.ts';
 import {BreakawayFrontAudit} from './breakaway-front-audit.ts';
+import {classifyBreakawayFront} from './breakaway-front-context.ts';
 import type {AttackPurpose} from './attack-purpose.ts';
 import {adaptiveAttackDraw,decideAdaptiveAttackOpportunity}
   from './adaptive-attack.ts';
@@ -1094,6 +1095,7 @@ export function simulateRace(x:RaceInput):RaceResult {
     const physicalGroups=pelotonGroups(ordered.map(s=>({
       id:s.rider.id,positionM:s.positionM,
     })));
+    const trackedEscapeIds=new Set(trackedBreakaway.escapeIds);
     // Echte relative Position in der eigenen 42-m-Abstandsgruppe.
     const rankInPhysicalGroup=new Map<string,number>();
     const physicalGroupOf=new Map<string,typeof physicalGroups[number]>();
@@ -1704,10 +1706,11 @@ export function simulateRace(x:RaceInput):RaceResult {
           group[group.length-1].positionM-largestPhysicalGroup[0].positionM:0;
         const isTracked=breakawayActive&&group===physicalGroups[0]&&
           group!==largestPhysicalGroup&&breakawayGap>=75&&
-          trackedBreakaway.escapeIds.includes(s.rider.id);
-        const companion=isTracked&&group?.[0]?.id===s.rider.id?
-          group.find(r=>r.id!==s.rider.id&&trackedBreakaway.escapeIds.includes(r.id)&&
-            s.positionM-r.positionM>=0&&s.positionM-r.positionM<=15):undefined;
+          trackedEscapeIds.has(s.rider.id);
+        const frontContext=isTracked&&group?.[0]?.id===s.rider.id?
+          classifyBreakawayFront({group,trackedIds:trackedEscapeIds}):null;
+        const companion=frontContext?.partnerId&&group?
+          group.find(r=>r.id===frontContext.partnerId):undefined;
         const teamTarget=targetByTeam.get(s.rider.teamId);
         const teamSprinterBehind=!!teamTarget&&teamTarget.rider.role==='sprinter'&&
           teamTarget.finishTimeS===null&&s.positionM-teamTarget.positionM>75;
@@ -1980,10 +1983,13 @@ export function simulateRace(x:RaceInput):RaceResult {
       const front=byId.get(frontGroup[0].id);
       const eligible=breakawayActive&&frontGroup!==largestPhysicalGroup&&
         frontGroup.length>=2&&gap>=75&&front&&
-        trackedBreakaway.escapeIds.includes(front.rider.id);
+        trackedEscapeIds.has(front.rider.id);
+      const frontAmbiguous=eligible&&classifyBreakawayFront({group:frontGroup,
+        trackedIds:trackedEscapeIds}).status==='ambiguous';
       breakawayFrontAudit.observe(eligible?{riderId:front.rider.id,teamId:front.rider.teamId,
         timeS:t,dt,appliedPowerW:powers.get(front.rider.id)??0,
-        aeroFactor:lastAero.get(front.rider.id)??1,groupSize:frontGroup.length}:null);
+        aeroFactor:lastAero.get(front.rider.id)??1,groupSize:frontGroup.length,
+        frontAmbiguous:!!frontAmbiguous}:null);
     }
     if(sprintFriendlyRace){
       const nominated=previousFieldChaseLeader?.riderId??null;
