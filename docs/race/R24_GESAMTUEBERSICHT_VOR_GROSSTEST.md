@@ -56,7 +56,8 @@ Nicht Voraussetzung für den ersten Eintagesvergleich sind eine vollständig spi
 - Der erste Test einer Laufzeitoptimierung auf einem 30-km-Ausschnitt mit 154 Fahrern und drei Wiederholungen je Version zeigte identische Ergebnisdaten, aber keinen zuverlässigen Geschwindigkeitsvorteil. Die kompliziertere Änderung an der Fluchterkennung wurde deshalb zurückgenommen. Eine kleine Vermeidung doppelter Berechnungen bei der Gegnerbewertung bleibt; der Einfluss auf die langen Tests ist ungeklärt.
 - Ein einzelner Seed oder bestandener technischer Test beweist keine realistischen Rennergebnisse. Der große Vergleich muss echte Unterschiede und ihre Ursachen offenlegen.
 
-\n## Ergänzung: optionale taktische Eigenschaften im Referenzfeld
+
+## Ergänzung: optionale taktische Eigenschaften im Referenzfeld
 
 `createReferenceFixture({ ..., tacticalTraits: 'varied' })` ergänzt fiktive, individuell unterschiedliche Werte für Beharrlichkeit beim Anschluss und die Vorliebe für Angriffe am Berg. Ihre Berechnung nutzt feste fahrerbezogene Kennungen; ein anderer Tagesform-Seed verändert sie nicht. Die Werte sind unkalibrierte Testannahmen, keine bekannten Eigenschaften realer Profis. Ohne diese explizite Option bleiben die vorherigen Referenzfahrer und ihr Verhalten erhalten. Beim Vergleich müssen dieselben Eingabefelder und Fahrer für alle Versionen vorbereitet und dokumentiert werden; ältere Modelle können unbekannte taktische Eigenschaften nicht automatisch nutzen.
 
