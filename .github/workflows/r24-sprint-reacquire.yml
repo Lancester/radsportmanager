@@ -32,7 +32,8 @@ jobs:
           node-version: '22'
       - name: Nur genau die Sprint-Jagdregel modifiziert?
         run: |
-          test "$(git -C variant diff experiment/r24-negative-accel-fix-20261106 -- src/engine/race/race-simulator.ts 2>/dev/null | wc -l)" -ge 0
+          grep -q "s.crewDuty==='unterstuetzung'||s.crewDuty==='fuehrung'" variant/src/engine/race/race-simulator.ts
+          ! grep -q "s.crewDuty==='unterstuetzung'||s.crewDuty==='fuehrung'" audit/src/engine/race/race-simulator.ts
           diff -q audit/src/engine/race/local-group-reference.ts variant/src/engine/race/local-group-reference.ts
           diff -q audit/src/engine/race/race-team-ai.ts variant/src/engine/race/race-team-ai.ts
       - name: Gezielte Tests und Typpruefung
