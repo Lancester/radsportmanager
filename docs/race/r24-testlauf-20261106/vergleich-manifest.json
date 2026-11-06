@@ -1,0 +1,43 @@
+{
+  "engines": {
+    "dev": "cda3f93d7a7f6e4822b4b2fa0eb01410cd99ce50dd4a33ebe3cdcf5865b48492",
+    "main": "4afdf3d734548be50b7e95f3672200ce4bbdf179daa3a0b4ec23d0ad91dc21a6"
+  },
+  "format": 1,
+  "node_version": "v24.22.1",
+  "plan": {
+    "before_seeds": [],
+    "extra_routes": [
+      "synthetic_crosswind",
+      "synthetic_transition"
+    ],
+    "rosters": [
+      "common",
+      "profile"
+    ],
+    "routes": [
+      "tdf25_lille",
+      "tdf25_boulogne",
+      "lbl25_liege",
+      "tdf25_hautacam"
+    ],
+    "seeds": [
+      11,
+      42,
+      101,
+      123,
+      777,
+      2025,
+      2026,
+      2027,
+      9001,
+      31415
+    ]
+  },
+  "scripts": {
+    "r24-comparison-provenance.py": "4af17af3c5d38fc091c2fc844480bd78a7ab22e736941acdd52623097016243e",
+    "r24-grossvergleich-starten.py": "042ca64d0184f72e81a23bebe237c9ba9ae9a3d5599185c5b2c916c7aad719f9",
+    "r24-grossvergleich-szenario.mjs": "b1fcc67a4c1a8d1c9655f1745f09116495fd149290124ab2cfb07703949ccbd2",
+    "r24-grossvergleich.mjs": "b7299c1ec8deef61b145a1bb61a746f0d5ca1689f7a8fa32add2d9d9dbdf0be5"
+  }
+}
