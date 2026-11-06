@@ -97,3 +97,10 @@ Im technischen Hautacam-Kontrolllauf mit 154 Fahrern, Seed 777 und eingeschaltet
 Ein 60-km-Flachkontrolllauf lieferte zwar 154 Zieleinläufe, aber keine gemessene gemeinsame Frontphase und eignet sich daher nicht als Beleg für Ablösungen. Bei ausgeschaltetem Experiment lieferte ein anderer 30-km-Kontrolllauf in drei Wiederholungen denselben vollständigen Ergebnishash wie zuvor. 22 gezielte Tests und der TypeScript-Build bestanden; ein vollständiger Standardtest und der große sportliche Vergleich bleiben ausstehend.
 
 Ein zweiter vollständiger technischer Hautacam-Lauf mit Seed 42 ergab ebenfalls 154 Zieleinläufe und eine Energiebilanz innerhalb der Prüftoleranz. Er zeigte 5.696 Front-Fahrer-Sekunden, 17 längere Positionswechsel, davon einen nach der bestehenden 0,5-m-Heuristik am Übergang nicht unklar, sowie 12 Ablöseangebote und 11 nach einem Angebot beobachtete Längspositionswechsel. Auch dies ist kein Nachweis sportlich realistischer Zusammenarbeit; beide Läufe nutzen dasselbe Streckenprofil. Der Diagnoseablauf unterstützt die explizite Angabe eines Seeds.
+
+
+## Erste neue Vergleichsrennen: Punkt 2
+
+Zwei vollständige Strecken mit je drei Ständen (main, früherer Audit-Stand, aktuelles Eintagesmodell), gemeinsames Fahrerfeld und Seed 42 wurden technisch geprüft. Besonders auffällig sind beim neuen Stand 1.467 bzw. 1.483 als Angriffsreaktion beschriebene Verfolgungsbeginne; 906 bzw. 926 davon liegen auf den ersten 30 km. Ereignisse sind Zustandsbeginne, nicht verschiedene Fahrer, garantierte Anschlüsse oder Dauern. Im alten Stand ist die Beschriftung nicht direkt vergleichbar. Detailergebnisse, Favoritenränge, Datensicherung und Einschränkungen: [Angriffsreaktionen und erste Vergleichsrennen](R24_ANGRIFFSREAKTION_ZWISCHENSTAND.md).
+
+Die Reaktionswahl berücksichtigt die taktische Motivation bei früher Fluchtbildung noch nicht ausreichend und sollte nun anhand der Befunde weiterbearbeitet und gepaart nachgeprüft werden. Keine neue sportliche Kalibrierung wurde in diesem Schritt vorgenommen. Sechs Rennen sind noch nicht die große Mehrseed-Serie; vollständiger Standardtest und frühere Laufzeitbefunde bleiben offen.
