@@ -278,6 +278,11 @@ function renderOutput(data){
     $('metrics').append(div);
   }
   $('report').replaceChildren(...data.report.map(t=>str('li',t)));
+  renderTable('tacticalEvidence',data.tacticalEvidence??[],(tr,r)=>{
+    cell(tr,r.teamId);cell(tr,r.attackEvents,true);
+    cell(tr,r.chaseEvents,true);cell(tr,r.sprintTrainEvents,true);
+    cell(tr,r.teamPaceEvents,true);
+  });
   const gap=s=>s===0?'0:00':fmt(s,1)+' s';
   renderTable('results',data.ranking,(tr,r)=>{
     cell(tr,r.rank);cell(tr,r.name);cell(tr,r.teamId);
