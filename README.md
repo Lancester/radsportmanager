@@ -1,5 +1,8 @@
 # Radsportmanager – Open-Source-Projekt (Arbeitstitel)
 
+> **Aktueller Projektkurs (06.11.2026):** Die aktive, vorläufig auditbasierte Entwicklung läuft auf [`develop/manager-mvp`](https://github.com/Lancester/radsportmanager/tree/develop/manager-mvp). Einstieg: [Projektkurs](docs/AKTUELLER_PROJEKTKURS.md) · [Status kurz](docs/STATUS_KURZ.md) · [Engine-/Branch-Archiv](docs/ENGINE_UND_BRANCH_ARCHIV.md). Der folgende ausführliche README-Text enthält ältere Entwicklungsschritte und ist nicht durchgehend der aktuelle Stand.
+
+
 **Status: R-10-Rennprototyp, Stand 03.11.2026.** Vollständige 50-km-Rennen mit 30 Fahrern/fünf Teams sind im Browser simulierbar. Der große Karrieremanager ist **noch nicht spielbar**, und Peloton-/Taktikrealismus ist noch nicht kalibriert.
 
 Ein kostenloser, langfristig motivierender **Offline-Radsportmanager**. Die Spielerrolle ist die Leitung eines professionellen Radsportteams: Fahrer und Mitarbeiter verpflichten, die Organisation führen, Ziele und Saison planen. Sportliche Leiter betreuen die Rennen eigenständig. Schwerpunkt ist eine **glaubwürdige, erklärbare Rennsimulation**, nicht eine 3D-Rennsteuerung.
