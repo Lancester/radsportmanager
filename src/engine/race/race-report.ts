@@ -25,7 +25,7 @@ export function createRaceReport(o:{result:Pick<RaceResult,'classification'|'eve
   const classified=new Map(riders.map(r=>[r.id,r]));
   const noteworthy=new Set(['attack','bridge-start','bridge-stop','bridge-relay',
     'bridge-relay-position-change','breakaway','breakaway-work','breakaway-save',
-    'breakaway-caught','team-chase','team-pace','sprint-train',
+    'breakaway-caught','breakaway-relay-request','breakaway-relay-position-change','team-chase','team-pace','sprint-train',
     'mechanical-incident','mechanical-service','mechanical-resume']);
   const events=o.result.events.filter(e=>noteworthy.has(e.type)&&
     (!o.focusTeamId||!e.teamId||e.teamId===o.focusTeamId));
