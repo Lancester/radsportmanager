@@ -3,7 +3,8 @@
  */
 import {createReferenceFixture,REFERENCE_ROUTES} from '../engine/race/reference-fixtures.ts';
 import {validateRace} from '../engine/race/race-simulator.ts';
-import type {RaceInput,RaceRider,RaceStrategy} from '../engine/race/race-simulator.ts';
+import type {RaceInput,RaceRider} from '../engine/race/race-simulator.ts';
+import type {RaceStrategy} from '../engine/race/race-tactics.ts';
 import type {ReferenceRouteId} from '../engine/race/reference-fixtures.ts';
 
 export type TeamOrder={teamId:string;strategy:RaceStrategy};
