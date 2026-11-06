@@ -15,6 +15,13 @@ test('Eine neue Spitzengruppe übernimmt nicht die Beobachtungszeit ihrer Vorgä
  assert.equal(advance(replacement.state,[b,main],41).event,null);
  assert.equal(advance(replacement.state,[b,main],76).event,'breakaway');
 });
+test('Eine verstärkte Spitzengruppe behält die bisherige Beobachtungszeit',()=>{
+ const main=group('M',30,1600),a=group('A',2,2000);
+ const start=advance(initialTrackedBreakaway(),[a,main],0);
+ const expanded=[...a,{id:'NEW',positionM:1995}];
+ const middle=advance(start.state,[expanded,main],35);
+ assert.equal(advance(middle.state,[expanded,main],41).event,'breakaway');
+});
 
 test('R24: eingeholte Flucht endet trotz zurueckgebliebenem Fahrerfeld',()=>{
   const lead=group('L',2,2000),main=group('M',50,1600),back=group('B',4,1300);
