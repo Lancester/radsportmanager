@@ -12,6 +12,7 @@ test('Bericht nutzt Reihenfolge, Gruppenzeiten und vorher benannte Favoriten',()
  assert.equal(r.winner.riderId,'a');assert.equal(r.results[1].groupTimeS,100);
  assert.deepEqual(r.favorites,[{riderId:'c',preRaceRank:1,finishRank:3,groupGapS:3}]);
  assert.deepEqual(r.events.map(e=>e.type),['attack','breakaway']);
+ assert.match(formatRaceReport(r),/Gewertete Siegerzeit: 0:01:40/);
 });
 test('Teamfilter und abgeschnittener Bericht behaupten keine weiteren Ursachen',()=>{
  const r=createRaceReport({result:{classification,events},focusTeamId:'T1',eventLimit:1});
