@@ -1,0 +1,13 @@
+diff --git a/src/engine/race/group-riding.ts b/src/engine/race/group-riding.ts
+index 6bc3172..7bbd48e 100644
+--- a/src/engine/race/group-riding.ts
++++ b/src/engine/race/group-riding.ts
+@@ -39,7 +39,7 @@ export const R22_GROUP_RIDING=Object.freeze({
+   targetWheelGapM:2,
+   wattsPerGapMeter:0.5,
+   wattsPerSpeedDifferenceMps:75,
+-  maximumFollowingCpFraction:1.12,
++  maximumFollowingCpFraction:1.35,
+ });
+ export function decideGroupRiding(o:GroupRidingObservation):GroupRidingDecision{
+   const finite=[
