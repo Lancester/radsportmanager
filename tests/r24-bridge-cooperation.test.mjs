@@ -13,3 +13,10 @@ test('kein gemeinsamer Auftrag ohne Gruppe, Ziel, Reserve oder bei Teamauftrag',
   {...o,reserveFraction:.1},{...o,role:'sprinter'},{...o,strategy:'sprint'}])
   assert.equal(decideJoinBridge(x),false);
 });
+test('Helfer eines Sprintteams kann ohne Sprinter in der Gruppe mit nachführen',()=>{
+ const helper={...o,role:'helfer',strategy:'sprint',sprinterInSameGroup:false,draw:0};
+ assert.equal(decideJoinBridge(helper),true);
+ assert.equal(decideJoinBridge({...helper,sprinterInSameGroup:true}),false);
+ assert.equal(decideJoinBridge({...helper,teamHasOtherDuty:true}),false);
+ assert.equal(decideJoinBridge({...helper,draw:.99}),false);
+});
