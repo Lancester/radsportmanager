@@ -7,7 +7,7 @@ import {scoreFinishGroups} from '../src/engine/race/finish-time-groups.ts';
 test('LAB: echte 30-km-Engine berechnet steuerbare Eingaben deterministisch',()=>{
  const s=initialLabSettings();s.teamCount=2;s.seed=2026;
  s.wind.headwindMps=2;s.teams=[{teamId:'T01',strategy:'offensiv'}];
- s.engine.stepSeconds=2;
+ s.engine.stepSeconds=1;
  const configured=buildLabRace(s).input;
  const input={...configured,
    title:'Rennlabor Integrationstest 30 km',
