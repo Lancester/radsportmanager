@@ -1,0 +1,45 @@
+name: R24 Feldkohaesion - isolierter PR-Test
+
+on:
+  pull_request:
+    branches: [develop/manager-mvp]
+    paths:
+      - 'src/engine/race/local-group-reference.ts'
+      - 'tests/r24-cohesion-reference-experiment.test.mjs'
+      - 'scripts/r24-cohesion-ab.mjs'
+      - '.github/workflows/r24-cohesion-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  feldkohaesion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Versuchsbranch auschecken
+        uses: actions/checkout@v4
+        with:
+          path: versuch
+      - name: Audit-Grundlage auschecken
+        uses: actions/checkout@v4
+        with:
+          ref: develop/manager-mvp
+          path: audit
+      - name: Node.js 22 einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Neue gezielte Tests ausführen
+        working-directory: versuch
+        run: node --experimental-strip-types --test tests/r24-cohesion-reference-experiment.test.mjs tests/r24-local-group-reference.test.mjs
+      - name: Paare mit gleicher Ausgangslage durchrechnen
+        run: node --experimental-strip-types versuch/scripts/r24-cohesion-ab.mjs "$PWD/audit" "$PWD/versuch" 2026 | tee r24-cohesion-comparison.jsonl
+      - name: Vergleichsdaten sichern
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r24-feldkohaesion-ab
+          path: r24-cohesion-comparison.jsonl
+          if-no-files-found: ignore
+          retention-days: 7
