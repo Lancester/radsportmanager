@@ -35,6 +35,16 @@ try {
  if(teamDropdowns!==22)throw Error('22 Teams nicht geladen: '+teamDropdowns);
  const controls=await page.locator('#riderValues input').count();
  if(controls!==11)throw Error('11 Fahrerregler nicht geladen: '+controls);
+ const tacticControls=await page.locator('#tacticalFields select').count();
+ if(tacticControls!==6)throw Error('6 Taktikregler nicht geladen: '+tacticControls);
+ await page.locator('#tactical-attackRisk').selectOption('keine');
+ await page.locator('#tactical-attackPhase').selectOption('frueh');
+ await page.locator('#tactical-chasePolicy').selectOption('vermeiden');
+ await page.locator('#tactical-teamTempo').selectOption('sparen');
+ await page.locator('#tactical-finale').selectOption('kapitaen');
+ await page.locator('#tactical-leaderProtection').selectOption('hoch');
+ if(await page.locator('#tactical-chasePolicy').inputValue()!=='vermeiden')
+   throw Error('Taktikänderung nicht in UI wirksam');
  const scrollWidth=await page.evaluate(()=>document.documentElement.scrollWidth);
  const inner=await page.evaluate(()=>window.innerWidth);
  if(scrollWidth>inner+3)throw Error('Mobile horizontale Seitenverschiebung '+scrollWidth+' > '+inner);
@@ -80,7 +90,7 @@ try {
  if(errors.length)throw Error('Browserkonsole: '+errors.join('; '));
  await page.screenshot({path:'rennlabor-mobile-smoke.png',fullPage:true});
  console.log(JSON.stringify({mobile:'Pixel 7 Chromium',teams:teamDropdowns,
-   riderControls:controls,testFinishers:rows,fullFinishers:onlineResultRows,
+   riderControls:controls,tacticControls,testFinishers:rows,fullFinishers:onlineResultRows,
    offlineFinishers:offlineRows,cachedState,reportLines:report,scrollWidth,inner,smallStatus,fullStatus}));
 }finally{
  await browser?.close();await new Promise(ok=>server.close(ok));
