@@ -1,5 +1,8 @@
 # START HIER – Arbeitsanweisung für alle zukünftigen Chats
 
+> **WICHTIG – neuer verbindlicher Einstieg ab 06.11.2026 auf `develop/manager-mvp`:** Lies zuerst [AKTUELLER_PROJEKTKURS.md](AKTUELLER_PROJEKTKURS.md), dann [STATUS_KURZ.md](STATUS_KURZ.md) und bei Bedarf [ENGINE_UND_BRANCH_ARCHIV.md](ENGINE_UND_BRANCH_ARCHIV.md). Die folgenden historischen Anweisungen und alten „aktuellen Stände“ sind als Entwicklungsjournal erhalten und können überholt sein. **Keine automatische Rückkehr zu `main`, kein Merge des Gesamtmodells.**
+
+
 **Hinweis für diesen Entwicklungsbranch:** Der R-24-Auditkandidat und seine
 offenen Prüfungen sind in [R24_AUDIT_KORREKTUREN.md](race/R24_AUDIT_KORREKTUREN.md)
 beschrieben. Er ist experimentell und noch nicht nach `main` übernommen.
