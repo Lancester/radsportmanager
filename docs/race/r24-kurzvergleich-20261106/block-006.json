@@ -1,0 +1,9 @@
+{
+  "manifest_sha256": "23085542e73dc29f3cc23cf2b49f60513cf53f510d98fa5cf9d3555e8e378b9e",
+  "compressed_sha256": "379612b3ebb179dfe2b88257deb204006c2bff815a4a1ce8159b5acf1acc140d",
+  "base64_chars": 213972,
+  "files": [
+    "audit-common-tdf25_hautacam-123.json",
+    "main-common-tdf25_hautacam-2026.json"
+  ]
+}
