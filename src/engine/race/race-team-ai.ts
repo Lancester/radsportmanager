@@ -14,7 +14,7 @@ export interface IntelligentRider {
   positionM:number;speedMps:number;
   criticalPowerW:number;reserveFraction:number;aggression:number;
   /** Opt-in: Helfer hat physisch viel Jagdarbeit geleistet und wird abgelöst. */
-  chaseSpent?:boolean;knownAbility?:KnownRiderAbility;
+  chaseSpent?:boolean;unavailable?:boolean;knownAbility?:KnownRiderAbility;
   wheelFindingSkill?:number;
 }
 export interface IntelligentTeam {
@@ -190,7 +190,7 @@ export function decideIntelligentCrew(input:{
   const sprintTeamReady=input.teams.some(team=>
     team.strategy==='sprint'&&
     main.some(r=>r.teamId===team.id&&r.role==='sprinter')&&
-    main.some(r=>r.teamId===team.id&&r.role==='helfer'&&
+    main.some(r=>r.teamId===team.id&&r.role==='helfer'&&!r.unavailable&&
       r.reserveFraction>=R15_R16.minimumChaseReserve));
   const urgentChase=situation.gapFractionOfRemaining>=0.025||
     situation.projectedGapM/Math.max(1,input.remainingM)>=0.035;
@@ -261,7 +261,7 @@ export function decideIntelligentCrew(input:{
     if(input.progress>=0.97&&!sprintTrain&&
       !((input.sprintFinaleMode||input.adaptiveChase)&&chase))continue;
     const gapToFront=(r:IntelligentRider)=>group[0].positionM-r.positionM;
-    const helpers=members.filter(r=>r.role==='helfer'&&group.includes(r)&&
+    const helpers=members.filter(r=>r.role==='helfer'&&!r.unavailable&&group.includes(r)&&
       !(input.sprintFinaleMode&&r.chaseSpent)&&
       r.reserveFraction>=(chase?R15_R16.minimumChaseReserve:R15_R16.minimumReserve)&&
       (input.sprintFinaleMode&&mission==='sprintzug'?
@@ -275,7 +275,7 @@ export function decideIntelligentCrew(input:{
     // zurückhalten, während andere das Peloton vorne jagen.
     const nearbyTeamProtectors=input.sprintFinaleMode&&mission==='jagd'&&
       team.strategy==='sprint'&&targetRemainingM<=25000?
-      members.filter(r=>r.role==='helfer'&&group.includes(r)&&
+      members.filter(r=>r.role==='helfer'&&!r.unavailable&&group.includes(r)&&
         !r.chaseSpent&&
         r.reserveFraction>=R15_R16.minimumReserve&&
         Math.abs(r.positionM-target.positionM)<=85)
