@@ -1,0 +1,12 @@
+{
+  "name": "block-004.jsonl.gz.b64",
+  "manifest_id": "330f67dd033f7db55ff29e22c79b4f10800a32556faf6aa3dbd27795e2625324",
+  "races": [
+    "main-common-tdf25_lille-2026.json",
+    "dev-common-tdf25_lille-2026.json",
+    "main-common-tdf25_lille-31415.json",
+    "dev-common-tdf25_lille-31415.json"
+  ],
+  "compressed_sha256": "723691ba6c484361777d0f8b8b4ed780fa458d426c8d680131d53051308bd6df",
+  "base64_chars": 491496
+}
