@@ -323,12 +323,17 @@ export function createReferenceFixture(options:{
   routeId:ReferenceRouteId;seed?:number;teamCount?:number;
   /** Vergleich: gleiche Fahrer/Teams fuer unterschiedliche Rennprofile. */
   rosterKind?:ReferenceRoute['kind'];
+  /** Fiktive, unkalibrierte Taktikwerte zum kontrollierten Vergleich. */
+  tacticalTraits?:'unchanged'|'varied';
 }):ReferenceFixture{
   if(!options||!REFERENCE_ROUTES[options.routeId])
     throw new RangeError('R-22A: Referenzstrecke ungültig');
   const count=options.teamCount??22;
   if(!Number.isInteger(count)||count<1||count>22)
     throw new RangeError('R-22C: 1–22 Referenzteams');
+  if(options.tacticalTraits!==undefined&&
+    options.tacticalTraits!=='unchanged'&&options.tacticalTraits!=='varied')
+    throw new RangeError('R24: ungültiges Taktikwerte-Profil');
   const route=REFERENCE_ROUTES[options.routeId];
   const segments=createReferenceSegments(options.routeId);
   const chosen=createReferenceTeamCompositions(options.rosterKind??route.kind)
@@ -339,6 +344,14 @@ export function createReferenceFixture(options:{
   }));
   const riders=chosen.flatMap((c,t)=>
     c.riders.map((type,j)=>buildRider(type,c.teamId,t*7+j,j,c.focus)));
+  if(options.tacticalTraits==='varied'){
+    // Konstante Fahrereigenschaften: nicht vom Tagesform-Seed, der
+    // Fahrerkategorie oder der körperlichen Leistungsfähigkeit ableiten.
+    for(let i=0;i<riders.length;i++){
+      riders[i].pursuitPersistence=+(.2+.6*hash(i,211)).toFixed(3);
+      riders[i].climbingAttackPreference=+(.2+.6*hash(i,239)).toFixed(3);
+    }
+  }
   const input:RaceInput={
     title:route.name+' – reproduzierbare R-22-Referenz',
     segments,teams,riders,seed:options.seed??2026,
