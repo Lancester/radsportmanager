@@ -65,7 +65,7 @@ export function attackOrder(
   let factor=factors[x.attackRisk];
   if(x.finale==='spaete_attacke'&&progress>=.78)factor*=2;
   if(x.finale==='sprint'&&progress>=.75)factor*=.35;
-  if(x.finale==='kapitaen'&&x.leaderProtection==='hoch')factor*=.8;
+  if(x.finale==='kapitaen')factor*=x.leaderProtection==='hoch'?.52:.65;
   return {allowed:true,probabilityFactor:factor};
 }
 export function chaseInterested(
@@ -81,7 +81,7 @@ export function crewPowerFactor(plan:TeamTacticalPlan|undefined,
   mission:'jagd'|'sprintzug'|'schutz',duty:'fuehrung'|'unterstuetzung'):number{
   const x=effectiveTeamPlan(plan);
   if(mission==='schutz'){
-    return x.leaderProtection==='hoch'?1.03:
+    return x.leaderProtection==='hoch'||x.finale==='kapitaen'?1.03:
       x.teamTempo==='sparen'?.985:1;
   }
   if(duty!=='fuehrung')return x.teamTempo==='sparen'?.98:1;
