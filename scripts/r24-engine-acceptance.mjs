@@ -46,7 +46,12 @@ const report=r=>{
   };
   const a=r.diagnostics.attackTraces??[];
   const spentAttack=a.filter(z=>z.appliedAboveEffectiveCpJ>1000);
-  const successful5km=a.filter(z=>z.afterFiveKm&&z.afterFiveKm.gapToRaceFrontM<0);
+  // Die Rennspitze enthält den Angreifer selbst; die Lücke zur Rennspitze
+  // ist deshalb nie negativ. Erfolg bedeutet echten Vorsprung (>42 m)
+  // zum Vorderrad seiner URSPRÜNGLICHEN Abstandsgruppe nach 5 km.
+  const successful5km=a.filter(z=>z.afterFiveKm&&
+    z.afterFiveKm.gapToFormerGroupFrontM!==null&&
+    z.afterFiveKm.gapToFormerGroupFrontM>42);
   const initialFresh=a.filter(z=>z.initialGapToRaceFrontM<43);
   const chase=r.diagnostics.chasePhysicalAudit;
   const decisions=r.diagnostics.chaseDecisionAudit;
@@ -67,8 +72,8 @@ const report=r=>{
       energyAnomaly.length===0,
     physicalAnomalyCount:energyAnomaly.length,
     durationS:digits(r.durationS),
-    finishGap:{medianS:digits(quant(finish.map(z=>z.gapS),.5).gapS),
-      p75S:digits(quant(finish.map(z=>z.gapS),.75).gapS),
+    finishGap:{medianS:digits(quant(finish.map(z=>z.gapS),.5)),
+      p75S:digits(quant(finish.map(z=>z.gapS),.75)),
       within5S:finish.filter(z=>z.gapS<=5).length,
       within30S:finish.filter(z=>z.gapS<=30).length,
       within60S:finish.filter(z=>z.gapS<=60).length,
