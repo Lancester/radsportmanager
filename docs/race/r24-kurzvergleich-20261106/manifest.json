@@ -1,0 +1,111 @@
+{
+  "series": "r24-kurzvergleich-20261106-v1",
+  "engines": {
+    "main": "4afdf3d734548be50b7e95f3672200ce4bbdf179daa3a0b4ec23d0ad91dc21a6",
+    "audit": "2c6f7f154f98a86627952d10ab556b8e2bea50b39bb2a0b850b304ac12ae40b8",
+    "dev": "cda3f93d7a7f6e4822b4b2fa0eb01410cd99ce50dd4a33ebe3cdcf5865b48492"
+  },
+  "runner_sha256": "b7299c1ec8deef61b145a1bb61a746f0d5ca1689f7a8fa32add2d9d9dbdf0be5",
+  "node": "v24.22.1",
+  "routes": [
+    "tdf25_lille",
+    "tdf25_boulogne",
+    "tdf25_hautacam"
+  ],
+  "seeds": [
+    42,
+    123,
+    2026
+  ],
+  "roster": "common",
+  "reuse": {
+    "main-common-tdf25_lille-42.json": {
+      "source": "200er-Reihe, vollständig wiederhergestellt",
+      "sha256": "b02d16830c330f1a3fc7f4e0486b493f017f6b85fc1096913e0c81fcca6a02e3",
+      "provenance": "330f67dd033f7db55ff29e22c79b4f10800a32556faf6aa3dbd27795e2625324:main"
+    },
+    "dev-common-tdf25_lille-42.json": {
+      "source": "200er-Reihe, vollständig wiederhergestellt",
+      "sha256": "5af8c1867f75403d48c988be5bf497fdfcde8d6f856385c9d15b3652246b1f5f",
+      "provenance": "330f67dd033f7db55ff29e22c79b4f10800a32556faf6aa3dbd27795e2625324:dev"
+    },
+    "main-common-tdf25_lille-123.json": {
+      "source": "200er-Reihe, vollständig wiederhergestellt",
+      "sha256": "3a04325a54c45fae435f1ed0685f867b87e40eb2dd2ebcb96e94783e0565309b",
+      "provenance": "330f67dd033f7db55ff29e22c79b4f10800a32556faf6aa3dbd27795e2625324:main"
+    },
+    "dev-common-tdf25_lille-123.json": {
+      "source": "200er-Reihe, vollständig wiederhergestellt",
+      "sha256": "3b7f29de1f6a8e93f6d5467238f82d91ddab1c1edd1a05344ddf33f3cedfe7d5",
+      "provenance": "330f67dd033f7db55ff29e22c79b4f10800a32556faf6aa3dbd27795e2625324:dev"
+    },
+    "main-common-tdf25_lille-2026.json": {
+      "source": "200er-Reihe, vollständig wiederhergestellt",
+      "sha256": "257589ffe81f3c46b2bc7f8b1e5a122a6fd0fa87c454a0974342e8fe6e0633e8",
+      "provenance": "330f67dd033f7db55ff29e22c79b4f10800a32556faf6aa3dbd27795e2625324:main"
+    },
+    "dev-common-tdf25_lille-2026.json": {
+      "source": "200er-Reihe, vollständig wiederhergestellt",
+      "sha256": "33c75207031bcc9af18bc9560cd02ddb0b30bc25b051ada6445e967d7dd24344",
+      "provenance": "330f67dd033f7db55ff29e22c79b4f10800a32556faf6aa3dbd27795e2625324:dev"
+    },
+    "main-common-tdf25_boulogne-42.json": {
+      "source": "200er-Reihe, vollständig wiederhergestellt",
+      "sha256": "ab13f72f4dcef1041676fcb53cfce08b72e10bb3f2cfa480fbe9b46badcb6ed6",
+      "provenance": "330f67dd033f7db55ff29e22c79b4f10800a32556faf6aa3dbd27795e2625324:main"
+    },
+    "dev-common-tdf25_boulogne-42.json": {
+      "source": "200er-Reihe, vollständig wiederhergestellt",
+      "sha256": "2923bd7676acb51d469eaa8b060695711065f79a368ffe4a1c25fb0e05b89db4",
+      "provenance": "330f67dd033f7db55ff29e22c79b4f10800a32556faf6aa3dbd27795e2625324:dev"
+    },
+    "main-common-tdf25_boulogne-123.json": {
+      "source": "200er-Reihe, vollständig wiederhergestellt",
+      "sha256": "ef24633aa1935b43dc7c656be03bea73ac0ec08acfd48784491e3bd25ccc7a41",
+      "provenance": "330f67dd033f7db55ff29e22c79b4f10800a32556faf6aa3dbd27795e2625324:main"
+    },
+    "dev-common-tdf25_boulogne-123.json": {
+      "source": "200er-Reihe, vollständig wiederhergestellt",
+      "sha256": "e66d27ab70844a9254e729755f1cbfa12f36946ad10b352c73120404de0f1980",
+      "provenance": "330f67dd033f7db55ff29e22c79b4f10800a32556faf6aa3dbd27795e2625324:dev"
+    },
+    "main-common-tdf25_boulogne-2026.json": {
+      "source": "200er-Reihe, vollständig wiederhergestellt",
+      "sha256": "4d0a40ba3263182aafca8f2791787c825c5845217c9bdb9be90a84509f950e5b",
+      "provenance": "330f67dd033f7db55ff29e22c79b4f10800a32556faf6aa3dbd27795e2625324:main"
+    },
+    "dev-common-tdf25_boulogne-2026.json": {
+      "source": "200er-Reihe, vollständig wiederhergestellt",
+      "sha256": "19f9866e91326f418de566adfc4d7000b88b14f10911f1d3b11e034f8a9b84a2",
+      "provenance": "330f67dd033f7db55ff29e22c79b4f10800a32556faf6aa3dbd27795e2625324:dev"
+    },
+    "audit-common-tdf25_lille-42.json": {
+      "source": "docs/race/r24-grossvergleich-daten/vergleich-punkt2-lille42-vorher.jsonl.gz.b64",
+      "archive_sha256": "383a7c6b0e772252540a696658a83b42aaed38594927d07cdf4103546c681330",
+      "manifest_sha256": "ba9677d19624a3669a4a306002d8a24e7b0bb00c96bee856b55d6e4a9b6ab438",
+      "sha256": "eaf65dd4fec165187d2d0f1ad7676099c3211b1dbc0494b85bd195eb0d5381fe",
+      "provenance": "2495ea9a44f68ecfe8ee5acdb7a13e70f1b2506a72ed73608d34b9f5243b960d:audit"
+    },
+    "main-common-tdf25_hautacam-42.json": {
+      "source": "docs/race/r24-grossvergleich-daten/vergleich-punkt2-hautacam42-vorher.jsonl.gz.b64",
+      "archive_sha256": "a66088692f68517c774bdfe7c4ad907c4b0f0dbe487fbfc0058902a16d87b967",
+      "manifest_sha256": "77f7061aabce5d3ae0cbf09a69500315f7568abb4793c3d0f1e2a159bcc26e44",
+      "sha256": "ecb9715e931a95890bf4e72aeea0e15c4a47d32051d2a92f0fa4d4351f02d8dc",
+      "provenance": "fa3cdaedd241582f88e85311c55ec0424cda2f34cf19971e523f1bfeaff1b715:main"
+    },
+    "audit-common-tdf25_hautacam-42.json": {
+      "source": "docs/race/r24-grossvergleich-daten/vergleich-punkt2-hautacam42-vorher.jsonl.gz.b64",
+      "archive_sha256": "a66088692f68517c774bdfe7c4ad907c4b0f0dbe487fbfc0058902a16d87b967",
+      "manifest_sha256": "77f7061aabce5d3ae0cbf09a69500315f7568abb4793c3d0f1e2a159bcc26e44",
+      "sha256": "54e6d2ac570b9f2531bcaba69f7e12dd62c62ff787e43c3fc5d0cf3f85371ab0",
+      "provenance": "fa3cdaedd241582f88e85311c55ec0424cda2f34cf19971e523f1bfeaff1b715:audit"
+    },
+    "dev-common-tdf25_hautacam-42.json": {
+      "source": "docs/race/r24-grossvergleich-daten/vergleich-punkt2-hautacam42-vorher.jsonl.gz.b64",
+      "archive_sha256": "a66088692f68517c774bdfe7c4ad907c4b0f0dbe487fbfc0058902a16d87b967",
+      "manifest_sha256": "77f7061aabce5d3ae0cbf09a69500315f7568abb4793c3d0f1e2a159bcc26e44",
+      "sha256": "fce2e6080192882cc44dc9494e9a4b6308a738b720723aae3eaa9a8052baf67d",
+      "provenance": "fa3cdaedd241582f88e85311c55ec0424cda2f34cf19971e523f1bfeaff1b715:neu"
+    }
+  }
+}
