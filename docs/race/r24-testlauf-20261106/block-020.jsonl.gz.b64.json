@@ -1,0 +1,10 @@
+{
+  "name": "block-020.jsonl.gz.b64",
+  "manifest_id": "330f67dd033f7db55ff29e22c79b4f10800a32556faf6aa3dbd27795e2625324",
+  "races": [
+    "main-common-lbl25_liege-9001.json",
+    "dev-common-lbl25_liege-9001.json"
+  ],
+  "compressed_sha256": "d76316730fc6ebc134398ea611b17644befe6f6c92d528a5ba29130bea253312",
+  "base64_chars": 277112
+}
