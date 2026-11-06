@@ -1,0 +1,893 @@
+{
+  "method": "Unkalibrierter Profil-Leistungsproxy; Top 3 vor dem Rennen nach Fähigkeiten aus allen Fahrern mit Rolle kapitaen oder sprinter. Keine Siegprognose und keine Bewertung von Teamstrategie, Tagesform und Renndynamik.",
+  "versions": {
+    "main": {
+      "tdf25_lille": {
+        "42": [
+          {
+            "riderId": "F023",
+            "score": 787.4,
+            "baseCpW": 407.9,
+            "wattsPerKg": 4.45,
+            "wPrimeJ": 37886,
+            "role": "sprinter",
+            "specialty": "sprinter",
+            "finishRank": 21
+          },
+          {
+            "riderId": "F043",
+            "score": 778.4,
+            "baseCpW": 398.9,
+            "wattsPerKg": 4.34,
+            "wPrimeJ": 41623,
+            "role": "kapitaen",
+            "specialty": "sprinter",
+            "finishRank": 61
+          },
+          {
+            "riderId": "F078",
+            "score": 777.7,
+            "baseCpW": 398.2,
+            "wattsPerKg": 4.58,
+            "wPrimeJ": 35996,
+            "role": "kapitaen",
+            "specialty": "sprinter",
+            "finishRank": 71
+          }
+        ],
+        "123": [
+          {
+            "riderId": "F023",
+            "score": 787.4,
+            "baseCpW": 407.9,
+            "wattsPerKg": 4.45,
+            "wPrimeJ": 37886,
+            "role": "sprinter",
+            "specialty": "sprinter",
+            "finishRank": 1
+          },
+          {
+            "riderId": "F043",
+            "score": 778.4,
+            "baseCpW": 398.9,
+            "wattsPerKg": 4.34,
+            "wPrimeJ": 41623,
+            "role": "kapitaen",
+            "specialty": "sprinter",
+            "finishRank": 41
+          },
+          {
+            "riderId": "F078",
+            "score": 777.7,
+            "baseCpW": 398.2,
+            "wattsPerKg": 4.58,
+            "wPrimeJ": 35996,
+            "role": "kapitaen",
+            "specialty": "sprinter",
+            "finishRank": 65
+          }
+        ],
+        "2026": [
+          {
+            "riderId": "F023",
+            "score": 787.4,
+            "baseCpW": 407.9,
+            "wattsPerKg": 4.45,
+            "wPrimeJ": 37886,
+            "role": "sprinter",
+            "specialty": "sprinter",
+            "finishRank": 2
+          },
+          {
+            "riderId": "F043",
+            "score": 778.4,
+            "baseCpW": 398.9,
+            "wattsPerKg": 4.34,
+            "wPrimeJ": 41623,
+            "role": "kapitaen",
+            "specialty": "sprinter",
+            "finishRank": 137
+          },
+          {
+            "riderId": "F078",
+            "score": 777.7,
+            "baseCpW": 398.2,
+            "wattsPerKg": 4.58,
+            "wPrimeJ": 35996,
+            "role": "kapitaen",
+            "specialty": "sprinter",
+            "finishRank": 50
+          }
+        ]
+      },
+      "tdf25_boulogne": {
+        "42": [
+          {
+            "riderId": "F134",
+            "score": 7.16,
+            "baseCpW": 405.6,
+            "wattsPerKg": 5.71,
+            "wPrimeJ": 18542,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 67
+          },
+          {
+            "riderId": "F009",
+            "score": 7.13,
+            "baseCpW": 384.3,
+            "wattsPerKg": 4.53,
+            "wPrimeJ": 39828,
+            "role": "sprinter",
+            "specialty": "sprinter",
+            "finishRank": 52
+          },
+          {
+            "riderId": "F085",
+            "score": 7.08,
+            "baseCpW": 384.9,
+            "wattsPerKg": 5.69,
+            "wPrimeJ": 16831,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 117
+          }
+        ],
+        "123": [
+          {
+            "riderId": "F134",
+            "score": 7.16,
+            "baseCpW": 405.6,
+            "wattsPerKg": 5.71,
+            "wPrimeJ": 18542,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 23
+          },
+          {
+            "riderId": "F009",
+            "score": 7.13,
+            "baseCpW": 384.3,
+            "wattsPerKg": 4.53,
+            "wPrimeJ": 39828,
+            "role": "sprinter",
+            "specialty": "sprinter",
+            "finishRank": 57
+          },
+          {
+            "riderId": "F085",
+            "score": 7.08,
+            "baseCpW": 384.9,
+            "wattsPerKg": 5.69,
+            "wPrimeJ": 16831,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 148
+          }
+        ],
+        "2026": [
+          {
+            "riderId": "F134",
+            "score": 7.16,
+            "baseCpW": 405.6,
+            "wattsPerKg": 5.71,
+            "wPrimeJ": 18542,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 36
+          },
+          {
+            "riderId": "F009",
+            "score": 7.13,
+            "baseCpW": 384.3,
+            "wattsPerKg": 4.53,
+            "wPrimeJ": 39828,
+            "role": "sprinter",
+            "specialty": "sprinter",
+            "finishRank": 12
+          },
+          {
+            "riderId": "F085",
+            "score": 7.08,
+            "baseCpW": 384.9,
+            "wattsPerKg": 5.69,
+            "wPrimeJ": 16831,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 80
+          }
+        ]
+      },
+      "tdf25_hautacam": {
+        "42": [
+          {
+            "riderId": "F134",
+            "score": 22.21,
+            "baseCpW": 405.6,
+            "wattsPerKg": 5.71,
+            "wPrimeJ": 18542,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 1
+          },
+          {
+            "riderId": "F085",
+            "score": 22,
+            "baseCpW": 384.9,
+            "wattsPerKg": 5.69,
+            "wPrimeJ": 16831,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 113
+          },
+          {
+            "riderId": "F064",
+            "score": 21.53,
+            "baseCpW": 397.4,
+            "wattsPerKg": 5.52,
+            "wPrimeJ": 18516,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 4
+          }
+        ],
+        "123": [
+          {
+            "riderId": "F134",
+            "score": 22.21,
+            "baseCpW": 405.6,
+            "wattsPerKg": 5.71,
+            "wPrimeJ": 18542,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 1
+          },
+          {
+            "riderId": "F085",
+            "score": 22,
+            "baseCpW": 384.9,
+            "wattsPerKg": 5.69,
+            "wPrimeJ": 16831,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 135
+          },
+          {
+            "riderId": "F064",
+            "score": 21.53,
+            "baseCpW": 397.4,
+            "wattsPerKg": 5.52,
+            "wPrimeJ": 18516,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 33
+          }
+        ],
+        "2026": [
+          {
+            "riderId": "F134",
+            "score": 22.21,
+            "baseCpW": 405.6,
+            "wattsPerKg": 5.71,
+            "wPrimeJ": 18542,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 1
+          },
+          {
+            "riderId": "F085",
+            "score": 22,
+            "baseCpW": 384.9,
+            "wattsPerKg": 5.69,
+            "wPrimeJ": 16831,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 124
+          },
+          {
+            "riderId": "F064",
+            "score": 21.53,
+            "baseCpW": 397.4,
+            "wattsPerKg": 5.52,
+            "wPrimeJ": 18516,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 2
+          }
+        ]
+      }
+    },
+    "audit": {
+      "tdf25_lille": {
+        "42": [
+          {
+            "riderId": "F023",
+            "score": 787.4,
+            "baseCpW": 407.9,
+            "wattsPerKg": 4.45,
+            "wPrimeJ": 37886,
+            "role": "sprinter",
+            "specialty": "sprinter",
+            "finishRank": 2
+          },
+          {
+            "riderId": "F043",
+            "score": 778.4,
+            "baseCpW": 398.9,
+            "wattsPerKg": 4.34,
+            "wPrimeJ": 41623,
+            "role": "kapitaen",
+            "specialty": "sprinter",
+            "finishRank": 44
+          },
+          {
+            "riderId": "F078",
+            "score": 777.7,
+            "baseCpW": 398.2,
+            "wattsPerKg": 4.58,
+            "wPrimeJ": 35996,
+            "role": "kapitaen",
+            "specialty": "sprinter",
+            "finishRank": 71
+          }
+        ],
+        "123": [
+          {
+            "riderId": "F023",
+            "score": 787.4,
+            "baseCpW": 407.9,
+            "wattsPerKg": 4.45,
+            "wPrimeJ": 37886,
+            "role": "sprinter",
+            "specialty": "sprinter",
+            "finishRank": 8
+          },
+          {
+            "riderId": "F043",
+            "score": 778.4,
+            "baseCpW": 398.9,
+            "wattsPerKg": 4.34,
+            "wPrimeJ": 41623,
+            "role": "kapitaen",
+            "specialty": "sprinter",
+            "finishRank": 73
+          },
+          {
+            "riderId": "F078",
+            "score": 777.7,
+            "baseCpW": 398.2,
+            "wattsPerKg": 4.58,
+            "wPrimeJ": 35996,
+            "role": "kapitaen",
+            "specialty": "sprinter",
+            "finishRank": 62
+          }
+        ],
+        "2026": [
+          {
+            "riderId": "F023",
+            "score": 787.4,
+            "baseCpW": 407.9,
+            "wattsPerKg": 4.45,
+            "wPrimeJ": 37886,
+            "role": "sprinter",
+            "specialty": "sprinter",
+            "finishRank": 2
+          },
+          {
+            "riderId": "F043",
+            "score": 778.4,
+            "baseCpW": 398.9,
+            "wattsPerKg": 4.34,
+            "wPrimeJ": 41623,
+            "role": "kapitaen",
+            "specialty": "sprinter",
+            "finishRank": 139
+          },
+          {
+            "riderId": "F078",
+            "score": 777.7,
+            "baseCpW": 398.2,
+            "wattsPerKg": 4.58,
+            "wPrimeJ": 35996,
+            "role": "kapitaen",
+            "specialty": "sprinter",
+            "finishRank": 78
+          }
+        ]
+      },
+      "tdf25_boulogne": {
+        "42": [
+          {
+            "riderId": "F134",
+            "score": 7.16,
+            "baseCpW": 405.6,
+            "wattsPerKg": 5.71,
+            "wPrimeJ": 18542,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 1
+          },
+          {
+            "riderId": "F009",
+            "score": 7.13,
+            "baseCpW": 384.3,
+            "wattsPerKg": 4.53,
+            "wPrimeJ": 39828,
+            "role": "sprinter",
+            "specialty": "sprinter",
+            "finishRank": 79
+          },
+          {
+            "riderId": "F085",
+            "score": 7.08,
+            "baseCpW": 384.9,
+            "wattsPerKg": 5.69,
+            "wPrimeJ": 16831,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 76
+          }
+        ],
+        "123": [
+          {
+            "riderId": "F134",
+            "score": 7.16,
+            "baseCpW": 405.6,
+            "wattsPerKg": 5.71,
+            "wPrimeJ": 18542,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 74
+          },
+          {
+            "riderId": "F009",
+            "score": 7.13,
+            "baseCpW": 384.3,
+            "wattsPerKg": 4.53,
+            "wPrimeJ": 39828,
+            "role": "sprinter",
+            "specialty": "sprinter",
+            "finishRank": 60
+          },
+          {
+            "riderId": "F085",
+            "score": 7.08,
+            "baseCpW": 384.9,
+            "wattsPerKg": 5.69,
+            "wPrimeJ": 16831,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 46
+          }
+        ],
+        "2026": [
+          {
+            "riderId": "F134",
+            "score": 7.16,
+            "baseCpW": 405.6,
+            "wattsPerKg": 5.71,
+            "wPrimeJ": 18542,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 68
+          },
+          {
+            "riderId": "F009",
+            "score": 7.13,
+            "baseCpW": 384.3,
+            "wattsPerKg": 4.53,
+            "wPrimeJ": 39828,
+            "role": "sprinter",
+            "specialty": "sprinter",
+            "finishRank": 23
+          },
+          {
+            "riderId": "F085",
+            "score": 7.08,
+            "baseCpW": 384.9,
+            "wattsPerKg": 5.69,
+            "wPrimeJ": 16831,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 86
+          }
+        ]
+      },
+      "tdf25_hautacam": {
+        "42": [
+          {
+            "riderId": "F134",
+            "score": 22.21,
+            "baseCpW": 405.6,
+            "wattsPerKg": 5.71,
+            "wPrimeJ": 18542,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 1
+          },
+          {
+            "riderId": "F085",
+            "score": 22,
+            "baseCpW": 384.9,
+            "wattsPerKg": 5.69,
+            "wPrimeJ": 16831,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 5
+          },
+          {
+            "riderId": "F064",
+            "score": 21.53,
+            "baseCpW": 397.4,
+            "wattsPerKg": 5.52,
+            "wPrimeJ": 18516,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 4
+          }
+        ],
+        "123": [
+          {
+            "riderId": "F134",
+            "score": 22.21,
+            "baseCpW": 405.6,
+            "wattsPerKg": 5.71,
+            "wPrimeJ": 18542,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 1
+          },
+          {
+            "riderId": "F085",
+            "score": 22,
+            "baseCpW": 384.9,
+            "wattsPerKg": 5.69,
+            "wPrimeJ": 16831,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 89
+          },
+          {
+            "riderId": "F064",
+            "score": 21.53,
+            "baseCpW": 397.4,
+            "wattsPerKg": 5.52,
+            "wPrimeJ": 18516,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 3
+          }
+        ],
+        "2026": [
+          {
+            "riderId": "F134",
+            "score": 22.21,
+            "baseCpW": 405.6,
+            "wattsPerKg": 5.71,
+            "wPrimeJ": 18542,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 1
+          },
+          {
+            "riderId": "F085",
+            "score": 22,
+            "baseCpW": 384.9,
+            "wattsPerKg": 5.69,
+            "wPrimeJ": 16831,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 3
+          },
+          {
+            "riderId": "F064",
+            "score": 21.53,
+            "baseCpW": 397.4,
+            "wattsPerKg": 5.52,
+            "wPrimeJ": 18516,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 2
+          }
+        ]
+      }
+    },
+    "dev": {
+      "tdf25_lille": {
+        "42": [
+          {
+            "riderId": "F023",
+            "score": 787.4,
+            "baseCpW": 407.9,
+            "wattsPerKg": 4.45,
+            "wPrimeJ": 37886,
+            "role": "sprinter",
+            "specialty": "sprinter",
+            "finishRank": 2
+          },
+          {
+            "riderId": "F043",
+            "score": 778.4,
+            "baseCpW": 398.9,
+            "wattsPerKg": 4.34,
+            "wPrimeJ": 41623,
+            "role": "kapitaen",
+            "specialty": "sprinter",
+            "finishRank": 1
+          },
+          {
+            "riderId": "F078",
+            "score": 777.7,
+            "baseCpW": 398.2,
+            "wattsPerKg": 4.58,
+            "wPrimeJ": 35996,
+            "role": "kapitaen",
+            "specialty": "sprinter",
+            "finishRank": 62
+          }
+        ],
+        "123": [
+          {
+            "riderId": "F023",
+            "score": 787.4,
+            "baseCpW": 407.9,
+            "wattsPerKg": 4.45,
+            "wPrimeJ": 37886,
+            "role": "sprinter",
+            "specialty": "sprinter",
+            "finishRank": 25
+          },
+          {
+            "riderId": "F043",
+            "score": 778.4,
+            "baseCpW": 398.9,
+            "wattsPerKg": 4.34,
+            "wPrimeJ": 41623,
+            "role": "kapitaen",
+            "specialty": "sprinter",
+            "finishRank": 66
+          },
+          {
+            "riderId": "F078",
+            "score": 777.7,
+            "baseCpW": 398.2,
+            "wattsPerKg": 4.58,
+            "wPrimeJ": 35996,
+            "role": "kapitaen",
+            "specialty": "sprinter",
+            "finishRank": 67
+          }
+        ],
+        "2026": [
+          {
+            "riderId": "F023",
+            "score": 787.4,
+            "baseCpW": 407.9,
+            "wattsPerKg": 4.45,
+            "wPrimeJ": 37886,
+            "role": "sprinter",
+            "specialty": "sprinter",
+            "finishRank": 2
+          },
+          {
+            "riderId": "F043",
+            "score": 778.4,
+            "baseCpW": 398.9,
+            "wattsPerKg": 4.34,
+            "wPrimeJ": 41623,
+            "role": "kapitaen",
+            "specialty": "sprinter",
+            "finishRank": 142
+          },
+          {
+            "riderId": "F078",
+            "score": 777.7,
+            "baseCpW": 398.2,
+            "wattsPerKg": 4.58,
+            "wPrimeJ": 35996,
+            "role": "kapitaen",
+            "specialty": "sprinter",
+            "finishRank": 70
+          }
+        ]
+      },
+      "tdf25_boulogne": {
+        "42": [
+          {
+            "riderId": "F134",
+            "score": 7.16,
+            "baseCpW": 405.6,
+            "wattsPerKg": 5.71,
+            "wPrimeJ": 18542,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 36
+          },
+          {
+            "riderId": "F009",
+            "score": 7.13,
+            "baseCpW": 384.3,
+            "wattsPerKg": 4.53,
+            "wPrimeJ": 39828,
+            "role": "sprinter",
+            "specialty": "sprinter",
+            "finishRank": 113
+          },
+          {
+            "riderId": "F085",
+            "score": 7.08,
+            "baseCpW": 384.9,
+            "wattsPerKg": 5.69,
+            "wPrimeJ": 16831,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 42
+          }
+        ],
+        "123": [
+          {
+            "riderId": "F134",
+            "score": 7.16,
+            "baseCpW": 405.6,
+            "wattsPerKg": 5.71,
+            "wPrimeJ": 18542,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 55
+          },
+          {
+            "riderId": "F009",
+            "score": 7.13,
+            "baseCpW": 384.3,
+            "wattsPerKg": 4.53,
+            "wPrimeJ": 39828,
+            "role": "sprinter",
+            "specialty": "sprinter",
+            "finishRank": 28
+          },
+          {
+            "riderId": "F085",
+            "score": 7.08,
+            "baseCpW": 384.9,
+            "wattsPerKg": 5.69,
+            "wPrimeJ": 16831,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 56
+          }
+        ],
+        "2026": [
+          {
+            "riderId": "F134",
+            "score": 7.16,
+            "baseCpW": 405.6,
+            "wattsPerKg": 5.71,
+            "wPrimeJ": 18542,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 94
+          },
+          {
+            "riderId": "F009",
+            "score": 7.13,
+            "baseCpW": 384.3,
+            "wattsPerKg": 4.53,
+            "wPrimeJ": 39828,
+            "role": "sprinter",
+            "specialty": "sprinter",
+            "finishRank": 83
+          },
+          {
+            "riderId": "F085",
+            "score": 7.08,
+            "baseCpW": 384.9,
+            "wattsPerKg": 5.69,
+            "wPrimeJ": 16831,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 115
+          }
+        ]
+      },
+      "tdf25_hautacam": {
+        "42": [
+          {
+            "riderId": "F134",
+            "score": 22.21,
+            "baseCpW": 405.6,
+            "wattsPerKg": 5.71,
+            "wPrimeJ": 18542,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 1
+          },
+          {
+            "riderId": "F085",
+            "score": 22,
+            "baseCpW": 384.9,
+            "wattsPerKg": 5.69,
+            "wPrimeJ": 16831,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 84
+          },
+          {
+            "riderId": "F064",
+            "score": 21.53,
+            "baseCpW": 397.4,
+            "wattsPerKg": 5.52,
+            "wPrimeJ": 18516,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 78
+          }
+        ],
+        "123": [
+          {
+            "riderId": "F134",
+            "score": 22.21,
+            "baseCpW": 405.6,
+            "wattsPerKg": 5.71,
+            "wPrimeJ": 18542,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 1
+          },
+          {
+            "riderId": "F085",
+            "score": 22,
+            "baseCpW": 384.9,
+            "wattsPerKg": 5.69,
+            "wPrimeJ": 16831,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 91
+          },
+          {
+            "riderId": "F064",
+            "score": 21.53,
+            "baseCpW": 397.4,
+            "wattsPerKg": 5.52,
+            "wPrimeJ": 18516,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 2
+          }
+        ],
+        "2026": [
+          {
+            "riderId": "F134",
+            "score": 22.21,
+            "baseCpW": 405.6,
+            "wattsPerKg": 5.71,
+            "wPrimeJ": 18542,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 1
+          },
+          {
+            "riderId": "F085",
+            "score": 22,
+            "baseCpW": 384.9,
+            "wattsPerKg": 5.69,
+            "wPrimeJ": 16831,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 18
+          },
+          {
+            "riderId": "F064",
+            "score": 21.53,
+            "baseCpW": 397.4,
+            "wattsPerKg": 5.52,
+            "wPrimeJ": 18516,
+            "role": "kapitaen",
+            "specialty": "kletterer",
+            "finishRank": 4
+          }
+        ]
+      }
+    }
+  }
+}
