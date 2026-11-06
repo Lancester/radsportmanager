@@ -1,0 +1,33 @@
+diff --git a/src/engine/race/group-riding.ts b/src/engine/race/group-riding.ts
+index 6bc3172..ec2e9ba 100644
+--- a/src/engine/race/group-riding.ts
++++ b/src/engine/race/group-riding.ts
+@@ -97,7 +97,7 @@ export function decideGroupRiding(o:GroupRidingObservation):GroupRidingDecision{
+       Math.min(30,Math.max(-15,
+         o.frontGapM-R22_GROUP_RIDING.targetWheelGapM));
+   const cap=o.criticalPowerW*
+-    (o.reserveFraction>.15?R22_GROUP_RIDING.maximumFollowingCpFraction:1);
++    (o.reserveFraction>.15?((globalThis as any).__r24CapWindow && (globalThis as any).__r24CapRider===process.env.R24_SINGLE_DIAG && (o.frontGapM??0)>=24?1.35:R22_GROUP_RIDING.maximumFollowingCpFraction):1);
+   return {powerW:Math.max(0,Math.min(cap,
+     hold+groupAccelerationPower+response)),
+     reason:'follow_group'};
+diff --git a/src/engine/race/race-simulator.ts b/src/engine/race/race-simulator.ts
+index 24c6205..14175e9 100644
+--- a/src/engine/race/race-simulator.ts
++++ b/src/engine/race/race-simulator.ts
+@@ -583,6 +583,7 @@ export function simulateRace(x:RaceInput):RaceResult {
+     sprintTrainAssignments:0,actualFrontWorkSteps:0,
+     relayChanges:0,maximumEndurancePenalty:0};
+   while(states.some(s=>s.finishTimeS===null)){
++    (globalThis as any).__r24CapWindow=t>=5650&&t<5800;
+     if(t>=(x.maxRaceTimeS??30000))throw new RangeError('Rennsimulation: Zeitlimit überschritten');
+     const active=states.filter(s=>s.finishTimeS===null);
+     // Ein Defekt hält zuerst physisch an; die Reparaturzeit beginnt erst
+@@ -1496,6 +1497,7 @@ export function simulateRace(x:RaceInput):RaceResult {
+         const stableMission=x.groupRidingModel==='stable-pack'&&
+           (s.intent==='verfolgung'||
+             (actualGroupSize.get(s.rider.id)??1)<R22_GROUP_RIDING.minGroupSize);
++        (globalThis as any).__r24CapRider=s.rider.id;
+         const group=stableMission?
+           decideStablePackRiding(groupObservation,
+             groupPaceByRider.get(s.rider.id)?.pacerId===s.rider.id):
