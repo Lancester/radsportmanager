@@ -21,6 +21,9 @@
 
 [Gesicherter Sekundenbefund und begrenzter Folgeauftrag](race/R24_FELDZUSAMMENHALT_DIAGNOSE_20261106.md): Historisch nachgewiesene Leistungssprünge bei Geländeübergängen und anschließende Gruppenfragmentierung ohne Attacken. Ursache noch nicht kausal isoliert. **Keine Engine-Änderung und kein neuer Rennlauf** in dieser Runde; nächster Schritt nur temporäre Sekundeninstrumentierung, dann minimaler A/B-Versuch und Abnahmekriterien. Alte nicht erfolgreiche ±0,1-m/s²-Pauschalbegrenzung nicht übernehmen.
 
+
+**Abgetrennter Versuch angelegt:** [Draft-PR #82](https://github.com/Lancester/radsportmanager/pull/82), Branch `experiment/r24-feldkohaesion-referenz-20261106`. Dort liegen eine eng begrenzte Referenzschutz-Regel, gezielte Testfälle und ein manueller A/B-Lauf-Runner. **Noch keine bestätigten Tests oder neue Rennresultate**, kein Merge und keine Änderung an der aktiven Audit-Engine. Experiment nur übernehmen, wenn gepaarte vollständige Rennen den Nutzen belegen.
+
 ## Nächste klar begrenzte Arbeitsaufgabe
 
 1. Audit-Checkout auf dem neuen Branch: Build/Tests und vorhandene Baseline-Szenarien prüfen; Ausgangswerte einfrieren.
