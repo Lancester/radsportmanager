@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101b2d">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="./icon.svg">
+<title>Rennlabor · Radsportmanager</title>
+<style>
+:root{color-scheme:dark;font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;color:#eaf2f8;background:#0a1422}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse 120% 250px at 50% 0,#1a3b50 0,#0a1422 80%)}
+main{max-width:1120px;margin:0 auto;padding:22px 15px 65px}
+h1{font-size:clamp(1.9rem,5vw,3.2rem);line-height:1.1;letter-spacing:-.04em;margin:10px 0}
+h2{font-size:1.17rem;margin:0 0 10px}h3{font-size:1rem;margin:12px 0 6px}
+p{color:#afc3d4;margin:5px 0 13px}.eyebrow{font-size:.75rem;text-transform:uppercase;letter-spacing:.18em;color:#8ddcd0;font-weight:800}
+.sub{max-width:720px}.panel{background:#142439;border:1px solid #2a435b;border-radius:17px;padding:19px;margin:16px 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+label{display:block;font-size:.84rem;font-weight:700;color:#cad9e4;margin:0 0 5px}
+input,select,textarea{width:100%;min-height:43px;padding:8px 10px;background:#0b1829;border:1px solid #4d667d;border-radius:9px;color:#eef7ff;font:inherit}
+textarea{min-height:75px;resize:vertical}input[type="checkbox"]{width:19px;height:19px;min-height:0;accent-color:#7bd7b6}
+.check{display:flex;align-items:center;gap:9px;font-size:.91rem;color:#cbdce8;margin:9px 0}
+summary{cursor:pointer;font-weight:700;color:#b9ecde;padding:6px 0}
+details{margin:12px 0;border-top:1px solid #304359;padding-top:9px}
+button{cursor:pointer;font:inherit;font-weight:750;border:1px solid #3fa79c;background:#207569;color:white;padding:11px 15px;border-radius:10px;min-height:44px}
+button.ghost{background:#102b3b;border-color:#4c6c80;color:#d3e7f0}button:disabled{opacity:.5;cursor:wait}
+.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:15px}
+.hint{font-size:.81rem;color:#9db6c9}.chip{display:inline-block;font-size:.73rem;padding:3px 7px;border-radius:6px;border:1px solid #476779;color:#b9e9d8;margin-right:5px}
+.gridteam{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:9px;margin:12px 0}
+.teamfield{padding:8px 10px;background:#0e1d30;border:1px solid #263e55;border-radius:10px}
+.teamfield label{margin-bottom:4px}.teamfield select{min-height:38px}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin:13px 0}
+.metric{padding:12px;border:1px solid #2f5265;border-radius:12px;background:#0c1d30}.metric strong{font-size:1.35rem;display:block;font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto;border-radius:10px;border:1px solid #29445b}
+table{border-collapse:collapse;width:100%;font-size:.83rem}th,td{padding:8px 10px;border-bottom:1px solid #2b4358;text-align:left}th{background:#0d2436;color:#bbd9e7;white-space:nowrap}
+tr:nth-child(even){background:#132d40}td.num,th.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+ul{padding-left:19px}li{margin-bottom:5px;color:#d3e2ed}
+.error{color:#ffc4b8!important}.success{color:#a5e9c9!important}
+.output{white-space:pre-wrap;overflow-wrap:anywhere}#status{padding:10px 12px;border:1px solid #31566d;border-radius:10px;margin-top:11px}
+[hidden]{display:none!important}:focus-visible{outline:3px solid #e2c67c;outline-offset:3px}
+a{color:#95dbda}.progress{background:#081726;height:8px;border-radius:10px;overflow:hidden}.progress i{background:#6acbb0;display:block;height:100%;width:100%;animation:wave 1.8s ease-in-out infinite alternate}
+@keyframes wave{from{opacity:.4}to{opacity:1}}
+</style>
+</head>
+<body>
+<main>
+<div class="eyebrow">Radsportmanager · Engine 1.0 RC1</div>
+<h1>Rennlabor</h1>
+<p class="sub">Führe eigenständige Rennen mit 154 fiktiven Profis durch. Verändere Teams, Fahrer, Wind, Streckenbedingungen und Engine-Modelle – immer auf Basis derselben Rennphysik, die später im Manager läuft.</p>
+<div class="chip">Lokal · kein Server für Rennberechnungen</div>
+<div class="chip" id="offlineInfo">Offline-Speicherung wird geprüft</div>
+<div class="chip">Reproduzierbare Seeds</div>
+<div class="chip">Experimentelle Einstellungen</div>
+
+<section class="panel">
+<h2>1 · Rennen und Teams</h2>
+<div class="fields">
+<div><label for="route">Rennstrecke</label><select id="route"></select></div>
+<div><label for="seed">Seed · gleiche Ausgangsbedingungen</label><input id="seed" type="number" min="0" max="2147483647" value="2026"></div>
+<div><label for="teamCount">Teilnehmende Teams</label><input id="teamCount" type="number" min="2" max="22" value="22"></div>
+<div><label for="rosterKind">Fahrerfeld-Typ</label><select id="rosterKind"><option value="route">Passend zur Strecke</option><option value="flach">Sprinterbetont</option><option value="huegelig">Hügelbetont</option><option value="klassiker">Klassikerbetont</option><option value="berg">Bergbetont</option></select></div>
+</div>
+<details open><summary>Taktik der Teams</summary>
+<p class="hint">Jedes Team kann eine eigene Leitlinie erhalten. Das sind die vier tatsächlich unterstützten Teamtaktiken; einzelne KI-Entscheidungen bleiben autonom.</p>
+<div id="teams" class="gridteam"></div>
+</details>
+</section>
+
+<section class="panel">
+<h2>2 · Fahrer gezielt verändern</h2>
+<p class="hint">Wähle einen Fahrer und verändere seine tatsächlichen Eingabeparameter. Nicht angefasste Werte bleiben auf dem RC1-Standard.</p>
+<div class="fields"><div><label for="rider">Fahrer</label><select id="rider"></select></div></div>
+<div id="riderValues" class="fields" style="margin-top:12px"></div>
+<div class="actions"><button class="ghost" id="resetRider">Änderungen dieses Fahrers zurücksetzen</button></div>
+</section>
+
+<section class="panel">
+<h2>3 · Wetter, Strecke und Simulation</h2>
+<div class="fields">
+<div><label for="headwind">Gegenwind (+) / Rückenwind (−), m/s</label><input type="number" id="headwind" min="-20" max="20" step=".5" value="0"></div>
+<div><label for="crosswind">Seitenwind, m/s</label><input type="number" id="crosswind" min="0" max="20" step=".5" value="0"></div>
+<div><label for="rolling">Rollwiderstand (Crr)</label><input type="number" id="rolling" min=".002" max=".012" step=".0005" value=".004"></div>
+<div><label for="descent">Abfahrtskomplexität, Abweichung</label><input type="number" id="descent" min="-.12" max=".12" step=".02" value="0"></div>
+</div>
+<details><summary>Erweiterte Engine-Modi · für kontrollierte A/B-Experimente</summary>
+<div class="fields">
+<div><label for="group">Gruppenmodell</label><select id="group"><option value="stable-pack">Stable Pack RC1</option><option value="legacy">Legacy</option><option value="cohesive">Cohesive</option><option value="coordinated">Coordinated</option><option value="relays">Relays</option><option value="relay-paced">Relay paced</option><option value="front-gated">Front gated</option></select></div>
+<div><label for="aero">Aerodynamik</label><select id="aero"><option value="formation">Formation</option><option value="legacy">Legacy</option><option value="formation-experiment">Formation experiment</option></select></div>
+<div><label for="tactic">Fahrer-KI</label><select id="tactic"><option value="r15-r16">R15/R16</option><option value="r14">R14</option></select></div>
+<div><label for="endurance">Ausdauermodell</label><select id="endurance"><option value="long">Aktiv</option><option value="off">Aus</option></select></div>
+<div><label for="step">Simulationsschritt</label><select id="step"><option value="1">1 s (Standard)</option><option value="0.5">0,5 s (Feiner)</option></select></div>
+</div>
+<label class="check"><input id="noAttacks" type="checkbox">Attacken deaktivieren (Kontrollrennen)</label>
+<p class="hint">Experimente mit anderen Modellständen sind nicht direkt mit RC1-Sportergebnissen vergleichbar. Es gibt bewusst keinen globalen Rennzeit- oder Siegerbonus.</p>
+</details>
+<div class="fields" style="margin-top:12px"><div><label for="timing">Zielgruppen-Wertung</label><select id="timing"><option value="bunch-3s">3-s-Sprintgruppen (Lille)</option><option value="road-1s">Normale 1-s-Regel</option></select></div></div>
+<p class="hint">Die Zielgruppenregel verändert nur die ausgewiesenen Ergebniszeiten, niemals die gefahrenen Positionen oder Energiewerte.</p>
+</section>
+
+<section class="panel">
+<h2>4 · Rennsimulation</h2>
+<div class="actions">
+<button id="run">Rennen simulieren</button>
+<button class="ghost" id="reset">Standardeinstellungen</button>
+<button class="ghost" id="export">Einstellungen als JSON</button>
+<button class="ghost" id="import">JSON importieren</button>
+<input id="file" type="file" accept=".json,application/json" hidden>
+</div>
+<p id="status" role="status">Bereit. Beim ersten Start muss die Anwendung aus dem kompilierten Browserpaket geöffnet werden.</p>
+<div id="working" class="progress" hidden><i></i></div>
+</section>
+
+<section id="output" class="panel" hidden>
+<h2>5 · Ergebnis und Rennbericht</h2>
+<div id="metrics" class="metrics"></div>
+<h3>Rennbericht</h3><ul id="report"></ul>
+<details open><summary>Ergebnisliste (154 Plätze bei 22 Teams)</summary><div class="tablewrap"><table><thead><tr><th>Platz</th><th>Fahrer</th><th>Team</th><th>Typ</th><th class="num">Roh-Abstand</th><th class="num">Gruppenzeit</th><th class="num">Gruppe</th><th class="num">W′ Ende</th></tr></thead><tbody id="results"></tbody></table></div></details>
+<details><summary>Gruppenentwicklung nach Kilometern</summary><div class="tablewrap"><table><thead><tr><th>km</th><th class="num">Führende Gruppe</th><th class="num">Größte Gruppe</th><th class="num">Gruppen insgesamt</th><th class="num">Feldspanne</th></tr></thead><tbody id="checkpoints"></tbody></table></div></details>
+<details><summary>Chronologischer Ereignisbericht</summary><ul id="events"></ul></details>
+<details><summary>Angewandte Eingabeänderungen</summary><ul id="changes"></ul></details>
+</section>
+
+<section id="comparison" class="panel" hidden>
+<h2>6 · Vorheriges Rennen vergleichen</h2><div id="comparisonBody"></div>
+<p class="hint">Für sinnvolle A/B-Vergleiche Strecke, Fahrerfeld und Seed unverändert lassen und nur eine Taktik oder einen Parameter ändern.</p>
+</section>
+<footer><p class="hint">Release Candidate: fiktive Fahrer und teilweise synthetische Streckenprofile. Die Gruppenwertung ist vorläufig. Die Rennsimulation läuft vollständig auf diesem Gerät. Keine Anmeldung und kein Webspace für Rennberechnungen erforderlich.</p></footer>
+</main>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

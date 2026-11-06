@@ -1,0 +1,60 @@
+name: Rennlabor – vollständig lokale Android-APK
+on:
+  pull_request:
+    branches: [release/race-engine-1.0-rc1, develop/renn-labor-mvp-20261106]
+    paths:
+      - 'android/rennlabor/**'
+      - 'docs/labor/**'
+      - 'src/labor/**'
+      - 'src/engine/race/**'
+      - 'scripts/r24-lab-offline-assets.mjs'
+      - '.github/workflows/r24-labor-android-apk.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  apk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: TypeScript unverändert als Android-Assets übersetzen
+        run: |
+          npx --yes --package typescript@5.9.3 tsc \
+            --target ES2022 --module ES2022 --moduleResolution Bundler \
+            --rewriteRelativeImportExtensions true --skipLibCheck \
+            --rootDir src --outDir docs/labor/generated \
+            src/labor/lab-settings.ts \
+            src/engine/race/race-simulator.ts \
+            src/engine/race/finish-time-groups.ts
+          node scripts/r24-lab-offline-assets.mjs
+          mkdir -p android/rennlabor/app/src/main/assets/labor
+          cp -R docs/labor/. android/rennlabor/app/src/main/assets/labor/
+          test -s android/rennlabor/app/src/main/assets/labor/generated/engine/race/race-simulator.js
+          test -s android/rennlabor/app/src/main/assets/labor/index.html
+      - name: Installierbare Offline-APK bauen
+        working-directory: android/rennlabor
+        run: gradle :app:assembleDebug --no-daemon --stacktrace
+      - name: Keine Internet-Berechtigung im Android-Manifest
+        run: |
+          APK=android/rennlabor/app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          if grep -q 'android.permission.INTERNET' android/rennlabor/app/src/main/AndroidManifest.xml; then
+            echo 'Internet permission verboten'; exit 1;
+          fi
+      - name: Fertige Test-APK für das Handy
+        uses: actions/upload-artifact@v4
+        with:
+          name: rennlabor-android-offline-apk
+          path: android/rennlabor/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
