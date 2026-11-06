@@ -5,10 +5,11 @@
  */
 export interface TrackedBreakaway {
   candidateSinceS:number|null;catchSinceS:number|null;
+  candidateIds:readonly string[];
   escapeIds:readonly string[];mainIds:readonly string[];
 }
 export const initialTrackedBreakaway=():TrackedBreakaway=>({
-  candidateSinceS:null,catchSinceS:null,escapeIds:[],mainIds:[],
+  candidateSinceS:null,catchSinceS:null,candidateIds:[],escapeIds:[],mainIds:[],
 });
 export function advanceBreakawayTracker<T extends {positionM:number}>(input:{
   state:TrackedBreakaway;groups:readonly (readonly T[])[];
@@ -29,11 +30,15 @@ export function advanceBreakawayTracker<T extends {positionM:number}>(input:{
     const escaped=lead!==main&&main.length>=4&&gap>=75&&
       lead[0].positionM>1000;
     if(!escaped)return {state:reset(),event:null,gapM:0};
-    const since=state.candidateSinceS??timeS;
+    const candidateIds=lead.map(riderId);
+    // Die Beobachtungszeit einer alten Gruppe darf nicht auf eine völlig
+    // andere Gruppe übertragen werden, die gerade erst entstanden ist.
+    const sameCandidate=state.candidateIds.some(id=>candidateIds.includes(id));
+    const since=sameCandidate?(state.candidateSinceS??timeS):timeS;
     if(timeS-since<40)
-      return {state:{...state,candidateSinceS:since},event:null,gapM:gap};
+      return {state:{...state,candidateSinceS:since,candidateIds},event:null,gapM:gap};
     return {state:{candidateSinceS:since,catchSinceS:null,
-      escapeIds:lead.map(riderId),mainIds:main.map(riderId)},
+      candidateIds,escapeIds:candidateIds,mainIds:main.map(riderId)},
       event:'breakaway',gapM:gap};
   }
   const escapedIds=new Set(state.escapeIds),mainIds=new Set(state.mainIds);
