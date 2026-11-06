@@ -288,3 +288,26 @@ worker.onerror=event=>{
   setStatus('Worker-Fehler: Browserpaket prüfen ('+event.message+').',true);
 };
 bindCore();
+
+// Rennlabor PWA: installierte App-Dateien vollständig lokal zwischenspeichern.
+async function enableOffline(){
+  const label=$('offlineInfo');
+  if(!('serviceWorker' in navigator)||!window.isSecureContext){
+    label.textContent='Offline-Installation benötigt einmalig HTTPS oder localhost';
+    return;
+  }
+  try{
+    await navigator.serviceWorker.register('./service-worker.js',{scope:'./'});
+    await navigator.serviceWorker.ready;
+    const cache=await caches.open('renn-labor-rc1-offline-v1');
+    const response=await cache.match(new URL('./offline-assets.json',location.href));
+    if(!response)throw Error('Offline-Manifest fehlt');
+    const assets=await response.json();
+    const stored=await Promise.all(assets.map(p=>cache.match(new URL(p,location.href))));
+    if(stored.some(v=>!v))throw Error('Dateien noch nicht vollständig gespeichert');
+    label.textContent='Offline bereit · '+assets.length+' Dateien lokal gespeichert';
+  }catch(e){
+    label.textContent='Offline-Installation fehlgeschlagen: '+String(e?.message??e);
+  }
+}
+enableOffline();
