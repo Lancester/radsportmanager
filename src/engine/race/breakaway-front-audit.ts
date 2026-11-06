@@ -8,7 +8,8 @@ export class BreakawayFrontAudit {
   private riders=new Map<string,{riderId:string;teamId:string;frontSeconds:number;
     crankWorkJ:number;windExposedSeconds:number}>();
   private current:{riderId:string;teamId:string;startS:number;durationS:number;
-    crankWorkJ:number;minGroupSize:number;maxGroupSize:number}|null=null;
+    crankWorkJ:number;minGroupSize:number;maxGroupSize:number;
+    ambiguousSeconds:number}|null=null;
   private stints:Array<NonNullable<BreakawayFrontAudit['current']>>=[];
   private ambiguousSeconds=0;
   observe(o:BreakawayFrontObservation|null):void{
@@ -19,9 +20,11 @@ export class BreakawayFrontAudit {
     if(!o)return;
     if(o.frontAmbiguous)this.ambiguousSeconds+=o.dt;
     if(!this.current)this.current={riderId:o.riderId,teamId:o.teamId,startS:o.timeS,
-      durationS:0,crankWorkJ:0,minGroupSize:o.groupSize,maxGroupSize:o.groupSize};
+      durationS:0,crankWorkJ:0,minGroupSize:o.groupSize,maxGroupSize:o.groupSize,
+      ambiguousSeconds:0};
     this.current.durationS+=o.dt;
     this.current.crankWorkJ+=o.appliedPowerW*o.dt;
+    if(o.frontAmbiguous)this.current.ambiguousSeconds+=o.dt;
     this.current.minGroupSize=Math.min(this.current.minGroupSize,o.groupSize);
     this.current.maxGroupSize=Math.max(this.current.maxGroupSize,o.groupSize);
     const row=this.riders.get(o.riderId)??{riderId:o.riderId,teamId:o.teamId,
@@ -32,9 +35,21 @@ export class BreakawayFrontAudit {
   }
   report(){
     const stints=this.current?[...this.stints,this.current]:this.stints;
+    const chronological=[...stints].sort((a,b)=>a.startS-b.startS);
+    // Ein aufeinanderfolgender Positionswechsel ist noch kein Nachweis
+    // einer taktisch abgesprochenen Ablösung oder seitlichen Spurwahl.
+    const frontChanges=chronological.slice(1).flatMap((next,i)=>{
+      const previous=chronological[i];
+      if(previous.riderId===next.riderId||
+        Math.abs(previous.startS+previous.durationS-next.startS)>1e-6)return [];
+      return [{timeS:next.startS,fromRiderId:previous.riderId,toRiderId:next.riderId,
+        fromSeconds:previous.durationS,toSeconds:next.durationS,
+        ambiguous:previous.ambiguousSeconds>0||next.ambiguousSeconds>0}];
+    });
     return {ambiguousSeconds:this.ambiguousSeconds,
       riders:[...this.riders.values()].sort((a,b)=>b.frontSeconds-a.frontSeconds||
       a.riderId.localeCompare(b.riderId)),
-      stints:[...stints].sort((a,b)=>b.durationS-a.durationS||a.startS-b.startS)};
+      stints:[...stints].sort((a,b)=>b.durationS-a.durationS||a.startS-b.startS),
+      frontChanges};
   }
 }
