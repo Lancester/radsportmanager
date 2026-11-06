@@ -204,6 +204,14 @@ export interface RaceResult {
       actualFrontS:number;appliedWorkJ:number;actualFrontWorkJ:number}>;
     /** Reale Folgen von Angriffswuenschen; nur im Checkpoint-Modus. */
     attackTraces?:AttackTrace[];
+    /** R24 nur Diagnose: Wechsel der adaptiven Teamjagd im 10-s-Takt. */
+    chaseDecisionAudit?:{ticks:number;activeTicks:number;changes:number;
+      starts:number;stops:number;replacements:number;
+      shortStopsWhileGapValid:number;changesWhileGapValid:number;
+      sampledChanges:Array<{t:number;km:number;before:string[];
+        after:string[];ageS:number;mainSize:number;frontSize:number;
+        breakaway:boolean;gapM:number;projectedGapM:number;
+        gapRatio:number;reason:string}>};
     /** R24 Diagnose: echte Jäger-Missionen und physische Frontsekunden, alle Streckenprofile. */
     chasePhysicalAudit?:{assignedRiderSeconds:number;nearFrontRiderSeconds:number;
       windFrontRiderSeconds:number;highPowerWindFrontRiderSeconds:number;
@@ -473,6 +481,13 @@ export function simulateRace(x:RaceInput):RaceResult {
   let trackedBreakaway=initialTrackedBreakaway();
   let aeroFactorSum=0,aeroFactorSamples=0,minimumAeroFactor=1;
   let chaseState:ChaseCoordinatorState={active:[],sinceS:0,cooldownUntilS:0};
+  const chaseDecisionAudit={ticks:0,activeTicks:0,changes:0,
+    starts:0,stops:0,replacements:0,shortStopsWhileGapValid:0,
+    changesWhileGapValid:0,
+    sampledChanges:[] as Array<{t:number;km:number;before:string[];
+      after:string[];ageS:number;mainSize:number;frontSize:number;
+      breakaway:boolean;gapM:number;projectedGapM:number;
+      gapRatio:number;reason:string}>};
   // Beobachtung ohne Einfluss auf Bewegung oder Taktik.
   const chaseTrace={assignedRiderSeconds:0,nearFrontRiderSeconds:0,
     windFrontRiderSeconds:0,highPowerWindFrontRiderSeconds:0,
@@ -556,17 +571,55 @@ export function simulateRace(x:RaceInput):RaceResult {
           ...r,id:r.id,positionM:r.positionM,
         })));
         const main=grouped.reduce((best,g)=>g.length>best.length?g:best,grouped[0]);
+        const situation=analyzeRaceSituation(planningRiders,
+          Math.max(0,totalM-leader.positionM),sprintFriendlyRace?12:6,
+          x.groupRidingModel==='stable-pack');
+        const before=chaseState;
         const next=coordinatePelotonChase({
           timeS:t,remainingM:Math.max(0,totalM-leader.positionM),
           progress:Math.min(1,leader.positionM/totalM),
           mainGroupIds:new Set(main.map(r=>r.id)),teams:teamRefs,
-          riders:planningRiders,situation:analyzeRaceSituation(
-            planningRiders,Math.max(0,totalM-leader.positionM),
-            sprintFriendlyRace?12:6,x.groupRidingModel==='stable-pack'),
+          riders:planningRiders,situation,
           previous:chaseState,
           sprintFinaleMode:sprintFriendlyRace,
           adaptiveChase:x.groupRidingModel==='stable-pack',
         });
+        if(x.diagnosticLevel==='checkpoints'&&
+          x.groupRidingModel==='stable-pack'){
+          const a=[...before.active].sort();
+          const b=[...next.state.active].sort();
+          chaseDecisionAudit.ticks++;
+          if(b.length)chaseDecisionAudit.activeTicks++;
+          if(a.join('|')!==b.join('|')){
+            chaseDecisionAudit.changes++;
+            const started=a.length===0&&b.length>0;
+            const stopped=a.length>0&&b.length===0;
+            const valid=situation.leadingBreakaway&&situation.gapM>=65;
+            if(started)chaseDecisionAudit.starts++;
+            if(stopped)chaseDecisionAudit.stops++;
+            if(a.length>0&&b.length>0)chaseDecisionAudit.replacements++;
+            if(valid)chaseDecisionAudit.changesWhileGapValid++;
+            if(stopped&&valid&&t-before.sinceS<150)
+              chaseDecisionAudit.shortStopsWhileGapValid++;
+            const reason=!situation.leadingBreakaway?'no-leading-breakaway':
+              situation.gapM<65?'gap-below-65m':
+              started?'new-chase':
+              stopped?'team-unavailable-or-coordinator-stop':
+              'chasing-team-roster-changed';
+            if(chaseDecisionAudit.sampledChanges.length<75)
+              chaseDecisionAudit.sampledChanges.push({
+                t,km:+(leader.positionM/1000).toFixed(2),
+                before:a,after:b,ageS:t-before.sinceS,
+                mainSize:main.length,
+                frontSize:grouped[0].length,
+                breakaway:situation.leadingBreakaway,
+                gapM:+situation.gapM.toFixed(1),
+                projectedGapM:+situation.projectedGapM.toFixed(1),
+                gapRatio:+situation.gapFractionOfRemaining.toFixed(4),
+                reason,
+              });
+          }
+        }
         chaseState=next.state;
         return next;
       })():null;
@@ -1898,6 +1951,8 @@ export function simulateRace(x:RaceInput):RaceResult {
     ...(checkpoints?{checkpoints}:{}),
     winnerId:sorted[0].rider.id,finisherCount:sorted.length,
     diagnostics:{...counters,maximumGroups,
+      ...(x.diagnosticLevel==='checkpoints'&&
+         x.groupRidingModel==='stable-pack'?{chaseDecisionAudit}:{}),
       ...(x.diagnosticLevel==='checkpoints'&&
          x.groupRidingModel==='stable-pack'?{chasePhysicalAudit:{
         ...chaseTrace,windFrontEnergyJ:Math.round(chaseTrace.windFrontEnergyJ),
