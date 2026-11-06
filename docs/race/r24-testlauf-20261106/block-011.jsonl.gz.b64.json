@@ -1,0 +1,14 @@
+{
+  "name": "block-011.jsonl.gz.b64",
+  "manifest_id": "330f67dd033f7db55ff29e22c79b4f10800a32556faf6aa3dbd27795e2625324",
+  "races": [
+    "main-common-tdf25_boulogne-2025.json",
+    "dev-common-tdf25_boulogne-2025.json",
+    "main-common-tdf25_boulogne-2026.json",
+    "dev-common-tdf25_boulogne-2026.json",
+    "main-common-tdf25_boulogne-2027.json",
+    "dev-common-tdf25_boulogne-2027.json"
+  ],
+  "compressed_sha256": "3fd3bbb8456f128f25cc67657e5278206c3e61d1a87d247705f3f3adddd836de",
+  "base64_chars": 743472
+}
