@@ -21,5 +21,8 @@ export function estimateOpponentThreat(o:{opponent:KnownRiderAbility;
   const value=score(o.opponent);
   const comparable=o.field.filter(r=>r.id!==o.opponent.id);
   if(!comparable.length)return .5;
-  return comparable.reduce((n,r)=>n+(score(r)<value?1:score(r)===value?.5:0),0)/comparable.length;
+  return comparable.reduce((n,r)=>{
+    const other=score(r);
+    return n+(other<value?1:other===value?.5:0);
+  },0)/comparable.length;
 }
