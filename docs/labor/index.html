@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#101b2d">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="./icon.svg">
 <title>Rennlabor · Radsportmanager</title>
 <style>
 :root{color-scheme:dark;font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;color:#eaf2f8;background:#0a1422}
@@ -46,6 +48,7 @@ a{color:#95dbda}.progress{background:#081726;height:8px;border-radius:10px;overf
 <h1>Rennlabor</h1>
 <p class="sub">Führe eigenständige Rennen mit 154 fiktiven Profis durch. Verändere Teams, Fahrer, Wind, Streckenbedingungen und Engine-Modelle – immer auf Basis derselben Rennphysik, die später im Manager läuft.</p>
 <div class="chip">Lokal · kein Server für Rennberechnungen</div>
+<div class="chip" id="offlineInfo">Offline-Speicherung wird geprüft</div>
 <div class="chip">Reproduzierbare Seeds</div>
 <div class="chip">Experimentelle Einstellungen</div>
 
@@ -121,7 +124,7 @@ a{color:#95dbda}.progress{background:#081726;height:8px;border-radius:10px;overf
 <h2>6 · Vorheriges Rennen vergleichen</h2><div id="comparisonBody"></div>
 <p class="hint">Für sinnvolle A/B-Vergleiche Strecke, Fahrerfeld und Seed unverändert lassen und nur eine Taktik oder einen Parameter ändern.</p>
 </section>
-<footer><p class="hint">Release Candidate: fiktive Fahrer und teilweise synthetische Streckenprofile. Die Gruppenwertung ist vorläufig. Die Rennsimulation läuft vollständig im WebWorker; es wird keine LLM-Anweisung erfunden. <a href="../rennen.html">Alter Rennprototyp</a>.</p></footer>
+<footer><p class="hint">Release Candidate: fiktive Fahrer und teilweise synthetische Streckenprofile. Die Gruppenwertung ist vorläufig. Die Rennsimulation läuft vollständig auf diesem Gerät. Keine Anmeldung und kein Webspace für Rennberechnungen erforderlich.</p></footer>
 </main>
 <script type="module" src="./app.js"></script>
 </body>
