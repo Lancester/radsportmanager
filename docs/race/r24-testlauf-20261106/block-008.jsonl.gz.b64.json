@@ -1,0 +1,14 @@
+{
+  "name": "block-008.jsonl.gz.b64",
+  "manifest_id": "330f67dd033f7db55ff29e22c79b4f10800a32556faf6aa3dbd27795e2625324",
+  "races": [
+    "main-profile-tdf25_lille-2025.json",
+    "dev-profile-tdf25_lille-2025.json",
+    "main-profile-tdf25_lille-2027.json",
+    "dev-profile-tdf25_lille-2027.json",
+    "main-profile-tdf25_lille-9001.json",
+    "dev-profile-tdf25_lille-9001.json"
+  ],
+  "compressed_sha256": "aa739e1cabdc921a779f8c99a28c29ad017e053d65603b4de0a2a14128f59bc0",
+  "base64_chars": 660224
+}
