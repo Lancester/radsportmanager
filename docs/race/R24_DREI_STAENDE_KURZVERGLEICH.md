@@ -19,3 +19,12 @@ Auftrag 06.11.2026: zügige, nachvollziehbare Entscheidung für eine erste spiel
 ## Status
 
 Plan vor Laufbeginn dokumentiert. Keine abschließende Entscheidung; die elf Neuaufgaben und die vollständige gemeinsame Auswertung stehen noch aus. Fertige Ergebnisse in kleinen Blöcken auf diesem Branch sichern.
+
+
+## Zwischenstand und Wiederherstellung
+
+22 von 27 Läufen sind vorhanden: 16 geprüfte Wiederverwendungen und sechs neue Ergebnisse, gesichert als Blöcke 001–005 unter `docs/race/r24-kurzvergleich-20261106/`. Die fünf übrigen Aufgaben betreffen Hautacam; ein Teil davon wird gerade gerechnet. Dieser Abschnitt wurde vor Abschluss der laufenden Aufgaben geschrieben, daher kann es lokal weitere noch nicht gesicherte Ergebnisse geben.
+
+Das Manifest fixiert die Quellen und Einzeldatei-Prüfsummen der 16 wiederverwendeten Daten. Neue Blöcke enthalten die ursprünglichen Ergebnisdateien und Einzelprüfsummen sowie die Prüfsumme des komprimierten Blocks und die Kennung des Manifests. `scripts/r24-dreistaende-wiederherstellen.py` rekonstruiert neu berechnete Ergebnisse aus den Blöcken; die Wiederherstellung zweier tatsächlicher Ergebnisse wurde lokal geprüft. Die wiederverwendeten Dateien müssen separat aus den im Manifest benannten Archiven wiederhergestellt und geprüft werden. `scripts/r24-dreistaende-kurzvergleich.py` berechnet fehlende Läufe nur bei passenden Engine- und Skriptprüfsummen. Seine momentan verwendeten absoluten Arbeitsverzeichnisse müssen bei Wiederaufnahme an die Umgebung angepasst werden.
+
+Keine sportliche Gesamtaussage oder Festlegung auf einen Modellstand vor dem kompletten Kurzvergleich.
