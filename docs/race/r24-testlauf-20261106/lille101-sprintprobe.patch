@@ -1,0 +1,14 @@
+diff --git a/src/engine/race/race-team-ai.ts b/src/engine/race/race-team-ai.ts
+index e3a2a46..eb08802 100644
+--- a/src/engine/race/race-team-ai.ts
++++ b/src/engine/race/race-team-ai.ts
+@@ -231,7 +231,8 @@ export function decideIntelligentCrew(input:{
+       r.role===target.role&&r!==target&&
+       r.positionM>group[0].positionM+R15_R16.groupBreakM);
+     const rejoin=input.adaptiveChase===true&&
+-      team.strategy==='kapitaen_schuetzen'&&target.role==='kapitaen'&&
++      ((team.strategy==='kapitaen_schuetzen'&&target.role==='kapitaen')||
++       (team.strategy==='sprint'&&target.role==='sprinter'))&&
+       !isMain&&preceding!==null&&group.length>=R24_REJOIN.minimumGroupSize&&
+       precedingGap>R15_R16.groupBreakM&&
+       precedingGap/Math.max(1,targetRemainingM)<R24_REJOIN.maximumRemainingFraction&&
