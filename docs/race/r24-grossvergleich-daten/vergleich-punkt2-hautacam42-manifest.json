@@ -1,0 +1,29 @@
+{
+  "engines": {
+    "audit": "2c6f7f154f98a86627952d10ab556b8e2bea50b39bb2a0b850b304ac12ae40b8",
+    "main": "4afdf3d734548be50b7e95f3672200ce4bbdf179daa3a0b4ec23d0ad91dc21a6",
+    "neu": "cda3f93d7a7f6e4822b4b2fa0eb01410cd99ce50dd4a33ebe3cdcf5865b48492"
+  },
+  "format": 1,
+  "node_version": "v24.22.1",
+  "plan": {
+    "kooperationsexperiment": false,
+    "roster": "common",
+    "routes": [
+      "tdf25_hautacam"
+    ],
+    "seeds": [
+      42
+    ],
+    "versionen": [
+      "main",
+      "audit",
+      "neu"
+    ]
+  },
+  "scripts": {
+    "r24-comparison-provenance.py": "4af17af3c5d38fc091c2fc844480bd78a7ab22e736941acdd52623097016243e",
+    "r24-grossvergleich.mjs": "b7299c1ec8deef61b145a1bb61a746f0d5ca1689f7a8fa32add2d9d9dbdf0be5",
+    "r24-punkt2-run.py": "0e6a4c817455e2558c685ce1b7a66217eb12d10df2ddc5949e49a1787f252081"
+  }
+}
