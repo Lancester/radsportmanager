@@ -30,6 +30,8 @@
 
 **Erster tatsächlicher Gruppenriss sekundengenau geprüft (06.11.):** [Ursachenbericht](race/R24_ERSTER_GRUPPENRISS_URSACHE_20261106.md), [erfolgreicher Actions-Lauf #42224059479](https://github.com/Lancester/radsportmanager/actions/runs/42224059479), [Diagnose-Draft-PR #83](https://github.com/Lancester/radsportmanager/pull/83). Erster Abstand >42 m bei km 17,875 zwischen F009/F107. F107 fährt trotz wachsender Lücke zeitweise 0 W, verliert danach den Formationswindschatten und erreicht erst spät den Deckel 112 % CP. Kein Reglerwechsel, kein Angriff und kein Wattabrechnungsfehler. **Korrekturoption: lokalen Widerspruchsschutz nur bei öffnender Lücke und zu stark negativer Fernbeschleunigungsprognose erweitern. Noch nicht implementiert; A/B-Nachweis erforderlich.**
 
+**Neuer A/B-Korrekturversuch abgeschlossen (06.11.):** [Bericht](race/R24_NEGATIVE_BESCHLEUNIGUNG_AB_20261106.md), [Actions #42224822838](https://github.com/Lancester/radsportmanager/actions/runs/42224822838), [Draft-PR #84](https://github.com/Lancester/radsportmanager/pull/84). **24 kontrollierte + 6 vollständige Rennläufe** erfolgreich ausgeführt. In kontrollierten Anstieg-Abfahrt-Fällen verbessert sich die größte Gruppe bei km 25 für Seeds 2026/42/123 von 125/145/130 auf 154/154/154. In Vollrennen erhebliche Nebenwirkungen (Boulogne innerhalb 60 s 37→7; Hautacam Medianrückstand 706→908 s). **Nicht mergen, keine Abnahme der Sportrealistik.** Die bestehende Engine bleibt unverändert; vor weiteren Korrekturen Abwägung mit Priorität spielbarer Manager.
+
 ## Nächste klar begrenzte Arbeitsaufgabe
 
 1. Audit-Checkout auf dem neuen Branch: Build/Tests und vorhandene Baseline-Szenarien prüfen; Ausgangswerte einfrieren.
