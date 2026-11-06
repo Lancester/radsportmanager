@@ -98,3 +98,14 @@ test('Bei gleicher Rennlage beeinflusst einschätzbare Gefahr die frühe Sprintt
   assert.equal(compare(250),false);
   assert.equal(compare(430),true);
 });
+
+test('Eine Mannschaft ohne verfügbare Helfer wird nicht für die Feldjagd eingeteilt',()=>{
+  const leading=[rider('ESC','C','kapitaen',1500)];
+  const disabled=main.map(r=>r.teamId==='A'&&r.role==='helfer'?
+    {...r,unavailable:true}:r);
+  const {chase,plan}=run([...leading,...disabled]);
+  assert.equal(chase.chasingTeamIds.has('A'),false);
+  assert.equal(chase.chasingTeamIds.has('B'),true);
+  assert.equal([...plan.orders.values()].some(x=>disabled.some(r=>
+    r.id===x.riderId&&r.unavailable)),false);
+});
