@@ -17,3 +17,14 @@ test('Erfasst tatsächlich abgerechnete Frontarbeit und unterbrochene Stints',()
  assert.deepEqual(report.frontChanges[0],{timeS:4,fromRiderId:'A',toRiderId:'B',
   fromSeconds:4,toSeconds:1,ambiguous:true});
 });
+test('Unsicherheit wird am Übergang bewertet, nicht für den ganzen Abschnitt',()=>{
+ const audit=new BreakawayFrontAudit();
+ const a={riderId:'A',teamId:'T',timeS:0,dt:1,appliedPowerW:300,
+  aeroFactor:1,groupSize:3};
+ audit.observe({...a,frontAmbiguous:true});
+ audit.observe({...a,timeS:1,frontAmbiguous:false});
+ audit.observe({...a,riderId:'B',timeS:2,frontAmbiguous:false});
+ const report=audit.report();
+ assert.equal(report.ambiguousSeconds,1);
+ assert.equal(report.frontChanges[0].ambiguous,false);
+});
