@@ -9,7 +9,7 @@ export class BreakawayFrontAudit {
     crankWorkJ:number;windExposedSeconds:number}>();
   private current:{riderId:string;teamId:string;startS:number;durationS:number;
     crankWorkJ:number;minGroupSize:number;maxGroupSize:number;
-    ambiguousSeconds:number}|null=null;
+    ambiguousSeconds:number;firstAmbiguous:boolean;lastAmbiguous:boolean}|null=null;
   private stints:Array<NonNullable<BreakawayFrontAudit['current']>>=[];
   private ambiguousSeconds=0;
   observe(o:BreakawayFrontObservation|null):void{
@@ -21,10 +21,11 @@ export class BreakawayFrontAudit {
     if(o.frontAmbiguous)this.ambiguousSeconds+=o.dt;
     if(!this.current)this.current={riderId:o.riderId,teamId:o.teamId,startS:o.timeS,
       durationS:0,crankWorkJ:0,minGroupSize:o.groupSize,maxGroupSize:o.groupSize,
-      ambiguousSeconds:0};
+      ambiguousSeconds:0,firstAmbiguous:!!o.frontAmbiguous,lastAmbiguous:!!o.frontAmbiguous};
     this.current.durationS+=o.dt;
     this.current.crankWorkJ+=o.appliedPowerW*o.dt;
     if(o.frontAmbiguous)this.current.ambiguousSeconds+=o.dt;
+    this.current.lastAmbiguous=!!o.frontAmbiguous;
     this.current.minGroupSize=Math.min(this.current.minGroupSize,o.groupSize);
     this.current.maxGroupSize=Math.max(this.current.maxGroupSize,o.groupSize);
     const row=this.riders.get(o.riderId)??{riderId:o.riderId,teamId:o.teamId,
@@ -44,7 +45,7 @@ export class BreakawayFrontAudit {
         Math.abs(previous.startS+previous.durationS-next.startS)>1e-6)return [];
       return [{timeS:next.startS,fromRiderId:previous.riderId,toRiderId:next.riderId,
         fromSeconds:previous.durationS,toSeconds:next.durationS,
-        ambiguous:previous.ambiguousSeconds>0||next.ambiguousSeconds>0}];
+        ambiguous:previous.lastAmbiguous||next.firstAmbiguous}];
     });
     return {ambiguousSeconds:this.ambiguousSeconds,
       riders:[...this.riders.values()].sort((a,b)=>b.frontSeconds-a.frontSeconds||
