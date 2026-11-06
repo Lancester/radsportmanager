@@ -1,0 +1,50 @@
+name: R24 Sprintfront Wiederanschluss isoliert
+on:
+  pull_request:
+    branches: [experiment/r24-negative-accel-fix-20261106]
+    paths:
+      - src/engine/race/race-simulator.ts
+      - .github/workflows/r24-sprint-reacquire.yml
+permissions:
+  contents: read
+jobs:
+  sprint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        seed: [123, 314]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: variant
+      - uses: actions/checkout@v4
+        with:
+          ref: experiment/r24-negative-accel-fix-20261106
+          path: audit
+      - uses: actions/checkout@v4
+        with:
+          ref: experiment/r24-sprint-classics-diagnosis-20261106
+          path: tools
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Nur genau die Sprint-Jagdregel modifiziert?
+        run: |
+          test "$(git -C variant diff experiment/r24-negative-accel-fix-20261106 -- src/engine/race/race-simulator.ts 2>/dev/null | wc -l)" -ge 0
+          diff -q audit/src/engine/race/local-group-reference.ts variant/src/engine/race/local-group-reference.ts
+          diff -q audit/src/engine/race/race-team-ai.ts variant/src/engine/race/race-team-ai.ts
+      - name: Gezielte Tests und Typpruefung
+        working-directory: variant
+        run: |
+          npm run typecheck --if-present
+          node --experimental-strip-types --test tests/r24-local-group-reference.test.mjs
+      - name: Lille A-B mit echten nominierte Frontdaten
+        run: node --experimental-strip-types tools/scripts/r24-final-two-diagnosis.mjs "$PWD/audit" "$PWD/variant" ${{ matrix.seed }} tdf25_lille | tee sprint-${{ matrix.seed }}.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r24-sprint-reacquire-${{ matrix.seed }}
+          path: sprint-${{ matrix.seed }}.jsonl
+          retention-days: 14
