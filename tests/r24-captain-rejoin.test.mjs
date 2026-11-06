@@ -57,3 +57,10 @@ test('Ein Abstand über 1500 Meter ist keine automatische Sperre',()=>{
   const distant=main.map(r=>({...r,positionM:r.positionM+2000}));
   assert.equal(plan({riders:[...distant,...trailing]}).orders.get('A1')?.isRejoin,true);
 });
+
+test('Ein Helfer mit Defekt erhält während der Reparatur keinen Auftrag',()=>{
+  const disabled=trailing.map(r=>r.id==='A1'?{...r,unavailable:true}:r);
+  const result=plan({riders:[...main,...disabled]});
+  assert.equal(result.orders.has('A1'),false);
+  assert.equal(result.orders.get('A2')?.isRejoin,true);
+});
