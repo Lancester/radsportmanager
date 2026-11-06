@@ -1,0 +1,20 @@
+{
+  "id": "./",
+  "name": "Radsportmanager – Rennlabor",
+  "short_name": "Rennlabor",
+  "description": "Lokaler Einzelrennen-Simulator mit taktischen Experimenten",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0a1422",
+  "theme_color": "#101b2d",
+  "lang": "de",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
