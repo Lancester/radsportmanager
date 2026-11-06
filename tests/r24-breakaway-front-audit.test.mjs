@@ -13,4 +13,7 @@ test('Erfasst tatsächlich abgerechnete Frontarbeit und unterbrochene Stints',()
  assert.deepEqual(report.stints.map(s=>s.durationS),[4,1,1]);
  assert.equal(report.stints[0].crankWorkJ,1000);
  assert.equal(report.ambiguousSeconds,2);
+ assert.equal(report.frontChanges.length,1);
+ assert.deepEqual(report.frontChanges[0],{timeS:4,fromRiderId:'A',toRiderId:'B',
+  fromSeconds:4,toSeconds:1,ambiguous:true});
 });
