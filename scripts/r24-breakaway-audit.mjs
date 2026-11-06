@@ -21,5 +21,7 @@ for(const enabled of [false,true]){
     topRiders:audit.riders.slice(0,5),longestStints:audit.stints.slice(0,5),
     energyValid:result.classification.every(c=>Math.abs(c.energyResidualJ)<.05),
     workEvents:result.events.filter(e=>e.type==='breakaway-work').length,
-    saveEvents:result.events.filter(e=>e.type==='breakaway-save').length}));
+    saveEvents:result.events.filter(e=>e.type==='breakaway-save').length,
+    relayRequests:result.events.filter(e=>e.type==='breakaway-relay-request').length,
+    observedAfterRequest:result.events.filter(e=>e.type==='breakaway-relay-position-change').length}));
 }
