@@ -67,6 +67,15 @@ test('Nachgeführter Fahrer hält Flucht offen, wenn ursprüngliche Fahrer zurü
   assert.notEqual(stillAhead.event,'caught');
   assert.ok(stillAhead.state.escapeIds.includes('M0'));
 });
+test('Beim Anschluss zählt die tatsächliche Nähe zu einem erfassten Fahrer',()=>{
+ const lead=group('L',2,2000),main=group('M',20,1600);
+ const initial=advance(initialTrackedBreakaway(),[lead,main],0);
+ const active=advance(initial.state,[lead,main],41);
+ const mixed=[...lead,{id:'NEAR',positionM:1984},{id:'FAR',positionM:1983.9}];
+ const next=advance(active.state,[mixed,main],50);
+ assert.ok(next.state.escapeIds.includes('NEAR'));
+ assert.ok(!next.state.escapeIds.includes('FAR'));
+});
 test('R24: Zielankunft des letzten Ausreissers ist keine Einholung',()=>{
   const lead=group('L',2,2000),main=group('M',20,1600);
   const a=advance(initialTrackedBreakaway(),[lead,main],0);
