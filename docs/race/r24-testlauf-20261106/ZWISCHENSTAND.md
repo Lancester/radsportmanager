@@ -38,3 +38,21 @@ Auch hier liegen zehn gepaarte Seeds mit 154 klassierten Fahrern vor; identische
 | Durchschnittliche Klassikerfahrer / Kletterer in den ersten Zehn | 1,7 / 0 | 1,9 / 0,5 |
 
 Der Leistungsproxy bildet die Teamrolle nicht vollständig ab; insbesondere eine nominelle Topbewertung belegt keine gleichwertige Siegchance. Angriffs- und Verfolgungsbeginne sind wie oben beschrieben Zustandswechsel, keine unabhängig gezählten tatsächlichen, dauerhaften Vorstöße. Die große Zahl früher Reaktionsbeginne zeigt sich jetzt auch im zweiten vollständigen Streckenblock. Sie belegt noch keine damit verbundene Netto-Mehrleistung oder einzelne Ursache.
+
+## Boulogne mit streckentypischem Fahrerfeld
+
+Zehn weitere gepaarte Seeds mit anderem, streckentypischem Feld sind abgeschlossen; gemeinsame Basisdaten und Energiebilanz je Paar wurden geprüft. Diese Ergebnisse sind nicht mit dem gemeinsamen Feld gleichzusetzen.
+
+| Kennzahl | main | Eintagesmodell |
+|---|---:|---:|
+| Siege Klassiker / Kletterer / Sprinter / Zeitfahrer | 10 / 0 / 0 / 0 | 2 / 3 / 4 / 1 |
+| Angriffsbeginn-Ereignisse je Rennen, Mittel | 31,9 | 28,8 |
+| Verfolgungsbeginn-Ereignisse je Rennen, Mittel | 12,9 | 2.111,5 |
+| Darunter ausdrücklich als Angriffsreaktion beschrieben, Mittel | Alte Beschriftung nicht vergleichbar | 1.742,8 |
+| Davon in den ersten 30 km, Mittel | Alte Beschriftung nicht vergleichbar | 1.061,2 |
+| Siegergruppe, 1-s-Nachbarregel, Median | 1,5 | 1,5 |
+| Siegergruppe, 3-s-Nachbarregel, Median | 2 | 2 |
+| Rang des vorab stärksten Profil-Leistungsproxys, Median | 88,5 | 89 |
+| Durchschnittliche Klassikerfahrer / Kletterer in den ersten Zehn | 3,8 / 0,2 | 2,7 / 0,6 |
+
+In zehn Rennen fällt die Verteilung der Siegertypen zwischen den Ständen stark unterschiedlich aus. Ein als Kletterer klassifizierter Gewinner ist noch kein Beweis für einen Fehler: Es sind die tatsächlichen Werte, Rollen und der Rennverlauf zu prüfen. Für alle gezählten Verfolgungszustände liegen keine durchgängigen individuellen Leistungsbilanzen vor; punktuelle Kontrollpunkte enthalten für ausgewählte Fahrer tatsächlich erbrachte Watt. Attacken besitzen zusätzliche Detailtelemetrie. Der Blick auf Zustandszahlen ersetzt daher keine Energie- oder Verlaufsanalyse.
