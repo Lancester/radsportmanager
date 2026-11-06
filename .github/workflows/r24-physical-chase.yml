@@ -1,0 +1,44 @@
+name: R24 physische Teamjagd – reine Messung
+on:
+  pull_request:
+    branches: [experiment/r24-negative-accel-fix-20261106]
+    paths:
+      - 'src/engine/race/race-simulator.ts'
+      - 'scripts/r24-physical-chase-ab.mjs'
+      - '.github/workflows/r24-physical-chase.yml'
+permissions:
+  contents: read
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        seed: [2026, 42]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: variant
+      - uses: actions/checkout@v4
+        with:
+          ref: develop/manager-mvp
+          path: audit
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Beide Engines exakt identisch nur instrumentieren
+        run: cp variant/src/engine/race/race-simulator.ts audit/src/engine/race/race-simulator.ts
+      - name: Passiven Messcode prüfen
+        working-directory: variant
+        run: npm run typecheck --if-present
+      - name: Vier gepaarte volle Rennen
+        run: |
+          node --experimental-strip-types variant/scripts/r24-physical-chase-ab.mjs "$PWD/audit" "$PWD/variant" ${{ matrix.seed }} boulogne | tee physical-${{ matrix.seed }}.jsonl
+          node --experimental-strip-types variant/scripts/r24-physical-chase-ab.mjs "$PWD/audit" "$PWD/variant" ${{ matrix.seed }} hautacam | tee -a physical-${{ matrix.seed }}.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r24-physical-chase-${{ matrix.seed }}
+          path: physical-${{ matrix.seed }}.jsonl
+          retention-days: 7
