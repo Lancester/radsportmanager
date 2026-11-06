@@ -1,0 +1,40 @@
+name: R24 Jagdursachen – reale Frontarbeit
+on:
+  pull_request:
+    branches: [develop/manager-mvp]
+    paths:
+      - 'scripts/r24-chase-causality.mjs'
+      - '.github/workflows/r24-chase-causality.yml'
+permissions:
+  contents: read
+jobs:
+  chase:
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    strategy:
+      fail-fast: false
+      matrix:
+        seed: [2026, 42]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: versuch
+      - uses: actions/checkout@v4
+        with:
+          ref: develop/manager-mvp
+          path: audit
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntaxprüfung
+        run: node --check versuch/scripts/r24-chase-causality.mjs
+      - name: Gepaarte physische Jagd-Telemetrie Boulogne und Hautacam
+        run: |
+          node --experimental-strip-types versuch/scripts/r24-chase-causality.mjs "$PWD/audit" "$PWD/versuch" ${{ matrix.seed }} boulogne | tee chase-${{ matrix.seed }}.jsonl
+          node --experimental-strip-types versuch/scripts/r24-chase-causality.mjs "$PWD/audit" "$PWD/versuch" ${{ matrix.seed }} hautacam | tee -a chase-${{ matrix.seed }}.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r24-jagd-physik-${{ matrix.seed }}
+          path: chase-${{ matrix.seed }}.jsonl
+          retention-days: 7
