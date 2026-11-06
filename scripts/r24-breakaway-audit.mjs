@@ -13,6 +13,7 @@ for(const enabled of [false,true]){
     finisherCount:result.finisherCount,formations,frontRiders:audit.riders.length,
     totalFrontSeconds:audit.riders.reduce((n,v)=>n+v.frontSeconds,0),
     totalFrontCrankJ:audit.riders.reduce((n,v)=>n+v.crankWorkJ,0),
+    ambiguousFrontSeconds:audit.ambiguousSeconds,
     windExposedSeconds:audit.riders.reduce((n,v)=>n+v.windExposedSeconds,0),
     topRiders:audit.riders.slice(0,5),longestStints:audit.stints.slice(0,5),
     energyValid:result.classification.every(c=>Math.abs(c.energyResidualJ)<.05),
