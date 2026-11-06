@@ -1,7 +1,7 @@
 name: Rennlabor – vollständig lokale Android-APK
 on:
   pull_request:
-    branches: [release/race-engine-1.0-rc1]
+    branches: [release/race-engine-1.0-rc1, develop/renn-labor-mvp-20261106]
     paths:
       - 'android/rennlabor/**'
       - 'docs/labor/**'
