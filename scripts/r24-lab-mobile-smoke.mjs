@@ -48,11 +48,21 @@ try {
  if(rows!==14)throw Error('Kein echtes 14-Fahrer-Ergebnis: '+rows);
  const report=await page.locator('#report li').count();
  if(report<4)throw Error('Rennbericht fehlt');
+ const smallStatus=await page.locator('#status').textContent();
+ // Vollständiges Referenzfeld: echte Browser-Grenze einschließlich Worker.
+ await page.locator('#teamCount').fill('22');
+ await page.locator('#teamCount').dispatchEvent('change');
+ await page.locator('#run').click();
+ await page.waitForFunction(()=>document.querySelector('#status')?.textContent?.includes('Rennen abgeschlossen'),
+   undefined,{timeout:240000});
+ const fullRows=await page.locator('#results tr').count();
+ if(fullRows!==154)throw Error('Volles Android-Rennen fehlgeschlagen: '+fullRows);
+ const fullStatus=await page.locator('#status').textContent();
  if(errors.length)throw Error('Browserkonsole: '+errors.join('; '));
  await page.screenshot({path:'rennlabor-mobile-smoke.png',fullPage:true});
  console.log(JSON.stringify({mobile:'Pixel 7 Chromium',teams:teamDropdowns,
-   riderControls:controls,testFinishers:rows,reportLines:report,scrollWidth,inner,
-   summary:(await page.locator('#status').textContent())}));
+   riderControls:controls,testFinishers:rows,fullFinishers:fullRows,
+   reportLines:report,scrollWidth,inner,smallStatus,fullStatus}));
 }finally{
  await browser?.close();await new Promise(ok=>server.close(ok));
 }
