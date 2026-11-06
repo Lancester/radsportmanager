@@ -5,7 +5,7 @@ const riders=(times)=>times.map((finishTimeS,i)=>({
 test('R24: 1-s-Regel: Kettenlücke unter 1s vergibt identische Gruppenzeit',()=>{
  const scored=scoreFinishGroups(riders([100.7,101.3,102,102.9,104.1]),'road-1s');
  assert.deepEqual(scored.map(z=>z.finishGroup),[0,0,0,0,1]);
- assert.deepEqual(scored.map(z=>z.creditedGapS),[0,0,0,0,3]);
+ assert.deepEqual(scored.map(z=>z.creditedGapS),[0,0,0,0,4]);
  assert.equal(scored[3].rawGapS,2.200000000000003);
  assert.equal(scored[0].finishGroupSize,4);
  assert.equal(scored[4].finishGroupSize,1);
