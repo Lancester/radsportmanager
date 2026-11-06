@@ -15,14 +15,15 @@ export function localGroupReference(input:{
   const localSpeed=input.frontSpeedMps??input.ownSpeedMps;
   const localAcceleration=input.frontAccelerationMps2??0;
   // Wenn sich das direkte Rad vom Fahrer entfernt und selbst nicht
-  // verzögert, darf eine entfernte verzögernde Spitze keine vorzeitige
-  // Verzögerung dieses Rades vorhersagen. Sonst wächst die Lücke, bevor
+  // weniger stark verzögert als die Fernprognose, darf diese keine vorzeitige
+  // stärkere Verzögerung dieses Rades vorgeben. Sonst wächst die Lücke, bevor
   // der Regler die mit der Distanz abnehmende Abschirmung ausgleicht.
   // Es ändern sich nur die angeforderten Watt; Position und Tempo
   // bleiben im vorhandenen Bewegungsintegrator.
   const groupAndWheelOppose=input.frontSpeedMps!==null&&
-    input.frontSpeedMps>input.ownSpeedMps&&localAcceleration>=0&&
-    input.groupAccelerationMps2<0;
+    input.frontSpeedMps>input.ownSpeedMps&&
+    input.groupAccelerationMps2<0&&
+    localAcceleration>input.groupAccelerationMps2;
   return {speedMps:localSpeed+weight*(input.groupSpeedMps-localSpeed),
     accelerationMps2:groupAndWheelOppose?localAcceleration:
       localAcceleration+weight*(input.groupAccelerationMps2-localAcceleration)};
