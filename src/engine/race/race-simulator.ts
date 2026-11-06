@@ -1199,7 +1199,8 @@ export function simulateRace(x:RaceInput):RaceResult {
         // CP/W′-/R-19-Verfügbarkeit begrenzt; keine Positionsänderung.
         const namedApproach=sprintFriendlyRace&&
           s.rider.id===previousFieldChaseLeader?.riderId&&
-          s.crewMission==='jagd'&&s.crewDuty==='unterstuetzung'&&
+          s.crewMission==='jagd'&&
+          (s.crewDuty==='unterstuetzung'||s.crewDuty==='fuehrung')&&
           (actualGroupSize.get(s.rider.id)??1)>=8&&
           (actualGroupFront.get(s.rider.id)??s.positionM)-s.positionM>18&&
           (actualGroupFront.get(s.rider.id)??s.positionM)-s.positionM<=300;
