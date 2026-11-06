@@ -56,3 +56,17 @@ Zehn weitere gepaarte Seeds mit anderem, streckentypischem Feld sind abgeschloss
 | Durchschnittliche Klassikerfahrer / Kletterer in den ersten Zehn | 3,8 / 0,2 | 2,7 / 0,6 |
 
 In zehn Rennen fällt die Verteilung der Siegertypen zwischen den Ständen stark unterschiedlich aus. Ein als Kletterer klassifizierter Gewinner ist noch kein Beweis für einen Fehler: Es sind die tatsächlichen Werte, Rollen und der Rennverlauf zu prüfen. Für alle gezählten Verfolgungszustände liegen keine durchgängigen individuellen Leistungsbilanzen vor; punktuelle Kontrollpunkte enthalten für ausgewählte Fahrer tatsächlich erbrachte Watt. Attacken besitzen zusätzliche Detailtelemetrie. Der Blick auf Zustandszahlen ersetzt daher keine Energie- oder Verlaufsanalyse.
+
+
+## Lüttich mit gemeinsamem Fahrerfeld: zehn gepaarte Seeds
+
+Nach Wiederherstellung der bisherigen Daten wurden die zwei fehlenden Seed-Paare ergänzt; somit liegen für dieses Feld zehn vollständige Paare (20 Rennen) vor. Der Paarvergleich prüfte den Hash der gemeinsamen Basiseingaben; die Rennskripte prüften Zielklassifikation und Energiebilanz. Die gespeicherten Originaldaten sind in den Blöcken 001–023 enthalten. Lille-Feldvarianten sind identisch und bleiben keine unabhängigen Stichproben.
+
+| Kennzahl | main | Eintagesmodell |
+|---|---:|---:|
+| Siege Klassiker / Allrounder / Kletterer | 10 / 0 / 0 | 0 / 5 / 5 |
+| Siegergruppe bei 1-s-Nachbarregel, Median | 1,5 | 3 |
+| Vorab-Profilfavorit: Zielrang, Median | 125,5 | 101,5 |
+| Angriffsbeginn-Ereignisse je Rennen, Mittel | 38,4 | 29,5 |
+
+Die Einteilung nach Fahrertyp erklärt keine Siegursache und beweist noch keinen Modellfehler. Der Vorab-Leistungsproxy berücksichtigt insbesondere Teamrollen nur eingeschränkt; Rang und Angriffsbeginne sind keine vollständige taktische Begründung. Die großen Unterschiede erfordern eine konkrete Analyse der Fähigkeiten, Rollen, Leistungsdaten und entscheidenden Rennverläufe sowie des streckentypischen Fahrerfelds. Der Gesamtvergleich ist nicht abgeschlossen; die angegebenen technischen Prüfungen belegen keine sportliche Realitätsnähe.
