@@ -1,0 +1,31 @@
+diff --git a/src/engine/race/race-simulator.ts b/src/engine/race/race-simulator.ts
+index 24c6205..1f20cc4 100644
+--- a/src/engine/race/race-simulator.ts
++++ b/src/engine/race/race-simulator.ts
+@@ -1147,6 +1147,8 @@ export function simulateRace(x:RaceInput):RaceResult {
+     }
+     const next=new Map<string,ReturnType<typeof advanceMotionStep>>();
+     const powers=new Map<string,number>();
++    const traceOn=leader.positionM>=54000&&leader.positionM<=78000&&Math.abs(t/5-Math.round(t/5))<1e-8;
++    const traceInfo=new Map<string,unknown>();
+     // Gruppe nur einmal für alle Fahrer dieser Sekunde ermitteln.
+     const actualGroupFront=new Map<string,number>();
+     const actualGroupSize=new Map<string,number>();
+@@ -2080,6 +2082,7 @@ export function simulateRace(x:RaceInput):RaceResult {
+         }
+         rejoinWork.set(s.rider.id,entry);
+       }
++      if(traceOn)traceInfo.set(s.rider.id,{requestedW:commanded,packW:pack.requestedPowerW,appliedW:cp.appliedPowerW,aero:aeroFactor,grade:segment.gradeFraction,headwind,crosswind,frontGap:frontGap.get(s.rider.id),packReason:pack.reason});
+       powers.set(s.rider.id,cp.appliedPowerW);
+       if(checkpoints){
+         lastPower.set(s.rider.id,cp.appliedPowerW);
+@@ -2091,6 +2094,9 @@ export function simulateRace(x:RaceInput):RaceResult {
+         gradeFraction:segment.gradeFraction,aeroFactor,brakeForceN,
+       }));
+     }
++    if(traceOn&&(globalThis as any).__r24trace){
++      (globalThis as any).__r24trace({t,leaderM:leader.positionM,chasingTeams:chaseState.active,groups:physicalGroups.map(g=>g.map(r=>r.id)),riders:ordered.map(s=>({id:s.rider.id,team:s.rider.teamId,role:s.rider.role,pos:s.positionM,speed:s.speedMps,accel:s.lastAccelerationMps2,cp:s.dayCpW,wPrime:s.physiology.remainingWPrimeJ/s.profile.wPrimeCapacityJ,intent:s.intent,decision:s.decision,crewMission:s.crewMission,crewDuty:s.crewDuty,...(traceInfo.get(s.rider.id) as object)}))});
++    }
+     if(breakawayFrontAudit){
+       const frontGroup=physicalGroups[0];
+       const gap=frontGroup!==largestPhysicalGroup?
