@@ -6,8 +6,10 @@ import {validateRace} from '../engine/race/race-simulator.ts';
 import type {RaceInput,RaceRider} from '../engine/race/race-simulator.ts';
 import type {RaceStrategy} from '../engine/race/race-tactics.ts';
 import type {ReferenceRouteId} from '../engine/race/reference-fixtures.ts';
+import {validateTeamPlan} from '../engine/race/team-tactical-plan.ts';
+import type {TeamTacticalPlan} from '../engine/race/team-tactical-plan.ts';
 
-export type TeamOrder={teamId:string;strategy:RaceStrategy};
+export type TeamOrder={teamId:string;strategy:RaceStrategy;tacticalPlan?:TeamTacticalPlan};
 export type RiderTune={id:string;criticalPowerPct?:number;wPrimePct?:number;
   massOffsetKg?:number;dragAreaPct?:number;aggression?:number;
   descentSkill?:number;sprintSkill?:number;wheelFindingSkill?:number;
@@ -30,6 +32,14 @@ export const ROUTES=Object.entries(REFERENCE_ROUTES).map(([id,r])=>({
   id:id as ReferenceRouteId,name:r.name,kind:r.kind,distanceKm:r.distanceKm,
 }));
 export const STRATEGIES=['ausgewogen','offensiv','sprint','kapitaen_schuetzen'] as const;
+export const TEAM_TACTIC_FIELDS=[
+  {key:'attackRisk',label:'Angriffslust des Teams',values:[['keine','Keine Angriffe'],['vorsichtig','Vorsichtig'],['normal','Normal'],['aggressiv','Aggressiv'],['maximal','Sehr aggressiv']]},
+  {key:'attackPhase',label:'Zeitpunkt der Angriffe',values:[['flexibel','Je nach Rennlage'],['frueh','Frühe Rennphase'],['mitte','Rennmitte'],['spaet','Letztes Drittel'],['finale','Nur Finale (ab 86 %)']]},
+  {key:'chasePolicy',label:'Verfolgungsbereitschaft',values:[['vermeiden','Nicht selbst jagen'],['selektiv','Nur bei hoher Gefahr'],['normal','Nach Rennlage'],['konsequent','Konsequent nachführen']]},
+  {key:'teamTempo',label:'Einsatztempo der Helfer',values:[['sparen','Kräfte sparen'],['normal','Normal'],['hoch','Hoher Krafteinsatz']]},
+  {key:'finale',label:'Finale-Anweisung',values:[['situativ','Situationsabhängig'],['sprint','Sprint bevorzugen'],['spaete_attacke','Späte Attacke bevorzugen'],['kapitaen','Kapitän priorisieren']]},
+  {key:'leaderProtection',label:'Kapitänsschutz',values:[['normal','Normal'],['hoch','Besonders schützen']]},
+] as const;
 export const RIDER_CONTROLS=[
   {key:'criticalPowerPct',label:'CP Leistung',min:75,max:125,step:1,unit:'%'},
   {key:'wPrimePct',label:'W′ Speicher',min:60,max:140,step:5,unit:'%'},
@@ -88,6 +98,7 @@ export function buildLabRace(s:LabSettings):{input:RaceInput;changes:string[]} {
     if(teamMap.has(t.teamId)||!f.input.teams.some(z=>z.id===t.teamId)||
       !STRATEGIES.includes(t.strategy))
       throw new RangeError('Rennlabor: Teamauftrag ungültig/dupliziert');
+    if(t.tacticalPlan!==undefined)validateTeamPlan(t.tacticalPlan);
     teamMap.set(t.teamId,t.strategy);
   }
   const tuneMap=new Map<string,RiderTune>();
@@ -132,7 +143,10 @@ export function buildLabRace(s:LabSettings):{input:RaceInput;changes:string[]} {
   const teams=f.input.teams.map(t=>{
     const strategy=teamMap.get(t.id);
     if(strategy&&strategy!==t.strategy)changes.push('Team '+t.id+': '+strategy);
-    return {...t,strategy:strategy??t.strategy};
+    const override=s.teams.find(x=>x.teamId===t.id);
+    if(override?.tacticalPlan)changes.push('Taktischer Plan für '+t.id+': '+JSON.stringify(override.tacticalPlan));
+    return {...t,strategy:strategy??t.strategy,
+      ...(override?.tacticalPlan?{tacticalPlan:override.tacticalPlan}:{})};
   });
   if(s.wind.headwindMps||s.wind.crosswindMps)changes.push('Wind geändert');
   if(s.road.rollingCoefficient!==.004||s.road.descentTechnicalityOffset)
