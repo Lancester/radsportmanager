@@ -1,0 +1,47 @@
+name: R24 letzte zwei Sportabnahmepunkte isolieren
+on:
+  pull_request:
+    branches: [experiment/r24-negative-accel-fix-20261106]
+    paths:
+      - scripts/r24-final-two-diagnosis.mjs
+      - .github/workflows/r24-last-two-diagnosis.yml
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    strategy:
+      fail-fast: false
+      matrix:
+        seed: [123, 314]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: variant
+      - uses: actions/checkout@v4
+        with:
+          ref: develop/manager-mvp
+          path: audit
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Skript-Syntax und Vergleichscode überprüfen
+        run: |
+          node --check variant/scripts/r24-final-two-diagnosis.mjs
+          diff -q audit/src/engine/race/race-simulator.ts variant/src/engine/race/race-simulator.ts
+          diff -q audit/src/engine/race/race-team-ai.ts variant/src/engine/race/race-team-ai.ts
+          diff -q audit/src/engine/race/classics-racecraft.ts variant/src/engine/race/classics-racecraft.ts
+      - name: Zwei offene Profile jeweils A/B rechnen
+        run: |
+          set -euo pipefail
+          for route in tdf25_lille lbl25_liege; do
+            node --experimental-strip-types variant/scripts/r24-final-two-diagnosis.mjs "$PWD/audit" "$PWD/variant" ${{ matrix.seed }} "$route" | tee -a r24-last-${{ matrix.seed }}.jsonl
+          done
+      - name: Befund sichern
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r24-last-two-${{ matrix.seed }}
+          path: r24-last-${{ matrix.seed }}.jsonl
+          retention-days: 14
