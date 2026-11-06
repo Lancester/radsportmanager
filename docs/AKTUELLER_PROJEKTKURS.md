@@ -1,5 +1,8 @@
 # Aktueller Projektkurs – Radsportmanager (06.11.2026)
 
+> **Kurze Übersicht:** [STATUS_KURZ.md](STATUS_KURZ.md). **Vollständiges Branch-Inventar und Referenz-Commits:** [ENGINE_UND_BRANCH_ARCHIV.md](ENGINE_UND_BRANCH_ARCHIV.md). Die historischen Journale bleiben absichtlich vollständig erhalten.
+
+
 **Verbindlicher Einstieg für neue Chats:** Zuerst diese Datei lesen, danach `docs/START_HIER.md`, `docs/ENTWICKLUNGSSTAND.md` und bei Bedarf `docs/ENTSCHEIDUNGEN.md`. Achtung: Die älteren Einstiegstexte beschreiben teilweise historisch den Stand vom 04.11.2026; bei Widerspruch gilt bis zur konsolidierten Dokumentation dieser neuere Projektkurs. Vor Änderungen den aktuellen GitHub-Stand prüfen.
 
 ## Produktziel
