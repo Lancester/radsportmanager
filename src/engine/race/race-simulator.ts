@@ -1,3 +1,5 @@
+import {attackOrder,validateTeamPlan} from './team-tactical-plan.ts';
+import type {TeamTacticalPlan} from './team-tactical-plan.ts';
 import {RejoinAttemptTelemetry} from './rejoin-attempt-telemetry.ts';
 /**
  * R-09 – erster vollständig durchgerechneter Rennprototyp.
@@ -72,6 +74,8 @@ export interface RaceSegment {
 }
 export interface RaceTeam {
   id:string;name:string;strategy:RaceStrategy;
+  /** Optionales Lab-/Manager-Ziel, Standard ohne Änderung der RC1-KI. */
+  tacticalPlan?:TeamTacticalPlan;
   /** Veraltete Vergleichs-API; stable-pack bestimmt die Helferzahl autonom. */
   chaseHelperCount?:number;
 }
@@ -278,6 +282,7 @@ export function validateRace(x:RaceInput):void {
        typeof t.name!=='string'||!t.name.trim()||
        !['ausgewogen','offensiv','sprint','kapitaen_schuetzen'].includes(t.strategy))
       throw new RangeError('Rennsimulation: Team oder Leitlinie ungültig');
+    if(t.tacticalPlan!==undefined)validateTeamPlan(t.tacticalPlan);
     if(t.chaseHelperCount!==undefined&&(
       !Number.isInteger(t.chaseHelperCount)||
       t.chaseHelperCount<0||t.chaseHelperCount>5))
@@ -532,7 +537,7 @@ export function simulateRace(x:RaceInput):RaceResult {
         chaseSpent:sprintFriendlyRace&&s.chaseLoad.spent,
       }));
       const teamRefs=x.teams.map(team=>({
-        id:team.id,strategy:team.strategy,
+        id:team.id,strategy:team.strategy,tacticalPlan:team.tacticalPlan,
         ...(sprintFriendlyRace?{chaseHelperCount:team.chaseHelperCount}:{}),
       }));
       const teamRefsAndChase=(x.groupRidingModel==='coordinated'||
@@ -640,6 +645,8 @@ export function simulateRace(x:RaceInput):RaceResult {
         const cap=captainByTeam.get(s.rider.teamId);
         const teamCaptainGap=cap && cap.rider.id!==s.rider.id ?
           Math.abs(cap.positionM-s.positionM):null;
+        const tacticalPlan=teams.get(s.rider.teamId)?.tacticalPlan;
+        const order=attackOrder(tacticalPlan,Math.min(1,s.positionM/totalM));
         const obs={
           role:s.rider.role,strategy:teams.get(s.rider.teamId)!.strategy,
           criticalPowerW:s.dayCpW,
@@ -655,7 +662,7 @@ export function simulateRace(x:RaceInput):RaceResult {
             s.rider.specialty==='sprinter',
           ...(coordinated||x.disableAttacks?{
             attackOpportunity:(()=>{
-              if(x.disableAttacks)return false;
+              if(x.disableAttacks||!order.allowed)return false;
               if(x.groupRidingModel==='stable-pack'){
                 const g=attackGroupByRider.get(s.rider.id);
                 const si=segmentFor(s,boundaries);
@@ -689,7 +696,7 @@ export function simulateRace(x:RaceInput):RaceResult {
                   breakawayEstablished:breakawayActive,
                   teammateAhead:!!ownTarget&&ownTarget!==s&&
                     ownTarget.positionM>s.positionM+75,
-                  draw:adaptiveAttackDraw(x.seed,s.rider.id,t),
+                  draw:Math.min(.9999999999,adaptiveAttackDraw(x.seed,s.rider.id,t)/order.probabilityFactor),
                 });
               }
               // Generische Offensiv-KI hat kein 88%-Angriffsverbot:

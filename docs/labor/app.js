@@ -1,6 +1,7 @@
-import {buildLabRace,initialLabSettings,ROUTES,RIDER_CONTROLS,STRATEGIES}
+import {buildLabRace,initialLabSettings,ROUTES,RIDER_CONTROLS,STRATEGIES,TEAM_TACTIC_FIELDS}
   from './generated/labor/lab-settings.js';
 import {createReferenceFixture} from './generated/engine/race/reference-fixtures.js';
+import {DEFAULT_TEAM_PLAN} from './generated/engine/race/team-tactical-plan.js';
 
 const $=id=>document.getElementById(id);
 const fmt=(v,d=1)=>Number(v).toLocaleString('de-DE',{
@@ -20,7 +21,7 @@ const setStatus=(msg,error=false)=>{
   $('status').className=error?'error':'';
 };
 let settings=initialLabSettings();
-let currentRider='F001',running=false,serial=0,lastResult=null,previousResult=null;
+let currentRider='F001',currentTacticalTeam='T01',running=false,serial=0,lastResult=null,previousResult=null;
 const worker=new Worker('./worker.js',{type:'module'});
 function refreshFixtures(){
   const base=createReferenceFixture({routeId:settings.routeId,
@@ -32,6 +33,7 @@ function refreshFixtures(){
   settings.teams=settings.teams.filter(t=>activeTeams.has(t.teamId));
   settings.riders=settings.riders.filter(r=>activeRiders.has(r.id));
   if(!activeRiders.has(currentRider))currentRider=base.input.riders[0].id;
+  if(!activeTeams.has(currentTacticalTeam))currentTacticalTeam=base.input.teams[0].id;
   return base;
 }
 function renderTeams(f){
@@ -44,13 +46,59 @@ function renderTeams(f){
     for(const key of STRATEGIES)select.append(opt(key,strategien[key]));
     select.value=selected;
     select.addEventListener('change',()=>{
+      const existing=settings.teams.find(x=>x.teamId===t.id);
       settings.teams=settings.teams.filter(x=>x.teamId!==t.id);
-      if(select.value!==t.strategy)settings.teams.push({
-        teamId:t.id,strategy:select.value});
+      if(select.value!==t.strategy||existing?.tacticalPlan)settings.teams.push({
+        teamId:t.id,strategy:select.value,
+        ...(existing?.tacticalPlan?{tacticalPlan:existing.tacticalPlan}:{})});
     });
     wrapper.append(label,select);host.append(wrapper);
   }
 }
+function renderTacticalTeams(f){
+  const teamSelect=$('tacticalTeam');teamSelect.replaceChildren();
+  for(const t of f.input.teams)teamSelect.append(opt(t.id,t.id+' · '+t.name));
+  teamSelect.value=currentTacticalTeam;
+  renderTacticalFields(f);
+}
+function renderTacticalFields(f){
+  const selected=f.input.teams.find(t=>t.id===currentTacticalTeam);
+  if(!selected)return;
+  const host=$('tacticalFields');host.replaceChildren();
+  const plan=settings.teams.find(t=>t.teamId===selected.id)?.tacticalPlan??DEFAULT_TEAM_PLAN;
+  for(const meta of TEAM_TACTIC_FIELDS){
+    const wrapper=document.createElement('div');
+    const label=str('label',meta.label);label.htmlFor='tactical-'+meta.key;
+    const picker=document.createElement('select');picker.id='tactical-'+meta.key;
+    for(const [value,text] of meta.values)picker.append(opt(value,text));
+    picker.value=plan[meta.key];
+    picker.addEventListener('change',()=>{
+      const old=settings.teams.find(x=>x.teamId===selected.id);
+      const nextPlan={...DEFAULT_TEAM_PLAN,...old?.tacticalPlan,
+        [meta.key]:picker.value};
+      settings.teams=settings.teams.filter(x=>x.teamId!==selected.id);
+      settings.teams.push({teamId:selected.id,
+        strategy:old?.strategy??selected.strategy,tacticalPlan:nextPlan});
+      setStatus('Taktikplan für '+selected.id+' angepasst: '+meta.label);
+    });
+    wrapper.append(label,picker);host.append(wrapper);
+  }
+}
+$('tacticalTeam').addEventListener('change',()=>{
+  currentTacticalTeam=$('tacticalTeam').value;
+  renderTacticalFields(refreshFixtures());
+});
+$('resetTactics').addEventListener('click',()=>{
+  const selected=settings.teams.find(x=>x.teamId===currentTacticalTeam);
+  if(selected){
+    delete selected.tacticalPlan;
+    const base=refreshFixtures().input.teams.find(x=>x.id===currentTacticalTeam);
+    if(selected.strategy===base?.strategy)
+      settings.teams=settings.teams.filter(x=>x.teamId!==currentTacticalTeam);
+  }
+  renderTacticalFields(refreshFixtures());
+  setStatus('Taktikplan für '+currentTacticalTeam+' zurückgesetzt.');
+});
 function renderRiders(f){
   const select=$('rider');select.replaceChildren();
   for(const r of f.input.riders)
@@ -99,7 +147,7 @@ function renderRiderControls(f){
 }
 function updateRoute(){
   try{
-    const f=refreshFixtures();renderTeams(f);renderRiders(f);
+    const f=refreshFixtures();renderTeams(f);renderTacticalTeams(f);renderRiders(f);
   }catch(e){setStatus(String(e.message??e),true)}
 }
 function bindCore(){
@@ -166,7 +214,7 @@ $('resetRider').addEventListener('click',()=>{
 });
 $('reset').addEventListener('click',()=>{
   if(running)return;
-  settings=initialLabSettings();currentRider='F001';bindCore();
+  settings=initialLabSettings();currentRider='F001';currentTacticalTeam='T01';bindCore();
   setStatus('Alle Eingaben zurückgesetzt.');
 });
 $('export').addEventListener('click',()=>{
@@ -230,6 +278,11 @@ function renderOutput(data){
     $('metrics').append(div);
   }
   $('report').replaceChildren(...data.report.map(t=>str('li',t)));
+  renderTable('tacticalEvidence',data.tacticalEvidence??[],(tr,r)=>{
+    cell(tr,r.teamId);cell(tr,r.attackEvents,true);
+    cell(tr,r.chaseEvents,true);cell(tr,r.sprintTrainEvents,true);
+    cell(tr,r.teamPaceEvents,true);
+  });
   const gap=s=>s===0?'0:00':fmt(s,1)+' s';
   renderTable('results',data.ranking,(tr,r)=>{
     cell(tr,r.rank);cell(tr,r.name);cell(tr,r.teamId);

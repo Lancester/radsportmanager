@@ -13,6 +13,25 @@
 - **A/B-Wiederholung:** vorangegangenes und neues Rennen werden verglichen. Austausch reproduzierbarer Szenarien als JSON.
 - Rechenmotor im WebWorker, kein Login, keine serverseitige Datenbank und keine KI-API. Android-Browser als vorrangige Zielplattform.
 
+## Neue taktische Anweisungen pro Team (Taktikplan v1)
+
+Neben den vier bewährten **Grundstrategien** gibt es sechs unabhängig kombinierbare Vorab-Anweisungen. Sie wirken tatsächlich im **gleichen originalen** Rennmotor und sind als wiederverwendbarer `TeamTacticalPlan` in `src/engine/race/team-tactical-plan.ts` definiert.
+
+| Regler | Auswahl | Präzise Wirkung / Grenze |
+| --- | --- | --- |
+| Angriffslust des Teams | keine, vorsichtig, normal, aggressiv, sehr aggressiv | Kein Angriff / Wahrscheinlichkeit von realen KI-Angriffsentscheidungen skalieren. Stärke bleibt durch CP/W′ beschränkt |
+| Zeitpunkt der Angriffe | flexibel, früh (0–30 %), Mitte (30–70 %), spät (ab 70 %), Finale (ab 86 %) | Neue Angriffsgelegenheiten nur im gewählten Rennabschnitt zulassen; **erzeugt keine Angriffe ohne Renngelegenheit** |
+| Verfolgungsbereitschaft | nicht selbst jagen, nur gefährliche Fluchten, nach Rennlage, konsequent | Organisierte Verfolgung nur bei wirklich vorhandener Flucht und geeigneter Gruppe. Helferwahl/-anzahl bleibt autonom |
+| Einsatztempo der Helfer | Kräfte sparen, normal, hoch | Begrenzt geänderte Wattwünsche bereits nominierter Helfer. Keine zusätzlichen Watt oder Positionsboni |
+| Finale | situationsabhängig, Sprint bevorzugen, späte Attacke bevorzugen, Kapitän priorisieren | Im letzten Abschnitt die Angriffswahrscheinlichkeit senken bzw. erhöhen; „Kapitän“ favorisiert zusätzliche Schutzarbeit. **Ein Sprintzug benötigt weiterhin die Grundstrategie „Sprint“** |
+| Kapitänsschutz | normal, besonders schützen | Mehr Schutzleistung von tatsächlich anwesenden, autonomen Teamhelfern, keine Positionsgarantie |
+
+**Grundstrategie und Taktikplan ergänzen einander.** Beispiel: „Sprint“ + „keine eigenen Attacken“ + „konsequent jagen“ + „Kräfte sparen“ ist zulässig und kann auf eine tatsächlich vorhandene Flucht wirken. „Offensiv“ + „nur Finale angreifen“ schränkt Offensiv-Attacken auf das gewählte Zeitfenster ein, ohne sie zwangsweise auszulösen. Kombinationen können sich in ihrer Wirkung abschwächen.
+
+Die KI **entscheidet weiterhin eigenständig über die Anzahl und Namen der eingesetzten Jagdhelfer**. Kein Regler „Anzahl Jagdhelfer“ ist enthalten oder vorgesehen. Alle Optionen werden pro Team in der Version-1-JSON-Szenariokonfiguration gespeichert. Fehlender Taktikplan bedeutet exakt das bisherige RC1-Verhalten.
+
+**Kalibrierregel:** Die gezeigten Stufen sind vorläufige, begrenzte KI-Parameter und keine empirisch validierten Siegchancen. Sie sollen in kontrollierten A/B-Rennen mit gleicher Strecke und gleichem Seed geprüft werden. „Konsequent nachführen“ ist kein Befehl zur aussichtslosen Jagd ohne tatsächliche Flucht; „sehr aggressiv“ garantiert keinen Angriff.
+
 ## Stand der Validierung
 
 CI: [Workflow Rennlabor Browser-Build](https://github.com/Lancester/radsportmanager/actions/workflows/r24-browser-labor.yml). Unter PR #91 gegen den gesicherten RC1. Die Paket-Generierung übersetzt den *gleichen* Quellcode des echten Simulators.
