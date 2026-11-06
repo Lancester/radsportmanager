@@ -29,7 +29,8 @@ import {estimateOpponentThreat} from './opponent-assessment.ts';
 import {decideRiderReaction} from './rider-reaction.ts';
 import {decideJoinBridge} from './bridge-cooperation.ts';
 import {cooperativeRelayYield,observedRelayFrontChange} from './bridge-relay.ts';
-import {decideBreakawayWork} from './breakaway-cooperation.ts';
+import {decideBreakawayWork,breakawayWorkInterest,willingBreakawayPartner,observeBreakawayRelay}
+  from './breakaway-cooperation.ts';
 import {BreakawayFrontAudit} from './breakaway-front-audit.ts';
 import {classifyBreakawayFront} from './breakaway-front-context.ts';
 import type {AttackPurpose} from './attack-purpose.ts';
@@ -143,7 +144,7 @@ export interface RaceInput {
   disableAttacks?:boolean;
 }
 export type RaceEventType =
-  'start'|'attack'|'chase'|'sprint'|'recovery'|'segment'|'group-split'|'breakaway'|'breakaway-caught'|'finish'|'team-pace'|'team-chase'|'sprint-train'|'bridge-start'|'bridge-stop'|'bridge-relay'|'bridge-relay-position-change'|'breakaway-work'|'breakaway-save'|'mechanical-incident'|'mechanical-service'|'mechanical-resume';
+  'start'|'attack'|'chase'|'sprint'|'recovery'|'segment'|'group-split'|'breakaway'|'breakaway-caught'|'finish'|'team-pace'|'team-chase'|'sprint-train'|'bridge-start'|'bridge-stop'|'bridge-relay'|'bridge-relay-position-change'|'breakaway-work'|'breakaway-save'|'mechanical-incident'|'mechanical-service'|'mechanical-resume'|'breakaway-relay-request'|'breakaway-relay-position-change';
 export interface RaceEvent {
   timeS:number;km:number;type:RaceEventType;
   riderId?:string;teamId?:string;description:string;
@@ -516,6 +517,7 @@ export function simulateRace(x:RaceInput):RaceResult {
   const breakawayFrontSeconds=new Map<string,number>();
   const breakawayStartReserve=new Map<string,number>();
   const breakawayWorkModes=new Map<string,'work'|'save'>();
+  const breakawayRelayOffers=new Map<string,{partnerId:string;timeS:number}>();
   const relayOffers=new Map<string,{partnerId:string;targetId:string}>();
   const activeAttackPurposes=new Map<string,AttackPurpose>();
   const bridgePlans=new Map<string,{targetId:string;powerW:number;bestGapM:number;
@@ -1163,6 +1165,22 @@ export function simulateRace(x:RaceInput):RaceResult {
       rankInPhysicalGroup.set(g.id,i+1);
       physicalGroupOf.set(g.id,group);
     });
+    // Diagnose unterscheidet das freiwillige Angebot und einen später
+    // tatsächlich beobachteten Längspositionswechsel; keine 2D-Spurbehauptung.
+    for(const [formerId,offer] of breakawayRelayOffers){
+      const former=byId.get(formerId),partner=byId.get(offer.partnerId);
+      const group=physicalGroupOf.get(formerId);
+      const sameTrackedGroup=!!former&&!!partner&&breakawayActive&&!!group&&
+        group===physicalGroups[0]&&group===physicalGroupOf.get(offer.partnerId)&&
+        trackedEscapeIds.has(formerId)&&trackedEscapeIds.has(offer.partnerId);
+      const observation=observeBreakawayRelay({sameTrackedGroup,elapsedS:t-offer.timeS,
+        formerPositionM:former?.positionM??0,partnerPositionM:partner?.positionM??0});
+      if(observation==='position-change'&&partner&&events.length<100000)events.push({
+        timeS:t,km:partner.positionM/1000,type:'breakaway-relay-position-change',
+        riderId:partner.rider.id,teamId:partner.rider.teamId,
+        description:`${partner.rider.id} liegt nach Angebot vor ${formerId}; Positionswechsel in der Flucht`});
+      if(observation!=='waiting')breakawayRelayOffers.delete(formerId);
+    }
     // Ein Angebot ist noch keine Übernahme: Positionswechsel werden nur
     // bei weiterhin real zusammen fahrenden Verfolgern protokolliert.
     for(const [formerId,offer] of relayOffers){
@@ -1787,12 +1805,37 @@ export function simulateRace(x:RaceInput):RaceResult {
           if(!breakawayStartReserve.has(s.rider.id))
             breakawayStartReserve.set(s.rider.id,reserve);
           commanded=work.powerW;
-          if(work.intent==='work'){
+          // Jeder Kandidat bewertet seine EIGENE Reserve und Teamlage.
+          // Der Führende nutzt nur das daraus entstehende Arbeitsangebot.
+          const candidates=group!.slice(1).filter(r=>trackedEscapeIds.has(r.id)).map(r=>{
+            const other=byId.get(r.id)!;
+            const target=targetByTeam.get(other.rider.teamId);
+            const sprinterBehind=!!target&&target.rider.role==='sprinter'&&
+              target.finishTimeS===null&&other.positionM-target.positionM>75;
+            const interest=breakawayWorkInterest({
+              teamStrategy:teams.get(other.rider.teamId)!.strategy,
+              teamSprinterBehind:sprinterBehind,
+              reserveFraction:other.physiology.remainingWPrimeJ/other.profile.wPrimeCapacityJ,
+              currentIntent:other.intent,unavailable:activeMechanical.has(other.rider.id),
+            });
+            return {id:r.id,positionM:r.positionM,offersWork:interest==='work'};
+          });
+          const willingId=willingBreakawayPartner({frontPositionM:s.positionM,candidates});
+          const willing=willingId?group!.find(r=>r.id===willingId):undefined;
+          if(work.intent==='work'&&willing){
             const yieldPower=cooperativeRelayYield({sharedTarget:true,isRealFront:true,
-              partnerGapM:s.positionM-companion.positionM,frontSeconds:seconds,
+              partnerGapM:s.positionM-willing.positionM,frontSeconds:seconds,
               reserveFraction:reserve,initialReserveFraction:breakawayStartReserve.get(s.rider.id),
               cpW:s.dayCpW,requestedW:commanded});
-            if(yieldPower!==null)commanded=yieldPower;
+            if(yieldPower!==null){
+              commanded=yieldPower;
+              if(!breakawayRelayOffers.has(s.rider.id)){
+                breakawayRelayOffers.set(s.rider.id,{partnerId:willing.id,timeS:t});
+                if(events.length<100000)events.push({timeS:t,km:s.positionM/1000,
+                  type:'breakaway-relay-request',riderId:s.rider.id,teamId:s.rider.teamId,
+                  description:`${s.rider.id} reduziert sein Tempo; ${willing.id} bietet Mitarbeit an`});
+              }
+            }
           }
           if(breakawayWorkModes.get(s.rider.id)!==work.intent&&events.length<100000)
             events.push({timeS:t,km:s.positionM/1000,
@@ -1804,6 +1847,7 @@ export function simulateRace(x:RaceInput):RaceResult {
         }else{
           breakawayFrontSeconds.delete(s.rider.id);
           breakawayStartReserve.delete(s.rider.id);
+          breakawayWorkModes.delete(s.rider.id);
         }
       }
       // Gemeinsame Nachführarbeit: nur ein tatsächlich an der physischen
