@@ -20,3 +20,21 @@ Die Gruppen sind nachträglich aus simulierten individuellen Zielzeiten mit zwei
 Angriffs- und Verfolgungszahlen sind **Beginn-Ereignisse eines internen Zustands**. Ein Fahrer kann wiederholt gezählt sein; die Zahlen belegen weder dauerhafte Einzeljagden noch erfolgreichen Anschluss oder erhöhte Nettoleistung. Die große Häufigkeit früher Angriffsreaktionen im neuen Modell ist dennoch ein konkreter Grund für die Untersuchung von Motiven, Dauern, tatsächlicher Leistungsabgabe und Auswirkung auf Gruppenbildung. Keine Annahme, dass alle Unterschiede von derselben Regel stammen.
 
 Die [Sicherungsblöcke und Manifeste](README.md) enthalten die vollständigen Originaldateien. Der vollständige große Test und ein neuer technischer Standardtest sind noch nicht abgeschlossen.
+
+## Zweiter vollständiger Block: Boulogne, gemeinsames Fahrerfeld
+
+Auch hier liegen zehn gepaarte Seeds mit 154 klassierten Fahrern vor; identische gemeinsame Basiseingaben je Paar und Energiebilanz wurden geprüft. Das streckentypische Feld ist separat zu betrachten.
+
+| Kennzahl | main | Eintagesmodell |
+|---|---:|---:|
+| Siege Klassiker / Kletterer / Sprinter / Zeitfahrer | 8 / 0 / 1 / 1 | 3 / 4 / 2 / 1 |
+| Angriffsbeginn-Ereignisse je Rennen, Mittel | 22,4 | 24,5 |
+| Verfolgungsbeginn-Ereignisse je Rennen, Mittel | 9,2 | 1.905,7 |
+| Darunter ausdrücklich als Angriffsreaktion beschrieben, Mittel | Alte Beschriftung nicht vergleichbar | 1.571,2 |
+| Davon in den ersten 30 km, Mittel | Alte Beschriftung nicht vergleichbar | 938,9 |
+| Siegergruppe, 1-s-Nachbarregel, Median | 1 | 1,5 |
+| Siegergruppe, 3-s-Nachbarregel, Median | 1 | 2 |
+| Rang des vorab stärksten Profil-Leistungsproxys, Median | 80,5 | 47,5 |
+| Durchschnittliche Klassikerfahrer / Kletterer in den ersten Zehn | 1,7 / 0 | 1,9 / 0,5 |
+
+Der Leistungsproxy bildet die Teamrolle nicht vollständig ab; insbesondere eine nominelle Topbewertung belegt keine gleichwertige Siegchance. Angriffs- und Verfolgungsbeginne sind wie oben beschrieben Zustandswechsel, keine unabhängig gezählten tatsächlichen, dauerhaften Vorstöße. Die große Zahl früher Reaktionsbeginne zeigt sich jetzt auch im zweiten vollständigen Streckenblock. Sie belegt noch keine damit verbundene Netto-Mehrleistung oder einzelne Ursache.
