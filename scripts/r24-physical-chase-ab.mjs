@@ -10,6 +10,7 @@ const summarize=r=>({
  attacks:r.diagnostics.attacks,breakaways:r.diagnostics.breakaways,
  catches:r.diagnostics.caughtBreakaways,
  physical:r.diagnostics.chasePhysicalAudit??null,
+ decisions:r.diagnostics.chaseDecisionAudit??null,
  check:r.checkpoints.filter(x=>[20,30,100,150,175,180,200,205].some(k=>Math.abs(x.km-k)<.15)).map(x=>({
   km:+x.km.toFixed(2),front:x.groupSizes[0],largest:x.largestGroup,
   groups:x.groupCount,spanKm:+(x.frontToBackM/1000).toFixed(2)})),
