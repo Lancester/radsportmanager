@@ -6,6 +6,7 @@ on:
       - 'src/labor/**'
       - 'docs/labor/**'
       - 'tests/r24-lab-settings.test.mjs'
+      - 'tests/r24-lab-integration.test.mjs'
       - '.github/workflows/r24-browser-labor.yml'
   workflow_dispatch:
 permissions:
@@ -21,7 +22,7 @@ jobs:
           node-version: '22'
       - name: Reine Konfigurations- und Ergebniszeit-Tests
         run: |
-          node --experimental-strip-types --test tests/r24-lab-settings.test.mjs tests/r24-finish-time-groups.test.mjs
+          node --experimental-strip-types --test tests/r24-lab-settings.test.mjs tests/r24-finish-time-groups.test.mjs tests/r24-lab-integration.test.mjs
       - name: Browser-JS (alle abhängigen originalen Engine-Module)
         run: |
           npx --yes --package typescript@5.9.3 tsc \
