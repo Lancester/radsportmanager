@@ -1,0 +1,53 @@
+name: R24 Jagdmandat 150s - gepaarte Kontrolle
+on:
+  pull_request:
+    branches: [experiment/r24-negative-accel-fix-20261106]
+    paths:
+      - 'src/engine/race/peloton-chase.ts'
+      - 'tests/r24-chase-minimum-mandate.test.mjs'
+      - '.github/workflows/r24-mandate-ab.yml'
+permissions:
+  contents: read
+jobs:
+  mandate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    strategy:
+      fail-fast: false
+      matrix:
+        seed: [42, 2026]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: variant
+      - uses: actions/checkout@v4
+        with:
+          ref: experiment/r24-negative-accel-fix-20261106
+          path: audit
+      - uses: actions/checkout@v4
+        with:
+          ref: experiment/r24-chase-telemetry-20261106
+          path: diagnose
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Gezielte Tests und TS-Prüfung
+        working-directory: variant
+        run: |
+          node --experimental-strip-types --test tests/r24-chase-minimum-mandate.test.mjs
+          npm run typecheck --if-present
+      - name: Gleiches passives Messmodul in beiden Engines
+        run: |
+          cp diagnose/src/engine/race/race-simulator.ts audit/src/engine/race/race-simulator.ts
+          cp diagnose/src/engine/race/race-simulator.ts variant/src/engine/race/race-simulator.ts
+      - name: Gepaarte Rennläufe mit und ohne Mandatsschutz
+        run: |
+          node --experimental-strip-types diagnose/scripts/r24-physical-chase-ab.mjs "$PWD/audit" "$PWD/variant" ${{ matrix.seed }} boulogne | tee mandate-${{ matrix.seed }}.jsonl
+          node --experimental-strip-types diagnose/scripts/r24-physical-chase-ab.mjs "$PWD/audit" "$PWD/variant" ${{ matrix.seed }} hautacam | tee -a mandate-${{ matrix.seed }}.jsonl
+      - name: Vergleichsbelege sichern
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r24-mandate-${{ matrix.seed }}
+          path: mandate-${{ matrix.seed }}.jsonl
+          retention-days: 7
