@@ -204,6 +204,12 @@ export interface RaceResult {
       actualFrontS:number;appliedWorkJ:number;actualFrontWorkJ:number}>;
     /** Reale Folgen von Angriffswuenschen; nur im Checkpoint-Modus. */
     attackTraces?:AttackTrace[];
+    /** R24 Diagnose: echte Jäger-Missionen und physische Frontsekunden, alle Streckenprofile. */
+    chasePhysicalAudit?:{assignedRiderSeconds:number;nearFrontRiderSeconds:number;
+      windFrontRiderSeconds:number;highPowerWindFrontRiderSeconds:number;
+      windFrontEnergyJ:number;longestWindFrontStintS:number;
+      activeChaseRiders:number;byTeam:Array<{teamId:string;
+        assigned:number;nearFront:number;windFront:number;highPower:number}>};
     /** Nur in sprintfreundlichen stable-pack-Rennen aus echten Rennschritten. */
     finalSprintAttempts?:Array<{riderId:string;launchRemainingM:number;
       launchTimeS:number;peakAppliedW:number;sprintSeconds:number;
@@ -467,6 +473,14 @@ export function simulateRace(x:RaceInput):RaceResult {
   let trackedBreakaway=initialTrackedBreakaway();
   let aeroFactorSum=0,aeroFactorSamples=0,minimumAeroFactor=1;
   let chaseState:ChaseCoordinatorState={active:[],sinceS:0,cooldownUntilS:0};
+  // Beobachtung ohne Einfluss auf Bewegung oder Taktik.
+  const chaseTrace={assignedRiderSeconds:0,nearFrontRiderSeconds:0,
+    windFrontRiderSeconds:0,highPowerWindFrontRiderSeconds:0,
+    windFrontEnergyJ:0,longestWindFrontStintS:0,
+    activeChaseRiders:0};
+  const chaseTraceTeam=new Map<string,{assigned:number;nearFront:number;
+    windFront:number;highPower:number}>();
+  const chaseStints=new Map<string,number>();
   let unprovokedBreakawayCount=0;
   let orderedRelayTeamSeconds=0;
   let climbingTempoSeconds=0;
@@ -1648,6 +1662,26 @@ export function simulateRace(x:RaceInput):RaceResult {
         }
         rejoinWork.set(s.rider.id,entry);
       }
+      if(x.diagnosticLevel==='checkpoints'&&x.groupRidingModel==='stable-pack'){
+        const assigned=s.crewMission==='jagd';
+        const gap=(actualGroupFront.get(s.rider.id)??s.positionM)-s.positionM;
+        const near=assigned&&gap<=18&&gap>=0;
+        const wind=near&&gap<=1&&aeroFactor>=.95;
+        const high=wind&&cp.appliedPowerW>=.86*s.dayCpW*availability;
+        const row=chaseTraceTeam.get(s.rider.teamId)??{
+          assigned:0,nearFront:0,windFront:0,highPower:0};
+        if(assigned){chaseTrace.assignedRiderSeconds+=dt;row.assigned+=dt;}
+        if(near){chaseTrace.nearFrontRiderSeconds+=dt;row.nearFront+=dt;}
+        if(wind){chaseTrace.windFrontRiderSeconds+=dt;
+          chaseTrace.windFrontEnergyJ+=cp.appliedPowerW*dt;row.windFront+=dt;}
+        if(high){chaseTrace.highPowerWindFrontRiderSeconds+=dt;row.highPower+=dt;}
+        if(assigned)chaseTrace.activeChaseRiders++;
+        const stint=wind?(chaseStints.get(s.rider.id)??0)+dt:0;
+        chaseStints.set(s.rider.id,stint);
+        chaseTrace.longestWindFrontStintS=Math.max(
+          chaseTrace.longestWindFrontStintS,stint);
+        chaseTraceTeam.set(s.rider.teamId,row);
+      }
       powers.set(s.rider.id,cp.appliedPowerW);
       if(checkpoints){
         lastPower.set(s.rider.id,cp.appliedPowerW);
@@ -1864,6 +1898,12 @@ export function simulateRace(x:RaceInput):RaceResult {
     ...(checkpoints?{checkpoints}:{}),
     winnerId:sorted[0].rider.id,finisherCount:sorted.length,
     diagnostics:{...counters,maximumGroups,
+      ...(x.diagnosticLevel==='checkpoints'&&
+         x.groupRidingModel==='stable-pack'?{chasePhysicalAudit:{
+        ...chaseTrace,windFrontEnergyJ:Math.round(chaseTrace.windFrontEnergyJ),
+        byTeam:[...chaseTraceTeam].map(([teamId,row])=>({teamId,...row}))
+          .sort((a,b)=>b.windFront-a.windFront).slice(0,10),
+      }}:{}),
       ...(attackTelemetry?{attackTraces:attackTelemetry.report(classification)}:{}),
       ...(rejoinAttempts?{rejoinAttempts:rejoinAttempts.report(t)}:{}),
       ...(rejoinWork?{rejoinWork:[...rejoinWork.values()].sort((a,b)=>
