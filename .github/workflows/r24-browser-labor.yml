@@ -1,7 +1,7 @@
 name: Rennlabor – Browser-Build und echte Engine-Tests
 on:
   pull_request:
-    branches: [release/race-engine-1.0-rc1]
+    branches: [release/race-engine-1.0-rc1, develop/renn-labor-mvp-20261106]
     paths:
       - 'src/labor/**'
       - 'docs/labor/**'
