@@ -50,7 +50,10 @@ export function createRaceReport(o:{result:Pick<RaceResult,'classification'|'eve
 export function formatRaceReport(r:RaceReport):string{
   const name=new Map(r.results.map(x=>[x.riderId,x.name]));
   const clock=(s:number)=>{const n=Math.round(s);return `${Math.floor(n/60)}:${String(n%60).padStart(2,'0')}`;};
+  const raceClock=(s:number)=>{const n=Math.round(s),hours=Math.floor(n/3600);
+    return `${hours}:${String(Math.floor(n%3600/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;};
   const lines=['RENNBERICHT',`Sieger: ${r.winner.name}`,
+    `Gewertete Siegerzeit: ${raceClock(r.winner.groupTimeS)} (h:min:s, gerundet)`,
     '', 'ERGEBNIS (gewerteter Gruppenabstand)'];
   for(const x of r.results){
     const gap=x.rank===1?'Siegerzeit':x.groupGapS===0?'gleiche Zeit':
