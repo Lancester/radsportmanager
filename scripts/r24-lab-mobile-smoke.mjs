@@ -43,7 +43,7 @@ try {
  await page.locator('#teams select').first().selectOption('offensiv');
  await page.locator('#run').click();
  await page.waitForFunction(()=>document.querySelector('#status')?.textContent?.includes('Rennen abgeschlossen'),
-   {timeout:180000});
+   undefined,{timeout:180000});
  const rows=await page.locator('#results tr').count();
  if(rows!==14)throw Error('Kein echtes 14-Fahrer-Ergebnis: '+rows);
  const report=await page.locator('#report li').count();
