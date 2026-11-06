@@ -1,0 +1,48 @@
+name: R24 Zeitgruppen und absolute Zeiten – Schlussabnahme
+on:
+  pull_request:
+    branches: [experiment/r24-negative-accel-fix-20261106]
+    paths:
+      - 'src/engine/race/finish-time-groups.ts'
+      - 'tests/r24-finish-time-groups.test.mjs'
+      - 'scripts/r24-finish-time-calibration.mjs'
+      - '.github/workflows/r24-finish-time-accept.yml'
+permissions:
+  contents: read
+jobs:
+  timing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      matrix:
+        seed: [42, 123, 314, 2026]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: candidate
+      - uses: actions/checkout@v4
+        with:
+          ref: develop/manager-mvp
+          path: audit
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Zeitgruppentests und bestehende Referenztests
+        working-directory: candidate
+        run: |
+          node --experimental-strip-types --test tests/r24-finish-time-groups.test.mjs tests/r24-local-group-reference.test.mjs
+          npm run typecheck --if-present
+      - name: Vier Strecken A/B mit gleicher Fahrerbasis gegen reale Siegerzeiten
+        run: |
+          set -euo pipefail
+          for route in tdf25_lille tdf25_boulogne lbl25_liege tdf25_hautacam; do
+            node --experimental-strip-types candidate/scripts/r24-finish-time-calibration.mjs "$PWD/audit" "$PWD/candidate" ${{ matrix.seed }} "$route" | tee -a timing-${{ matrix.seed }}.jsonl
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r24-finish-time-${{ matrix.seed }}
+          path: timing-${{ matrix.seed }}.jsonl
+          retention-days: 14
+          if-no-files-found: ignore
