@@ -1,0 +1,65 @@
+name: R24 Engine 1.0 – Abnahmetest Audit gegen PR84
+on:
+  pull_request:
+    branches: [experiment/r24-negative-accel-fix-20261106]
+    paths:
+      - 'scripts/r24-engine-acceptance.mjs'
+      - '.github/workflows/r24-engine-acceptance.yml'
+permissions:
+  contents: read
+jobs:
+  accept:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        seed: [42, 123, 2026, 314]
+    steps:
+      - name: Abnahmetest auschecken
+        uses: actions/checkout@v4
+        with:
+          path: variant
+      - name: Unveraenderte Audit-Engine auschecken
+        uses: actions/checkout@v4
+        with:
+          ref: develop/manager-mvp
+          path: audit
+      - name: Passive Instrumentierung auschecken
+        uses: actions/checkout@v4
+        with:
+          ref: experiment/r24-chase-telemetry-20261106
+          path: diagnose
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Testskript validieren
+        run: node --check variant/scripts/r24-engine-acceptance.mjs
+      - name: Identische passive Messung in beiden Engines
+        run: |
+          cp diagnose/src/engine/race/race-simulator.ts variant/src/engine/race/race-simulator.ts
+          cp diagnose/src/engine/race/race-simulator.ts audit/src/engine/race/race-simulator.ts
+      - name: Versionen und sportlichen Diff fixieren
+        run: |
+          echo "AUDIT $(git -C audit rev-parse HEAD)"
+          echo "VERSUCH $(git -C variant rev-parse HEAD)"
+          echo "DIAGNOSE $(git -C diagnose rev-parse HEAD)"
+          diff -q audit/src/engine/race/peloton-chase.ts variant/src/engine/race/peloton-chase.ts
+          diff -q audit/src/engine/race/race-simulator.ts variant/src/engine/race/race-simulator.ts
+          if cmp -s audit/src/engine/race/local-group-reference.ts variant/src/engine/race/local-group-reference.ts; then
+            echo 'ERROR: missing reference-rule difference'; exit 1;
+          fi
+      - name: Vier Profiltypen mit gleichem Seed gegeneinander testen
+        run: |
+          set -euo pipefail
+          for route in tdf25_lille tdf25_boulogne lbl25_liege tdf25_hautacam; do
+            node --experimental-strip-types variant/scripts/r24-engine-acceptance.mjs "$PWD/audit" "$PWD/variant" ${{ matrix.seed }} "$route" | tee -a accept-${{ matrix.seed }}.jsonl
+          done
+      - name: Alle Resultate dauerhaft fuer Abnahme bereitstellen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r24-engine-abnahme-${{ matrix.seed }}
+          path: accept-${{ matrix.seed }}.jsonl
+          retention-days: 14
+          if-no-files-found: ignore
