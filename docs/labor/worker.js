@@ -48,6 +48,16 @@ self.onmessage=async ({data})=>{
       description:e.description,riderId:e.riderId??null,teamId:e.teamId??null,
       gapM:e.gapM??null,
     }));
+    // Nachweis der angewendeten Vorabpläne anhand echter KI-Ereignisse.
+    // Team-Chase-Auftrag ist nicht gleich physischer Windfront-Zeit.
+    const tacticalEvidence=input.teams.filter(team=>team.tacticalPlan)
+      .map(team=>{
+        const own=outcome.events.filter(e=>e.teamId===team.id);
+        const count=type=>own.filter(e=>e.type===type).length;
+        return {teamId:team.id,strategy:team.strategy,plan:team.tacticalPlan,
+          attackEvents:count('attack'),chaseEvents:count('team-chase'),
+          sprintTrainEvents:count('sprint-train'),teamPaceEvents:count('team-pace')};
+      });
     const report=[
       `Sieger: ${results[0].name} (${results[0].type}) nach ${(results[0].finishTimeS/3600).toFixed(2)} Stunden.`,
       `Vollständig klassiert: ${results.length} Fahrer in ${groups.length} gewerteten Zielgruppen.`,
@@ -60,7 +70,7 @@ self.onmessage=async ({data})=>{
       route:settings.routeId,seed:settings.seed,teamCount:input.teams.length,
       durationMs:Math.round(performance.now()-start),
       winner:results[0].id,ranking:results,
-      groups,eventSummary,keyEvents,checkpoints,report,
+      groups,eventSummary,keyEvents,checkpoints,report,tacticalEvidence,
       appliedChanges:changes,settings,
     }});
   }catch(error){
