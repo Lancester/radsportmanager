@@ -8,6 +8,14 @@ const group=(prefix,count,front)=>Array.from({length:count},(_,i)=>
 const advance=(state,groups,timeS)=>advanceBreakawayTracker({
   state,groups,timeS,riderId:r=>r.id});
 
+test('Eine neue Spitzengruppe übernimmt nicht die Beobachtungszeit ihrer Vorgänger',()=>{
+ const main=group('M',30,1600),a=group('A',2,2000),b=group('B',3,2000);
+ const start=advance(initialTrackedBreakaway(),[a,main],0);
+ const replacement=advance(start.state,[b,main],35);
+ assert.equal(advance(replacement.state,[b,main],41).event,null);
+ assert.equal(advance(replacement.state,[b,main],76).event,'breakaway');
+});
+
 test('R24: eingeholte Flucht endet trotz zurueckgebliebenem Fahrerfeld',()=>{
   const lead=group('L',2,2000),main=group('M',50,1600),back=group('B',4,1300);
   const start=advance(initialTrackedBreakaway(),[lead,main,back],0);
