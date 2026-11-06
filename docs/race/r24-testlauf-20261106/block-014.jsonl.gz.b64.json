@@ -1,0 +1,14 @@
+{
+  "name": "block-014.jsonl.gz.b64",
+  "manifest_id": "330f67dd033f7db55ff29e22c79b4f10800a32556faf6aa3dbd27795e2625324",
+  "races": [
+    "main-profile-tdf25_boulogne-11.json",
+    "dev-profile-tdf25_boulogne-11.json",
+    "main-profile-tdf25_boulogne-123.json",
+    "dev-profile-tdf25_boulogne-123.json",
+    "main-profile-tdf25_boulogne-2025.json",
+    "dev-profile-tdf25_boulogne-2025.json"
+  ],
+  "compressed_sha256": "a71f1c1d6e9037151dabdc7008b6000ca4d362a3cbc73a698067e97315c13ae2",
+  "base64_chars": 712192
+}
