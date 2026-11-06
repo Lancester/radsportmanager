@@ -27,6 +27,9 @@
 
 **Erster A/B-Test abgeschlossen (06.11.):** [Bericht](race/R24_FELDKOHAESION_AB_TEST_20261106.md), [Actions 42222177699](https://github.com/Lancester/radsportmanager/actions/runs/42222177699). **7/7 Unit-Tests und 8 Kontrollsimulationsläufe erfolgreich**, aber in den vier paarigen 30-km-Szenarien **keine Verbesserung** der ausgewerteten Gruppen oder Resultate. Daher **PR #82 nicht mergen**; der vorzeitige Feldzerfall bleibt offen. Keine Vollrennserie gestartet. Nächster nur bei Bedarf: Ursache am ersten echten 42-m-Riss sekundengenau instrumentieren, statt die nicht wirksame Heuristik zu erweitern.
 
+
+**Erster tatsächlicher Gruppenriss sekundengenau geprüft (06.11.):** [Ursachenbericht](race/R24_ERSTER_GRUPPENRISS_URSACHE_20261106.md), [erfolgreicher Actions-Lauf #42224059479](https://github.com/Lancester/radsportmanager/actions/runs/42224059479), [Diagnose-Draft-PR #83](https://github.com/Lancester/radsportmanager/pull/83). Erster Abstand >42 m bei km 17,875 zwischen F009/F107. F107 fährt trotz wachsender Lücke zeitweise 0 W, verliert danach den Formationswindschatten und erreicht erst spät den Deckel 112 % CP. Kein Reglerwechsel, kein Angriff und kein Wattabrechnungsfehler. **Korrekturoption: lokalen Widerspruchsschutz nur bei öffnender Lücke und zu stark negativer Fernbeschleunigungsprognose erweitern. Noch nicht implementiert; A/B-Nachweis erforderlich.**
+
 ## Nächste klar begrenzte Arbeitsaufgabe
 
 1. Audit-Checkout auf dem neuen Branch: Build/Tests und vorhandene Baseline-Szenarien prüfen; Ausgangswerte einfrieren.
