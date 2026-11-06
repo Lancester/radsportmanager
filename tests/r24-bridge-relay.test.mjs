@@ -19,3 +19,10 @@ test('kein Wechsel ohne echte gemeinsame Lage oder ohne geleistete Arbeit',()=>{
   {...base,partnerGapM:50},{...base,frontSeconds:20}])
   assert.equal(cooperativeRelayYield(x),null);
 });
+test('Flucht-Führung darf bei stabiler Reserve lange dauern',()=>{
+ const healthy={...base,frontSeconds:1800,reserveFraction:.8,initialReserveFraction:.82};
+ assert.equal(cooperativeRelayYield(healthy),null);
+ assert.ok(cooperativeRelayYield({...healthy,reserveFraction:.65})<healthy.requestedW);
+ assert.equal(cooperativeRelayYield({...healthy,frontSeconds:5,reserveFraction:.3}),null);
+ assert.ok(cooperativeRelayYield({...healthy,frontSeconds:30,reserveFraction:.3})<healthy.requestedW);
+});
