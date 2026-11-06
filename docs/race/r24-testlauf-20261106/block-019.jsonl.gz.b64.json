@@ -1,0 +1,12 @@
+{
+  "name": "block-019.jsonl.gz.b64",
+  "manifest_id": "330f67dd033f7db55ff29e22c79b4f10800a32556faf6aa3dbd27795e2625324",
+  "races": [
+    "main-common-lbl25_liege-2027.json",
+    "dev-common-lbl25_liege-2027.json",
+    "main-common-lbl25_liege-31415.json",
+    "dev-common-lbl25_liege-31415.json"
+  ],
+  "compressed_sha256": "b2a3d28f6e3fa860b982dffc5b6c7430e1365cc97bf21a4c1f5f043c8076e722",
+  "base64_chars": 597460
+}
