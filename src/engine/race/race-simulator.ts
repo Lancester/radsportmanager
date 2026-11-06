@@ -1736,7 +1736,7 @@ export function simulateRace(x:RaceInput):RaceResult {
       const groups=splitGroups(inRace);
       if(x.diagnosticFirstSplit===true&&!firstGapReported){
         firstGapHistory.push(firstGapCurrent);
-        if(firstGapHistory.length>12)firstGapHistory.shift();
+        if(firstGapHistory.length>90)firstGapHistory.shift();
         if(groups.length>1){
           const positions=[...inRace].sort((a,b)=>b.positionM-a.positionM||
             a.rider.id.localeCompare(b.rider.id));
@@ -1745,7 +1745,9 @@ export function simulateRace(x:RaceInput):RaceResult {
           if(splitAt>=1){
             const focus=positions.slice(Math.max(0,splitAt-2),
               Math.min(positions.length,splitAt+2)).map(s=>s.rider.id);
-            const rows=firstGapHistory.flat().filter(r=>focus.includes(r.id as string));
+            const rows=firstGapHistory.flat().filter(r=>
+              focus.includes(r.id as string)&&
+              ((r.t as number)%5===0||(r.t as number)>=t-12));
             console.log('R24_FIRST_GAP_TRACE '+JSON.stringify({timeS:t,
               km:best.positionM/1000,
               gapM:positions[splitAt-1].positionM-positions[splitAt].positionM,
