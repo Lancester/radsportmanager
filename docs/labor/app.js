@@ -292,6 +292,10 @@ bindCore();
 // Rennlabor PWA: installierte App-Dateien vollständig lokal zwischenspeichern.
 async function enableOffline(){
   const label=$('offlineInfo');
+  if(location.hostname==='appassets.androidplatform.net'){
+    label.textContent='Android-App · alle Renndaten und Module dauerhaft auf diesem Gerät';
+    return;
+  }
   if(!('serviceWorker' in navigator)||!window.isSecureContext){
     label.textContent='Offline-Installation benötigt einmalig HTTPS oder localhost';
     return;
