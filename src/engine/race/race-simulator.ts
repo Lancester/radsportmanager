@@ -204,6 +204,20 @@ export interface RaceResult {
       actualFrontS:number;appliedWorkJ:number;actualFrontWorkJ:number}>;
     /** Reale Folgen von Angriffswuenschen; nur im Checkpoint-Modus. */
     attackTraces?:AttackTrace[];
+    /** R24 nur Diagnose: Wechsel der adaptiven Teamjagd im 10-s-Takt. */
+    chaseDecisionAudit?:{ticks:number;activeTicks:number;changes:number;
+      starts:number;stops:number;replacements:number;
+      shortStopsWhileGapValid:number;changesWhileGapValid:number;
+      sampledChanges:Array<{t:number;km:number;before:string[];
+        after:string[];ageS:number;mainSize:number;frontSize:number;
+        breakaway:boolean;gapM:number;projectedGapM:number;
+        gapRatio:number;reason:string}>};
+    /** R24 Diagnose: echte Jäger-Missionen und physische Frontsekunden, alle Streckenprofile. */
+    chasePhysicalAudit?:{assignedRiderSeconds:number;nearFrontRiderSeconds:number;
+      windFrontRiderSeconds:number;highPowerWindFrontRiderSeconds:number;
+      windFrontEnergyJ:number;longestWindFrontStintS:number;
+      activeChaseRiders:number;byTeam:Array<{teamId:string;
+        assigned:number;nearFront:number;windFront:number;highPower:number}>};
     /** Nur in sprintfreundlichen stable-pack-Rennen aus echten Rennschritten. */
     finalSprintAttempts?:Array<{riderId:string;launchRemainingM:number;
       launchTimeS:number;peakAppliedW:number;sprintSeconds:number;
@@ -467,6 +481,21 @@ export function simulateRace(x:RaceInput):RaceResult {
   let trackedBreakaway=initialTrackedBreakaway();
   let aeroFactorSum=0,aeroFactorSamples=0,minimumAeroFactor=1;
   let chaseState:ChaseCoordinatorState={active:[],sinceS:0,cooldownUntilS:0};
+  const chaseDecisionAudit={ticks:0,activeTicks:0,changes:0,
+    starts:0,stops:0,replacements:0,shortStopsWhileGapValid:0,
+    changesWhileGapValid:0,
+    sampledChanges:[] as Array<{t:number;km:number;before:string[];
+      after:string[];ageS:number;mainSize:number;frontSize:number;
+      breakaway:boolean;gapM:number;projectedGapM:number;
+      gapRatio:number;reason:string}>};
+  // Beobachtung ohne Einfluss auf Bewegung oder Taktik.
+  const chaseTrace={assignedRiderSeconds:0,nearFrontRiderSeconds:0,
+    windFrontRiderSeconds:0,highPowerWindFrontRiderSeconds:0,
+    windFrontEnergyJ:0,longestWindFrontStintS:0,
+    activeChaseRiders:0};
+  const chaseTraceTeam=new Map<string,{assigned:number;nearFront:number;
+    windFront:number;highPower:number}>();
+  const chaseStints=new Map<string,number>();
   let unprovokedBreakawayCount=0;
   let orderedRelayTeamSeconds=0;
   let climbingTempoSeconds=0;
@@ -542,17 +571,94 @@ export function simulateRace(x:RaceInput):RaceResult {
           ...r,id:r.id,positionM:r.positionM,
         })));
         const main=grouped.reduce((best,g)=>g.length>best.length?g:best,grouped[0]);
+        const situation=analyzeRaceSituation(planningRiders,
+          Math.max(0,totalM-leader.positionM),sprintFriendlyRace?12:6,
+          x.groupRidingModel==='stable-pack');
+        const before=chaseState;
         const next=coordinatePelotonChase({
           timeS:t,remainingM:Math.max(0,totalM-leader.positionM),
           progress:Math.min(1,leader.positionM/totalM),
           mainGroupIds:new Set(main.map(r=>r.id)),teams:teamRefs,
-          riders:planningRiders,situation:analyzeRaceSituation(
-            planningRiders,Math.max(0,totalM-leader.positionM),
-            sprintFriendlyRace?12:6,x.groupRidingModel==='stable-pack'),
+          riders:planningRiders,situation,
           previous:chaseState,
           sprintFinaleMode:sprintFriendlyRace,
           adaptiveChase:x.groupRidingModel==='stable-pack',
         });
+        if(x.diagnosticLevel==='checkpoints'&&
+          x.groupRidingModel==='stable-pack'){
+          const a=[...before.active].sort();
+          const b=[...next.state.active].sort();
+          chaseDecisionAudit.ticks++;
+          if(b.length)chaseDecisionAudit.activeTicks++;
+          if(a.join('|')!==b.join('|')){
+            chaseDecisionAudit.changes++;
+            const started=a.length===0&&b.length>0;
+            const stopped=a.length>0&&b.length===0;
+            const valid=situation.leadingBreakaway&&situation.gapM>=65;
+            if(started)chaseDecisionAudit.starts++;
+            if(stopped)chaseDecisionAudit.stops++;
+            if(a.length>0&&b.length>0)chaseDecisionAudit.replacements++;
+            if(valid)chaseDecisionAudit.changesWhileGapValid++;
+            if(stopped&&valid&&t-before.sinceS<150){
+              chaseDecisionAudit.shortStopsWhileGapValid++;
+              // Nur verdächtige kurze Stopps dokumentieren; keine KI-Wirkung.
+              if(totalM-leader.positionM>5000&&
+                situation.gapFractionOfRemaining<.10){
+                const leaders=new Set(situation.leadingRiderIds??[]);
+                const urgent=situation.gapFractionOfRemaining>.009||
+                  situation.projectedGapM>Math.max(400,
+                    (totalM-leader.positionM)*.025);
+                const teams=before.active.map(id=>{
+                  const team=teamRefs.find(q=>q.id===id)!;
+                  const members=planningRiders.filter(q=>
+                    q.teamId===id&&main.some(g=>g.id===q.id));
+                  const helpers=members.filter(q=>q.role==='helfer'&&
+                    q.reserveFraction>.32);
+                  const ownLeadersAhead=planningRiders.some(q=>
+                    q.teamId===id&&leaders.has(q.id)&&
+                    (q.role==='kapitaen'||q.role==='sprinter'));
+                  const ownHelperAhead=planningRiders.some(q=>
+                    q.teamId===id&&leaders.has(q.id)&&q.role==='helfer');
+                  const interested=!ownLeadersAhead&&
+                    !(ownHelperAhead&&!urgent)&&(
+                      team.strategy==='sprint'&&members.some(q=>q.role==='sprinter')||
+                      urgent&&team.strategy==='kapitaen_schuetzen'&&
+                        members.some(q=>q.role==='kapitaen')||
+                      urgent&&team.strategy==='ausgewogen'&&
+                        members.some(q=>q.role==='kapitaen')||
+                      urgent&&team.strategy==='offensiv'&&
+                        members.some(q=>q.role==='kapitaen'));
+                  return {id,strategy:team.strategy,members:members.length,
+                    helpers:helpers.length,ownLeadersAhead,ownHelperAhead,
+                    interested,viable:interested&&helpers.length>0};
+                });
+                console.log('R24_CHASE_SHORT_STOP '+JSON.stringify({
+                  t,km:+(leader.positionM/1000).toFixed(2),
+                  ageS:t-before.sinceS,mainSize:main.length,
+                  frontSize:grouped[0].length,gapM:+situation.gapM.toFixed(1),
+                  urgent,teams,
+                }));
+              }
+            }
+            const reason=!situation.leadingBreakaway?'no-leading-breakaway':
+              situation.gapM<65?'gap-below-65m':
+              started?'new-chase':
+              stopped?'team-unavailable-or-coordinator-stop':
+              'chasing-team-roster-changed';
+            if(chaseDecisionAudit.sampledChanges.length<75)
+              chaseDecisionAudit.sampledChanges.push({
+                t,km:+(leader.positionM/1000).toFixed(2),
+                before:a,after:b,ageS:t-before.sinceS,
+                mainSize:main.length,
+                frontSize:grouped[0].length,
+                breakaway:situation.leadingBreakaway,
+                gapM:+situation.gapM.toFixed(1),
+                projectedGapM:+situation.projectedGapM.toFixed(1),
+                gapRatio:+situation.gapFractionOfRemaining.toFixed(4),
+                reason,
+              });
+          }
+        }
         chaseState=next.state;
         return next;
       })():null;
@@ -1648,6 +1754,26 @@ export function simulateRace(x:RaceInput):RaceResult {
         }
         rejoinWork.set(s.rider.id,entry);
       }
+      if(x.diagnosticLevel==='checkpoints'&&x.groupRidingModel==='stable-pack'){
+        const assigned=s.crewMission==='jagd';
+        const gap=(actualGroupFront.get(s.rider.id)??s.positionM)-s.positionM;
+        const near=assigned&&gap<=18&&gap>=0;
+        const wind=near&&gap<=1&&aeroFactor>=.95;
+        const high=wind&&cp.appliedPowerW>=.86*s.dayCpW*availability;
+        const row=chaseTraceTeam.get(s.rider.teamId)??{
+          assigned:0,nearFront:0,windFront:0,highPower:0};
+        if(assigned){chaseTrace.assignedRiderSeconds+=dt;row.assigned+=dt;}
+        if(near){chaseTrace.nearFrontRiderSeconds+=dt;row.nearFront+=dt;}
+        if(wind){chaseTrace.windFrontRiderSeconds+=dt;
+          chaseTrace.windFrontEnergyJ+=cp.appliedPowerW*dt;row.windFront+=dt;}
+        if(high){chaseTrace.highPowerWindFrontRiderSeconds+=dt;row.highPower+=dt;}
+        if(assigned)chaseTrace.activeChaseRiders++;
+        const stint=wind?(chaseStints.get(s.rider.id)??0)+dt:0;
+        chaseStints.set(s.rider.id,stint);
+        chaseTrace.longestWindFrontStintS=Math.max(
+          chaseTrace.longestWindFrontStintS,stint);
+        chaseTraceTeam.set(s.rider.teamId,row);
+      }
       powers.set(s.rider.id,cp.appliedPowerW);
       if(checkpoints){
         lastPower.set(s.rider.id,cp.appliedPowerW);
@@ -1864,6 +1990,14 @@ export function simulateRace(x:RaceInput):RaceResult {
     ...(checkpoints?{checkpoints}:{}),
     winnerId:sorted[0].rider.id,finisherCount:sorted.length,
     diagnostics:{...counters,maximumGroups,
+      ...(x.diagnosticLevel==='checkpoints'&&
+         x.groupRidingModel==='stable-pack'?{chaseDecisionAudit}:{}),
+      ...(x.diagnosticLevel==='checkpoints'&&
+         x.groupRidingModel==='stable-pack'?{chasePhysicalAudit:{
+        ...chaseTrace,windFrontEnergyJ:Math.round(chaseTrace.windFrontEnergyJ),
+        byTeam:[...chaseTraceTeam].map(([teamId,row])=>({teamId,...row}))
+          .sort((a,b)=>b.windFront-a.windFront).slice(0,10),
+      }}:{}),
       ...(attackTelemetry?{attackTraces:attackTelemetry.report(classification)}:{}),
       ...(rejoinAttempts?{rejoinAttempts:rejoinAttempts.report(t)}:{}),
       ...(rejoinWork?{rejoinWork:[...rejoinWork.values()].sort((a,b)=>
