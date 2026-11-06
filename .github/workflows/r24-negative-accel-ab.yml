@@ -1,0 +1,63 @@
+name: R24 Abfahrt lokale Beschleunigung A-B
+on:
+  pull_request:
+    branches: [develop/manager-mvp]
+    paths:
+      - 'src/engine/race/local-group-reference.ts'
+      - 'tests/r24-negative-accel-experiment.test.mjs'
+      - 'scripts/r24-negative-accel-ab.mjs'
+      - '.github/workflows/r24-negative-accel-ab.yml'
+permissions:
+  contents: read
+jobs:
+  kontrollrennen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: variant
+      - uses: actions/checkout@v4
+        with:
+          ref: develop/manager-mvp
+          path: audit
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Neue und vorhandene lokale Referenztests
+        working-directory: variant
+        run: node --experimental-strip-types --test tests/r24-negative-accel-experiment.test.mjs tests/r24-local-group-reference.test.mjs
+      - name: Drei Seeds auf vier Kontrollprofilen
+        run: |
+          for seed in 2026 42 123; do
+            node --experimental-strip-types variant/scripts/r24-negative-accel-ab.mjs "$PWD/audit" "$PWD/variant" control "$seed"
+          done | tee r24-control-ab.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r24-negative-accel-control
+          path: r24-control-ab.jsonl
+          retention-days: 7
+  vollrennen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: kontrollrennen
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: variant
+      - uses: actions/checkout@v4
+        with:
+          ref: develop/manager-mvp
+          path: audit
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Drei vollständige Rennprofile auf einem Seed
+        run: node --experimental-strip-types variant/scripts/r24-negative-accel-ab.mjs "$PWD/audit" "$PWD/variant" full 2026 | tee r24-full-ab.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r24-negative-accel-full
+          path: r24-full-ab.jsonl
+          retention-days: 7
