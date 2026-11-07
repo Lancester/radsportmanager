@@ -17,6 +17,10 @@ export type RiderTune={id:string;criticalPowerPct?:number;wPrimePct?:number;
 export interface LabSettings {
   schemaVersion:1;
   routeId:ReferenceRouteId;seed:number;teamCount:number;
+  /** Dieses Team steuert der Nutzer, alle übrigen die vorhandene KI. */
+  myTeamId?:string;
+  /** Fahrer-ID, die in der Rennaufstellung die Kapitänsrolle übernimmt. */
+  captainId?:string;
   rosterKind:'route'|'flach'|'huegelig'|'klassiker'|'berg';
   teams:TeamOrder[];riders:RiderTune[];
   wind:{headwindMps:number;crosswindMps:number};
@@ -60,7 +64,7 @@ const finite=(n:number,min:number,max:number,label:string)=>{
 };
 export function initialLabSettings():LabSettings {
   return {schemaVersion:1,routeId:'tdf25_lille',seed:2026,teamCount:22,
-    rosterKind:'route',teams:[],riders:[],
+    rosterKind:'route',myTeamId:'T01',teams:[],riders:[],
     wind:{headwindMps:0,crosswindMps:0},
     road:{rollingCoefficient:.004,descentTechnicalityOffset:0},
     engine:{groupRidingModel:'stable-pack',aeroModel:'formation',
@@ -92,6 +96,12 @@ export function buildLabRace(s:LabSettings):{input:RaceInput;changes:string[]} {
   const f=createReferenceFixture({routeId:s.routeId,seed:s.seed,
     teamCount:s.teamCount,
     ...(s.rosterKind==='route'?{}:{rosterKind:s.rosterKind})});
+  const myTeamId=s.myTeamId??'T01';
+  if(!f.input.teams.some(t=>t.id===myTeamId))
+    throw new RangeError('Rennlabor: eigenes Team nicht im Fahrerfeld');
+  if(s.captainId!==undefined&&
+    !f.input.riders.some(r=>r.id===s.captainId&&r.teamId===myTeamId))
+    throw new RangeError('Rennlabor: Kapitän muss zum eigenen Team gehören');
   const changes:string[]=[];
   const teamMap=new Map<string,RaceStrategy>();
   for(const t of s.teams){
@@ -114,9 +124,13 @@ export function buildLabRace(s:LabSettings):{input:RaceInput;changes:string[]} {
     tuneMap.set(tune.id,tune);
   }
   const riders:RaceRider[]=f.input.riders.map(r=>{
-    const tune=tuneMap.get(r.id);if(!tune)return {...r};
+    const tune=tuneMap.get(r.id);
+    const selectedCaptain=s.captainId;
+    const role=selectedCaptain&&r.teamId===myTeamId?
+      (r.id===selectedCaptain?'kapitaen':r.role==='kapitaen'?'helfer':r.role):r.role;
+    if(!tune)return {...r,role};
     const cpRatio=(tune.criticalPowerPct??100)/100;
-    const next={...r,
+    const next={...r,role,
       criticalPowerW:+(r.criticalPowerW*cpRatio).toFixed(2),
       ftpW:+(r.ftpW*cpRatio).toFixed(2),
       wPrimeJ:Math.round(r.wPrimeJ*(tune.wPrimePct??100)/100),
@@ -133,6 +147,7 @@ export function buildLabRace(s:LabSettings):{input:RaceInput;changes:string[]} {
     changes.push('Fahrer '+r.id+': '+Object.keys(tune).filter(k=>k!=='id').join(', '));
     return next;
   });
+  if(s.captainId)changes.push('Kapitän von '+myTeamId+': '+s.captainId);
   const segments=f.input.segments.map(z=>({
     ...z,headwindMps:s.wind.headwindMps,
     crosswindMps:s.wind.crosswindMps,
