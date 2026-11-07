@@ -15,6 +15,7 @@ on:
       - 'tests/r24-lab-live-progress.test.mjs'
       - 'tests/r24-lab-v5-first-gap.test.mjs'
       - 'tests/r24-lab-v5-critical-split.test.mjs'
+      - 'tests/r24-lille-main-audit-v5-comparison.mjs'
       - 'tests/r24-lab-v5-captain-diagnosis.test.mjs'
       - 'scripts/r24-lab-mobile-smoke.mjs'
       - 'scripts/r24-lab-offline-assets.mjs'
@@ -31,9 +32,25 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Fixierten Main-Stand auschecken, ohne Branch zu aendern
+        uses: actions/checkout@v4
+        with:
+          repository: Lancester/radsportmanager
+          ref: 621e712371563278c5bed2bb643dd598a9a7bcf4
+          path: _comparisons/main
+          persist-credentials: false
+      - name: Fixierten Audit-Stand auschecken, ohne Branch zu aendern
+        uses: actions/checkout@v4
+        with:
+          repository: Lancester/radsportmanager
+          ref: 1945e2d6b71289f90cca5dc8c793090a4af93341
+          path: _comparisons/audit
+          persist-credentials: false
       - name: Reine Konfigurations- und Ergebniszeit-Tests
         run: |
           node --experimental-strip-types --test tests/r24-lab-settings.test.mjs tests/r24-finish-time-groups.test.mjs tests/r24-lab-integration.test.mjs tests/r24-lab-tactical-plan.test.mjs tests/r24-lab-tactical-ab.test.mjs tests/r24-lab-team-report.test.mjs tests/r24-lab-rider-roles.test.mjs tests/r24-lab-screenshot-audit.test.mjs tests/r24-lab-live-progress.test.mjs tests/r24-lab-v5-captain-diagnosis.test.mjs tests/r24-lab-v5-first-gap.test.mjs tests/r24-lab-v5-critical-split.test.mjs
+      - name: Main, Audit und V5 auf identischem 154-Fahrer-Lille-Input
+        run: node --experimental-strip-types tests/r24-lille-main-audit-v5-comparison.mjs
       - name: Browser-JS (alle abhängigen originalen Engine-Module)
         run: |
           npx --yes --package typescript@5.9.3 tsc \
