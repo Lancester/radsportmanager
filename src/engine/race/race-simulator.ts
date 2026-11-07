@@ -1523,8 +1523,9 @@ export function simulateRace(x:RaceInput):RaceResult {
       // Gruppe, echtes Hinterrad, Tempo und Wind beeinflussen den
       // Start. Nur Sprinterspezialisten, nicht heimlich alle Fahrer.
       if(sprintFriendlyRace&&
-        (s.rider.specialty==='sprinter'||
-          teams.get(s.rider.teamId)?.sprintLeaderId===s.rider.id)&&
+        (teams.get(s.rider.teamId)?.sprintLeaderId===s.rider.id||
+          (s.rider.specialty==='sprinter'&&
+            (s.rider.role==='sprinter'||s.rider.role==='kapitaen')))&&
         s.sprintLaunchedAtS===null){
         const g=physicalGroupOf.get(s.rider.id);
         const frontState=g?.length?byId.get(g[0].id):undefined;
