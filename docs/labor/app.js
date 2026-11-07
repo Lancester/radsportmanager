@@ -1,13 +1,16 @@
-import {buildLabRace,initialLabSettings,ROUTES,RIDER_CONTROLS,STRATEGIES}
+import {buildLabRace,initialLabSettings,ROUTES,RIDER_CONTROLS,STRATEGIES,TEAM_TACTIC_FIELDS}
   from './generated/labor/lab-settings.js';
 import {createReferenceFixture} from './generated/engine/race/reference-fixtures.js';
+import {DEFAULT_TEAM_PLAN} from './generated/engine/race/team-tactical-plan.js';
 
 const $=id=>document.getElementById(id);
 const fmt=(v,d=1)=>Number(v).toLocaleString('de-DE',{
   minimumFractionDigits:d,maximumFractionDigits:d});
 const strategien={
-  ausgewogen:'Ausgewogen',offensiv:'Offensiv',
-  sprint:'Sprint',kapitaen_schuetzen:'Kapitän schützen'};
+  ausgewogen:'Situationsabhängig / bestmögliches Ergebnis',
+  offensiv:'Angriffe und Etappensieg versuchen',
+  sprint:'Etappensieg im Sprint für Zielsprinter',
+  kapitaen_schuetzen:'Kapitän schonen, keine Siegpflicht'};
 const str=(tag,content,cls='')=>{
   const el=document.createElement(tag);el.textContent=content;
   if(cls)el.className=cls;return el;
@@ -20,8 +23,71 @@ const setStatus=(msg,error=false)=>{
   $('status').className=error?'error':'';
 };
 let settings=initialLabSettings();
-let currentRider='F001',running=false,serial=0,lastResult=null,previousResult=null;
+let currentRider='F001',currentTacticalTeam='T01',running=false,serial=0,lastResult=null,previousResult=null;
 const worker=new Worker('./worker.js',{type:'module'});
+const tabButtons=[...document.querySelectorAll('#tabs button[data-tab]')];
+let activeTab='race';
+function showTab(name){
+  if(!['race','team','riders','tech','live','results'].includes(name))return;
+  activeTab=name;
+  for(const b of tabButtons)
+    b.setAttribute('aria-selected',String(b.dataset.tab===name));
+  for(const panel of document.querySelectorAll('[data-panel]'))
+    panel.hidden=panel.dataset.panel!==name||
+      (panel.id==='output'&&!lastResult)||
+      (panel.id==='emptyResults'&&!!lastResult)||
+      (panel.id==='comparison'&&!previousResult);
+  const labels={race:'Rennstrecke und Fahrerfeld',team:'Teamaufstellung',
+    riders:'Fahrerwerte',tech:'Wetter und Testmodi',
+    live:'Rennsimulation',results:'Ergebnisse und Bericht'};
+  $('navHint').textContent=labels[name];
+  window.scrollTo(0,0);
+}
+tabButtons.forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+$('quickRun').addEventListener('click',()=>{showTab('live');$('run').click()});
+const strategyExplanation={
+  ausgewogen:'Rennlageabhängig; kein garantierter Sprintzug.',
+  offensiv:'Aggressive Attacken nach vorhandenen Chancen, ohne künstlichen Leistungsbonus.',
+  sprint:'Team organisiert die Verfolgung und bei geeigneter Strecke den Sprintzug für das gewählte Sprintziel.',
+  kapitaen_schuetzen:'Fahrer unterstützen den Kapitän. Schutz bedeutet nicht, dass er selbst die Etappe gewinnen muss.'
+};
+function refreshRoleSummary(f){
+  const riders=f.input.riders.filter(r=>r.teamId===settings.myTeamId);
+  const captain=riders.find(r=>r.id===currentCaptainId(f));
+  const sprint=riders.find(r=>r.id===$('sprintLeader').value);
+  const strategy=$('myStrategy').value;
+  const plan=settings.teams.find(t=>t.teamId===settings.myTeamId)?.tacticalPlan;
+  $('roleSummary').replaceChildren(
+    str('strong','Dein aktueller Rennauftrag'),
+    str('p','Kapitän: '+(captain?.name??'?')+
+      ' · Sprintziel: '+(sprint?.name??'?')+
+      (captain?.id===sprint?.id?' (dieselbe Person)':'')),
+    str('p','Teamstrategie: '+(strategyExplanation[strategy]??strategy)),
+    str('p',plan?.leaderProtection==='hoch'?
+      'Erhöhter Kapitänsschutz: mehr echte Helferarbeit, falls Helfer physisch verfügbar sind.':
+      'Normaler Schutz: es bleibt nicht garantiert ein Helfer an der Seite.'));
+}
+function addLiveEvent(message){
+  $('liveFeed').prepend(str('li',message));
+  while($('liveFeed').children.length>35)$('liveFeed').lastElementChild.remove();
+}
+let lastTickerKm=-Infinity;
+function renderProgress(progress){
+  $('raceProgress').hidden=false;
+  $('raceProgress').value=progress.percent;
+  $('raceKm').textContent=fmt(progress.km,1)+' / '+fmt(progress.totalKm,1)+' km';
+  $('racePct').textContent=progress.percent+' %';
+  if(progress.captain&&progress.km-lastTickerKm>=19){
+    lastTickerKm=progress.km;
+    addLiveEvent('km '+fmt(progress.km,1)+' · Kapitän '+progress.captain.name+
+      ': Gruppe '+progress.captain.group+', '+progress.captain.gapM+
+      ' m zur Spitze, '+progress.captain.helpers+
+      ' eigene Helfer bei ihm, W′ '+progress.captain.wPrimePct+' %.');
+  }
+  for(const e of progress.events.filter(e=>[
+    'attack','sprint','sprint-train','team-chase','team-pace','recovery'
+  ].includes(e.type)))addLiveEvent('km '+fmt(e.km,1)+' · '+e.description);
+}
 function refreshFixtures(){
   const base=createReferenceFixture({routeId:settings.routeId,
     teamCount:settings.teamCount,seed:settings.seed,
@@ -31,30 +97,231 @@ function refreshFixtures(){
   const activeRiders=new Set(base.input.riders.map(r=>r.id));
   settings.teams=settings.teams.filter(t=>activeTeams.has(t.teamId));
   settings.riders=settings.riders.filter(r=>activeRiders.has(r.id));
-  if(!activeRiders.has(currentRider))currentRider=base.input.riders[0].id;
+  if(!activeTeams.has(settings.myTeamId))settings.myTeamId=base.input.teams[0].id;
+  const mine=base.input.riders.filter(r=>r.teamId===settings.myTeamId);
+  if(settings.captainId&&!mine.some(r=>r.id===settings.captainId))
+    delete settings.captainId;
+  if(settings.sprintLeaderId&&!mine.some(r=>r.id===settings.sprintLeaderId))
+    delete settings.sprintLeaderId;
+  if(settings.riderRoles){
+    settings.riderRoles=Object.fromEntries(Object.entries(settings.riderRoles)
+      .filter(([id])=>mine.some(r=>r.id===id)&&id!==settings.captainId));
+  }
+  const available=$('allRiders').checked?base.input.riders:mine;
+  if(!available.some(r=>r.id===currentRider))currentRider=available[0].id;
+  if(!activeTeams.has(currentTacticalTeam))currentTacticalTeam=settings.myTeamId;
   return base;
 }
+function currentCaptainId(f){
+  return settings.captainId??f.input.riders.find(r=>
+    r.teamId===settings.myTeamId&&r.role==='kapitaen')?.id;
+}
+function activeRole(r,f){
+  if(r.id===currentCaptainId(f))return 'kapitaen';
+  return settings.riderRoles?.[r.id]??
+    (r.role==='kapitaen'?'frei':r.role);
+}
+function changeCaptain(id,f){
+  const old=currentCaptainId(f);
+  // Ein ehemaliger Kapitän bleibt als ausdrücklich nominierter
+  // Zielsprinter erhalten, wird aber nicht versehentlich zum Helfer.
+  if(old!==id&&settings.sprintLeaderId===old){
+    settings.riderRoles??={};
+    settings.riderRoles[old]='sprinter';
+  }
+  settings.captainId=id;
+  if(settings.riderRoles)delete settings.riderRoles[id];
+}
+function renderRoster(f){
+  const mine=f.input.riders.filter(r=>r.teamId===settings.myTeamId);
+  const host=$('myRoster');host.replaceChildren();
+  for(const r of mine){
+    const card=str('div','','teamfield');
+    const label=str('label',r.name+' · '+r.specialty+' ('+r.id+')');
+    label.htmlFor='role-'+r.id;
+    const select=document.createElement('select');
+    select.id='role-'+r.id;
+    const isCaptain=r.id===currentCaptainId(f);
+    const options=isCaptain?
+      [['kapitaen','Kapitän (oben ändern)']]:
+      [['sprinter','Sprinter'],['helfer','Helfer'],['frei','Freie Rolle']];
+    for(const [role,name] of options)select.append(opt(role,name));
+    select.value=isCaptain?'kapitaen':activeRole(r,f);
+    select.disabled=isCaptain;
+    select.addEventListener('change',()=>{
+      const role=select.value;
+      const cap=currentCaptainId(f);
+      if(r.id===cap&&role!=='kapitaen'){
+        setStatus('Wähle zuerst oben einen anderen Kapitän.',true);
+        select.value='kapitaen';return;
+      }
+      if(role==='kapitaen'){
+        changeCaptain(r.id,f);
+      }else{
+        settings.riderRoles??={};
+        settings.riderRoles[r.id]=role;
+        if(role!=='sprinter'&&settings.sprintLeaderId===r.id)
+          delete settings.sprintLeaderId;
+      }
+      updateRoute();
+      setStatus('Rolle für '+r.name+' übernommen: '+role);
+    });
+    card.append(label,select);
+    host.append(card);
+  }
+}
+function renderMyTeam(f){
+  $('myTeam').replaceChildren(...f.input.teams.map(t=>opt(t.id,t.name)));
+  $('myTeam').value=settings.myTeamId;
+  const mine=f.input.riders.filter(r=>r.teamId===settings.myTeamId);
+  const defaultCap=mine.find(r=>r.role==='kapitaen');
+  $('captain').replaceChildren(...mine.map(r=>
+    opt(r.id,r.name+' · '+r.specialty+(r.id===defaultCap?.id?' (Standard)':''))));
+  $('captain').value=settings.captainId??defaultCap?.id;
+  const team=f.input.teams.find(t=>t.id===settings.myTeamId);
+  $('myStrategy').replaceChildren(...STRATEGIES.map(k=>opt(k,strategien[k])));
+  const myOrder=settings.teams.find(t=>t.teamId===team.id);
+  $('myStrategy').value=myOrder?.tacticalPlan?.finale==='sprint'?'sprint':
+    myOrder?.strategy??team.strategy;
+  const cap=currentCaptainId(f);
+  const defaultSprint=(settings.captainId&&
+    mine.find(r=>r.id===cap)?.specialty==='sprinter'?cap:undefined)??
+    mine.find(r=>activeRole(r,f)==='sprinter')?.id??cap;
+  const selectedSprint=settings.sprintLeaderId??defaultSprint;
+  $('sprintLeader').replaceChildren(...mine.map(r=>
+    opt(r.id,r.name+' · '+r.specialty+
+      (r.id===cap?' (Kapitän)':''))));
+  $('sprintLeader').value=selectedSprint;
+  renderRoster(f);
+  refreshRoleSummary(f);
+  $('myTeamInfo').textContent='Mein Team: '+mine.length+
+    ' Fahrer · Kapitän '+mine.find(r=>r.id=== $('captain').value)?.name+
+    ' · alle übrigen Teams steuert die Renn-KI.';
+}
+$('myTeam').addEventListener('change',()=>{
+  settings.myTeamId=$('myTeam').value;currentTacticalTeam=settings.myTeamId;
+  delete settings.riderRoles;delete settings.sprintLeaderId;
+  delete settings.captainId;
+  updateRoute();
+});
+$('captain').addEventListener('change',()=>{
+  const fBefore=refreshFixtures();
+  changeCaptain($('captain').value,fBefore);
+  const f=refreshFixtures();
+  updateRoute();
+  setStatus('Kapitän: '+f.input.riders.find(r=>r.id===settings.captainId)?.name+
+    '. Teamrollen und Sprintziel wurden aktualisiert.');
+});
+$('sprintLeader').addEventListener('change',()=>{
+  const f=refreshFixtures();
+  const id=$('sprintLeader').value;
+  settings.sprintLeaderId=id;
+  if(id!==currentCaptainId(f)){
+    settings.riderRoles??={};
+    settings.riderRoles[id]='sprinter';
+  }
+  updateRoute();
+  const selected=f.input.riders.find(r=>r.id===id);
+  setStatus('Zielsprinter: '+selected?.name+' – Mannschaftssprintzug wird auf diesen Fahrer ausgerichtet.');
+});
+$('myStrategy').addEventListener('change',()=>{
+  const f=refreshFixtures();
+  const team=f.input.teams.find(t=>t.id===settings.myTeamId);
+  const old=settings.teams.find(t=>t.teamId===settings.myTeamId);
+  settings.teams=settings.teams.filter(t=>t.teamId!==settings.myTeamId);
+  const desired=$('myStrategy').value;
+  // Eine manuelle Wahl 'Ausgewogen' ist kein unsichtbarer Sprintauftrag.
+  // Widerspruch auflösen statt zwei unterschiedliche Strategien anzuzeigen.
+  const plan=old?.tacticalPlan?.finale==='sprint'&&desired!=='sprint'?
+    {...old.tacticalPlan,finale:'situativ'}:old?.tacticalPlan;
+  if(plan||desired!==team.strategy)
+    settings.teams.push({teamId:team.id,strategy:desired,
+      ...(plan?{tacticalPlan:plan}:{})});
+  renderTeams(f);renderTacticalFields(f);refreshRoleSummary(f);
+  if(old?.tacticalPlan?.finale==='sprint'&&desired!=='sprint')
+    setStatus('Finalziel wurde zu situativ geändert: Grundstrategie ist jetzt '+strategien[desired]+'.');
+});
+$('allRiders').addEventListener('change',()=>renderRiders(refreshFixtures()));
 function renderTeams(f){
   const host=$('teams');host.replaceChildren();
   for(const t of f.input.teams){
     const wrapper=str('div','', 'teamfield');
     const label=str('label',t.id+' · '+t.name);label.htmlFor='team-'+t.id;
     const select=document.createElement('select');select.id='team-'+t.id;
-    const selected=settings.teams.find(x=>x.teamId===t.id)?.strategy??t.strategy;
+    const order=settings.teams.find(x=>x.teamId===t.id);
+    const selected=order?.tacticalPlan?.finale==='sprint'?'sprint':
+      order?.strategy??t.strategy;
     for(const key of STRATEGIES)select.append(opt(key,strategien[key]));
     select.value=selected;
     select.addEventListener('change',()=>{
+      const existing=settings.teams.find(x=>x.teamId===t.id);
       settings.teams=settings.teams.filter(x=>x.teamId!==t.id);
-      if(select.value!==t.strategy)settings.teams.push({
-        teamId:t.id,strategy:select.value});
+      if(select.value!==t.strategy||existing?.tacticalPlan)settings.teams.push({
+        teamId:t.id,strategy:select.value,
+        ...(existing?.tacticalPlan?{tacticalPlan:existing.tacticalPlan}:{})});
     });
     wrapper.append(label,select);host.append(wrapper);
   }
 }
+function renderTacticalTeams(f){
+  const teamSelect=$('tacticalTeam');teamSelect.replaceChildren();
+  for(const t of f.input.teams)teamSelect.append(opt(t.id,t.id+' · '+t.name));
+  teamSelect.value=currentTacticalTeam;
+  renderTacticalFields(f);
+}
+function renderTacticalFields(f){
+  const selected=f.input.teams.find(t=>t.id===currentTacticalTeam);
+  if(!selected)return;
+  const host=$('tacticalFields');host.replaceChildren();
+  const plan=settings.teams.find(t=>t.teamId===selected.id)?.tacticalPlan??DEFAULT_TEAM_PLAN;
+  for(const meta of TEAM_TACTIC_FIELDS){
+    const wrapper=document.createElement('div');
+    const label=str('label',meta.label);label.htmlFor='tactical-'+meta.key;
+    const picker=document.createElement('select');picker.id='tactical-'+meta.key;
+    for(const [value,text] of meta.values)picker.append(opt(value,text));
+    picker.value=plan[meta.key];
+    picker.addEventListener('change',()=>{
+      const old=settings.teams.find(x=>x.teamId===selected.id);
+      const nextPlan={...DEFAULT_TEAM_PLAN,...old?.tacticalPlan,
+        [meta.key]:picker.value};
+      settings.teams=settings.teams.filter(x=>x.teamId!==selected.id);
+      const sprintRequested=meta.key==='finale'&&picker.value==='sprint';
+      const strategy=sprintRequested?'sprint':old?.strategy??selected.strategy;
+      settings.teams.push({teamId:selected.id,strategy,tacticalPlan:nextPlan});
+      if(selected.id===settings.myTeamId){
+        $('myStrategy').value=strategy;
+        refreshRoleSummary(f);
+      }
+      renderTeams(f);
+      setStatus(sprintRequested?'Sprint bevorzugen aktiviert auch die Grundstrategie Sprint (Jagd, Schutz und Sprintzug).':
+        'Taktikplan für '+selected.id+' angepasst: '+meta.label);
+    });
+    wrapper.append(label,picker);host.append(wrapper);
+  }
+}
+$('tacticalTeam').addEventListener('change',()=>{
+  currentTacticalTeam=$('tacticalTeam').value;
+  renderTacticalFields(refreshFixtures());
+});
+$('resetTactics').addEventListener('click',()=>{
+  const selected=settings.teams.find(x=>x.teamId===currentTacticalTeam);
+  if(selected){
+    delete selected.tacticalPlan;
+    const base=refreshFixtures().input.teams.find(x=>x.id===currentTacticalTeam);
+    if(selected.strategy===base?.strategy)
+      settings.teams=settings.teams.filter(x=>x.teamId!==currentTacticalTeam);
+  }
+  const fresh=refreshFixtures();
+  renderTacticalFields(fresh);
+  if(currentTacticalTeam===settings.myTeamId)refreshRoleSummary(fresh);
+  setStatus('Taktikplan für '+currentTacticalTeam+' zurückgesetzt.');
+});
 function renderRiders(f){
   const select=$('rider');select.replaceChildren();
-  for(const r of f.input.riders)
-    select.append(opt(r.id,r.id+' · '+r.specialty+' · '+r.teamId));
+  const available=$('allRiders').checked?f.input.riders:
+    f.input.riders.filter(r=>r.teamId===settings.myTeamId);
+  for(const r of available)
+    select.append(opt(r.id,r.name+' · '+r.specialty+' ('+r.id+')'));
   select.value=currentRider;
   renderRiderControls(f);
 }
@@ -99,7 +366,7 @@ function renderRiderControls(f){
 }
 function updateRoute(){
   try{
-    const f=refreshFixtures();renderTeams(f);renderRiders(f);
+    const f=refreshFixtures();renderMyTeam(f);renderTeams(f);renderTacticalTeams(f);renderRiders(f);
   }catch(e){setStatus(String(e.message??e),true)}
 }
 function bindCore(){
@@ -166,7 +433,7 @@ $('resetRider').addEventListener('click',()=>{
 });
 $('reset').addEventListener('click',()=>{
   if(running)return;
-  settings=initialLabSettings();currentRider='F001';bindCore();
+  settings=initialLabSettings();currentRider='F001';currentTacticalTeam='T01';bindCore();
   setStatus('Alle Eingaben zurückgesetzt.');
 });
 $('export').addEventListener('click',()=>{
@@ -186,7 +453,7 @@ $('file').addEventListener('change',async ()=>{
   try{
     const candidate=JSON.parse(await file.text());
     buildLabRace(candidate);
-    settings=candidate;currentRider='F001';bindCore();
+    settings=candidate;currentRider='F001';currentTacticalTeam=settings.myTeamId??'T01';bindCore();
     setStatus('Einstellungen importiert und überprüft.');
   }catch(e){setStatus('Import nicht möglich: '+String(e.message??e),true)}
   $('file').value='';
@@ -198,6 +465,11 @@ $('run').addEventListener('click',()=>{
     // Standardeinstellung ist der Basisfall, nicht automatisch modifiziert.
     running=true;serial++;$('run').disabled=true;
     $('working').hidden=false;
+    lastTickerKm=-Infinity;
+    $('raceProgress').value=0;$('raceProgress').hidden=false;
+    $('racePct').textContent='0 %';$('raceKm').textContent='0 km';
+    $('liveFeed').replaceChildren(str('li','Rennen gestartet · die Renn-KI berechnet jetzt den Verlauf.'));
+    showTab('live');
     setStatus('Rennen wird lokal simuliert. Die Oberfläche bleibt bedienbar.');
     worker.postMessage({id:serial,settings:structuredClone(settings)});
   }catch(e){setStatus(String(e.message??e),true)}
@@ -217,7 +489,7 @@ function renderOutput(data){
   const winner=data.ranking[0];
   $('output').hidden=false;
   const metrics=[
-    ['Sieger',winner.id],['Siegerzeit',fmt(winner.finishTimeS/3600,2)+' h'],
+    ['Sieger',winner.name],['Siegerzeit',fmt(winner.finishTimeS/3600,2)+' h'],
     ['Zielgruppen',data.groups.length],
     ['Größte Zielgruppe',Math.max(...data.groups.map(x=>x.count))],
     ['Attacken',data.eventSummary.attack??0],
@@ -229,7 +501,24 @@ function renderOutput(data){
       str('div',label,'hint'),str('strong',String(value)));
     $('metrics').append(div);
   }
+  const team=data.teamReport;
+  $('teamSummary').replaceChildren(...team.summary.map(t=>str('p',t)));
+  renderTable('teamRiders',team.riderResults,(tr,r)=>{
+    cell(tr,r.rank);cell(tr,r.name);
+    cell(tr,r.id===team.captainId?(r.role==='sprinter'?'Kapitän / Sprinter':'Kapitän'):
+      r.role==='sprinter'?'Sprinter':r.role==='frei'?'Frei':'Helfer');
+    cell(tr,fmt(r.creditedGapS,1)+' s',true);
+    cell(tr,fmt(r.wPrimeKJ,1)+' kJ',true);
+  });
+  $('teamEvents').replaceChildren(...(team.events.length?team.events:
+    [{description:'Keine der ausgewählten Teamaktionen im Protokoll.',
+      km:0}]).map(e=>str('li','km '+fmt(e.km,1)+' · '+e.description)));
   $('report').replaceChildren(...data.report.map(t=>str('li',t)));
+  renderTable('tacticalEvidence',data.tacticalEvidence??[],(tr,r)=>{
+    cell(tr,r.teamId);cell(tr,r.attackEvents,true);
+    cell(tr,r.chaseEvents,true);cell(tr,r.sprintTrainEvents,true);
+    cell(tr,r.teamPaceEvents,true);
+  });
   const gap=s=>s===0?'0:00':fmt(s,1)+' s';
   renderTable('results',data.ranking,(tr,r)=>{
     cell(tr,r.rank);cell(tr,r.name);cell(tr,r.teamId);
@@ -254,10 +543,13 @@ function renderComparison(current,previous){
   const matched=current.route===previous.route&&
     current.seed===previous.seed&&current.teamCount===previous.teamCount;
   const items=[
-    ['Sieger',previous.winner,current.winner],
+    ['Sieger',previous.ranking[0].name,current.ranking[0].name],
     ['Siegerzeit',fmt(previous.ranking[0].finishTimeS/3600,2)+' h',
       fmt(current.ranking[0].finishTimeS/3600,2)+' h'],
     ['Attacken',previous.eventSummary.attack??0,current.eventSummary.attack??0],
+    ['Kapitän meines Teams',previous.teamReport.captainName,current.teamReport.captainName],
+    ['Platz Kapitän',previous.teamReport.riderResults.find(r=>r.id===previous.teamReport.captainId)?.rank,
+      current.teamReport.riderResults.find(r=>r.id===current.teamReport.captainId)?.rank],
     ['Zielgruppen',previous.groups.length,current.groups.length],
     ['Größe Siegergruppe',previous.groups[0].count,current.groups[0].count],
   ];
@@ -275,11 +567,18 @@ function renderComparison(current,previous){
 }
 worker.onmessage=({data:response})=>{
   if(response.id!==serial)return;
+  if(response.progress){renderProgress(response.data);return;}
   running=false;$('run').disabled=false;$('working').hidden=true;
   if(!response.ok){setStatus('Simulationsfehler: '+response.error,true);return}
   previousResult=lastResult;lastResult=response.data;
+  $('raceProgress').value=100;$('racePct').textContent='100 %';
+  const distance=ROUTES.find(r=>r.id===lastResult.route)?.distanceKm;
+  if(distance!==undefined)
+    $('raceKm').textContent=fmt(distance,1)+' / '+fmt(distance,1)+' km';
   renderOutput(lastResult);
   if(previousResult)renderComparison(lastResult,previousResult);
+  addLiveEvent('Ziel erreicht · Rennbericht im Reiter „Bericht“.');
+  showTab('results');
   setStatus('Rennen abgeschlossen – '+lastResult.durationMs+' ms, '+
     lastResult.ranking.length+' Fahrer gewertet.');
 };
@@ -314,4 +613,5 @@ async function enableOffline(){
     label.textContent='Offline-Installation fehlgeschlagen: '+String(e?.message??e);
   }
 }
+showTab('race');
 enableOffline();

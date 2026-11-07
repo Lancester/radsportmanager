@@ -2,17 +2,21 @@
 import {buildLabRace} from './generated/labor/lab-settings.js';
 import {simulateRace} from './generated/engine/race/race-simulator.js';
 import {scoreFinishGroups} from './generated/engine/race/finish-time-groups.js';
+import {buildTeamReport} from './generated/labor/team-report.js';
 
 self.onmessage=async ({data})=>{
   const {id,settings}=data;
   try {
     const start=performance.now();
     const {input,changes}=buildLabRace(settings);
-    const outcome=simulateRace(input);
+    const outcome=simulateRace(input,progress=>
+      self.postMessage({id,progress:true,data:progress}),settings.myTeamId??'T01');
     const scored=scoreFinishGroups(outcome.classification.map(r=>({
       id:r.id,rank:r.rank,finishTimeS:r.finishTimeS,
     })),settings.timingRule);
     const ids=new Map(scored.map(x=>[x.id,x]));
+    const teamReport=buildTeamReport(input,outcome,settings.myTeamId??'T01',
+      new Map(scored.map(x=>[x.id,x.creditedGapS])));
     const roles=new Map(input.riders.map(x=>[x.id,x.specialty??x.role]));
     const results=outcome.classification.map(r=>({
       ...r,type:roles.get(r.id),
@@ -48,6 +52,16 @@ self.onmessage=async ({data})=>{
       description:e.description,riderId:e.riderId??null,teamId:e.teamId??null,
       gapM:e.gapM??null,
     }));
+    // Nachweis der angewendeten Vorabpläne anhand echter KI-Ereignisse.
+    // Team-Chase-Auftrag ist nicht gleich physischer Windfront-Zeit.
+    const tacticalEvidence=input.teams.filter(team=>team.tacticalPlan)
+      .map(team=>{
+        const own=outcome.events.filter(e=>e.teamId===team.id);
+        const count=type=>own.filter(e=>e.type===type).length;
+        return {teamId:team.id,strategy:team.strategy,plan:team.tacticalPlan,
+          attackEvents:count('attack'),chaseEvents:count('team-chase'),
+          sprintTrainEvents:count('sprint-train'),teamPaceEvents:count('team-pace')};
+      });
     const report=[
       `Sieger: ${results[0].name} (${results[0].type}) nach ${(results[0].finishTimeS/3600).toFixed(2)} Stunden.`,
       `Vollständig klassiert: ${results.length} Fahrer in ${groups.length} gewerteten Zielgruppen.`,
@@ -60,7 +74,7 @@ self.onmessage=async ({data})=>{
       route:settings.routeId,seed:settings.seed,teamCount:input.teams.length,
       durationMs:Math.round(performance.now()-start),
       winner:results[0].id,ranking:results,
-      groups,eventSummary,keyEvents,checkpoints,report,
+      groups,eventSummary,keyEvents,checkpoints,report,tacticalEvidence,teamReport,
       appliedChanges:changes,settings,
     }});
   }catch(error){

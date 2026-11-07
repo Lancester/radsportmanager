@@ -36,7 +36,8 @@ jobs:
             --rootDir src --outDir docs/labor/generated \
             src/labor/lab-settings.ts \
             src/engine/race/race-simulator.ts \
-            src/engine/race/finish-time-groups.ts
+            src/engine/race/finish-time-groups.ts \
+            src/labor/team-report.ts
           node scripts/r24-lab-offline-assets.mjs
           mkdir -p android/rennlabor/app/src/main/assets/labor
           cp -R docs/labor/. android/rennlabor/app/src/main/assets/labor/

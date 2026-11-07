@@ -4,6 +4,7 @@
  * schicken Helfer in die Verfolgung. Hysterese vermeidet zehnsekündiges
  * Hin und Her. KEINE Geschwindigkeit, Position oder Energie geschenkt.
  */
+import {chaseInterested} from './team-tactical-plan.ts';
 import type {IntelligentTeam,IntelligentRider,RaceSituation}
   from './race-team-ai.ts';
 
@@ -76,20 +77,24 @@ export function coordinatePelotonChase(input:{
     const members=groupMembers.filter(r=>r.teamId===team.id);
     const helpers=members.filter(r=>r.role==='helfer'&&
       !(sprintFinale&&r.chaseSpent)&&r.reserveFraction>.32);
-    const hasSprinter=members.some(r=>r.role==='sprinter');
-    const hasCaptain=members.some(r=>r.role==='kapitaen');
+    const hasSprinter=members.some(r=>team.sprintLeaderId?
+      r.id===team.sprintLeaderId:r.role==='sprinter');
+    const hasCaptain=members.some(r=>team.captainId?
+      r.id===team.captainId:r.role==='kapitaen');
     const ownLeadersAhead=adaptive&&riders.some(r=>
       leadingIds.has(r.id)&&r.teamId===team.id&&
-      (r.role==='kapitaen'||r.role==='sprinter'));
+      (r.role==='kapitaen'||r.role==='sprinter'||
+        r.id===team.sprintLeaderId||r.id===team.captainId));
     const ownHelperAhead=adaptive&&riders.some(r=>
       leadingIds.has(r.id)&&r.teamId===team.id&&r.role==='helfer');
     const optedOut=(!adaptive&&sprintFinale&&team.chaseHelperCount===0)||
       ownLeadersAhead||(ownHelperAhead&&!urgent);
-    const interested=!optedOut&&(
-      team.strategy==='sprint'&&hasSprinter||
+    const baseInterest=team.strategy==='sprint'&&hasSprinter||
       urgent&&team.strategy==='kapitaen_schuetzen'&&hasCaptain||
       urgent&&team.strategy==='ausgewogen'&&hasCaptain||
-      adaptive&&urgent&&team.strategy==='offensiv'&&hasCaptain);
+      adaptive&&urgent&&team.strategy==='offensiv'&&hasCaptain;
+    const interested=!optedOut&&chaseInterested(team.tacticalPlan,
+      baseInterest,urgent);
     return {team:team.id,helpers:helpers.length,
       score:team.strategy==='sprint'?3:
         team.strategy==='kapitaen_schuetzen'?2:1,interested};
