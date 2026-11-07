@@ -267,8 +267,22 @@ function symmetric(index:number,salt:number):number{
   // versteckte Tagesform-Änderung zwischen Monte-Carlo-Seeds.
   return hash(index,salt)+hash(index,salt+51)-1;
 }
+/** Fiktive, sprachlich gemischte Namen. Gleicher Seed + Fahrer-ID => gleicher Name.
+ * Nur die Anzeige, nie Physik oder Rennzufallszahl, wird damit geändert.
+ * Die Indexpermutation ist auf einer 2D-Namenstafel eindeutig für alle 154 Fahrer.
+ */
+const FIRST_NAMES=["Lukas","Noah","Leon","Jonas","Felix","Nico","Emil","Theo","Paul","Milan","Ben","Finn","Anton","Elias","Moritz","Maxime","Hugo","Louis","Jules","Mathis","Pierre","Adrien","Mateo","Diego","Carlos","Pablo","Andrés","Alejandro","Marco","Luca","Matteo","Davide","Andrea","Giulio","Stefano","Giovanni","Jan","Bram","Thijs","Daan","Sven","Mikkel","Anders","Johan","Erik","Oskar","Filip","Jakub","Tomas","Adam","Kamil","Matej","Petr","Daniel","Oliver","Martin","Samuel","Rafael","Miguel","Tiago","João","Tomás","Patrick","Ethan","George","James","Jack","Oscar","Nathan","Alex","Ruben","Yann","Nils","Florian","Timo","Sebastian","Arthur","Victor","Gabriel","Santiago","Enzo","Alessio"];
+const LAST_NAMES=["Weber","Schneider","Keller","Hartmann","Fischer","Vogel","Winter","Brandt","Neumann","Krüger","Berger","Roth","Becker","Albrecht","Hoffmann","Krause","Meier","Wagner","Marchand","Laurent","Moreau","Renaud","Dubois","Lefèvre","Petit","Garnier","Leroux","Benoit","Martin","Faure","Durand","Rossi","Bianchi","Conti","Romano","Ricci","Ferrari","Costa","Moretti","Marini","Fontana","Fabbri","Silva","Sousa","Ferreira","Pereira","Almeida","Oliveira","Santos","Gomes","Mendes","Rodrigues","García","Fernández","Moreno","Ruiz","Navarro","Vargas","Castillo","Ortega","Molina","Serrano","Herrera","Díaz","López","Jansen","De Vries","Bakker","Van Dijk","Visser","Bos","Smit","Van Leeuwen","Nielsen","Hansen","Andersen","Larsen","Jørgensen","Sørensen","Johansson","Lindberg","Eriksson","Karlsson","Bergström","Nowak","Kowalski","Zieliński","Novák","Dvořák","Horváth","Kováč","Klein","Müller","Schulz","Peters"];
+function fictionalRiderName(index:number,seed:number):string{
+  const span=FIRST_NAMES.length*LAST_NAMES.length;
+  const stride=791; // teilerfremd zur kombinierten Tafelgröße
+  const nameIndex=((index*stride+Math.imul(seed,73))%span+span)%span;
+  const given=FIRST_NAMES[nameIndex%FIRST_NAMES.length];
+  const family=LAST_NAMES[Math.floor(nameIndex/FIRST_NAMES.length)];
+  return given+' '+family;
+}
 function buildRider(archetype:Archetype,teamId:string,
-  index:number,slot:number,focus:TeamFocus):RaceRider{
+  index:number,slot:number,focus:TeamFocus,seed:number):RaceRider{
   const model=PRO_REFERENCE[archetype];
   const multiplier=1+symmetric(index,7)*0.085;
   const cp=Math.round(model.criticalPowerW*multiplier*10)/10;
@@ -280,7 +294,7 @@ function buildRider(archetype:Archetype,teamId:string,
     archetype==='klassiker'?'klassiker':archetype;
   return {
     id:'F'+String(index+1).padStart(3,'0'),
-    name:'Fiktiver Profi '+String(index+1).padStart(3,'0'),
+    name:fictionalRiderName(index,seed),
     teamId,role,specialty,
     criticalPowerW:cp,
     /** FTP ist aktuell nur Profilwert, nicht ein unabhängiger Motor. */
@@ -338,7 +352,7 @@ export function createReferenceFixture(options:{
     strategy:c.strategy,
   }));
   const riders=chosen.flatMap((c,t)=>
-    c.riders.map((type,j)=>buildRider(type,c.teamId,t*7+j,j,c.focus)));
+    c.riders.map((type,j)=>buildRider(type,c.teamId,t*7+j,j,c.focus,options.seed??2026)));
   const input:RaceInput={
     title:route.name+' – reproduzierbare R-22-Referenz',
     segments,teams,riders,seed:options.seed??2026,
