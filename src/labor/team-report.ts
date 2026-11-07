@@ -9,7 +9,7 @@ import type {RaceInput,RaceResult} from '../engine/race/race-simulator.ts';
 
 export interface TeamReport {
   teamId:string;teamName:string;captainId:string;captainName:string;
-  summary:string[];
+  summary:string[];sprintLeaderId?:string;sprintLeaderName?:string;
   riderResults:Array<{id:string;name:string;role:string;rank:number;
     gapS:number;creditedGapS:number;wPrimeKJ:number;averageW:number}>;
   events:Array<{km:number;type:string;description:string}>;
@@ -36,6 +36,9 @@ export function buildTeamReport(
   }));
   const captainRow=rows.find(r=>r.id===captain.id)!;
   const riderNames=new Map(input.riders.map(r=>[r.id,r.name]));
+  const sprintLeaderId=team.sprintLeaderId??
+    riders.find(r=>r.role==='sprinter')?.id;
+  const sprintLeaderName=sprintLeaderId?riderNames.get(sprintLeaderId):undefined;
   const ownEvents=outcome.events.filter(e=>
     e.teamId===myTeamId&&['attack','chase','sprint','team-chase',
       'team-pace','sprint-train','recovery'].includes(e.type));
@@ -64,6 +67,8 @@ export function buildTeamReport(
     'Kapitän '+captain.name+': Platz '+captainRow.rank+
       ', '+captainRow.creditedGapS.toFixed(1)+' s gewerteter Rückstand, '+
       captainRow.wPrimeKJ+' kJ W′ im Ziel.',
+    'Vorgesehener Zielsprinter: '+(sprintLeaderName??'nicht ausdrücklich festgelegt')+
+      (sprintLeaderId===captain.id?' (zugleich Kapitän).':'.'),
     'Teamaktionen laut KI-Protokoll: '+counts.attacks+' Attacken, '+
       counts.chaseOrders+' organisierte Jagdaufträge, '+counts.sprintTrains+
       ' Sprintzugereignisse, '+counts.teamPaces+' Teamtempoereignisse.',
@@ -83,6 +88,7 @@ export function buildTeamReport(
     km:+e.km.toFixed(1),type:e.type,description:e.description,
   }));
   return {teamId:team.id,teamName:team.name,captainId:captain.id,
+    sprintLeaderId,sprintLeaderName,
     captainName:captain.name,summary,riderResults:rows,events,
     checkpoints:points,counts};
 }
