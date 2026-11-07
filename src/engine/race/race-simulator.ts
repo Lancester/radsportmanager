@@ -1,3 +1,5 @@
+import {attackOrder,validateTeamPlan} from './team-tactical-plan.ts';
+import type {TeamTacticalPlan} from './team-tactical-plan.ts';
 import {RejoinAttemptTelemetry} from './rejoin-attempt-telemetry.ts';
 /**
  * R-09 – erster vollständig durchgerechneter Rennprototyp.
@@ -72,6 +74,12 @@ export interface RaceSegment {
 }
 export interface RaceTeam {
   id:string;name:string;strategy:RaceStrategy;
+  /** Teamleiter-ID, unabhängig davon ob der Fahrer als Sprinter startet. */
+  captainId?:string;
+  /** Explizit gewähltes Sprintziel, unabhängig von der Kapitänsrolle. */
+  sprintLeaderId?:string;
+  /** Optionales Lab-/Manager-Ziel, Standard ohne Änderung der RC1-KI. */
+  tacticalPlan?:TeamTacticalPlan;
   /** Veraltete Vergleichs-API; stable-pack bestimmt die Helferzahl autonom. */
   chaseHelperCount?:number;
 }
@@ -278,6 +286,13 @@ export function validateRace(x:RaceInput):void {
        typeof t.name!=='string'||!t.name.trim()||
        !['ausgewogen','offensiv','sprint','kapitaen_schuetzen'].includes(t.strategy))
       throw new RangeError('Rennsimulation: Team oder Leitlinie ungültig');
+    if(t.tacticalPlan!==undefined)validateTeamPlan(t.tacticalPlan);
+    if(t.captainId!==undefined&&
+      !x.riders.some(r=>r.id===t.captainId&&r.teamId===t.id))
+      throw new RangeError('Rennsimulation: Kapitän muss zum Team gehören');
+    if(t.sprintLeaderId!==undefined&&
+      !x.riders.some(r=>r.id===t.sprintLeaderId&&r.teamId===t.id))
+      throw new RangeError('Rennsimulation: Sprinter muss zum Team gehören');
     if(t.chaseHelperCount!==undefined&&(
       !Number.isInteger(t.chaseHelperCount)||
       t.chaseHelperCount<0||t.chaseHelperCount>5))
@@ -288,7 +303,7 @@ export function validateRace(x:RaceInput):void {
   for(const r of x.riders){
     if(!r||typeof r.id!=='string'||!r.id.trim()||riderIds.has(r.id)||
        typeof r.name!=='string'||!r.name.trim()||!teamIds.has(r.teamId)||
-       !['kapitaen','sprinter','helfer'].includes(r.role))
+       !['kapitaen','sprinter','helfer','frei'].includes(r.role))
       throw new RangeError('Rennsimulation: Fahrerprofil oder Teamzuordnung');
     riderIds.add(r.id);
     ensure('CP',r.criticalPowerW,r.criticalPowerW>=100&&r.criticalPowerW<=700);
@@ -438,10 +453,15 @@ export function simulateRace(x:RaceInput):RaceResult {
     return [team.id,candidates[0]?.rider.id??null] as const;
   }));
   const captainByTeam=new Map(x.teams.map(t=>[t.id,
-    states.find(s=>s.rider.teamId===t.id&&s.rider.role==='kapitaen')]));
+    t.captainId?states.find(s=>s.rider.id===t.captainId&&
+      s.rider.teamId===t.id):
+      states.find(s=>s.rider.teamId===t.id&&s.rider.role==='kapitaen')]));
   const targetByTeam=new Map(x.teams.map(t=>[t.id,
-    states.find(s=>s.rider.teamId===t.id&&s.rider.role===
-      (t.strategy==='sprint'?'sprinter':'kapitaen'))]));
+    t.strategy==='sprint'&&t.sprintLeaderId?
+      states.find(s=>s.rider.id===t.sprintLeaderId&&s.rider.teamId===t.id):
+      (t.strategy!=='sprint'&&t.captainId?
+        captainByTeam.get(t.id):states.find(s=>s.rider.teamId===t.id&&
+          s.rider.role===(t.strategy==='sprint'?'sprinter':'kapitaen')))]));
   const events:RaceEvent[]=[{timeS:0,km:0,type:'start',
     description:`${states.length} Fahrer starten auf ${(totalM/1000).toFixed(1)} km`}];
   const snapshots:RaceSnapshot[]=[];
@@ -532,7 +552,8 @@ export function simulateRace(x:RaceInput):RaceResult {
         chaseSpent:sprintFriendlyRace&&s.chaseLoad.spent,
       }));
       const teamRefs=x.teams.map(team=>({
-        id:team.id,strategy:team.strategy,
+        id:team.id,strategy:team.strategy,tacticalPlan:team.tacticalPlan,
+        captainId:team.captainId,sprintLeaderId:team.sprintLeaderId,
         ...(sprintFriendlyRace?{chaseHelperCount:team.chaseHelperCount}:{}),
       }));
       const teamRefsAndChase=(x.groupRidingModel==='coordinated'||
@@ -640,6 +661,8 @@ export function simulateRace(x:RaceInput):RaceResult {
         const cap=captainByTeam.get(s.rider.teamId);
         const teamCaptainGap=cap && cap.rider.id!==s.rider.id ?
           Math.abs(cap.positionM-s.positionM):null;
+        const tacticalPlan=teams.get(s.rider.teamId)?.tacticalPlan;
+        const order=attackOrder(tacticalPlan,Math.min(1,s.positionM/totalM));
         const obs={
           role:s.rider.role,strategy:teams.get(s.rider.teamId)!.strategy,
           criticalPowerW:s.dayCpW,
@@ -655,7 +678,7 @@ export function simulateRace(x:RaceInput):RaceResult {
             s.rider.specialty==='sprinter',
           ...(coordinated||x.disableAttacks?{
             attackOpportunity:(()=>{
-              if(x.disableAttacks)return false;
+              if(x.disableAttacks||!order.allowed)return false;
               if(x.groupRidingModel==='stable-pack'){
                 const g=attackGroupByRider.get(s.rider.id);
                 const si=segmentFor(s,boundaries);
@@ -689,7 +712,7 @@ export function simulateRace(x:RaceInput):RaceResult {
                   breakawayEstablished:breakawayActive,
                   teammateAhead:!!ownTarget&&ownTarget!==s&&
                     ownTarget.positionM>s.positionM+75,
-                  draw:adaptiveAttackDraw(x.seed,s.rider.id,t),
+                  draw:Math.min(.9999999999,adaptiveAttackDraw(x.seed,s.rider.id,t)/order.probabilityFactor),
                 });
               }
               // Generische Offensiv-KI hat kein 88%-Angriffsverbot:
@@ -890,7 +913,7 @@ export function simulateRace(x:RaceInput):RaceResult {
     if(sprintFriendlyRace){
       for(const team of x.teams.filter(team=>team.strategy==='sprint')){
         const target=targetByTeam.get(team.id);
-        if(!target||target.rider.specialty!=='sprinter')continue;
+        if(!target||(!team.sprintLeaderId&&target.rider.specialty!=='sprinter'))continue;
         const group=physicalGroupOf.get(target.rider.id);
         if(!group||group.length<SPRINT_POSITION.minGroupSize)continue;
         const phase=target.positionM/totalM;
@@ -1038,7 +1061,7 @@ export function simulateRace(x:RaceInput):RaceResult {
       for(const team of x.teams.filter(q=>q.strategy==='sprint')){
         const target=targetByTeam.get(team.id);
         if(!target||target.finishTimeS!==null||
-          target.rider.specialty!=='sprinter'||
+          (!team.sprintLeaderId&&target.rider.specialty!=='sprinter')||
           sprintFinaleObserved.has(target.rider.id)||
           totalM-target.positionM>250)continue;
         const ownGroup=physicalGroupOf.get(target.rider.id);
@@ -1229,7 +1252,8 @@ export function simulateRace(x:RaceInput):RaceResult {
         if(sprintFriendlyRace){
           const target=targetByTeam.get(s.rider.teamId);
           const isTargetSprinter=target?.rider.id===s.rider.id&&
-            s.rider.specialty==='sprinter';
+            (teams.get(s.rider.teamId)?.sprintLeaderId!==undefined||
+              s.rider.specialty==='sprinter');
           const isEscort=escortByTeam.get(s.rider.teamId)?.has(s.rider.id)??false;
           if(isTargetSprinter||isEscort){
             const ownGroup=physicalGroupOf.get(s.rider.id);
@@ -1268,7 +1292,8 @@ export function simulateRace(x:RaceInput):RaceResult {
           // um für den Sprinter ein wirklich nutzbares Rad anzubieten.
           if(s.rider.role==='helfer'&&
             teams.get(s.rider.teamId)?.strategy==='sprint'&&
-            sprintTarget?.rider.specialty==='sprinter'&&
+            (teams.get(s.rider.teamId)?.sprintLeaderId!==undefined||
+              sprintTarget?.rider.specialty==='sprinter')&&
             sprintLeadoutEligible(s.crewMission,
               physicalGroupOf.get(s.rider.id)!==undefined&&
               physicalGroupOf.get(s.rider.id)===physicalGroupOf.get(sprintTarget.rider.id))){
@@ -1300,7 +1325,7 @@ export function simulateRace(x:RaceInput):RaceResult {
           // EIGENER Leistung an ein tatsächlich benachbartes gegnerisches
           // Hinterrad hängen. Sein Talent ist unabhängig von Sprintwatt.
           if(s.rider.specialty==='sprinter'&&
-            ['sprinter','kapitaen'].includes(s.rider.role)){
+            ['sprinter','kapitaen','frei'].includes(s.rider.role)){
             const group=physicalGroupOf.get(s.rider.id);
             const hasTeamHelperAhead=active.some(r=>
               r.rider.teamId===s.rider.teamId&&
@@ -1505,7 +1530,11 @@ export function simulateRace(x:RaceInput):RaceResult {
       // fester Startpunkt: Vorliebe, physische Position in DER eigenen
       // Gruppe, echtes Hinterrad, Tempo und Wind beeinflussen den
       // Start. Nur Sprinterspezialisten, nicht heimlich alle Fahrer.
-      if(sprintFriendlyRace&&s.rider.specialty==='sprinter'&&
+      if(sprintFriendlyRace&&
+        (teams.get(s.rider.teamId)?.sprintLeaderId===s.rider.id||
+          (s.rider.specialty==='sprinter'&&
+            (s.rider.role==='sprinter'||s.rider.role==='kapitaen'||
+              s.rider.role==='frei')))&&
         s.sprintLaunchedAtS===null){
         const g=physicalGroupOf.get(s.rider.id);
         const frontState=g?.length?byId.get(g[0].id):undefined;
