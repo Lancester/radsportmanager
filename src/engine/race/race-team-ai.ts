@@ -228,14 +228,8 @@ export function decideIntelligentCrew(input:{
     const ownLeaderAhead=members.some(r=>
       r.role===target.role&&r!==target&&
       r.positionM>group[0].positionM+R15_R16.groupBreakM);
-    const protectLeader=team.strategy==='kapitaen_schuetzen'&&
-      target.role==='kapitaen'||team.strategy==='sprint'&&
-      team.sprintLeaderId===target.id;
-    // Ein ausgewähltes Sprintziel ist ebenso Mannschaftsführer im Finale:
-    // bei physisch plausibler Lücke erhält es reale Anschlussunterstützung,
-    // auch wenn die Grundstrategie Sprint statt Kapitän schützen heißt.
     const rejoin=input.adaptiveChase===true&&
-      protectLeader&&
+      team.strategy==='kapitaen_schuetzen'&&target.role==='kapitaen'&&
       !isMain&&preceding!==null&&group.length>=R24_REJOIN.minimumGroupSize&&
       precedingGap>R15_R16.groupBreakM&&precedingGap<=R24_REJOIN.maximumGapM&&
       precedingGap/Math.max(1,targetRemainingM)<R24_REJOIN.maximumRemainingFraction&&
@@ -257,7 +251,7 @@ export function decideIntelligentCrew(input:{
     // aber ein naher Helfer als Begleiter des Kapitaens vorgesehen.
     const targetRank=group.findIndex(r=>r.id===target.id)+1;
     const needsCaptainSupport=input.adaptiveChase&&
-      protectLeader&&
+      team.strategy==='kapitaen_schuetzen'&&target.role==='kapitaen'&&
       group.length>=4&&
       (target.reserveFraction<.4||targetRank>Math.ceil(group.length*.70)||
         (!isMain&&raceFrontM-target.positionM>75));
@@ -396,7 +390,7 @@ export function decideIntelligentCrew(input:{
         (duty==='fuehrung'?1.12:1.055):
         (duty==='fuehrung'?1.065:
           rider.positionM<=target.positionM?1.045:0.98);
-      const reason=rejoin?'Team hilft dem geschützten Rennziel beim Anschluss':
+      const reason=rejoin?'Team hilft dem abgehängten Kapitän beim Anschluss':
         mission==='jagd'?
         (duty==='fuehrung'?'Team übernimmt Verfolgung an der Feldspitze':
           'Helfer unterstützt die organisierte Verfolgung'):
