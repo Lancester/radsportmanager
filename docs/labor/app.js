@@ -309,7 +309,7 @@ function renderOutput(data){
   const winner=data.ranking[0];
   $('output').hidden=false;
   const metrics=[
-    ['Sieger',winner.id],['Siegerzeit',fmt(winner.finishTimeS/3600,2)+' h'],
+    ['Sieger',winner.name],['Siegerzeit',fmt(winner.finishTimeS/3600,2)+' h'],
     ['Zielgruppen',data.groups.length],
     ['Größte Zielgruppe',Math.max(...data.groups.map(x=>x.count))],
     ['Attacken',data.eventSummary.attack??0],
@@ -321,6 +321,17 @@ function renderOutput(data){
       str('div',label,'hint'),str('strong',String(value)));
     $('metrics').append(div);
   }
+  const team=data.teamReport;
+  $('teamSummary').replaceChildren(...team.summary.map(t=>str('p',t)));
+  renderTable('teamRiders',team.riderResults,(tr,r)=>{
+    cell(tr,r.rank);cell(tr,r.name);
+    cell(tr,r.role==='kapitaen'?'Kapitän':r.role==='sprinter'?'Sprinter':'Helfer');
+    cell(tr,fmt(r.creditedGapS,1)+' s',true);
+    cell(tr,fmt(r.wPrimeKJ,1)+' kJ',true);
+  });
+  $('teamEvents').replaceChildren(...(team.events.length?team.events:
+    [{description:'Keine der ausgewählten Teamaktionen im Protokoll.',
+      km:0}]).map(e=>str('li','km '+fmt(e.km,1)+' · '+e.description)));
   $('report').replaceChildren(...data.report.map(t=>str('li',t)));
   renderTable('tacticalEvidence',data.tacticalEvidence??[],(tr,r)=>{
     cell(tr,r.teamId);cell(tr,r.attackEvents,true);
@@ -351,10 +362,13 @@ function renderComparison(current,previous){
   const matched=current.route===previous.route&&
     current.seed===previous.seed&&current.teamCount===previous.teamCount;
   const items=[
-    ['Sieger',previous.winner,current.winner],
+    ['Sieger',previous.ranking[0].name,current.ranking[0].name],
     ['Siegerzeit',fmt(previous.ranking[0].finishTimeS/3600,2)+' h',
       fmt(current.ranking[0].finishTimeS/3600,2)+' h'],
     ['Attacken',previous.eventSummary.attack??0,current.eventSummary.attack??0],
+    ['Kapitän meines Teams',previous.teamReport.captainName,current.teamReport.captainName],
+    ['Platz Kapitän',previous.teamReport.riderResults.find(r=>r.id===previous.teamReport.captainId)?.rank,
+      current.teamReport.riderResults.find(r=>r.id===current.teamReport.captainId)?.rank],
     ['Zielgruppen',previous.groups.length,current.groups.length],
     ['Größe Siegergruppe',previous.groups[0].count,current.groups[0].count],
   ];
