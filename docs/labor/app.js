@@ -38,7 +38,7 @@ function refreshFixtures(){
     delete settings.captainId;
   const available=$('allRiders').checked?base.input.riders:mine;
   if(!available.some(r=>r.id===currentRider))currentRider=available[0].id;
-  currentTacticalTeam=settings.myTeamId;
+  if(!activeTeams.has(currentTacticalTeam))currentTacticalTeam=settings.myTeamId;
   return base;
 }
 function renderMyTeam(f){
@@ -57,7 +57,8 @@ function renderMyTeam(f){
     ' · alle übrigen Teams steuert die Renn-KI.';
 }
 $('myTeam').addEventListener('change',()=>{
-  settings.myTeamId=$('myTeam').value;delete settings.captainId;
+  settings.myTeamId=$('myTeam').value;currentTacticalTeam=settings.myTeamId;
+  delete settings.captainId;
   updateRoute();
 });
 $('captain').addEventListener('change',()=>{
@@ -278,7 +279,7 @@ $('file').addEventListener('change',async ()=>{
   try{
     const candidate=JSON.parse(await file.text());
     buildLabRace(candidate);
-    settings=candidate;currentRider='F001';bindCore();
+    settings=candidate;currentRider='F001';currentTacticalTeam=settings.myTeamId??'T01';bindCore();
     setStatus('Einstellungen importiert und überprüft.');
   }catch(e){setStatus('Import nicht möglich: '+String(e.message??e),true)}
   $('file').value='';
