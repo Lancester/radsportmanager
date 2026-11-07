@@ -1,5 +1,14 @@
 # Rennlabor – Browser-MVP (erste Testversion)
 
+> **V5-Fehlerprüfung vom 07.11.2026 – PR #99 (Korrektur-Branch, noch nicht gemergt):**
+> Im Screenshotfall kann der sichtbare Standardkapitän zugleich als Sprintziel gesetzt sein, ohne dass in `RaceTeam.captainId` eine ID steht. Wird sein `RaceRider.role` dadurch zu `sprinter`, findet `buildTeamReport` nach vollständig simulierter Etappe keinen Kapitän. Behoben: `buildLabRace` übergibt immer `effectiveCaptainId`; ein eigener 14-Fahrer-Regressionstest führt das Rennen samt Teambericht durch.
+>
+> **Getrennter Kapitän und Zielsprinter bleiben sportlich OFFEN.** Reproduziert: Lille 184,9 km, Seed 2026, 154 Fahrer, F001 Kapitän und F004 Zielsprinter, F002 frei, Teamstrategie Sprint. F001 wird **149. (+759,2 s)**, F004 **128. (+482,6 s)**. Der Kapitän hat bei km 60 noch 4 eigene Helfer in derselben Gruppe (100 % W′), bei km 90 dagegen **0** (100 % W′), dort bereits 2.736 m hinter der Spitze. Die Sprintteam-KI organisiert ihre primären Aufträge am `sprintLeaderId`, nicht parallel am separaten `captainId`.
+>
+> Ein auf demselben Branch experimentell hinzugefügter Schutzhelferauftrag erzeugte mehr Teamtempoereignisse (1 → 15), veränderte aber **keine einzige Platzierung oder Zielzeit** im reproduzierten 154er-Rennen. Er wurde vollständig zurückgenommen; die originale Rennengine aus V5 ist erhalten. Keine Realismusfreigabe und keine Heilung der Kapitänsabstände behaupten. **Nächster gezielter Schritt:** den ersten tatsächlichen Abriss von F001 gegenüber F004/Hauptgruppe um km 60–90 sekundengenau mit Wattwunsch, angewendeten Watt, v, CP/W′, Windschatten und Gruppenreferenz prüfen. Erst danach eine wirksame, klein begrenzte Rejoin-/Positionskorrektur im A/B-Lauf testen, ohne Positions- oder Energieboni.
+>
+> Testnachweise: [erster Lauf, 30/30](https://github.com/Lancester/radsportmanager/actions/runs/42372061388) und [unwirksamer Begleitversuch, 31/31](https://github.com/Lancester/radsportmanager/actions/runs/42372567337). Prüfdaten: `tests/r24-lab-v5-captain-diagnosis.test.mjs`. Es handelt sich um CI auf emuliertem Android-Browser, nicht um eine persönliche reale Android-Messung.
+
 **Branch:** `develop/renn-labor-mvp-20261106` auf Basis von `release/race-engine-1.0-rc1`. **Keine neue Rennphysik, keine Änderung am Releasekandidaten, kein Merge in `main`.** Die ursprünglichen TypeScript-Engine-Module werden durch den CI-Build unverändert für den Browser nach JavaScript übersetzt.
 
 ## Bereits implementiert
