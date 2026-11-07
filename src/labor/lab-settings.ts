@@ -186,11 +186,17 @@ export function buildLabRace(s:LabSettings):{input:RaceInput;changes:string[]} {
     (s.captainId&&selectedCaptain?.specialty==='sprinter'?
       s.captainId:undefined);
   const teams=f.input.teams.map(t=>{
-    const strategy=teamMap.get(t.id);
-    if(strategy&&strategy!==t.strategy)changes.push('Team '+t.id+': '+strategy);
+    const requestedStrategy=teamMap.get(t.id)??t.strategy;
     const override=s.teams.find(x=>x.teamId===t.id);
+    // "Sprint bevorzugen" muss die echte Verfolgungs- und Sprintzug-KI
+    // aktivieren. Andernfalls verwaist der Zielsprinter trotz 5 Helfern.
+    // Auch importierte alte JSON-Szenarien werden konsistent aufgelöst.
+    const strategy:RaceStrategy=override?.tacticalPlan?.finale==='sprint'?
+      'sprint':requestedStrategy;
+    if(strategy!==t.strategy)changes.push('Team '+t.id+': '+strategy);
+    if(strategy!==requestedStrategy)changes.push('Finalziel Sprint aktiviert Mannschaftsstrategie Sprint');
     if(override?.tacticalPlan)changes.push('Taktischer Plan für '+t.id+': '+JSON.stringify(override.tacticalPlan));
-    return {...t,strategy:strategy??t.strategy,
+    return {...t,strategy,
       ...(t.id===myTeamId&&s.captainId?{captainId:s.captainId}:{}),
       ...(t.id===myTeamId&&sprintLeaderId?{sprintLeaderId}:{}),
       ...(override?.tacticalPlan?{tacticalPlan:override.tacticalPlan}:{})};
