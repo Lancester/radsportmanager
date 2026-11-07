@@ -13,6 +13,15 @@
 - **A/B-Wiederholung:** vorangegangenes und neues Rennen werden verglichen. Austausch reproduzierbarer Szenarien als JSON.
 - Rechenmotor im WebWorker, kein Login, keine serverseitige Datenbank und keine KI-API. Android-Browser als vorrangige Zielplattform.
 
+## Mein Team: Namen, Kapitän und persönlicher Rennbericht (07.11.2026)
+
+- **Fiktive plausible Vor- und Nachnamen** statt `Fiktiver Profi F001`. Sie werden ohne externe Daten oder Netzwerkanfragen aus einem sprachlich gemischten Namenspool deterministisch berechnet. **Gleicher Seed und gleiche Fahrer-ID ergeben immer denselben Namen**. Alle 154 Namen sind innerhalb eines Testfeldes eindeutig; die IDs sowie sämtliche Leistungs- und Körperwerte bleiben unangetastet. Es sind ausdrücklich keine realen lizenzierten Profikader.
+- **Mein Team auswählen**, danach einen der sieben Teamfahrer explizit als **Kapitän** bestimmen. Die andere bisherige Kapitänsrolle wird zu Helfer geändert; dem ausgewählten Fahrer wird die tatsächliche `RaceRole='kapitaen'` zugeteilt. Damit wirken Kapitänsschutz, Ziele und andere vorhandene KI-Entscheidungen physisch in der Engine. Kein Bonus auf CP/W′ oder Position.
+- **Im normalen Modus werden nur die sieben Fahrer des eigenen Teams bearbeitet.** Konkurrenzteams laufen autonom. Andere Mannschaften bzw. alle Fahrer sind nur im aufklappbaren Entwicklermodus editierbar.
+- **Teambericht vor Gesamtergebnis**: eigene sieben Endplatzierungen samt Namen, tatsächlicher Kapitänsrang, gutgeschriebener Zielrückstand, W′-Restreserve, an einigen 5-km-Checkpoints gemessene Kapitänsgruppe und Abstand zur Rennspitze sowie wirkliche, dem eigenen Team zugeordnete KI-Ereignisse (Angriffe, Jagd- und Sprintzugaufträge).
+- **Streng faktischer Bericht:** Einzelne Team-Aufträge bedeuten nicht automatisch erfolgreiche Fluchten oder gemessene Windfrontarbeit. Berichtstexte stammen ausschließlich aus Klassifikation, vorhandenen `RaceEvent`-Einträgen und gemessenen Checkpoints; keine frei erfundenen Erklärungen. Das Modul `src/labor/team-report.ts` bleibt später im Manager wiederverwendbar.
+- **Vergleich und JSON**: `myTeamId` und `captainId` ergänzen das vorhandene versionierte Einstellungsmodell; bestehende Version-1-Szenarien ohne diese zwei optionalen Felder behalten ihre bisherigen Standardrollen.
+
 ## Neue taktische Anweisungen pro Team (Taktikplan v1)
 
 Neben den vier bewährten **Grundstrategien** gibt es sechs unabhängig kombinierbare Vorab-Anweisungen. Sie wirken tatsächlich im **gleichen originalen** Rennmotor und sind als wiederverwendbarer `TeamTacticalPlan` in `src/engine/race/team-tactical-plan.ts` definiert.
