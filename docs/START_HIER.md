@@ -1,5 +1,7 @@
 # START HIER – Arbeitsanweisung für alle zukünftigen Chats
 
+> **Rennlabor-V5-Sonderstand vom 07.11.2026 – nur auf Diagnosebranch:** Der konkrete Kapitänsabriss F001/154er Lille ist sekundengenau in [R24_V5_KAPITAEN_ERSTER_ABRISS_20261107](race/R24_V5_KAPITAEN_ERSTER_ABRISS_20261107.md) belegt. Bei Renn-km 70,95 trennt ein 43,8-m-Spalt den hinteren 7er-Block vom 145er-Hauptfeld; der Gruppenführer F088 reagiert wegen der 42-m-Gruppentrennung gegen 85-m-Reconnect-Regel erst bei >85 m mit einer deutlichen Wattanforderung (325→397 W). F001 bleibt an seinem eigenen langsameren Vorderrad, statt einen Anschlussauftrag zu erhalten. **Messung bestätigt, Korrektur und sportliche Freigabe ausdrücklich offen.** Nur die separate Draft-PR #101 enthält das Instrument, keine unbemerkte Änderung an `main`, RC1 oder den beiden `develop`-Linien. Der Standardkapitän-/Berichtsfehler ist separat in Draft-PR #99 korrigiert. Die folgenden allgemeinen historischen Einführungen gelten weiterhin, soweit nicht durch diese aktuellere Spezialdiagnose ergänzt.
+
 > **WICHTIG – neuer verbindlicher Einstieg ab 06.11.2026 auf `develop/manager-mvp`:** Lies zuerst [AKTUELLER_PROJEKTKURS.md](AKTUELLER_PROJEKTKURS.md), dann [STATUS_KURZ.md](STATUS_KURZ.md) und bei Bedarf [ENGINE_UND_BRANCH_ARCHIV.md](ENGINE_UND_BRANCH_ARCHIV.md). Die folgenden historischen Anweisungen und alten „aktuellen Stände“ sind als Entwicklungsjournal erhalten und können überholt sein. **Keine automatische Rückkehr zu `main`, kein Merge des Gesamtmodells.**
 
 
