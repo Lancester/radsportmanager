@@ -10,6 +10,11 @@ test('Screenshot T01: freier F002, geschützter Sprintkapitän F001, finale=spri
  s.teams=[{teamId:'T01',strategy:'ausgewogen',
    tacticalPlan:{...DEFAULT_TEAM_PLAN,attackRisk:'keine',finale:'sprint'}}];
  const input=buildLabRace(s).input;
+ const untouchedCaptain=structuredClone(s);
+ delete untouchedCaptain.captainId;
+ const automaticInput=buildLabRace(untouchedCaptain).input;
+ assert.equal(automaticInput.teams[0].sprintLeaderId,'F001',
+   'Der sichtbare Standardkapitän darf nicht aus dem Sprintplan herausfallen, wenn der zweite Sprinter frei ist');
  const t=input.teams[0];
  const r=input.riders.filter(x=>x.teamId==='T01');
  console.log('SCREENSHOT_INPUT',JSON.stringify({team:t,roles:r.map(x=>({id:x.id,role:x.role,specialty:x.specialty,name:x.name}))}));
