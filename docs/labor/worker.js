@@ -9,7 +9,8 @@ self.onmessage=async ({data})=>{
   try {
     const start=performance.now();
     const {input,changes}=buildLabRace(settings);
-    const outcome=simulateRace(input);
+    const outcome=simulateRace(input,progress=>
+      self.postMessage({id,progress:true,data:progress}));
     const scored=scoreFinishGroups(outcome.classification.map(r=>({
       id:r.id,rank:r.rank,finishTimeS:r.finishTimeS,
     })),settings.timingRule);
