@@ -22,6 +22,26 @@ test('Screenshot T01: freier F002, geschützter Sprintkapitän F001, finale=spri
    helpers:c.riders.filter(q=>q.teamId==='T01'&&q.role==='helfer'&&q.groupIndex===x?.groupIndex).length};
  });
  console.log('SCREENSHOT_AUDIT',JSON.stringify({rank:cap.rank,gapS:cap.gapS,teamActions:out.events.filter(e=>e.teamId==='T01').reduce((m,e)=>(m[e.type]=(m[e.type]??0)+1,m),{}),checkpoints:cp}));
+ // Kontrollierter Vergleich: dieselben Fahrer, Route und Seed.
+ // Nur die grobe Mannschaftsstrategie wird explizit zu Sprint geändert.
+ const sprintCase=structuredClone(s);
+ sprintCase.teams[0].strategy='sprint';
+ const sprintRace=simulateRace(buildLabRace(sprintCase).input);
+ const sprintCaptain=sprintRace.classification.find(x=>x.id==='F001');
+ const sprintCps=(sprintRace.checkpoints??[]).filter(x=>
+   [45,90,135,180].some(k=>Math.abs(x.km-k)<.5)).map(c=>{
+   const x=c.riders.find(v=>v.riderId==='F001');
+   return {km:+c.km.toFixed(1),group:x?.groupIndex,capGapM:Math.round(x?.gapToLeaderM??0),
+     helpers:c.riders.filter(q=>q.teamId==='T01'&&q.role==='helfer'&&
+       q.groupIndex===x?.groupIndex).length};
+ });
+ console.log('SCREENSHOT_SPRINT_STRATEGY_AB',JSON.stringify({
+   originalRank:cap.rank,sprintRank:sprintCaptain.rank,
+   originalGap:cap.gapS,sprintGap:sprintCaptain.gapS,
+   actionCounts:sprintRace.events.filter(e=>e.teamId==='T01')
+     .reduce((m,e)=>(m[e.type]=(m[e.type]??0)+1,m),{}),
+   checkpoints:sprintCps
+ }));
  assert.equal(input.riders.length,154);
  assert.ok(Number.isFinite(cap.finishTimeS));
 },{timeout:180000});
