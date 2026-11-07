@@ -35,6 +35,7 @@ function showTab(name){
   for(const panel of document.querySelectorAll('[data-panel]'))
     panel.hidden=panel.dataset.panel!==name||
       (panel.id==='output'&&!lastResult)||
+      (panel.id==='emptyResults'&&!!lastResult)||
       (panel.id==='comparison'&&!previousResult);
   const labels={race:'Rennstrecke und Fahrerfeld',team:'Teamaufstellung',
     riders:'Fahrerwerte',tech:'Wetter und Testmodi',
