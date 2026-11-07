@@ -402,7 +402,8 @@ function renderOutput(data){
   $('teamSummary').replaceChildren(...team.summary.map(t=>str('p',t)));
   renderTable('teamRiders',team.riderResults,(tr,r)=>{
     cell(tr,r.rank);cell(tr,r.name);
-    cell(tr,r.role==='kapitaen'?'Kapitän':r.role==='sprinter'?'Sprinter':'Helfer');
+    cell(tr,r.role==='kapitaen'?'Kapitän':r.role==='sprinter'?'Sprinter':
+      r.role==='frei'?'Frei':'Helfer');
     cell(tr,fmt(r.creditedGapS,1)+' s',true);
     cell(tr,fmt(r.wPrimeKJ,1)+' kJ',true);
   });
