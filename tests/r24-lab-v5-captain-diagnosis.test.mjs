@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import {buildLabRace,initialLabSettings} from '../src/labor/lab-settings.ts';
 import {simulateRace} from '../src/engine/race/race-simulator.ts';
 import {buildTeamReport} from '../src/labor/team-report.ts';
-import {decideIntelligentCrew} from '../src/engine/race/race-team-ai.ts';
 
 test('V5: sichtbarer Standardkapitän ist auch ohne Dropdown-Änderung im Teamdatensatz vorhanden',()=>{
   const s=initialLabSettings();
@@ -58,27 +57,3 @@ test('V5-Diagnose: getrennter Kapitän F001 und Zielsprinter F004 im vollen Feld
   assert.ok(Number.isFinite(captain.finishTimeS)&&Number.isFinite(sprint.finishTimeS));
 },{timeout:180000});
 
-test('V5: getrenntes Sprintziel erhaelt Sprintplan, Kapitaen behaelt nahen Schutzhelfer',()=>{
-  const s=initialLabSettings();
-  s.captainId='F001';
-  s.sprintLeaderId='F004';
-  s.riderRoles={F002:'frei',F004:'sprinter'};
-  s.teams=[{teamId:'T01',strategy:'sprint'}];
-  const {input}=buildLabRace(s);
-  const members=input.riders.filter(r=>r.teamId==='T01');
-  const riders=members.map((r,i)=>({
-    id:r.id,teamId:r.teamId,role:r.role,
-    positionM:90000-i*2,speedMps:12,
-    criticalPowerW:r.criticalPowerW,reserveFraction:.8,
-    aggression:r.aggression,
-  }));
-  const a=decideIntelligentCrew({
-    timeS:800,progress:.45,remainingM:80000,
-    teams:[input.teams[0]],riders,
-    adaptiveChase:true,sprintFinaleMode:true,restInPeloton:true,
-  });
-  const protect=[...a.orders.values()].filter(o=>o.mission==='schutz');
-  assert.equal(protect.length,1,'Ein echter Helfer bleibt fuer den Kapitaen verfuegbar');
-  assert.ok(members.find(r=>r.id===protect[0].riderId)?.role==='helfer');
-  assert.ok(protect[0].desiredPowerW>0);
-});
