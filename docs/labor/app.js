@@ -138,9 +138,9 @@ $('captain').addEventListener('change',()=>{
   const fBefore=refreshFixtures();
   changeCaptain($('captain').value,fBefore);
   const f=refreshFixtures();
-  $('myTeamInfo').textContent='Gewählter Kapitän: '+
-    f.input.riders.find(r=>r.id===settings.captainId)?.name+
-    '. Die KI schützt ihn entsprechend seiner neuen Rennrolle.';
+  updateRoute();
+  setStatus('Kapitän: '+f.input.riders.find(r=>r.id===settings.captainId)?.name+
+    '. Teamrollen und Sprintziel wurden aktualisiert.');
 });
 $('sprintLeader').addEventListener('change',()=>{
   const f=refreshFixtures();
