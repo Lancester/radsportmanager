@@ -182,9 +182,17 @@ export function buildLabRace(s:LabSettings):{input:RaceInput;changes:string[]} {
       z.descentTechnicality+s.road.descentTechnicalityOffset)),
   }));
   const selectedCaptain=f.input.riders.find(r=>r.id===effectiveCaptainId);
+  // In der Android-App ist der Standardkapitän schon im Dropdown sichtbar,
+  // auch wenn das Feld noch nie angefasst wurde. Wenn kein weiterer
+  // Sprinter nominiert ist (z.B. F002 auf 'Frei'), muss dieser sichtbare
+  // Sprintkapitän ebenso wirklich das Sprintziel sein.
+  const designatedSprinter=riders.find(r=>r.teamId===myTeamId&&
+    r.role==='sprinter')?.id;
   const sprintLeaderId=s.sprintLeaderId??
     (s.captainId&&selectedCaptain?.specialty==='sprinter'?
-      s.captainId:undefined);
+      s.captainId:undefined)??
+    (!designatedSprinter&&selectedCaptain?.specialty==='sprinter'?
+      effectiveCaptainId:undefined);
   const teams=f.input.teams.map(t=>{
     const requestedStrategy=teamMap.get(t.id)??t.strategy;
     const override=s.teams.find(x=>x.teamId===t.id);
