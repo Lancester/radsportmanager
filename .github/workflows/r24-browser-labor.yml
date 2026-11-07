@@ -14,6 +14,7 @@ on:
       - 'tests/r24-lab-screenshot-audit.test.mjs'
       - 'tests/r24-lab-live-progress.test.mjs'
       - 'tests/r24-lab-v5-first-gap.test.mjs'
+      - 'tests/r24-lab-v5-critical-split.test.mjs'
       - 'tests/r24-lab-v5-captain-diagnosis.test.mjs'
       - 'scripts/r24-lab-mobile-smoke.mjs'
       - 'scripts/r24-lab-offline-assets.mjs'
@@ -32,7 +33,7 @@ jobs:
           node-version: '22'
       - name: Reine Konfigurations- und Ergebniszeit-Tests
         run: |
-          node --experimental-strip-types --test tests/r24-lab-settings.test.mjs tests/r24-finish-time-groups.test.mjs tests/r24-lab-integration.test.mjs tests/r24-lab-tactical-plan.test.mjs tests/r24-lab-tactical-ab.test.mjs tests/r24-lab-team-report.test.mjs tests/r24-lab-rider-roles.test.mjs tests/r24-lab-screenshot-audit.test.mjs tests/r24-lab-live-progress.test.mjs tests/r24-lab-v5-captain-diagnosis.test.mjs tests/r24-lab-v5-first-gap.test.mjs
+          node --experimental-strip-types --test tests/r24-lab-settings.test.mjs tests/r24-finish-time-groups.test.mjs tests/r24-lab-integration.test.mjs tests/r24-lab-tactical-plan.test.mjs tests/r24-lab-tactical-ab.test.mjs tests/r24-lab-team-report.test.mjs tests/r24-lab-rider-roles.test.mjs tests/r24-lab-screenshot-audit.test.mjs tests/r24-lab-live-progress.test.mjs tests/r24-lab-v5-captain-diagnosis.test.mjs tests/r24-lab-v5-first-gap.test.mjs tests/r24-lab-v5-critical-split.test.mjs
       - name: Browser-JS (alle abhängigen originalen Engine-Module)
         run: |
           npx --yes --package typescript@5.9.3 tsc \
