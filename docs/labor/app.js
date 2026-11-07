@@ -105,7 +105,9 @@ function renderMyTeam(f){
   $('myStrategy').replaceChildren(...STRATEGIES.map(k=>opt(k,strategien[k])));
   $('myStrategy').value=settings.teams.find(t=>t.teamId===team.id)?.strategy??team.strategy;
   const cap=currentCaptainId(f);
-  const defaultSprint=mine.find(r=>activeRole(r,f)==='sprinter')?.id??cap;
+  const defaultSprint=(settings.captainId&&
+    mine.find(r=>r.id===cap)?.specialty==='sprinter'?cap:undefined)??
+    mine.find(r=>activeRole(r,f)==='sprinter')?.id??cap;
   const selectedSprint=settings.sprintLeaderId??defaultSprint;
   $('sprintLeader').replaceChildren(...mine.map(r=>
     opt(r.id,r.name+' · '+r.specialty+
