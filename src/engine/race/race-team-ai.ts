@@ -6,6 +6,8 @@
  * Die 42-m-Grenze ordnet nur aktuelle Strecken-Abstandsgruppen, nicht Aero.
  */
 import type {RaceRole,RaceStrategy} from './race-tactics.ts';
+import {crewPowerFactor} from './team-tactical-plan.ts';
+import type {TeamTacticalPlan} from './team-tactical-plan.ts';
 
 export interface IntelligentRider {
   id:string;teamId:string;role:RaceRole;
@@ -16,6 +18,11 @@ export interface IntelligentRider {
 }
 export interface IntelligentTeam {
   id:string;strategy:RaceStrategy;
+  /** Organisatorischer Teamkapitän darf zusätzlich Sprinter sein. */
+  captainId?:string;
+  /** Geplanter Zielsprinter – darf gleichzeitig Kapitän sein. */
+  sprintLeaderId?:string;
+  tacticalPlan?:TeamTacticalPlan;
   /** Veraltete Vergleichs-API; im adaptiven Modus ohne Steuerwirkung. */
   chaseHelperCount?:number;
 }
@@ -162,7 +169,7 @@ export function decideIntelligentCrew(input:{
   }
   for(const r of input.riders){
     if(!r||typeof r.id!=='string'||!r.id||ids.has(r.id)||
-      !teamIds.has(r.teamId)||!['kapitaen','sprinter','helfer'].includes(r.role))
+      !teamIds.has(r.teamId)||!['kapitaen','sprinter','helfer','frei'].includes(r.role))
       throw new RangeError('R-15/R-16: Fahrer/ID');
     ids.add(r.id);
     valid('positionM',r.positionM,r.positionM>=0);
@@ -186,7 +193,8 @@ export function decideIntelligentCrew(input:{
   // Absprache/Teleportation, sondern bewusst unterlassene Mehrarbeit.
   const sprintTeamReady=input.teams.some(team=>
     team.strategy==='sprint'&&
-    main.some(r=>r.teamId===team.id&&r.role==='sprinter')&&
+    main.some(r=>r.teamId===team.id&&
+      (r.id===team.sprintLeaderId||(!team.sprintLeaderId&&r.role==='sprinter')))&&
     main.some(r=>r.teamId===team.id&&r.role==='helfer'&&
       r.reserveFraction>=R15_R16.minimumChaseReserve));
   const urgentChase=situation.gapFractionOfRemaining>=0.025||
@@ -194,8 +202,11 @@ export function decideIntelligentCrew(input:{
   for(const team of [...input.teams].sort((a,b)=>a.id.localeCompare(b.id))){
     const members=input.riders.filter(r=>r.teamId===team.id);
     const targetRole=team.strategy==='sprint'?'sprinter':'kapitaen';
-    const target=members.find(r=>r.role===targetRole)||
-      members.find(r=>r.role==='kapitaen');
+    const target=team.strategy==='sprint'&&team.sprintLeaderId?
+      members.find(r=>r.id===team.sprintLeaderId):
+      team.strategy!=='sprint'&&team.captainId?
+        members.find(r=>r.id===team.captainId):
+        members.find(r=>r.role===targetRole)||members.find(r=>r.role==='kapitaen');
     if(!target)continue;
     const group=groups.find(g=>g.includes(target));
     if(!group)continue;
@@ -219,10 +230,11 @@ export function decideIntelligentCrew(input:{
     const precedingGap=preceding?
       preceding.at(-1)!.positionM-group[0].positionM:0;
     const ownLeaderAhead=members.some(r=>
-      r.role===target.role&&r!==target&&
-      r.positionM>group[0].positionM+R15_R16.groupBreakM);
+      (team.captainId?r.id===team.captainId:r.role===target.role)&&
+      r!==target&&r.positionM>group[0].positionM+R15_R16.groupBreakM);
     const rejoin=input.adaptiveChase===true&&
-      team.strategy==='kapitaen_schuetzen'&&target.role==='kapitaen'&&
+      team.strategy==='kapitaen_schuetzen'&&
+      (target.role==='kapitaen'||team.captainId===target.id)&&
       !isMain&&preceding!==null&&group.length>=R24_REJOIN.minimumGroupSize&&
       precedingGap>R15_R16.groupBreakM&&precedingGap<=R24_REJOIN.maximumGapM&&
       precedingGap/Math.max(1,targetRemainingM)<R24_REJOIN.maximumRemainingFraction&&
@@ -244,7 +256,8 @@ export function decideIntelligentCrew(input:{
     // aber ein naher Helfer als Begleiter des Kapitaens vorgesehen.
     const targetRank=group.findIndex(r=>r.id===target.id)+1;
     const needsCaptainSupport=input.adaptiveChase&&
-      team.strategy==='kapitaen_schuetzen'&&target.role==='kapitaen'&&
+      team.strategy==='kapitaen_schuetzen'&&
+      (target.role==='kapitaen'||team.captainId===target.id)&&
       group.length>=4&&
       (target.reserveFraction<.4||targetRank>Math.ceil(group.length*.70)||
         (!isMain&&raceFrontM-target.positionM>75));
@@ -482,10 +495,13 @@ export function decideIntelligentCrew(input:{
       if(order.mission!=='jagd'||!mainIds.has(order.riderId))continue;
       const r=input.riders.find(r=>r.id===order.riderId)!;
       const frontDistance=frontM-r.positionM;
-      const targetRole=input.teams.find(t=>t.id===r.teamId)!.
-        strategy==='sprint'?'sprinter':'kapitaen';
-      const protectedRider=input.riders.find(x=>
-        x.teamId===r.teamId&&x.role===targetRole);
+      const ownTeam=input.teams.find(t=>t.id===r.teamId)!;
+      const targetRole=ownTeam.strategy==='sprint'?'sprinter':'kapitaen';
+      const protectedRider=input.riders.find(x=>x.teamId===r.teamId&&
+        (ownTeam.strategy==='sprint'&&ownTeam.sprintLeaderId?
+          x.id===ownTeam.sprintLeaderId:
+          ownTeam.strategy!=='sprint'&&ownTeam.captainId?
+            x.id===ownTeam.captainId:x.role===targetRole));
       const reallyLeading=order.riderId===fieldChaseLeader?.riderId&&
         frontDistance<=R15_R16.frontWorkRadiusM&&
         r.positionM>(protectedRider?.positionM??-Infinity)+.1;
@@ -510,6 +526,16 @@ export function decideIntelligentCrew(input:{
       const r=input.riders.find(r=>r.id===fieldChaseLeader!.riderId)!;
       leaderByTeam.set(r.teamId,fieldChaseLeader);
     }
+  }
+  // Zusatz-Teamanweisungen beeinflussen nur reale Wattwuensche
+  // bereits physisch vorhandener, autonom nominierter Helfer.
+  const teamPlans=new Map(input.teams.map(t=>[t.id,t.tacticalPlan]));
+  const riderTeams=new Map(input.riders.map(r=>[r.id,r.teamId]));
+  for(const order of orders.values()){
+    const teamId=riderTeams.get(order.riderId)!;
+    if(!teamPlans.get(teamId))continue;
+    order.desiredPowerW*=crewPowerFactor(teamPlans.get(teamId),
+      order.mission,order.duty);
   }
   return {orders,situation,missionByTeam,leaderByTeam,
     ...(fieldChaseLeader?{fieldChaseLeader}:{})};

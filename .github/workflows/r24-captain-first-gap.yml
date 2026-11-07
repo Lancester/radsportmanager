@@ -1,0 +1,22 @@
+name: Rennlabor V5 – nur Kapitaen-Lueckenanalyse
+on:
+  push:
+    branches: [experiment/rennlab-v5-kapitaen-abstand-20261107]
+    paths:
+      - 'src/engine/race/race-simulator.ts'
+      - 'tests/r24-lab-v5-first-gap.test.mjs'
+      - '.github/workflows/r24-captain-first-gap.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  first-gap:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Echter 154-Fahrer-Vergleich mit Sekundenprotokoll (nur Analyse)
+        run: node --experimental-strip-types --test tests/r24-lab-v5-first-gap.test.mjs

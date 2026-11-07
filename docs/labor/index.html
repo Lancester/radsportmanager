@@ -25,6 +25,18 @@ details{margin:12px 0;border-top:1px solid #304359;padding-top:9px}
 button{cursor:pointer;font:inherit;font-weight:750;border:1px solid #3fa79c;background:#207569;color:white;padding:11px 15px;border-radius:10px;min-height:44px}
 button.ghost{background:#102b3b;border-color:#4c6c80;color:#d3e7f0}button:disabled{opacity:.5;cursor:wait}
 .actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:15px}
+.tabs{position:sticky;top:0;z-index:30;background:#0b1829;padding:8px 0;display:flex;gap:5px;overflow-x:auto;scrollbar-width:thin}
+.tabs button{white-space:nowrap;min-height:40px;padding:8px 11px;background:#172c3e;border-color:#36546a;color:#d0e6ef}
+.tabs button[aria-selected="true"]{background:#207569;border-color:#a1e8d6;color:white}
+.role-guide{padding:13px;background:#102d3a;border:1px solid #3c6571;border-radius:12px;margin:12px 0}
+.role-guide strong{color:#b5f5e4}.role-guide p{margin:6px 0}
+#raceProgress{width:100%;height:20px;accent-color:#6ccfb0;margin-top:13px}
+#liveFeed{max-height:350px;overflow-y:auto;padding-left:25px}#liveFeed li{padding:7px 0;border-bottom:1px solid #34485d}
+#runSticky{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);
+ width:min(calc(100% - 22px),1080px);background:#091625f5;border:1px solid #345567;
+ border-radius:12px;padding:8px;display:flex;align-items:center;justify-content:space-between;
+ box-shadow:0 6px 20px #050c15;z-index:20}
+@media(max-width:480px){main{padding:12px 11px 70px}.panel{padding:14px;margin:10px 0}}
 .hint{font-size:.81rem;color:#9db6c9}.chip{display:inline-block;font-size:.73rem;padding:3px 7px;border-radius:6px;border:1px solid #476779;color:#b9e9d8;margin-right:5px}
 .gridteam{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:9px;margin:12px 0}
 .teamfield{padding:8px 10px;background:#0e1d30;border:1px solid #263e55;border-radius:10px}
@@ -51,31 +63,70 @@ a{color:#95dbda}.progress{background:#081726;height:8px;border-radius:10px;overf
 <div class="chip" id="offlineInfo">Offline-Speicherung wird geprüft</div>
 <div class="chip">Reproduzierbare Seeds</div>
 <div class="chip">Experimentelle Einstellungen</div>
-
-<section class="panel">
-<h2>1 · Rennen und Teams</h2>
+<nav id="tabs" class="tabs" aria-label="Bereiche">
+<button type="button" data-tab="race" aria-selected="true">Rennen</button>
+<button type="button" data-tab="team" aria-selected="false">Mein Team</button>
+<button type="button" data-tab="riders" aria-selected="false">Fahrerwerte</button>
+<button type="button" data-tab="tech" aria-selected="false">Technik</button>
+<button type="button" data-tab="live" aria-selected="false">Live</button>
+<button type="button" data-tab="results" aria-selected="false">Bericht</button>
+</nav>
+<section class="panel" data-panel="race">
+<h2>1 · Rennen auswählen</h2>
 <div class="fields">
 <div><label for="route">Rennstrecke</label><select id="route"></select></div>
 <div><label for="seed">Seed · gleiche Ausgangsbedingungen</label><input id="seed" type="number" min="0" max="2147483647" value="2026"></div>
 <div><label for="teamCount">Teilnehmende Teams</label><input id="teamCount" type="number" min="2" max="22" value="22"></div>
 <div><label for="rosterKind">Fahrerfeld-Typ</label><select id="rosterKind"><option value="route">Passend zur Strecke</option><option value="flach">Sprinterbetont</option><option value="huegelig">Hügelbetont</option><option value="klassiker">Klassikerbetont</option><option value="berg">Bergbetont</option></select></div>
 </div>
-<details open><summary>Taktik der Teams</summary>
-<p class="hint">Jedes Team kann eine eigene Leitlinie erhalten. Das sind die vier tatsächlich unterstützten Teamtaktiken; einzelne KI-Entscheidungen bleiben autonom.</p>
+</section>
+<section class="panel" data-panel="team" hidden>
+<h2>2 · Teamaufstellung und Taktik</h2>
+<div class="fields" style="margin-top:14px">
+<div><label for="myTeam">Mein Team</label><select id="myTeam"></select></div>
+<div><label for="captain">Kapitän für dieses Rennen</label><select id="captain"></select></div>
+<div><label for="myStrategy">Tagesziel meines Teams</label><select id="myStrategy"></select></div>
+<div><label for="sprintLeader">Sprintziel / Fahrer für unseren Sprintzug</label><select id="sprintLeader"></select></div>
+</div>
+<div class="role-guide">
+<p><strong>Kapitän</strong> – dein Teamführer/Schutzziel. Er muss nicht die Etappe gewinnen; später kann er etwa für das Gesamtklassement geschont werden. Seine Rolle schenkt keine Watt oder bessere Position.</p>
+<p><strong>Sprintziel</strong> – für diesen Fahrer organisiert die KI bei Sprintstrategie einen Sprintzug und Jagd nach Ausreißern. Kapitän und Sprintziel dürfen identisch sein, müssen es aber nicht.</p>
+<p><strong>Helfer</strong> – darf nach KI-Entscheidung Tempoarbeit, Jagd und Schutz leisten. <strong>Freie Rolle</strong> – kein Helferdienst, darf individuell Chancen nutzen. Weitere Sprinter können individuell sprinten, erhalten nicht automatisch den Sprintzug.</p>
+<p><strong>Gebirgsetappe:</strong> Kapitän bedeutet Schutzauftrag, nicht Siegpflicht. Das separate Tagesziel „Gesamtklassement sichern“ kommt mit dem Etappenmanager; es ist aktuell noch kein eigenständiger Engine-Modus.</p>
+</div><div id="roleSummary" class="role-guide" aria-live="polite"></div>
+<h3>Meine sieben Fahrer – Einsatzrollen</h3>
+<p class="hint">Den Kapitän oben wählen. Bei den übrigen Fahrern kannst du Helfer, Sprinter oder eine freie Rolle festlegen. Die KI entscheidet danach selbst über die konkrete Ausführung. Die körperlichen Eigenschaften bleiben unverändert.</p>
+<div id="myRoster" class="gridteam"></div>
+<p class="hint">Einsatzrolle ist nicht die angeborene Stärke: Ein Kletterer kann als Sprinter eingesetzt werden, wird dadurch aber nicht physisch schneller. „Frei“ bedeutet ohne festen Helferauftrag; die Renn-KI entscheidet weiter über eigene Aktionen.</p>
+<p class="hint" id="myTeamInfo">Die übrigen Teams werden autonom geführt. Fahrer und Kapitän bleiben pro Seed identisch, solange du nichts änderst.</p>
+<details><summary>Entwicklermodus: auch andere Teams steuern</summary>
+<p class="hint">Normalerweise verändert der Manager nur sein eigenes Team. Hier kannst du zu Testzwecken die Taktiken der Konkurrenz ändern.</p>
 <div id="teams" class="gridteam"></div>
+</details>
+<details open>
+<summary>Erweiterter Taktikplan · für jedes Team einzeln</summary>
+<p class="hint">Sechs eigenständige Vorab-Anweisungen: echte Entscheidungen der Renn-KI, keine direkten Geschwindigkeits- oder Siegboni. Die Helferzahl bestimmt weiterhin die KI.</p>
+<details><summary>Entwicklermodus: Taktikplan für andere Teams bearbeiten</summary>
+<div class="fields"><div><label for="tacticalTeam">Team auswählen</label><select id="tacticalTeam"></select></div></div>
+</details>
+<div id="tacticalFields" class="fields" style="margin-top:12px"></div>
+<p class="hint">Wichtig: „Sprint bevorzugen“ aktiviert automatisch die Grundstrategie „Sprint“ inklusive organisierter Verfolgung und Sprintzug. Möchtest du eine andere Grundstrategie, wird die Finalanweisung wieder „situativ“.</p>
+<div class="actions"><button type="button" class="ghost" id="resetTactics">Taktikplan dieses Teams zurücksetzen</button></div>
+<p class="hint">„Konsequent“ bedeutet nur bei physisch erkannter Verfolgungslage. Angriffsanweisungen gelten weiterhin nur bei ausreichender CP/W′, geeigneter Position und Rennsituation. Für das Standardrennen alle Felder auf „Normal“ bzw. „situativ“ lassen.</p>
 </details>
 </section>
 
-<section class="panel">
-<h2>2 · Fahrer gezielt verändern</h2>
+<section class="panel" data-panel="riders" hidden>
+<h2>3 · Fahrerwerte ändern</h2>
 <p class="hint">Wähle einen Fahrer und verändere seine tatsächlichen Eingabeparameter. Nicht angefasste Werte bleiben auf dem RC1-Standard.</p>
-<div class="fields"><div><label for="rider">Fahrer</label><select id="rider"></select></div></div>
+<div class="fields"><div><label for="rider">Fahrer meines Teams</label><select id="rider"></select></div></div>
+<label class="check"><input type="checkbox" id="allRiders">Entwicklermodus: alle Fahrer bearbeiten</label>
 <div id="riderValues" class="fields" style="margin-top:12px"></div>
 <div class="actions"><button class="ghost" id="resetRider">Änderungen dieses Fahrers zurücksetzen</button></div>
 </section>
 
-<section class="panel">
-<h2>3 · Wetter, Strecke und Simulation</h2>
+<section class="panel" data-panel="tech" hidden>
+<h2>4 · Wetter und Entwicklermodus</h2>
 <div class="fields">
 <div><label for="headwind">Gegenwind (+) / Rückenwind (−), m/s</label><input type="number" id="headwind" min="-20" max="20" step=".5" value="0"></div>
 <div><label for="crosswind">Seitenwind, m/s</label><input type="number" id="crosswind" min="0" max="20" step=".5" value="0"></div>
@@ -97,8 +148,9 @@ a{color:#95dbda}.progress{background:#081726;height:8px;border-radius:10px;overf
 <p class="hint">Die Zielgruppenregel verändert nur die ausgewiesenen Ergebniszeiten, niemals die gefahrenen Positionen oder Energiewerte.</p>
 </section>
 
-<section class="panel">
-<h2>4 · Rennsimulation</h2>
+<section class="panel" data-panel="live" hidden>
+<h2>5 · Simulation und Team-Liveticker</h2>
+<p class="hint">Der Ticker meldet nur berechnete Zwischenstände und echte Rennereignisse. Die KI fährt autonom; es gibt keine Eingriffe während des Rennens.</p>
 <div class="actions">
 <button id="run">Rennen simulieren</button>
 <button class="ghost" id="reset">Standardeinstellungen</button>
@@ -107,23 +159,44 @@ a{color:#95dbda}.progress{background:#081726;height:8px;border-radius:10px;overf
 <input id="file" type="file" accept=".json,application/json" hidden>
 </div>
 <p id="status" role="status">Bereit. Beim ersten Start muss die Anwendung aus dem kompilierten Browserpaket geöffnet werden.</p>
+<progress id="raceProgress" max="100" value="0" hidden aria-label="Rennfortschritt"></progress>
+<div class="metrics">
+<div class="metric"><div class="hint">Rennkilometer</div><strong id="raceKm">0 km</strong></div>
+<div class="metric"><div class="hint">Fortschritt</div><strong id="racePct">0 %</strong></div>
+</div>
+<h3>Ereignisse meines Teams</h3>
+<ol id="liveFeed" aria-live="off"><li>Noch kein Rennen gestartet.</li></ol>
 <div id="working" class="progress" hidden><i></i></div>
 </section>
 
-<section id="output" class="panel" hidden>
+<section id="emptyResults" class="panel" data-panel="results" hidden>
+<h2>Noch kein Rennen ausgewertet</h2>
+<p>Starte unter „Live“ ein Rennen. Anschließend erscheinen hier dein Teambericht, der Kapitän und die komplette Ergebnisliste.</p>
+</section>
+<section id="output" class="panel" data-panel="results" hidden>
 <h2>5 · Ergebnis und Rennbericht</h2>
 <div id="metrics" class="metrics"></div>
-<h3>Rennbericht</h3><ul id="report"></ul>
+<h3>Mein Rennen – Teambericht</h3>
+<div id="teamSummary" class="output"></div>
+<div class="tablewrap"><table><thead><tr><th>Platz</th><th>Mein Fahrer</th><th>Rolle</th><th class="num">Rückstand</th><th class="num">W′</th></tr></thead><tbody id="teamRiders"></tbody></table></div>
+<h3>Wichtige Rennereignisse meines Teams</h3><ul id="teamEvents"></ul>
+<h3>Rennen insgesamt</h3><ul id="report"></ul>
+<details open><summary>Taktikplan – tatsächlich beobachtete Teamereignisse</summary>
+<p class="hint">Angriffe und Teamaufträge sind KI-Entscheidungen, keine Garantie auf einen Vorsprung. Ein Jagdauftrag bedeutet nicht automatisch Windfront-Arbeit.</p>
+<div class="tablewrap"><table><thead><tr><th>Team</th><th class="num">Attacken</th><th class="num">Jagdeinsätze</th><th class="num">Sprintzug</th><th class="num">Teamtempo</th></tr></thead>
+<tbody id="tacticalEvidence"></tbody></table></div>
+</details>
 <details open><summary>Ergebnisliste (154 Plätze bei 22 Teams)</summary><div class="tablewrap"><table><thead><tr><th>Platz</th><th>Fahrer</th><th>Team</th><th>Typ</th><th class="num">Roh-Abstand</th><th class="num">Gruppenzeit</th><th class="num">Gruppe</th><th class="num">W′ Ende</th></tr></thead><tbody id="results"></tbody></table></div></details>
 <details><summary>Gruppenentwicklung nach Kilometern</summary><div class="tablewrap"><table><thead><tr><th>km</th><th class="num">Führende Gruppe</th><th class="num">Größte Gruppe</th><th class="num">Gruppen insgesamt</th><th class="num">Feldspanne</th></tr></thead><tbody id="checkpoints"></tbody></table></div></details>
 <details><summary>Chronologischer Ereignisbericht</summary><ul id="events"></ul></details>
 <details><summary>Angewandte Eingabeänderungen</summary><ul id="changes"></ul></details>
 </section>
 
-<section id="comparison" class="panel" hidden>
+<section id="comparison" class="panel" data-panel="results" hidden>
 <h2>6 · Vorheriges Rennen vergleichen</h2><div id="comparisonBody"></div>
 <p class="hint">Für sinnvolle A/B-Vergleiche Strecke, Fahrerfeld und Seed unverändert lassen und nur eine Taktik oder einen Parameter ändern.</p>
 </section>
+<div id="runSticky"><span id="navHint" class="hint">Rennen vorbereiten</span><button type="button" id="quickRun">Rennen starten</button></div>
 <footer><p class="hint">Release Candidate: fiktive Fahrer und teilweise synthetische Streckenprofile. Die Gruppenwertung ist vorläufig. Die Rennsimulation läuft vollständig auf diesem Gerät. Keine Anmeldung und kein Webspace für Rennberechnungen erforderlich.</p></footer>
 </main>
 <script type="module" src="./app.js"></script>
