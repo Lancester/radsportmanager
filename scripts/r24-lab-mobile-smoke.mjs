@@ -55,6 +55,12 @@ try {
  await page.locator('#tactical-attackPhase').selectOption('frueh');
  await page.locator('#tactical-chasePolicy').selectOption('vermeiden');
  await page.locator('#tactical-teamTempo').selectOption('sparen');
+ await page.locator('#tactical-finale').selectOption('sprint');
+ if(await page.locator('#myStrategy').inputValue()!=='sprint')
+   throw Error('Finale Sprint muss die tatsächliche Teamstrategie Sprint sichtbar aktivieren');
+ await page.locator('#myStrategy').selectOption('offensiv');
+ if(await page.locator('#tactical-finale').inputValue()!=='situativ')
+   throw Error('Gegenläufige Teamstrategie muss veraltetes Finale-Sprint-Ziel auflösen');
  await page.locator('#tactical-finale').selectOption('kapitaen');
  await page.locator('#tactical-leaderProtection').selectOption('hoch');
  if(await page.locator('#tactical-chasePolicy').inputValue()!=='vermeiden')
