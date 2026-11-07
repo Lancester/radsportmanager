@@ -32,7 +32,10 @@ button.ghost{background:#102b3b;border-color:#4c6c80;color:#d3e7f0}button:disabl
 .role-guide strong{color:#b5f5e4}.role-guide p{margin:6px 0}
 #raceProgress{width:100%;height:20px;accent-color:#6ccfb0;margin-top:13px}
 #liveFeed{max-height:350px;overflow-y:auto;padding-left:25px}#liveFeed li{padding:7px 0;border-bottom:1px solid #34485d}
-#runSticky{position:sticky;bottom:0;background:#091625ed;border:1px solid #345567;border-radius:12px;padding:8px;display:flex;align-items:center;justify-content:space-between;z-index:20}
+#runSticky{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);
+ width:min(calc(100% - 22px),1080px);background:#091625f5;border:1px solid #345567;
+ border-radius:12px;padding:8px;display:flex;align-items:center;justify-content:space-between;
+ box-shadow:0 6px 20px #050c15;z-index:20}
 @media(max-width:480px){main{padding:12px 11px 70px}.panel{padding:14px;margin:10px 0}}
 .hint{font-size:.81rem;color:#9db6c9}.chip{display:inline-block;font-size:.73rem;padding:3px 7px;border-radius:6px;border:1px solid #476779;color:#b9e9d8;margin-right:5px}
 .gridteam{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:9px;margin:12px 0}
@@ -166,6 +169,10 @@ a{color:#95dbda}.progress{background:#081726;height:8px;border-radius:10px;overf
 <div id="working" class="progress" hidden><i></i></div>
 </section>
 
+<section id="emptyResults" class="panel" data-panel="results" hidden>
+<h2>Noch kein Rennen ausgewertet</h2>
+<p>Starte unter „Live“ ein Rennen. Anschließend erscheinen hier dein Teambericht, der Kapitän und die komplette Ergebnisliste.</p>
+</section>
 <section id="output" class="panel" data-panel="results" hidden>
 <h2>5 · Ergebnis und Rennbericht</h2>
 <div id="metrics" class="metrics"></div>
