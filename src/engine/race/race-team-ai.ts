@@ -261,7 +261,11 @@ export function decideIntelligentCrew(input:{
       group.length>=4&&
       (target.reserveFraction<.4||targetRank>Math.ceil(group.length*.70)||
         (!isMain&&raceFrontM-target.positionM>75));
-    if(input.restInPeloton&&mission==='schutz'&&!needsCaptainSupport)continue;
+    const separateCaptainNeedsEscort=input.adaptiveChase&&
+      team.strategy==='sprint'&&team.captainId&&team.sprintLeaderId&&
+      team.captainId!==team.sprintLeaderId;
+    if(input.restInPeloton&&mission==='schutz'&&!needsCaptainSupport&&
+      !separateCaptainNeedsEscort)continue;
     if(input.progress>=0.97&&!sprintTrain&&
       !((input.sprintFinaleMode||input.adaptiveChase)&&chase))continue;
     const gapToFront=(r:IntelligentRider)=>group[0].positionM-r.positionM;
