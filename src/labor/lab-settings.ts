@@ -141,8 +141,12 @@ export function buildLabRace(s:LabSettings):{input:RaceInput;changes:string[]} {
   }
   const riders:RaceRider[]=f.input.riders.map(r=>{
     const tune=tuneMap.get(r.id);
+    const sprintCaptain=r.id===effectiveCaptainId&&
+      (s.sprintLeaderId===r.id||
+        (s.captainId===r.id&&r.specialty==='sprinter'&&
+         s.sprintLeaderId===undefined));
     const role:RaceRole=r.teamId===myTeamId?
-      (r.id===effectiveCaptainId?'kapitaen':
+      (r.id===effectiveCaptainId?(sprintCaptain?'sprinter':'kapitaen'):
         s.riderRoles?.[r.id]??(r.role==='kapitaen'?'helfer':r.role)):r.role;
     if(!tune)return {...r,role};
     const cpRatio=(tune.criticalPowerPct??100)/100;
@@ -187,6 +191,7 @@ export function buildLabRace(s:LabSettings):{input:RaceInput;changes:string[]} {
     const override=s.teams.find(x=>x.teamId===t.id);
     if(override?.tacticalPlan)changes.push('Taktischer Plan für '+t.id+': '+JSON.stringify(override.tacticalPlan));
     return {...t,strategy:strategy??t.strategy,
+      ...(t.id===myTeamId&&s.captainId?{captainId:s.captainId}:{}),
       ...(t.id===myTeamId&&sprintLeaderId?{sprintLeaderId}:{}),
       ...(override?.tacticalPlan?{tacticalPlan:override.tacticalPlan}:{})};
   });
