@@ -15,6 +15,15 @@ test('Screenshot T01: freier F002, geschützter Sprintkapitän F001, finale=spri
  const automaticInput=buildLabRace(untouchedCaptain).input;
  assert.equal(automaticInput.teams[0].sprintLeaderId,'F001',
    'Der sichtbare Standardkapitän darf nicht aus dem Sprintplan herausfallen, wenn der zweite Sprinter frei ist');
+ const automaticRace=simulateRace(automaticInput);
+ const automaticCaptain=automaticRace.classification.find(x=>x.id==='F001');
+ console.log('SCREENSHOT_UNTOUCHED_CAPTAIN',JSON.stringify({
+   rank:automaticCaptain.rank,gapS:+automaticCaptain.gapS.toFixed(1),
+   role:automaticCaptain.role,train:automaticRace.events.filter(e=>
+     e.teamId==='T01'&&e.type==='sprint-train').length
+ }));
+ assert.ok(automaticCaptain.rank<=30,
+   'Ohne den Kapitän-Dropdown zu berühren muss die angezeigte Sprintaufstellung ebenso wirken');
  const t=input.teams[0];
  const r=input.riders.filter(x=>x.teamId==='T01');
  console.log('SCREENSHOT_INPUT',JSON.stringify({team:t,roles:r.map(x=>({id:x.id,role:x.role,specialty:x.specialty,name:x.name}))}));
