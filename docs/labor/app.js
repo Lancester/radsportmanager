@@ -237,7 +237,7 @@ $('myStrategy').addEventListener('change',()=>{
   if(plan||desired!==team.strategy)
     settings.teams.push({teamId:team.id,strategy:desired,
       ...(plan?{tacticalPlan:plan}:{})});
-  renderTeams(f);renderTacticalFields(f);
+  renderTeams(f);renderTacticalFields(f);refreshRoleSummary(f);
   if(old?.tacticalPlan?.finale==='sprint'&&desired!=='sprint')
     setStatus('Finalziel wurde zu situativ geändert: Grundstrategie ist jetzt '+strategien[desired]+'.');
 });
@@ -288,7 +288,10 @@ function renderTacticalFields(f){
       const sprintRequested=meta.key==='finale'&&picker.value==='sprint';
       const strategy=sprintRequested?'sprint':old?.strategy??selected.strategy;
       settings.teams.push({teamId:selected.id,strategy,tacticalPlan:nextPlan});
-      if(selected.id===settings.myTeamId)$('myStrategy').value=strategy;
+      if(selected.id===settings.myTeamId){
+        $('myStrategy').value=strategy;
+        refreshRoleSummary(f);
+      }
       renderTeams(f);
       setStatus(sprintRequested?'Sprint bevorzugen aktiviert auch die Grundstrategie Sprint (Jagd, Schutz und Sprintzug).':
         'Taktikplan für '+selected.id+' angepasst: '+meta.label);
@@ -308,7 +311,9 @@ $('resetTactics').addEventListener('click',()=>{
     if(selected.strategy===base?.strategy)
       settings.teams=settings.teams.filter(x=>x.teamId!==currentTacticalTeam);
   }
-  renderTacticalFields(refreshFixtures());
+  const fresh=refreshFixtures();
+  renderTacticalFields(fresh);
+  if(currentTacticalTeam===settings.myTeamId)refreshRoleSummary(fresh);
   setStatus('Taktikplan für '+currentTacticalTeam+' zurückgesetzt.');
 });
 function renderRiders(f){
