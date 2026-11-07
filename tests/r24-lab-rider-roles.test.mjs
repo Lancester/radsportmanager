@@ -76,8 +76,13 @@ test('Rollen: vollständige flache 154-Fahrer-Simulation mit Kapitän als Sprint
  const initial=buildLabRace(s).input;
  const sprinter=initial.riders.find(r=>r.teamId==='T01'&&r.role==='sprinter');
  assert.ok(sprinter);
- s.captainId=sprinter.id;s.sprintLeaderId=sprinter.id;
+ // Gleiche Fahrer, Strecke, Wetter und Seed: ursprünglicher Sprinter
+ // gegen denselben Fahrer mit Kapitäns- und Sprintzielrolle.
  s.teams=[{teamId:'T01',strategy:'sprint'}];
+ const unmodifiedInput=buildLabRace(s).input;
+ const unmodified=simulateRace(unmodifiedInput);
+ const baselineRank=unmodified.classification.find(r=>r.id===sprinter.id);
+ s.captainId=sprinter.id;s.sprintLeaderId=sprinter.id;
  const input=buildLabRace(s).input;
  const out=simulateRace(input);
  assert.equal(out.classification.length,154);
@@ -85,6 +90,13 @@ test('Rollen: vollständige flache 154-Fahrer-Simulation mit Kapitän als Sprint
  assert.ok(out.classification.every(r=>Number.isFinite(r.finishTimeS)));
  const capRow=out.classification.find(r=>r.id===sprinter.id);
  const teamRows=out.classification.filter(r=>r.teamId==='T01');
+ const baselineProgress=(unmodified.checkpoints??[]).filter(c=>
+   Math.abs(c.km/184.9-.25)<.014).map(c=>{
+     const cap=c.riders.find(r=>r.riderId===sprinter.id);
+     return {km:+c.km.toFixed(1),groupIndex:cap?.groupIndex,
+       groupSize:c.groupSizes[cap?.groupIndex]??null,
+       gapM:+(cap?.gapToLeaderM??0).toFixed(0)};
+   });
  const capProgress=(out.checkpoints??[]).filter(c=>[.25,.5,.7,.8,.9,.95,.99].some(p=>
    Math.abs(c.km/input.segments.reduce((s,v)=>s+v.lengthM,0)*1000-p)<.013))
    .map(c=>{
@@ -100,6 +112,8 @@ test('Rollen: vollständige flache 154-Fahrer-Simulation mit Kapitän als Sprint
    });
  console.log('R24_SPRINT_CAPTAIN_AUDIT '+JSON.stringify({
    riderId:sprinter.id,rank:capRow.rank,gapS:+capRow.gapS.toFixed(1),
+   baselineSprinterRole:{rank:baselineRank.rank,
+     gapS:+baselineRank.gapS.toFixed(1),progression:baselineProgress},
    teamFinish:teamRows.map(r=>({id:r.id,role:r.role,rank:r.rank,gap:+r.gapS.toFixed(1)})),
    sprintTrainEvents:out.events.filter(e=>e.type==='sprint-train'&&e.teamId==='T01').length,
    rejoinAssignments:(out.diagnostics.rejoinWork??[]).filter(r=>r.teamId==='T01')
