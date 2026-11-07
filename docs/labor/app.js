@@ -7,8 +7,10 @@ const $=id=>document.getElementById(id);
 const fmt=(v,d=1)=>Number(v).toLocaleString('de-DE',{
   minimumFractionDigits:d,maximumFractionDigits:d});
 const strategien={
-  ausgewogen:'Ausgewogen',offensiv:'Offensiv',
-  sprint:'Sprint',kapitaen_schuetzen:'Kapitän schützen'};
+  ausgewogen:'Situationsabhängig / bestmögliches Ergebnis',
+  offensiv:'Angriffe und Etappensieg versuchen',
+  sprint:'Etappensieg im Sprint für Zielsprinter',
+  kapitaen_schuetzen:'Kapitän schonen, keine Siegpflicht'};
 const str=(tag,content,cls='')=>{
   const el=document.createElement(tag);el.textContent=content;
   if(cls)el.className=cls;return el;
@@ -138,11 +140,13 @@ function renderRoster(f){
     label.htmlFor='role-'+r.id;
     const select=document.createElement('select');
     select.id='role-'+r.id;
-    for(const [role,name] of [
-      ['kapitaen','Kapitän'],['sprinter','Sprinter'],
-      ['helfer','Helfer'],['frei','Freie Rolle']
-    ])select.append(opt(role,name));
-    select.value=activeRole(r,f);
+    const isCaptain=r.id===currentCaptainId(f);
+    const options=isCaptain?
+      [['kapitaen','Kapitän (oben ändern)']]:
+      [['sprinter','Sprinter'],['helfer','Helfer'],['frei','Freie Rolle']];
+    for(const [role,name] of options)select.append(opt(role,name));
+    select.value=isCaptain?'kapitaen':activeRole(r,f);
+    select.disabled=isCaptain;
     select.addEventListener('change',()=>{
       const role=select.value;
       const cap=currentCaptainId(f);
