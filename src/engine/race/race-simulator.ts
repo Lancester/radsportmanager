@@ -74,6 +74,8 @@ export interface RaceSegment {
 }
 export interface RaceTeam {
   id:string;name:string;strategy:RaceStrategy;
+  /** Teamleiter-ID, unabhängig davon ob der Fahrer als Sprinter startet. */
+  captainId?:string;
   /** Explizit gewähltes Sprintziel, unabhängig von der Kapitänsrolle. */
   sprintLeaderId?:string;
   /** Optionales Lab-/Manager-Ziel, Standard ohne Änderung der RC1-KI. */
@@ -285,6 +287,9 @@ export function validateRace(x:RaceInput):void {
        !['ausgewogen','offensiv','sprint','kapitaen_schuetzen'].includes(t.strategy))
       throw new RangeError('Rennsimulation: Team oder Leitlinie ungültig');
     if(t.tacticalPlan!==undefined)validateTeamPlan(t.tacticalPlan);
+    if(t.captainId!==undefined&&
+      !x.riders.some(r=>r.id===t.captainId&&r.teamId===t.id))
+      throw new RangeError('Rennsimulation: Kapitän muss zum Team gehören');
     if(t.sprintLeaderId!==undefined&&
       !x.riders.some(r=>r.id===t.sprintLeaderId&&r.teamId===t.id))
       throw new RangeError('Rennsimulation: Sprinter muss zum Team gehören');
@@ -448,12 +453,15 @@ export function simulateRace(x:RaceInput):RaceResult {
     return [team.id,candidates[0]?.rider.id??null] as const;
   }));
   const captainByTeam=new Map(x.teams.map(t=>[t.id,
-    states.find(s=>s.rider.teamId===t.id&&s.rider.role==='kapitaen')]));
+    t.captainId?states.find(s=>s.rider.id===t.captainId&&
+      s.rider.teamId===t.id):
+      states.find(s=>s.rider.teamId===t.id&&s.rider.role==='kapitaen')]));
   const targetByTeam=new Map(x.teams.map(t=>[t.id,
     t.strategy==='sprint'&&t.sprintLeaderId?
       states.find(s=>s.rider.id===t.sprintLeaderId&&s.rider.teamId===t.id):
-      states.find(s=>s.rider.teamId===t.id&&s.rider.role===
-        (t.strategy==='sprint'?'sprinter':'kapitaen'))]));
+      (t.strategy!=='sprint'&&t.captainId?
+        captainByTeam.get(t.id):states.find(s=>s.rider.teamId===t.id&&
+          s.rider.role===(t.strategy==='sprint'?'sprinter':'kapitaen')))]));
   const events:RaceEvent[]=[{timeS:0,km:0,type:'start',
     description:`${states.length} Fahrer starten auf ${(totalM/1000).toFixed(1)} km`}];
   const snapshots:RaceSnapshot[]=[];
@@ -545,7 +553,7 @@ export function simulateRace(x:RaceInput):RaceResult {
       }));
       const teamRefs=x.teams.map(team=>({
         id:team.id,strategy:team.strategy,tacticalPlan:team.tacticalPlan,
-        sprintLeaderId:team.sprintLeaderId,
+        captainId:team.captainId,sprintLeaderId:team.sprintLeaderId,
         ...(sprintFriendlyRace?{chaseHelperCount:team.chaseHelperCount}:{}),
       }));
       const teamRefsAndChase=(x.groupRidingModel==='coordinated'||
