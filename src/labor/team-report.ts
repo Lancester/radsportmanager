@@ -25,7 +25,8 @@ export function buildTeamReport(
   const team=input.teams.find(t=>t.id===myTeamId);
   if(!team)throw new RangeError('Rennlabor: Teambericht ohne ausgewähltes Team');
   const riders=input.riders.filter(r=>r.teamId===myTeamId);
-  const captain=riders.find(r=>r.role==='kapitaen');
+  const captain=riders.find(r=>r.id===team.captainId)||
+    riders.find(r=>r.role==='kapitaen');
   if(!captain)throw new RangeError('Rennlabor: Mannschaft hat keinen Kapitän');
   const finish=outcome.classification.filter(r=>r.teamId===myTeamId);
   const rows=finish.map(r=>({
