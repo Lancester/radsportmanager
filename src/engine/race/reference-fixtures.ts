@@ -347,8 +347,11 @@ export function createReferenceFixture(options:{
   const segments=createReferenceSegments(options.routeId);
   const chosen=createReferenceTeamCompositions(options.rosterKind??route.kind)
     .slice(0,count);
-  const teams=chosen.map(c=>({
-    id:c.teamId,name:'Fiktives Profi-Team '+c.teamId,
+  const fictionalTeamNames=["Velora Racing","Aurenza Cycling","Nordwelle Pro Team","Cobalt Vélo","Montaris Racing","Elvaris Cycling","Cadenzo Velo","Solvane Pro Cycling","Ardessa Racing","Riventa Cycling","Veyronis Sport","Borelia Pro Team","Alvento Racing","Mirava Cycling","Corvella Velo","Norelli Racing","Virella Pro Cycling","Verantis Sport","Silvara Cycling","Altiora Racing","Casento Velo","Lunaris Pro Team","Ventario Cycling","Sorento Racing","Marento Velo","Novaris Cycling"];
+  const teams=chosen.map((c,i)=>({
+    id:c.teamId,
+    name:fictionalTeamNames[(i*7+(options.seed??2026)%fictionalTeamNames.length+
+      fictionalTeamNames.length)%fictionalTeamNames.length],
     strategy:c.strategy,
   }));
   const riders=chosen.flatMap((c,t)=>
