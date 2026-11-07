@@ -230,8 +230,8 @@ export function decideIntelligentCrew(input:{
     const precedingGap=preceding?
       preceding.at(-1)!.positionM-group[0].positionM:0;
     const ownLeaderAhead=members.some(r=>
-      r.role===target.role&&r!==target&&
-      r.positionM>group[0].positionM+R15_R16.groupBreakM);
+      (team.captainId?r.id===team.captainId:r.role===target.role)&&
+      r!==target&&r.positionM>group[0].positionM+R15_R16.groupBreakM);
     const rejoin=input.adaptiveChase===true&&
       team.strategy==='kapitaen_schuetzen'&&
       (target.role==='kapitaen'||team.captainId===target.id)&&
