@@ -56,6 +56,17 @@ function activeRole(r,f){
   return settings.riderRoles?.[r.id]??
     (r.role==='kapitaen'?'helfer':r.role);
 }
+function changeCaptain(id,f){
+  const old=currentCaptainId(f);
+  // Ein ehemaliger Kapitän bleibt als ausdrücklich nominierter
+  // Zielsprinter erhalten, wird aber nicht versehentlich zum Helfer.
+  if(old!==id&&settings.sprintLeaderId===old){
+    settings.riderRoles??={};
+    settings.riderRoles[old]='sprinter';
+  }
+  settings.captainId=id;
+  if(settings.riderRoles)delete settings.riderRoles[id];
+}
 function renderRoster(f){
   const mine=f.input.riders.filter(r=>r.teamId===settings.myTeamId);
   const host=$('myRoster');host.replaceChildren();
@@ -78,8 +89,7 @@ function renderRoster(f){
         select.value='kapitaen';return;
       }
       if(role==='kapitaen'){
-        settings.captainId=r.id;
-        if(settings.riderRoles)delete settings.riderRoles[r.id];
+        changeCaptain(r.id,f);
       }else{
         settings.riderRoles??={};
         settings.riderRoles[r.id]=role;
@@ -125,8 +135,8 @@ $('myTeam').addEventListener('change',()=>{
   updateRoute();
 });
 $('captain').addEventListener('change',()=>{
-  settings.captainId=$('captain').value;
-  if(settings.riderRoles)delete settings.riderRoles[settings.captainId];
+  const fBefore=refreshFixtures();
+  changeCaptain($('captain').value,fBefore);
   const f=refreshFixtures();
   $('myTeamInfo').textContent='Gewählter Kapitän: '+
     f.input.riders.find(r=>r.id===settings.captainId)?.name+
