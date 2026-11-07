@@ -403,7 +403,13 @@ export function descentSafeSpeedMps(technicality:number,skill:number):number {
   ensure('skill',skill,skill>=0&&skill<=1);
   return 18+6*skill-6*technicality;
 }
-export function simulateRace(x:RaceInput):RaceResult {
+export interface RaceProgressEvent {
+  km:number;totalKm:number;percent:number;timeS:number;
+  captain?:{id:string;name:string;gapM:number;group:number;wPrimePct:number;helpers:number};
+  events:RaceEvent[];
+}
+/** Beobachtender Fortschrittskanal; verändert weder Rennphysik noch KI noch Seed. */
+export function simulateRace(x:RaceInput,onProgress?:(event:RaceProgressEvent)=>void):RaceResult {
   validateRace(x);
   const totalM=x.segments.reduce((v,s)=>v+s.lengthM,0);
   const ascentM=x.segments.reduce((v,s)=>
@@ -465,6 +471,7 @@ export function simulateRace(x:RaceInput):RaceResult {
   const events:RaceEvent[]=[{timeS:0,km:0,type:'start',
     description:`${states.length} Fahrer starten auf ${(totalM/1000).toFixed(1)} km`}];
   const snapshots:RaceSnapshot[]=[];
+  let lastProgressEventIndex=0;
   const checkpoints:RaceCheckpoint[]|undefined=
     x.diagnosticLevel==='checkpoints'?[]:undefined;
   const attackTelemetry=checkpoints?new AttackTelemetry():null;
@@ -1857,6 +1864,32 @@ export function simulateRace(x:RaceInput):RaceResult {
           groupSizes:groups.map(g=>g.length),
           leadingGapM:groups.length>1?
             groups[0].at(-1)!.positionM-groups[1][0].positionM:0});
+        if(onProgress){
+          const ownTeam=x.teams.find(q=>q.captainId);
+          const cap=ownTeam?byId.get(ownTeam.captainId!):undefined;
+          const groupIdx=cap?groups.findIndex(g=>
+            g.some(r=>r.rider.id===cap.rider.id)):-1;
+          const peers=groupIdx>=0?groups[groupIdx]:[];
+          const realEvents=events.slice(lastProgressEventIndex).filter(e=>
+            e.teamId===ownTeam?.id||e.riderId===cap?.rider.id);
+          lastProgressEventIndex=events.length;
+          onProgress({
+            km:+(best.positionM/1000).toFixed(1),
+            totalKm:totalM/1000,
+            percent:Math.min(100,Math.floor(best.positionM/totalM*100)),
+            timeS:t,
+            ...(cap?{captain:{
+              id:cap.rider.id,name:cap.rider.name,
+              gapM:Math.round(Math.max(0,best.positionM-cap.positionM)),
+              group:groupIdx+1,
+              wPrimePct:Math.round(100*cap.physiology.remainingWPrimeJ/
+                cap.profile.wPrimeCapacityJ),
+              helpers:peers.filter(r=>r.rider.teamId===cap.rider.teamId&&
+                r.rider.role==='helfer').length,
+            }}:{}),
+            events:realEvents.slice(-12),
+          });
+        }
         nextSnapshotM+=5000;
       }
     }
