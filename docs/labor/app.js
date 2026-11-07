@@ -36,10 +36,62 @@ function refreshFixtures(){
   const mine=base.input.riders.filter(r=>r.teamId===settings.myTeamId);
   if(settings.captainId&&!mine.some(r=>r.id===settings.captainId))
     delete settings.captainId;
+  if(settings.sprintLeaderId&&!mine.some(r=>r.id===settings.sprintLeaderId))
+    delete settings.sprintLeaderId;
+  if(settings.riderRoles){
+    settings.riderRoles=Object.fromEntries(Object.entries(settings.riderRoles)
+      .filter(([id])=>mine.some(r=>r.id===id)&&id!==settings.captainId));
+  }
   const available=$('allRiders').checked?base.input.riders:mine;
   if(!available.some(r=>r.id===currentRider))currentRider=available[0].id;
   if(!activeTeams.has(currentTacticalTeam))currentTacticalTeam=settings.myTeamId;
   return base;
+}
+function currentCaptainId(f){
+  return settings.captainId??f.input.riders.find(r=>
+    r.teamId===settings.myTeamId&&r.role==='kapitaen')?.id;
+}
+function activeRole(r,f){
+  if(r.id===currentCaptainId(f))return 'kapitaen';
+  return settings.riderRoles?.[r.id]??
+    (r.role==='kapitaen'?'helfer':r.role);
+}
+function renderRoster(f){
+  const mine=f.input.riders.filter(r=>r.teamId===settings.myTeamId);
+  const host=$('myRoster');host.replaceChildren();
+  for(const r of mine){
+    const card=str('div','','teamfield');
+    const label=str('label',r.name+' · '+r.specialty+' ('+r.id+')');
+    label.htmlFor='role-'+r.id;
+    const select=document.createElement('select');
+    select.id='role-'+r.id;
+    for(const [role,name] of [
+      ['kapitaen','Kapitän'],['sprinter','Sprinter'],
+      ['helfer','Helfer'],['frei','Freie Rolle']
+    ])select.append(opt(role,name));
+    select.value=activeRole(r,f);
+    select.addEventListener('change',()=>{
+      const role=select.value;
+      const cap=currentCaptainId(f);
+      if(r.id===cap&&role!=='kapitaen'){
+        setStatus('Wähle zuerst oben einen anderen Kapitän.',true);
+        select.value='kapitaen';return;
+      }
+      if(role==='kapitaen'){
+        settings.captainId=r.id;
+        if(settings.riderRoles)delete settings.riderRoles[r.id];
+      }else{
+        settings.riderRoles??={};
+        settings.riderRoles[r.id]=role;
+        if(role!=='sprinter'&&settings.sprintLeaderId===r.id)
+          delete settings.sprintLeaderId;
+      }
+      updateRoute();
+      setStatus('Rolle für '+r.name+' übernommen: '+role);
+    });
+    card.append(label,select);
+    host.append(card);
+  }
 }
 function renderMyTeam(f){
   $('myTeam').replaceChildren(...f.input.teams.map(t=>opt(t.id,t.name)));
@@ -52,21 +104,43 @@ function renderMyTeam(f){
   const team=f.input.teams.find(t=>t.id===settings.myTeamId);
   $('myStrategy').replaceChildren(...STRATEGIES.map(k=>opt(k,strategien[k])));
   $('myStrategy').value=settings.teams.find(t=>t.teamId===team.id)?.strategy??team.strategy;
+  const cap=currentCaptainId(f);
+  const defaultSprint=mine.find(r=>activeRole(r,f)==='sprinter')?.id??cap;
+  const selectedSprint=settings.sprintLeaderId??defaultSprint;
+  $('sprintLeader').replaceChildren(...mine.map(r=>
+    opt(r.id,r.name+' · '+r.specialty+
+      (r.id===cap?' (Kapitän)':''))));
+  $('sprintLeader').value=selectedSprint;
+  renderRoster(f);
   $('myTeamInfo').textContent='Mein Team: '+mine.length+
     ' Fahrer · Kapitän '+mine.find(r=>r.id=== $('captain').value)?.name+
     ' · alle übrigen Teams steuert die Renn-KI.';
 }
 $('myTeam').addEventListener('change',()=>{
   settings.myTeamId=$('myTeam').value;currentTacticalTeam=settings.myTeamId;
+  delete settings.riderRoles;delete settings.sprintLeaderId;
   delete settings.captainId;
   updateRoute();
 });
 $('captain').addEventListener('change',()=>{
   settings.captainId=$('captain').value;
+  if(settings.riderRoles)delete settings.riderRoles[settings.captainId];
   const f=refreshFixtures();
   $('myTeamInfo').textContent='Gewählter Kapitän: '+
     f.input.riders.find(r=>r.id===settings.captainId)?.name+
     '. Die KI schützt ihn entsprechend seiner neuen Rennrolle.';
+});
+$('sprintLeader').addEventListener('change',()=>{
+  const f=refreshFixtures();
+  const id=$('sprintLeader').value;
+  settings.sprintLeaderId=id;
+  if(id!==currentCaptainId(f)){
+    settings.riderRoles??={};
+    settings.riderRoles[id]='sprinter';
+  }
+  updateRoute();
+  const selected=f.input.riders.find(r=>r.id===id);
+  setStatus('Zielsprinter: '+selected?.name+' – Mannschaftssprintzug wird auf diesen Fahrer ausgerichtet.');
 });
 $('myStrategy').addEventListener('change',()=>{
   const f=refreshFixtures();
