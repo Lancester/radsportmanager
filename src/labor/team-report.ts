@@ -14,7 +14,7 @@ export interface TeamReport {
     gapS:number;creditedGapS:number;wPrimeKJ:number;averageW:number}>;
   events:Array<{km:number;type:string;description:string}>;
   checkpoints:Array<{km:number;captainGapM:number;captainGroup:number;
-    captainWPrimePct:number;leaderName:string}>;
+    captainWPrimePct:number;helpersInCaptainGroup:number;leaderName:string}>;
   counts:{attacks:number;chaseOrders:number;sprintTrains:number;teamPaces:number};
 }
 
@@ -51,6 +51,8 @@ export function buildTeamReport(
     return {km:+c.km.toFixed(1),captainGapM:+cr.gapToLeaderM.toFixed(0),
       captainGroup:cr.groupIndex+1,
       captainWPrimePct:+cr.wPrimeRemainingPct.toFixed(0),
+      helpersInCaptainGroup:c.riders.filter(r=>r.teamId===myTeamId&&
+        r.role==='helfer'&&r.groupIndex===cr.groupIndex).length,
       leaderName:riderNames.get(c.leaderId)??c.leaderId};
   }).filter((x):x is NonNullable<typeof x>=>x!==null);
   const points=positions.length?[positions[Math.floor((positions.length-1)*.25)],
@@ -77,7 +79,8 @@ export function buildTeamReport(
   ];
   if(points.length)summary.push('Kapitän unterwegs: '+points.map(p=>
     'km '+p.km+' in Gruppe '+p.captainGroup+
-    ' ('+p.captainGapM+' m zur Spitze, '+p.captainWPrimePct+' % W′)').join('; ')+'.');
+    ' ('+p.captainGapM+' m zur Spitze, '+p.captainWPrimePct+
+    ' % W′, '+p.helpersInCaptainGroup+' eigene Helfer in seiner Gruppe)').join('; ')+'.');
   const mapped=ownEvents.filter(e=>['attack','team-chase','team-pace',
     'sprint-train','sprint'].includes(e.type));
   // Ereignisse zu Beginn und gegen Rennende, kein beliebiger Anspruch
