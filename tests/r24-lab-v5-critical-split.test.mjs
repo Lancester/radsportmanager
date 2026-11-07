@@ -51,7 +51,7 @@ test('V5: die exakte Gruppen-Trennstelle bei km 70–80 und unabhaengige Sprintz
      const cg=groups[ci],preceding=ci?groups[ci-1]:null;
      return {t,km:captain.raceKm,ci,si,captain,sprint,
        count:riders.length,groupSize:cg.length,
-       capLeader:cg[0].id,capLast:cg.at(-1).id,
+       capLeader:cg[0].id,capLeaderInfo:cg[0],capLast:cg.at(-1).id,
        gapToPrevious:preceding?preceding.at(-1).p-cg[0].p:null,
        prevLast:preceding?.at(-1).id??null,
        prevLastInfo:preceding?.at(-1)??null,
@@ -77,6 +77,18 @@ test('V5: die exakte Gruppen-Trennstelle bei km 70–80 und unabhaengige Sprintz
      groupAcc:r.captain.groupAcc},
    sprint:{v:+(r.sprint.v*3.6).toFixed(1),w:+r.sprint.w.toFixed(0),
      request:+r.sprint.request.toFixed(0),wPrime:+r.sprint.wPrime.toFixed(0)},
+   slowGroupLeader:{
+     id:r.capLeaderInfo.id,v:+(r.capLeaderInfo.v*3.6).toFixed(1),
+     w:+r.capLeaderInfo.w.toFixed(0),
+     request:+r.capLeaderInfo.request.toFixed(0),
+     groupRequest:+r.capLeaderInfo.groupReq.toFixed(0),
+     cp:+r.capLeaderInfo.cp.toFixed(0),
+     wheelGap:r.capLeaderInfo.wheel===null?null:+r.capLeaderInfo.wheel.toFixed(1),
+     wPrime:+r.capLeaderInfo.wPrime.toFixed(0),
+     grade:r.capLeaderInfo.grade,intent:r.capLeaderInfo.intent,
+     mission:r.capLeaderInfo.mission,
+     groupPacer:r.capLeaderInfo.groupPacerId
+   },
    previous:!r.prevLastInfo?null:{
      id:r.prevLastInfo.id,v:+(r.prevLastInfo.v*3.6).toFixed(1),
      w:+r.prevLastInfo.w.toFixed(0),
