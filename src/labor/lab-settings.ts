@@ -4,7 +4,7 @@
 import {createReferenceFixture,REFERENCE_ROUTES} from '../engine/race/reference-fixtures.ts';
 import {validateRace} from '../engine/race/race-simulator.ts';
 import type {RaceInput,RaceRider} from '../engine/race/race-simulator.ts';
-import type {RaceStrategy} from '../engine/race/race-tactics.ts';
+import type {RaceStrategy,RaceRole} from '../engine/race/race-tactics.ts';
 import type {ReferenceRouteId} from '../engine/race/reference-fixtures.ts';
 import {validateTeamPlan} from '../engine/race/team-tactical-plan.ts';
 import type {TeamTacticalPlan} from '../engine/race/team-tactical-plan.ts';
@@ -21,6 +21,10 @@ export interface LabSettings {
   myTeamId?:string;
   /** Fahrer-ID, die in der Rennaufstellung die Kapitänsrolle übernimmt. */
   captainId?:string;
+  /** Einsatzrollen der eigenen Fahrer; der Kapitän wird separat ausgewählt. */
+  riderRoles?:Record<string,Exclude<RaceRole,'kapitaen'>>;
+  /** Favorisierter Zielsprinter; darf gleichzeitig Kapitän sein. */
+  sprintLeaderId?:string;
   rosterKind:'route'|'flach'|'huegelig'|'klassiker'|'berg';
   teams:TeamOrder[];riders:RiderTune[];
   wind:{headwindMps:number;crosswindMps:number};
@@ -102,6 +106,18 @@ export function buildLabRace(s:LabSettings):{input:RaceInput;changes:string[]} {
   if(s.captainId!==undefined&&
     !f.input.riders.some(r=>r.id===s.captainId&&r.teamId===myTeamId))
     throw new RangeError('Rennlabor: Kapitän muss zum eigenen Team gehören');
+  if(s.sprintLeaderId!==undefined&&
+    !f.input.riders.some(r=>r.id===s.sprintLeaderId&&r.teamId===myTeamId))
+    throw new RangeError('Rennlabor: Sprintziel muss zum eigenen Team gehören');
+  for(const [id,role] of Object.entries(s.riderRoles??{})){
+    if(!f.input.riders.some(r=>r.id===id&&r.teamId===myTeamId)||
+      !['sprinter','helfer','frei'].includes(role))
+      throw new RangeError('Rennlabor: nur eigenen Fahrern gültige Einsatzrollen zuweisen');
+  }
+  const effectiveCaptainId=s.captainId??f.input.riders.find(r=>
+    r.teamId===myTeamId&&r.role==='kapitaen')?.id;
+  if(s.riderRoles?.[effectiveCaptainId??'']!==undefined)
+    throw new RangeError('Rennlabor: Kapitänsrolle separat wählen');
   const changes:string[]=[];
   const teamMap=new Map<string,RaceStrategy>();
   for(const t of s.teams){
@@ -125,9 +141,9 @@ export function buildLabRace(s:LabSettings):{input:RaceInput;changes:string[]} {
   }
   const riders:RaceRider[]=f.input.riders.map(r=>{
     const tune=tuneMap.get(r.id);
-    const selectedCaptain=s.captainId;
-    const role=selectedCaptain&&r.teamId===myTeamId?
-      (r.id===selectedCaptain?'kapitaen':r.role==='kapitaen'?'helfer':r.role):r.role;
+    const role:RaceRole=r.teamId===myTeamId?
+      (r.id===effectiveCaptainId?'kapitaen':
+        s.riderRoles?.[r.id]??(r.role==='kapitaen'?'helfer':r.role)):r.role;
     if(!tune)return {...r,role};
     const cpRatio=(tune.criticalPowerPct??100)/100;
     const next={...r,role,
@@ -148,6 +164,12 @@ export function buildLabRace(s:LabSettings):{input:RaceInput;changes:string[]} {
     return next;
   });
   if(s.captainId)changes.push('Kapitän von '+myTeamId+': '+s.captainId);
+  for(const [id,role] of Object.entries(s.riderRoles??{}))
+    changes.push('Einsatzrolle '+id+': '+role);
+  if(s.sprintLeaderId&&riders.find(r=>r.id===s.sprintLeaderId)?.role!=='kapitaen'&&
+    riders.find(r=>r.id===s.sprintLeaderId)?.role!=='sprinter')
+    throw new RangeError('Rennlabor: Sprintziel muss Kapitän oder Sprinter sein');
+  if(s.sprintLeaderId)changes.push('Zielsprinter für '+myTeamId+': '+s.sprintLeaderId);
   const segments=f.input.segments.map(z=>({
     ...z,headwindMps:s.wind.headwindMps,
     crosswindMps:s.wind.crosswindMps,
@@ -161,6 +183,7 @@ export function buildLabRace(s:LabSettings):{input:RaceInput;changes:string[]} {
     const override=s.teams.find(x=>x.teamId===t.id);
     if(override?.tacticalPlan)changes.push('Taktischer Plan für '+t.id+': '+JSON.stringify(override.tacticalPlan));
     return {...t,strategy:strategy??t.strategy,
+      ...(t.id===myTeamId&&s.sprintLeaderId?{sprintLeaderId:s.sprintLeaderId}:{}),
       ...(override?.tacticalPlan?{tacticalPlan:override.tacticalPlan}:{})};
   });
   if(s.wind.headwindMps||s.wind.crosswindMps)changes.push('Wind geändert');
