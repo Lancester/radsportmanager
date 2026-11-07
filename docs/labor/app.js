@@ -566,6 +566,10 @@ worker.onmessage=({data:response})=>{
   running=false;$('run').disabled=false;$('working').hidden=true;
   if(!response.ok){setStatus('Simulationsfehler: '+response.error,true);return}
   previousResult=lastResult;lastResult=response.data;
+  $('raceProgress').value=100;$('racePct').textContent='100 %';
+  const distance=ROUTES.find(r=>r.id===lastResult.route)?.distanceKm;
+  if(distance!==undefined)
+    $('raceKm').textContent=fmt(distance,1)+' / '+fmt(distance,1)+' km';
   renderOutput(lastResult);
   if(previousResult)renderComparison(lastResult,previousResult);
   addLiveEvent('Ziel erreicht · Rennbericht im Reiter „Bericht“.');
