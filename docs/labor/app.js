@@ -32,10 +32,52 @@ function refreshFixtures(){
   const activeRiders=new Set(base.input.riders.map(r=>r.id));
   settings.teams=settings.teams.filter(t=>activeTeams.has(t.teamId));
   settings.riders=settings.riders.filter(r=>activeRiders.has(r.id));
-  if(!activeRiders.has(currentRider))currentRider=base.input.riders[0].id;
-  if(!activeTeams.has(currentTacticalTeam))currentTacticalTeam=base.input.teams[0].id;
+  if(!activeTeams.has(settings.myTeamId))settings.myTeamId=base.input.teams[0].id;
+  const mine=base.input.riders.filter(r=>r.teamId===settings.myTeamId);
+  if(settings.captainId&&!mine.some(r=>r.id===settings.captainId))
+    delete settings.captainId;
+  const available=$('allRiders').checked?base.input.riders:mine;
+  if(!available.some(r=>r.id===currentRider))currentRider=available[0].id;
+  currentTacticalTeam=settings.myTeamId;
   return base;
 }
+function renderMyTeam(f){
+  $('myTeam').replaceChildren(...f.input.teams.map(t=>opt(t.id,t.name)));
+  $('myTeam').value=settings.myTeamId;
+  const mine=f.input.riders.filter(r=>r.teamId===settings.myTeamId);
+  const defaultCap=mine.find(r=>r.role==='kapitaen');
+  $('captain').replaceChildren(...mine.map(r=>
+    opt(r.id,r.name+' · '+r.specialty+(r.id===defaultCap?.id?' (Standard)':''))));
+  $('captain').value=settings.captainId??defaultCap?.id;
+  const team=f.input.teams.find(t=>t.id===settings.myTeamId);
+  $('myStrategy').replaceChildren(...STRATEGIES.map(k=>opt(k,strategien[k])));
+  $('myStrategy').value=settings.teams.find(t=>t.teamId===team.id)?.strategy??team.strategy;
+  $('myTeamInfo').textContent='Mein Team: '+mine.length+
+    ' Fahrer · Kapitän '+mine.find(r=>r.id=== $('captain').value)?.name+
+    ' · alle übrigen Teams steuert die Renn-KI.';
+}
+$('myTeam').addEventListener('change',()=>{
+  settings.myTeamId=$('myTeam').value;delete settings.captainId;
+  updateRoute();
+});
+$('captain').addEventListener('change',()=>{
+  settings.captainId=$('captain').value;
+  const f=refreshFixtures();
+  $('myTeamInfo').textContent='Gewählter Kapitän: '+
+    f.input.riders.find(r=>r.id===settings.captainId)?.name+
+    '. Die KI schützt ihn entsprechend seiner neuen Rennrolle.';
+});
+$('myStrategy').addEventListener('change',()=>{
+  const f=refreshFixtures();
+  const team=f.input.teams.find(t=>t.id===settings.myTeamId);
+  const old=settings.teams.find(t=>t.teamId===settings.myTeamId);
+  settings.teams=settings.teams.filter(t=>t.teamId!==settings.myTeamId);
+  if(old?.tacticalPlan||$('myStrategy').value!==team.strategy)
+    settings.teams.push({teamId:team.id,strategy:$('myStrategy').value,
+      ...(old?.tacticalPlan?{tacticalPlan:old.tacticalPlan}:{})});
+  renderTeams(f);
+});
+$('allRiders').addEventListener('change',()=>renderRiders(refreshFixtures()));
 function renderTeams(f){
   const host=$('teams');host.replaceChildren();
   for(const t of f.input.teams){
@@ -101,8 +143,10 @@ $('resetTactics').addEventListener('click',()=>{
 });
 function renderRiders(f){
   const select=$('rider');select.replaceChildren();
-  for(const r of f.input.riders)
-    select.append(opt(r.id,r.id+' · '+r.specialty+' · '+r.teamId));
+  const available=$('allRiders').checked?f.input.riders:
+    f.input.riders.filter(r=>r.teamId===settings.myTeamId);
+  for(const r of available)
+    select.append(opt(r.id,r.name+' · '+r.specialty+' ('+r.id+')'));
   select.value=currentRider;
   renderRiderControls(f);
 }
@@ -147,7 +191,7 @@ function renderRiderControls(f){
 }
 function updateRoute(){
   try{
-    const f=refreshFixtures();renderTeams(f);renderTacticalTeams(f);renderRiders(f);
+    const f=refreshFixtures();renderMyTeam(f);renderTeams(f);renderTacticalTeams(f);renderRiders(f);
   }catch(e){setStatus(String(e.message??e),true)}
 }
 function bindCore(){
