@@ -113,7 +113,9 @@ function renderMyTeam(f){
   $('captain').value=settings.captainId??defaultCap?.id;
   const team=f.input.teams.find(t=>t.id===settings.myTeamId);
   $('myStrategy').replaceChildren(...STRATEGIES.map(k=>opt(k,strategien[k])));
-  $('myStrategy').value=settings.teams.find(t=>t.teamId===team.id)?.strategy??team.strategy;
+  const myOrder=settings.teams.find(t=>t.teamId===team.id);
+  $('myStrategy').value=myOrder?.tacticalPlan?.finale==='sprint'?'sprint':
+    myOrder?.strategy??team.strategy;
   const cap=currentCaptainId(f);
   const defaultSprint=(settings.captainId&&
     mine.find(r=>r.id===cap)?.specialty==='sprinter'?cap:undefined)??
@@ -178,7 +180,9 @@ function renderTeams(f){
     const wrapper=str('div','', 'teamfield');
     const label=str('label',t.id+' · '+t.name);label.htmlFor='team-'+t.id;
     const select=document.createElement('select');select.id='team-'+t.id;
-    const selected=settings.teams.find(x=>x.teamId===t.id)?.strategy??t.strategy;
+    const order=settings.teams.find(x=>x.teamId===t.id);
+    const selected=order?.tacticalPlan?.finale==='sprint'?'sprint':
+      order?.strategy??t.strategy;
     for(const key of STRATEGIES)select.append(opt(key,strategien[key]));
     select.value=selected;
     select.addEventListener('change',()=>{
