@@ -17,9 +17,11 @@ test('Rollen: Kapitän darf zugleich Sprintziel sein, echte Engine-Team-ID',()=>
  const built=buildLabRace(s).input;
  assert.equal(built.teams[0].sprintLeaderId,naturalSprinter.id);
  assert.equal(built.teams[0].strategy,'sprint');
- assert.equal(built.riders.find(r=>r.id===naturalSprinter.id).role,'kapitaen');
+ assert.equal(built.riders.find(r=>r.id===naturalSprinter.id).role,'sprinter');
+ assert.equal(built.teams[0].captainId,naturalSprinter.id);
  assert.equal(built.riders.find(r=>r.id===oldCap.id).role,'helfer');
- assert.equal(built.riders.filter(r=>r.teamId==='T01'&&r.role==='kapitaen').length,1);
+ assert.equal(built.riders.filter(r=>r.teamId==='T01'&&r.role==='kapitaen').length,0);
+ // Organisatorischer Kapitän bleibt via team.captainId eindeutig.
  assert.deepEqual(built.riders.filter(r=>r.teamId!=='T01'),
    original.riders.filter(r=>r.teamId!=='T01'));
 });
@@ -86,9 +88,12 @@ test('Rollen: vollständige flache 154-Fahrer-Simulation mit Kapitän als Sprint
  const input=buildLabRace(s).input;
  const out=simulateRace(input);
  assert.equal(out.classification.length,154);
- assert.equal(out.classification.find(r=>r.id===sprinter.id).role,'kapitaen');
+ assert.equal(out.classification.find(r=>r.id===sprinter.id).role,'sprinter');
+ assert.equal(input.teams[0].captainId,sprinter.id);
  assert.ok(out.classification.every(r=>Number.isFinite(r.finishTimeS)));
  const capRow=out.classification.find(r=>r.id===sprinter.id);
+ assert.ok(Math.abs(capRow.rank-baselineRank.rank)<40,
+   'Kapitän als Sprinter darf nicht allein durch neue Führungsrolle vom Hauptfeld abreißen');
  const teamRows=out.classification.filter(r=>r.teamId==='T01');
  const baselineProgress=(unmodified.checkpoints??[]).filter(c=>
    Math.abs(c.km/184.9-.25)<.014).map(c=>{
