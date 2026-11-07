@@ -83,6 +83,27 @@ test('Rollen: vollständige flache 154-Fahrer-Simulation mit Kapitän als Sprint
  assert.equal(out.classification.length,154);
  assert.equal(out.classification.find(r=>r.id===sprinter.id).role,'kapitaen');
  assert.ok(out.classification.every(r=>Number.isFinite(r.finishTimeS)));
- console.log('Sprint captain '+sprinter.id+' rank '+out.classification.find(r=>r.id===sprinter.id).rank+
-   ' team train events '+out.events.filter(e=>e.type==='sprint-train'&&e.teamId==='T01').length);
+ const capRow=out.classification.find(r=>r.id===sprinter.id);
+ const teamRows=out.classification.filter(r=>r.teamId==='T01');
+ const capProgress=(out.checkpoints??[]).filter(c=>[.25,.5,.7,.8,.9,.95,.99].some(p=>
+   Math.abs(c.km/input.segments.reduce((s,v)=>s+v.lengthM,0)*1000-p)<.013))
+   .map(c=>{
+     const cap=c.riders.find(r=>r.riderId===sprinter.id);
+     const sameGroupHelpers=c.riders.filter(r=>r.teamId==='T01'&&r.role==='helfer'&&
+       r.groupIndex===cap?.groupIndex).length;
+     return {km:+c.km.toFixed(1),capGroup:cap?.groupIndex,
+       groupSize:c.groupSizes[cap?.groupIndex]??null,
+       capGap:+(cap?.gapToLeaderM??0).toFixed(0),
+       capWPrimePct:+(cap?.wPrimeRemainingPct??0).toFixed(0),
+       ownHelpersInGroup:sameGroupHelpers,
+       frontGroupSize:c.groupSizes[0],largestGroup:c.largestGroup};
+   });
+ console.log('R24_SPRINT_CAPTAIN_AUDIT '+JSON.stringify({
+   riderId:sprinter.id,rank:capRow.rank,gapS:+capRow.gapS.toFixed(1),
+   teamFinish:teamRows.map(r=>({id:r.id,role:r.role,rank:r.rank,gap:+r.gapS.toFixed(1)})),
+   sprintTrainEvents:out.events.filter(e=>e.type==='sprint-train'&&e.teamId==='T01').length,
+   ownSprintEvents:out.events.filter(e=>e.type==='sprint'&&e.riderId===sprinter.id).map(e=>({
+     km:+e.km.toFixed(2),description:e.description})),
+   progression:capProgress
+ }));
 },{timeout:180000});
