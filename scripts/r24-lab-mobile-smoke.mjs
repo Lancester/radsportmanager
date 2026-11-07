@@ -59,7 +59,7 @@ try {
  if(scrollWidth>inner+3)throw Error('Mobile horizontale Seitenverschiebung '+scrollWidth+' > '+inner);
  await page.locator('#teamCount').fill('2');
  await page.locator('#teamCount').dispatchEvent('change');
- await page.locator('#teams select').first().selectOption('offensiv');
+ await page.locator('#myStrategy').selectOption('offensiv');
  await page.locator('#run').click();
  await page.waitForFunction(()=>document.querySelector('#status')?.textContent?.includes('Rennen abgeschlossen'),
    undefined,{timeout:180000});
