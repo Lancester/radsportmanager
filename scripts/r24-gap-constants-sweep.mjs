@@ -9,10 +9,12 @@ import {spawnSync} from 'node:child_process';
 
 const repo=process.cwd();
 const root=resolve(repo,'_gap_sweep');
+// Second, still single-seed quick experiment. Previous extremes are preserved
+// in workflow run 42379116153; use only intermediate split thresholds here.
 const variants=[
- {name:'original-42-85',split:42,reconnect:85},
- {name:'reconnect-42-42',split:42,reconnect:42},
- {name:'split-85-85',split:85,reconnect:85},
+ {name:'split-55-85',split:55,reconnect:85},
+ {name:'split-65-85',split:65,reconnect:85},
+ {name:'split-75-85',split:75,reconnect:85},
 ];
 const runner=String.raw`
 import {createHash} from 'node:crypto';
