@@ -1215,14 +1215,11 @@ export function simulateRace(
             groupPaceByRider.get(s.rider.id)?.pacerId===s.rider.id):
           decideGroupRiding(groupObservation);
         commanded=group.powerW;
-        // Bei getrenntem Sprintziel muss der Begleitauftrag den
-        // organisatorischen Kapitaen erreichen, nicht den Zielsprinter.
-        const escortTarget=captainByTeam.get(s.rider.teamId)??target;
-        if(captainEscort&&escortTarget){
+        if(captainEscort&&target){
           const escort=captainEscortPower({
             sameGroup:physicalGroupOf.get(s.rider.id)===
-              physicalGroupOf.get(escortTarget.rider.id),mission:s.crewMission,
-            helperPositionM:s.positionM,captainPositionM:escortTarget.positionM,
+              physicalGroupOf.get(target.rider.id),mission:s.crewMission,
+            helperPositionM:s.positionM,captainPositionM:target.positionM,
             followPowerW:commanded,criticalPowerW:s.dayCpW,
             reserveFraction:s.physiology.remainingWPrimeJ/
               s.profile.wPrimeCapacityJ});
