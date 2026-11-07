@@ -102,6 +102,9 @@ test('Rollen: vollständige flache 154-Fahrer-Simulation mit Kapitän als Sprint
    riderId:sprinter.id,rank:capRow.rank,gapS:+capRow.gapS.toFixed(1),
    teamFinish:teamRows.map(r=>({id:r.id,role:r.role,rank:r.rank,gap:+r.gapS.toFixed(1)})),
    sprintTrainEvents:out.events.filter(e=>e.type==='sprint-train'&&e.teamId==='T01').length,
+   rejoinAssignments:(out.diagnostics.rejoinWork??[]).filter(r=>r.teamId==='T01')
+     .map(r=>({id:r.riderId,seconds:r.assignedS,frontS:r.actualFrontS})),
+   rejoinObserved:out.diagnostics.rejoinAttempts??null,
    ownSprintEvents:out.events.filter(e=>e.type==='sprint'&&e.riderId===sprinter.id).map(e=>({
      km:+e.km.toFixed(2),description:e.description})),
    progression:capProgress
