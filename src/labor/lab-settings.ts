@@ -205,7 +205,7 @@ export function buildLabRace(s:LabSettings):{input:RaceInput;changes:string[]} {
     if(strategy!==requestedStrategy)changes.push('Finalziel Sprint aktiviert Mannschaftsstrategie Sprint');
     if(override?.tacticalPlan)changes.push('Taktischer Plan für '+t.id+': '+JSON.stringify(override.tacticalPlan));
     return {...t,strategy,
-      ...(t.id===myTeamId&&s.captainId?{captainId:s.captainId}:{}),
+      ...(t.id===myTeamId&&effectiveCaptainId?{captainId:effectiveCaptainId}:{}),
       ...(t.id===myTeamId&&sprintLeaderId?{sprintLeaderId}:{}),
       ...(override?.tacticalPlan?{tacticalPlan:override.tacticalPlan}:{})};
   });
