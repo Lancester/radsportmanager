@@ -177,13 +177,17 @@ export function buildLabRace(s:LabSettings):{input:RaceInput;changes:string[]} {
     descentTechnicality:Math.min(1,Math.max(0,
       z.descentTechnicality+s.road.descentTechnicalityOffset)),
   }));
+  const selectedCaptain=f.input.riders.find(r=>r.id===effectiveCaptainId);
+  const sprintLeaderId=s.sprintLeaderId??
+    (s.captainId&&selectedCaptain?.specialty==='sprinter'?
+      s.captainId:undefined);
   const teams=f.input.teams.map(t=>{
     const strategy=teamMap.get(t.id);
     if(strategy&&strategy!==t.strategy)changes.push('Team '+t.id+': '+strategy);
     const override=s.teams.find(x=>x.teamId===t.id);
     if(override?.tacticalPlan)changes.push('Taktischer Plan für '+t.id+': '+JSON.stringify(override.tacticalPlan));
     return {...t,strategy:strategy??t.strategy,
-      ...(t.id===myTeamId&&s.sprintLeaderId?{sprintLeaderId:s.sprintLeaderId}:{}),
+      ...(t.id===myTeamId&&sprintLeaderId?{sprintLeaderId}:{}),
       ...(override?.tacticalPlan?{tacticalPlan:override.tacticalPlan}:{})};
   });
   if(s.wind.headwindMps||s.wind.crosswindMps)changes.push('Wind geändert');
