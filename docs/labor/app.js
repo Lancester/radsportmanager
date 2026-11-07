@@ -23,6 +23,68 @@ const setStatus=(msg,error=false)=>{
 let settings=initialLabSettings();
 let currentRider='F001',currentTacticalTeam='T01',running=false,serial=0,lastResult=null,previousResult=null;
 const worker=new Worker('./worker.js',{type:'module'});
+const tabButtons=[...document.querySelectorAll('#tabs button[data-tab]')];
+let activeTab='race';
+function showTab(name){
+  if(!['race','team','riders','tech','live','results'].includes(name))return;
+  activeTab=name;
+  for(const b of tabButtons)
+    b.setAttribute('aria-selected',String(b.dataset.tab===name));
+  for(const panel of document.querySelectorAll('[data-panel]'))
+    panel.hidden=panel.dataset.panel!==name||
+      (panel.id==='output'&&!lastResult)||
+      (panel.id==='comparison'&&!previousResult);
+  const labels={race:'Rennstrecke und Fahrerfeld',team:'Teamaufstellung',
+    riders:'Fahrerwerte',tech:'Wetter und Testmodi',
+    live:'Rennsimulation',results:'Ergebnisse und Bericht'};
+  $('navHint').textContent=labels[name];
+  window.scrollTo(0,0);
+}
+tabButtons.forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+$('quickRun').addEventListener('click',()=>{showTab('live');$('run').click()});
+const strategyExplanation={
+  ausgewogen:'Rennlageabhängig; kein garantierter Sprintzug.',
+  offensiv:'Aggressive Attacken nach vorhandenen Chancen, ohne künstlichen Leistungsbonus.',
+  sprint:'Team organisiert die Verfolgung und bei geeigneter Strecke den Sprintzug für das gewählte Sprintziel.',
+  kapitaen_schuetzen:'Fahrer unterstützen den Kapitän. Schutz bedeutet nicht, dass er selbst die Etappe gewinnen muss.'
+};
+function refreshRoleSummary(f){
+  const riders=f.input.riders.filter(r=>r.teamId===settings.myTeamId);
+  const captain=riders.find(r=>r.id===currentCaptainId(f));
+  const sprint=riders.find(r=>r.id===$('sprintLeader').value);
+  const strategy=$('myStrategy').value;
+  const plan=settings.teams.find(t=>t.teamId===settings.myTeamId)?.tacticalPlan;
+  $('roleSummary').replaceChildren(
+    str('strong','Dein aktueller Rennauftrag'),
+    str('p','Kapitän: '+(captain?.name??'?')+
+      ' · Sprintziel: '+(sprint?.name??'?')+
+      (captain?.id===sprint?.id?' (dieselbe Person)':'')),
+    str('p','Teamstrategie: '+(strategyExplanation[strategy]??strategy)),
+    str('p',plan?.leaderProtection==='hoch'?
+      'Erhöhter Kapitänsschutz: mehr echte Helferarbeit, falls Helfer physisch verfügbar sind.':
+      'Normaler Schutz: es bleibt nicht garantiert ein Helfer an der Seite.'));
+}
+function addLiveEvent(message){
+  $('liveFeed').prepend(str('li',message));
+  while($('liveFeed').children.length>35)$('liveFeed').lastElementChild.remove();
+}
+let lastTickerKm=-Infinity;
+function renderProgress(progress){
+  $('raceProgress').hidden=false;
+  $('raceProgress').value=progress.percent;
+  $('raceKm').textContent=fmt(progress.km,1)+' / '+fmt(progress.totalKm,1)+' km';
+  $('racePct').textContent=progress.percent+' %';
+  if(progress.captain&&progress.km-lastTickerKm>=19){
+    lastTickerKm=progress.km;
+    addLiveEvent('km '+fmt(progress.km,1)+' · Kapitän '+progress.captain.name+
+      ': Gruppe '+progress.captain.group+', '+progress.captain.gapM+
+      ' m zur Spitze, '+progress.captain.helpers+
+      ' eigene Helfer bei ihm, W′ '+progress.captain.wPrimePct+' %.');
+  }
+  for(const e of progress.events.filter(e=>[
+    'attack','sprint','sprint-train','team-chase','team-pace','recovery'
+  ].includes(e.type)))addLiveEvent('km '+fmt(e.km,1)+' · '+e.description);
+}
 function refreshFixtures(){
   const base=createReferenceFixture({routeId:settings.routeId,
     teamCount:settings.teamCount,seed:settings.seed,
@@ -126,6 +188,7 @@ function renderMyTeam(f){
       (r.id===cap?' (Kapitän)':''))));
   $('sprintLeader').value=selectedSprint;
   renderRoster(f);
+  refreshRoleSummary(f);
   $('myTeamInfo').textContent='Mein Team: '+mine.length+
     ' Fahrer · Kapitän '+mine.find(r=>r.id=== $('captain').value)?.name+
     ' · alle übrigen Teams steuert die Renn-KI.';
@@ -392,6 +455,11 @@ $('run').addEventListener('click',()=>{
     // Standardeinstellung ist der Basisfall, nicht automatisch modifiziert.
     running=true;serial++;$('run').disabled=true;
     $('working').hidden=false;
+    lastTickerKm=-Infinity;
+    $('raceProgress').value=0;$('raceProgress').hidden=false;
+    $('racePct').textContent='0 %';$('raceKm').textContent='0 km';
+    $('liveFeed').replaceChildren(str('li','Rennen gestartet · die Renn-KI berechnet jetzt den Verlauf.'));
+    showTab('live');
     setStatus('Rennen wird lokal simuliert. Die Oberfläche bleibt bedienbar.');
     worker.postMessage({id:serial,settings:structuredClone(settings)});
   }catch(e){setStatus(String(e.message??e),true)}
@@ -489,11 +557,14 @@ function renderComparison(current,previous){
 }
 worker.onmessage=({data:response})=>{
   if(response.id!==serial)return;
+  if(response.progress){renderProgress(response.data);return;}
   running=false;$('run').disabled=false;$('working').hidden=true;
   if(!response.ok){setStatus('Simulationsfehler: '+response.error,true);return}
   previousResult=lastResult;lastResult=response.data;
   renderOutput(lastResult);
   if(previousResult)renderComparison(lastResult,previousResult);
+  addLiveEvent('Ziel erreicht · Rennbericht im Reiter „Bericht“.');
+  showTab('results');
   setStatus('Rennen abgeschlossen – '+lastResult.durationMs+' ms, '+
     lastResult.ranking.length+' Fahrer gewertet.');
 };
@@ -528,4 +599,5 @@ async function enableOffline(){
     label.textContent='Offline-Installation fehlgeschlagen: '+String(e?.message??e);
   }
 }
+showTab('race');
 enableOffline();
