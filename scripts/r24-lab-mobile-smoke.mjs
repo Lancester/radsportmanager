@@ -30,7 +30,7 @@ try {
  page.on('pageerror',e=>errors.push(e.message));
  page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
  await page.goto('http://127.0.0.1:'+port+'/index.html');
- await page.locator('#teams select').first().waitFor();
+ await page.locator('#myTeam').waitFor();
  const teamDropdowns=await page.locator('#teams select').count();
  if(teamDropdowns!==22)throw Error('22 Teams nicht geladen: '+teamDropdowns);
  const controls=await page.locator('#riderValues input').count();
@@ -89,7 +89,7 @@ try {
  const onlineResultRows=fullRows;
  await context.setOffline(true);
  await page.reload({waitUntil:'domcontentloaded'});
- await page.locator('#teams select').first().waitFor();
+ await page.locator('#myTeam').waitFor();
  await page.waitForFunction(()=>document.querySelector('#offlineInfo')?.textContent?.includes('Offline bereit'),
    undefined,{timeout:30000}).catch(async()=>{
      throw Error('Offline-Status nach Neustart: '+await page.locator('#offlineInfo').textContent());
