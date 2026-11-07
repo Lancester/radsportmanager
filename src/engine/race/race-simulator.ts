@@ -409,7 +409,10 @@ export interface RaceProgressEvent {
   events:RaceEvent[];
 }
 /** Beobachtender Fortschrittskanal; verändert weder Rennphysik noch KI noch Seed. */
-export function simulateRace(x:RaceInput,onProgress?:(event:RaceProgressEvent)=>void):RaceResult {
+export function simulateRace(
+  x:RaceInput,onProgress?:(event:RaceProgressEvent)=>void,
+  myTeamId?:string,
+):RaceResult {
   validateRace(x);
   const totalM=x.segments.reduce((v,s)=>v+s.lengthM,0);
   const ascentM=x.segments.reduce((v,s)=>
@@ -1865,8 +1868,12 @@ export function simulateRace(x:RaceInput,onProgress?:(event:RaceProgressEvent)=>
           leadingGapM:groups.length>1?
             groups[0].at(-1)!.positionM-groups[1][0].positionM:0});
         if(onProgress){
-          const ownTeam=x.teams.find(q=>q.captainId);
-          const cap=ownTeam?byId.get(ownTeam.captainId!):undefined;
+          const ownTeam=x.teams.find(q=>q.id===myTeamId) ??
+            x.teams.find(q=>q.captainId) ?? x.teams[0];
+          const cap=ownTeam.captainId?
+            byId.get(ownTeam.captainId):
+            states.find(s=>s.rider.teamId===ownTeam.id&&
+              s.rider.role==='kapitaen');
           const groupIdx=cap?groups.findIndex(g=>
             g.some(r=>r.rider.id===cap.rider.id)):-1;
           const peers=groupIdx>=0?groups[groupIdx]:[];
