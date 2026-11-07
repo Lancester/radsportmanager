@@ -54,7 +54,7 @@ function currentCaptainId(f){
 function activeRole(r,f){
   if(r.id===currentCaptainId(f))return 'kapitaen';
   return settings.riderRoles?.[r.id]??
-    (r.role==='kapitaen'?'helfer':r.role);
+    (r.role==='kapitaen'?'frei':r.role);
 }
 function changeCaptain(id,f){
   const old=currentCaptainId(f);

@@ -147,7 +147,7 @@ export function buildLabRace(s:LabSettings):{input:RaceInput;changes:string[]} {
          s.sprintLeaderId===undefined));
     const role:RaceRole=r.teamId===myTeamId?
       (r.id===effectiveCaptainId?(sprintCaptain?'sprinter':'kapitaen'):
-        s.riderRoles?.[r.id]??(r.role==='kapitaen'?'helfer':r.role)):r.role;
+        s.riderRoles?.[r.id]??(r.role==='kapitaen'?'frei':r.role)):r.role;
     if(!tune)return {...r,role};
     const cpRatio=(tune.criticalPowerPct??100)/100;
     const next={...r,role,

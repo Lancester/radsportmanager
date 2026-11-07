@@ -19,7 +19,7 @@ test('Rollen: Kapitän darf zugleich Sprintziel sein, echte Engine-Team-ID',()=>
  assert.equal(built.teams[0].strategy,'sprint');
  assert.equal(built.riders.find(r=>r.id===naturalSprinter.id).role,'sprinter');
  assert.equal(built.teams[0].captainId,naturalSprinter.id);
- assert.equal(built.riders.find(r=>r.id===oldCap.id).role,'helfer');
+ assert.equal(built.riders.find(r=>r.id===oldCap.id).role,'frei');
  assert.equal(built.riders.filter(r=>r.teamId==='T01'&&r.role==='kapitaen').length,0);
  // Organisatorischer Kapitän bleibt via team.captainId eindeutig.
  assert.deepEqual(built.riders.filter(r=>r.teamId!=='T01'),
@@ -94,22 +94,9 @@ test('Rollen: vollständige flache 154-Fahrer-Simulation mit Kapitän als Sprint
  const capRow=out.classification.find(r=>r.id===sprinter.id);
  // Den harten Abnahmewert erst nach den vollständigen Vergleichslogs prüfen.
  const teamRows=out.classification.filter(r=>r.teamId==='T01');
- // Zweiter isolierter Prüfstand: organisatorischer Kapitän F002,
- // jedoch bisheriger Kapitän F001 noch nicht zum Helfer umgestellt.
- // Dritter: F001 fährt ohne Helferauftrag (frei) statt automatisch
- // den Sprintzug zu übernehmen. Beide Varianten behalten die Physik.
- const baselineCaptainStillLeader={...input,riders:input.riders.map(r=>
-   r.id===initial.riders.find(x=>x.teamId==='T01'&&x.role==='kapitaen').id?
-     {...r,role:'kapitaen'}:r)};
- const noForcedExtraHelper={...input,riders:input.riders.map(r=>
-   r.id===initial.riders.find(x=>x.teamId==='T01'&&x.role==='kapitaen').id?
-     {...r,role:'frei'}:r)};
- const withOldCaptainRole=simulateRace(baselineCaptainStillLeader);
- const withFreeFormerCaptain=simulateRace(noForcedExtraHelper);
- const alternativeRanks={
-   originalCaptainRole:withOldCaptainRole.classification.find(r=>r.id===sprinter.id).rank,
-   formerCaptainFree:withFreeFormerCaptain.classification.find(r=>r.id===sprinter.id).rank,
- };
+ // Kausale Gegenprobe vorher: ehemaliger Kapitän als freie Rolle
+ // ergibt für den eigentlichen Sprintkapitän im selben Seed Platz 7.
+ // Ein zusätzlicher verpflichteter Helfer hatte ihn auf Platz 138 gedrückt.
  const baselineProgress=(unmodified.checkpoints??[]).filter(c=>
    Math.abs(c.km/184.9-.25)<.014).map(c=>{
      const cap=c.riders.find(r=>r.riderId===sprinter.id);
@@ -132,7 +119,6 @@ test('Rollen: vollständige flache 154-Fahrer-Simulation mit Kapitän als Sprint
    });
  console.log('R24_SPRINT_CAPTAIN_AUDIT '+JSON.stringify({
    riderId:sprinter.id,rank:capRow.rank,gapS:+capRow.gapS.toFixed(1),
-   alternativeRanks,
    baselineSprinterRole:{rank:baselineRank.rank,
      gapS:+baselineRank.gapS.toFixed(1),progression:baselineProgress},
    teamFinish:teamRows.map(r=>({id:r.id,role:r.role,rank:r.rank,gap:+r.gapS.toFixed(1)})),
@@ -144,4 +130,6 @@ test('Rollen: vollständige flache 154-Fahrer-Simulation mit Kapitän als Sprint
      km:+e.km.toFixed(2),description:e.description})),
    progression:capProgress
  }));
+ assert.ok(Math.abs(capRow.rank-baselineRank.rank)<=3,
+   'Kapitän als Sprinter darf durch die reine Teamaufstellung nicht vom Hauptfeld abreißen');
 },{timeout:180000});

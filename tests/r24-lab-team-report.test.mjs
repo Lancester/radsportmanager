@@ -27,7 +27,7 @@ test('Kapitän wechseln: echte Rolle, kein zweiter Kapitän, nur eigenes Team',(
  const team=changed.riders.filter(r=>r.teamId==='T02');
  assert.equal(team.filter(r=>r.role==='kapitaen').length,1);
  assert.equal(team.find(r=>r.role==='kapitaen').id,selected.id);
- assert.equal(team.find(r=>r.id===baseline.riders.find(x=>x.teamId==='T02'&&x.role==='kapitaen').id).role,'helfer');
+ assert.equal(team.find(r=>r.id===baseline.riders.find(x=>x.teamId==='T02'&&x.role==='kapitaen').id).role,'frei');
  assert.deepEqual(changed.riders.filter(r=>r.teamId!=='T02'),
    baseline.riders.filter(r=>r.teamId!=='T02'));
  assert.deepEqual(changed.riders.map(r=>r.name),baseline.riders.map(r=>r.name));

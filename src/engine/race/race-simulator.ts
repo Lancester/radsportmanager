@@ -1325,7 +1325,7 @@ export function simulateRace(x:RaceInput):RaceResult {
           // EIGENER Leistung an ein tatsächlich benachbartes gegnerisches
           // Hinterrad hängen. Sein Talent ist unabhängig von Sprintwatt.
           if(s.rider.specialty==='sprinter'&&
-            ['sprinter','kapitaen'].includes(s.rider.role)){
+            ['sprinter','kapitaen','frei'].includes(s.rider.role)){
             const group=physicalGroupOf.get(s.rider.id);
             const hasTeamHelperAhead=active.some(r=>
               r.rider.teamId===s.rider.teamId&&
@@ -1533,7 +1533,8 @@ export function simulateRace(x:RaceInput):RaceResult {
       if(sprintFriendlyRace&&
         (teams.get(s.rider.teamId)?.sprintLeaderId===s.rider.id||
           (s.rider.specialty==='sprinter'&&
-            (s.rider.role==='sprinter'||s.rider.role==='kapitaen')))&&
+            (s.rider.role==='sprinter'||s.rider.role==='kapitaen'||
+              s.rider.role==='frei')))&&
         s.sprintLaunchedAtS===null){
         const g=physicalGroupOf.get(s.rider.id);
         const frontState=g?.length?byId.get(g[0].id):undefined;
