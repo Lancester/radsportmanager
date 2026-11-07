@@ -5,7 +5,7 @@
  * entscheiden erst danach, welche Leistung tatsächlich möglich ist.
  */
 export type RaceStrategy = 'ausgewogen'|'offensiv'|'sprint'|'kapitaen_schuetzen';
-export type RaceRole = 'kapitaen'|'sprinter'|'helfer';
+export type RaceRole = 'kapitaen'|'sprinter'|'helfer'|'frei';
 export type RaceIntent = 'grundtempo'|'windschatten'|'angriff'|'verfolgung'|'sprint'|'erholung'|'helferarbeit';
 
 export interface TacticObservation {
@@ -39,7 +39,7 @@ const finite=(label:string,value:number,valid:boolean)=>{
 };
 /** Alle Entscheidungen sind reproduzierbare Watt-Anfragen, kein Tempo- oder Siegbonus. */
 export function chooseRacePower(o:TacticObservation):TacticDecision {
-  if(!o || !['kapitaen','sprinter','helfer'].includes(o.role) ||
+  if(!o || !['kapitaen','sprinter','helfer','frei'].includes(o.role) ||
     !['ausgewogen','offensiv','sprint','kapitaen_schuetzen'].includes(o.strategy))
     throw new RangeError('Renn-KI: unbekannte Rolle oder Taktik');
   finite('criticalPowerW',o.criticalPowerW,o.criticalPowerW>50&&o.criticalPowerW<=1500);
