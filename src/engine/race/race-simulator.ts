@@ -223,6 +223,25 @@ export interface RaceResult {
       wheelFindingSkill:number;wPrimePct:number}>;
     participants:number;raceDistanceKm:number};
 }
+/** Rein beobachtende, explizit opt-in Sekunden-Telemetrie. Kein Einfluss auf KI/Physik. */
+export interface RaceStepTrace {
+  timeS:number;raceKm:number;id:string;teamId:string;
+  positionM:number;speedMps:number;endSpeedMps:number;
+  gapToLeaderM:number;frontGapM:number|null;frontSpeedMps:number|null;
+  groupSize:number;distanceFromGroupFrontM:number;isGroupPacer:boolean;
+  groupPacerId:string|null;groupPacerSpeedMps:number|null;
+  groupPacerAccelerationMps2:number|null;
+  requestedTacticalW:number;packRequestedW:number;groupRequestedW:number;
+  finalRequestedW:number;appliedPowerW:number;dayCpW:number;
+  wPrimePct:number;enduranceAvailability:number;aeroFactor:number;
+  intent:RaceIntent;crewMission:CrewMission|null;crewDuty:CrewDuty|null;
+  segmentIndex:number;gradeFraction:number;brakeForceN:number;
+}
+export interface RaceTraceObserver {
+  riderIds:ReadonlySet<string>;
+  onSample:(row:RaceStepTrace)=>void;
+  fromKm?:number;toKm?:number;everySeconds?:number;
+}
 interface State {
   rider:RaceRider;physical:CornerRider;profile:CpWprimeProfile;
   physiology:CpWprimeState;dayCpW:number;positionM:number;
@@ -411,7 +430,7 @@ export interface RaceProgressEvent {
 /** Beobachtender Fortschrittskanal; verändert weder Rennphysik noch KI noch Seed. */
 export function simulateRace(
   x:RaceInput,onProgress?:(event:RaceProgressEvent)=>void,
-  myTeamId?:string,
+  myTeamId?:string,onTrace?:RaceTraceObserver,
 ):RaceResult {
   validateRace(x);
   const totalM=x.segments.reduce((v,s)=>v+s.lengthM,0);
@@ -1412,6 +1431,7 @@ export function simulateRace(
           commanded=approach.powerW;
         }
       }
+      const groupRequestedW=commanded;
       // Frühzeitige echte Positionierung der nominierten Puncheure
       // plus nachhaltig selektives Rampentempo (Watt, kein Bonus).
       let classicControlApplied=false;
@@ -1692,11 +1712,41 @@ export function simulateRace(
         lastPower.set(s.rider.id,cp.appliedPowerW);
         lastAero.set(s.rider.id,aeroFactor);
       }
-      next.set(s.rider.id,advanceMotionStep({
+      const motion=advanceMotionStep({
         speedMps:s.speedMps,stepSeconds:dt,
         crankPowerW:cp.appliedPowerW,rider:roadPhysical,
         gradeFraction:segment.gradeFraction,aeroFactor,brakeForceN,
-      }));
+      });
+      next.set(s.rider.id,motion);
+      if(onTrace?.riderIds.has(s.rider.id)&&
+        s.positionM/1000>=(onTrace.fromKm??0)&&
+        s.positionM/1000<=(onTrace.toKm??totalM/1000)&&
+        Math.round(t/dt)%Math.max(1,Math.round((onTrace.everySeconds??1)/dt))===0){
+        const pacing=groupPaceByRider.get(s.rider.id);
+        onTrace.onSample({
+          timeS:t,raceKm:leader.positionM/1000,
+          id:s.rider.id,teamId:s.rider.teamId,
+          positionM:s.positionM,speedMps:s.speedMps,
+          endSpeedMps:motion.endSpeedMps,
+          gapToLeaderM:leader.positionM-s.positionM,
+          frontGapM:frontGap.get(s.rider.id)??null,
+          frontSpeedMps:frontSpeed.get(s.rider.id)??null,
+          groupSize:actualGroupSize.get(s.rider.id)??1,
+          distanceFromGroupFrontM:(actualGroupFront.get(s.rider.id)??s.positionM)-s.positionM,
+          isGroupPacer:pacing?.pacerId===s.rider.id,
+          groupPacerId:pacing?.pacerId??null,
+          groupPacerSpeedMps:pacing?.speedMps??null,
+          groupPacerAccelerationMps2:pacing?.accelerationMps2??null,
+          requestedTacticalW:s.decision.desiredPowerW,
+          packRequestedW:pack.requestedPowerW,
+          groupRequestedW,finalRequestedW:commanded,
+          appliedPowerW:cp.appliedPowerW,dayCpW:s.dayCpW,
+          wPrimePct:100*s.physiology.remainingWPrimeJ/s.profile.wPrimeCapacityJ,
+          enduranceAvailability:availability,aeroFactor,
+          intent:s.intent,crewMission:s.crewMission,crewDuty:s.crewDuty,
+          segmentIndex:index,gradeFraction:segment.gradeFraction,brakeForceN,
+        });
+      }
     }
     if(sprintFriendlyRace){
       const nominated=previousFieldChaseLeader?.riderId??null;
