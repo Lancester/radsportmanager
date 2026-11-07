@@ -40,6 +40,11 @@ try {
  const ownRiders=await page.locator('#rider option').count();
  if(ownRiders!==7)throw Error('Mein Team muss exakt sieben Fahrer anzeigen');
  await page.locator('#captain').selectOption('F003');
+ await page.locator('#sprintLeader').selectOption('F003');
+ await page.locator('#role-F004').selectOption('frei');
+ if(await page.locator('#sprintLeader').inputValue()!=='F003'||
+   await page.locator('#role-F004').inputValue()!=='frei')
+   throw Error('Kapitän als Sprinter oder freie Rolle wird nicht gespeichert');
  const selectedCaptain=await page.locator('#captain').inputValue();
  if(selectedCaptain!=='F003')throw Error('Kapitänsauswahl nicht aktiv');
  const captainLabel=await page.locator('#captain option:checked').textContent();
