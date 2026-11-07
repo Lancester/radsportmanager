@@ -75,7 +75,10 @@ export function decideSprintPosition(
     !Number.isFinite(o.followPowerW)||o.followPowerW<0||
     !Number.isFinite(o.criticalPowerW)||o.criticalPowerW<=0)
     return null;
-  const sprinter=o.isTargetSprinter&&o.specialty==='sprinter';
+  // Die Mannschaft bestimmt ihr Sprintziel. Ein nominierter Kapitän darf
+  // unabhängig vom angeborenen Spezialistentyp um Position kämpfen;
+  // seine reale Sprintfähigkeit/CP bleiben unverändert.
+  const sprinter=o.isTargetSprinter;
   const escort=o.isEscort&&!sprinter&&
     o.distanceToTargetM!==null&&
     Math.abs(o.distanceToTargetM)<=c.escortMaxDistanceM&&
