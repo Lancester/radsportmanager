@@ -2,6 +2,7 @@
 import {buildLabRace} from './generated/labor/lab-settings.js';
 import {simulateRace} from './generated/engine/race/race-simulator.js';
 import {scoreFinishGroups} from './generated/engine/race/finish-time-groups.js';
+import {buildTeamReport} from './generated/labor/team-report.js';
 
 self.onmessage=async ({data})=>{
   const {id,settings}=data;
@@ -13,6 +14,8 @@ self.onmessage=async ({data})=>{
       id:r.id,rank:r.rank,finishTimeS:r.finishTimeS,
     })),settings.timingRule);
     const ids=new Map(scored.map(x=>[x.id,x]));
+    const teamReport=buildTeamReport(input,outcome,settings.myTeamId??'T01',
+      new Map(scored.map(x=>[x.id,x.creditedGapS])));
     const roles=new Map(input.riders.map(x=>[x.id,x.specialty??x.role]));
     const results=outcome.classification.map(r=>({
       ...r,type:roles.get(r.id),
@@ -70,7 +73,7 @@ self.onmessage=async ({data})=>{
       route:settings.routeId,seed:settings.seed,teamCount:input.teams.length,
       durationMs:Math.round(performance.now()-start),
       winner:results[0].id,ranking:results,
-      groups,eventSummary,keyEvents,checkpoints,report,tacticalEvidence,
+      groups,eventSummary,keyEvents,checkpoints,report,tacticalEvidence,teamReport,
       appliedChanges:changes,settings,
     }});
   }catch(error){
