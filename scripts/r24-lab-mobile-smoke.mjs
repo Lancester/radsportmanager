@@ -35,6 +35,15 @@ try {
  if(teamDropdowns!==22)throw Error('22 Teams nicht geladen: '+teamDropdowns);
  const controls=await page.locator('#riderValues input').count();
  if(controls!==11)throw Error('11 Fahrerregler nicht geladen: '+controls);
+ // Der Nutzer steuert nur ein Team und bestimmt den Kapitän selbst.
+ await page.locator('#myTeam').selectOption('T01');
+ const ownRiders=await page.locator('#rider option').count();
+ if(ownRiders!==7)throw Error('Mein Team muss exakt sieben Fahrer anzeigen');
+ await page.locator('#captain').selectOption('F003');
+ const selectedCaptain=await page.locator('#captain').inputValue();
+ if(selectedCaptain!=='F003')throw Error('Kapitänsauswahl nicht aktiv');
+ const captainLabel=await page.locator('#captain option:checked').textContent();
+ if(captainLabel.includes('Fiktiver Profi'))throw Error('Fahrernamen fehlen');
  const tacticControls=await page.locator('#tacticalFields select').count();
  if(tacticControls!==6)throw Error('6 Taktikregler nicht geladen: '+tacticControls);
  await page.locator('#tactical-attackRisk').selectOption('keine');
@@ -56,6 +65,11 @@ try {
    undefined,{timeout:180000});
  const rows=await page.locator('#results tr').count();
  if(rows!==14)throw Error('Kein echtes 14-Fahrer-Ergebnis: '+rows);
+ const teamRiders=await page.locator('#teamRiders tr').count();
+ if(teamRiders!==7)throw Error('Teamergebnis mit sieben eigenen Fahrern fehlt');
+ const summary=await page.locator('#teamSummary').textContent();
+ if(!summary.includes('Kapitän')||!summary.includes('Platz'))
+   throw Error('Personalisierter Rennbericht unvollständig');
  const report=await page.locator('#report li').count();
  if(report<4)throw Error('Rennbericht fehlt');
  const smallStatus=await page.locator('#status').textContent();
@@ -90,7 +104,7 @@ try {
  if(errors.length)throw Error('Browserkonsole: '+errors.join('; '));
  await page.screenshot({path:'rennlabor-mobile-smoke.png',fullPage:true});
  console.log(JSON.stringify({mobile:'Pixel 7 Chromium',teams:teamDropdowns,
-   riderControls:controls,tacticControls,testFinishers:rows,fullFinishers:onlineResultRows,
+   riderControls:controls,tacticControls,ownRiders,selectedCaptain,teamRiders,testFinishers:rows,fullFinishers:onlineResultRows,
    offlineFinishers:offlineRows,cachedState,reportLines:report,scrollWidth,inner,smallStatus,fullStatus}));
 }finally{
  await browser?.close();await new Promise(ok=>server.close(ok));
