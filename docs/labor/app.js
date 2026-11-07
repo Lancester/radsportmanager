@@ -159,10 +159,17 @@ $('myStrategy').addEventListener('change',()=>{
   const team=f.input.teams.find(t=>t.id===settings.myTeamId);
   const old=settings.teams.find(t=>t.teamId===settings.myTeamId);
   settings.teams=settings.teams.filter(t=>t.teamId!==settings.myTeamId);
-  if(old?.tacticalPlan||$('myStrategy').value!==team.strategy)
-    settings.teams.push({teamId:team.id,strategy:$('myStrategy').value,
-      ...(old?.tacticalPlan?{tacticalPlan:old.tacticalPlan}:{})});
-  renderTeams(f);
+  const desired=$('myStrategy').value;
+  // Eine manuelle Wahl 'Ausgewogen' ist kein unsichtbarer Sprintauftrag.
+  // Widerspruch auflösen statt zwei unterschiedliche Strategien anzuzeigen.
+  const plan=old?.tacticalPlan?.finale==='sprint'&&desired!=='sprint'?
+    {...old.tacticalPlan,finale:'situativ'}:old?.tacticalPlan;
+  if(plan||desired!==team.strategy)
+    settings.teams.push({teamId:team.id,strategy:desired,
+      ...(plan?{tacticalPlan:plan}:{})});
+  renderTeams(f);renderTacticalFields(f);
+  if(old?.tacticalPlan?.finale==='sprint'&&desired!=='sprint')
+    setStatus('Finalziel wurde zu situativ geändert: Grundstrategie ist jetzt '+strategien[desired]+'.');
 });
 $('allRiders').addEventListener('change',()=>renderRiders(refreshFixtures()));
 function renderTeams(f){
@@ -206,9 +213,13 @@ function renderTacticalFields(f){
       const nextPlan={...DEFAULT_TEAM_PLAN,...old?.tacticalPlan,
         [meta.key]:picker.value};
       settings.teams=settings.teams.filter(x=>x.teamId!==selected.id);
-      settings.teams.push({teamId:selected.id,
-        strategy:old?.strategy??selected.strategy,tacticalPlan:nextPlan});
-      setStatus('Taktikplan für '+selected.id+' angepasst: '+meta.label);
+      const sprintRequested=meta.key==='finale'&&picker.value==='sprint';
+      const strategy=sprintRequested?'sprint':old?.strategy??selected.strategy;
+      settings.teams.push({teamId:selected.id,strategy,tacticalPlan:nextPlan});
+      if(selected.id===settings.myTeamId)$('myStrategy').value=strategy;
+      renderTeams(f);
+      setStatus(sprintRequested?'Sprint bevorzugen aktiviert auch die Grundstrategie Sprint (Jagd, Schutz und Sprintzug).':
+        'Taktikplan für '+selected.id+' angepasst: '+meta.label);
     });
     wrapper.append(label,picker);host.append(wrapper);
   }
