@@ -19,11 +19,23 @@ on:
       - 'tests/r24-lab-v5-captain-diagnosis.test.mjs'
       - 'scripts/r24-lab-mobile-smoke.mjs'
       - 'scripts/r24-lab-offline-assets.mjs'
+      - 'scripts/r24-gap-constants-sweep.mjs'
       - '.github/workflows/r24-browser-labor.yml'
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
+  quick-gap-sweep:
+    name: Drei kleine Gruppenabstands-Proben
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: In wegwerfbaren Quellkopien drei Varianten mit demselben Seed rechnen
+        run: node scripts/r24-gap-constants-sweep.mjs
   browser:
     runs-on: ubuntu-24.04
     timeout-minutes: 12
