@@ -18,6 +18,8 @@ export interface IntelligentRider {
 }
 export interface IntelligentTeam {
   id:string;strategy:RaceStrategy;
+  /** Organisatorischer Teamkapitän darf zusätzlich Sprinter sein. */
+  captainId?:string;
   /** Geplanter Zielsprinter – darf gleichzeitig Kapitän sein. */
   sprintLeaderId?:string;
   tacticalPlan?:TeamTacticalPlan;
@@ -202,7 +204,9 @@ export function decideIntelligentCrew(input:{
     const targetRole=team.strategy==='sprint'?'sprinter':'kapitaen';
     const target=team.strategy==='sprint'&&team.sprintLeaderId?
       members.find(r=>r.id===team.sprintLeaderId):
-      members.find(r=>r.role===targetRole)||members.find(r=>r.role==='kapitaen');
+      team.strategy!=='sprint'&&team.captainId?
+        members.find(r=>r.id===team.captainId):
+        members.find(r=>r.role===targetRole)||members.find(r=>r.role==='kapitaen');
     if(!target)continue;
     const group=groups.find(g=>g.includes(target));
     if(!group)continue;
@@ -229,7 +233,8 @@ export function decideIntelligentCrew(input:{
       r.role===target.role&&r!==target&&
       r.positionM>group[0].positionM+R15_R16.groupBreakM);
     const rejoin=input.adaptiveChase===true&&
-      team.strategy==='kapitaen_schuetzen'&&target.role==='kapitaen'&&
+      team.strategy==='kapitaen_schuetzen'&&
+      (target.role==='kapitaen'||team.captainId===target.id)&&
       !isMain&&preceding!==null&&group.length>=R24_REJOIN.minimumGroupSize&&
       precedingGap>R15_R16.groupBreakM&&precedingGap<=R24_REJOIN.maximumGapM&&
       precedingGap/Math.max(1,targetRemainingM)<R24_REJOIN.maximumRemainingFraction&&
@@ -251,7 +256,8 @@ export function decideIntelligentCrew(input:{
     // aber ein naher Helfer als Begleiter des Kapitaens vorgesehen.
     const targetRank=group.findIndex(r=>r.id===target.id)+1;
     const needsCaptainSupport=input.adaptiveChase&&
-      team.strategy==='kapitaen_schuetzen'&&target.role==='kapitaen'&&
+      team.strategy==='kapitaen_schuetzen'&&
+      (target.role==='kapitaen'||team.captainId===target.id)&&
       group.length>=4&&
       (target.reserveFraction<.4||targetRank>Math.ceil(group.length*.70)||
         (!isMain&&raceFrontM-target.positionM>75));
@@ -493,7 +499,9 @@ export function decideIntelligentCrew(input:{
       const targetRole=ownTeam.strategy==='sprint'?'sprinter':'kapitaen';
       const protectedRider=input.riders.find(x=>x.teamId===r.teamId&&
         (ownTeam.strategy==='sprint'&&ownTeam.sprintLeaderId?
-          x.id===ownTeam.sprintLeaderId:x.role===targetRole));
+          x.id===ownTeam.sprintLeaderId:
+          ownTeam.strategy!=='sprint'&&ownTeam.captainId?
+            x.id===ownTeam.captainId:x.role===targetRole));
       const reallyLeading=order.riderId===fieldChaseLeader?.riderId&&
         frontDistance<=R15_R16.frontWorkRadiusM&&
         r.positionM>(protectedRider?.positionM??-Infinity)+.1;
