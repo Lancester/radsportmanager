@@ -7,6 +7,10 @@ on:
       - 'docs/labor/**'
       - 'tests/r24-lab-settings.test.mjs'
       - 'tests/r24-lab-integration.test.mjs'
+      - 'tests/r24-lab-tactical-plan.test.mjs'
+      - 'tests/r24-lab-tactical-ab.test.mjs'
+      - 'tests/r24-lab-team-report.test.mjs'
+      - 'tests/r24-lab-rider-roles.test.mjs'
       - 'scripts/r24-lab-mobile-smoke.mjs'
       - 'scripts/r24-lab-offline-assets.mjs'
       - '.github/workflows/r24-browser-labor.yml'
@@ -24,7 +28,7 @@ jobs:
           node-version: '22'
       - name: Reine Konfigurations- und Ergebniszeit-Tests
         run: |
-          node --experimental-strip-types --test tests/r24-lab-settings.test.mjs tests/r24-finish-time-groups.test.mjs tests/r24-lab-integration.test.mjs
+          node --experimental-strip-types --test tests/r24-lab-settings.test.mjs tests/r24-finish-time-groups.test.mjs tests/r24-lab-integration.test.mjs tests/r24-lab-tactical-plan.test.mjs tests/r24-lab-tactical-ab.test.mjs tests/r24-lab-team-report.test.mjs tests/r24-lab-rider-roles.test.mjs
       - name: Browser-JS (alle abhängigen originalen Engine-Module)
         run: |
           npx --yes --package typescript@5.9.3 tsc \
@@ -33,7 +37,8 @@ jobs:
             --rootDir src --outDir docs/labor/generated \
             src/labor/lab-settings.ts \
             src/engine/race/race-simulator.ts \
-            src/engine/race/finish-time-groups.ts
+            src/engine/race/finish-time-groups.ts \
+            src/labor/team-report.ts
       - name: Syntax und Browserpaket überprüfen
         run: |
           node --check docs/labor/app.js
