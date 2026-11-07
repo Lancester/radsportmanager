@@ -6,6 +6,8 @@
  * Die 42-m-Grenze ordnet nur aktuelle Strecken-Abstandsgruppen, nicht Aero.
  */
 import type {RaceRole,RaceStrategy} from './race-tactics.ts';
+import {crewPowerFactor} from './team-tactical-plan.ts';
+import type {TeamTacticalPlan} from './team-tactical-plan.ts';
 
 export interface IntelligentRider {
   id:string;teamId:string;role:RaceRole;
@@ -16,6 +18,7 @@ export interface IntelligentRider {
 }
 export interface IntelligentTeam {
   id:string;strategy:RaceStrategy;
+  tacticalPlan?:TeamTacticalPlan;
   /** Veraltete Vergleichs-API; im adaptiven Modus ohne Steuerwirkung. */
   chaseHelperCount?:number;
 }
@@ -510,6 +513,16 @@ export function decideIntelligentCrew(input:{
       const r=input.riders.find(r=>r.id===fieldChaseLeader!.riderId)!;
       leaderByTeam.set(r.teamId,fieldChaseLeader);
     }
+  }
+  // Zusatz-Teamanweisungen beeinflussen nur reale Wattwuensche
+  // bereits physisch vorhandener, autonom nominierter Helfer.
+  const teamPlans=new Map(input.teams.map(t=>[t.id,t.tacticalPlan]));
+  const riderTeams=new Map(input.riders.map(r=>[r.id,r.teamId]));
+  for(const order of orders.values()){
+    const teamId=riderTeams.get(order.riderId)!;
+    if(!teamPlans.get(teamId))continue;
+    order.desiredPowerW*=crewPowerFactor(teamPlans.get(teamId),
+      order.mission,order.duty);
   }
   return {orders,situation,missionByTeam,leaderByTeam,
     ...(fieldChaseLeader?{fieldChaseLeader}:{})};
