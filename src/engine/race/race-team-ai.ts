@@ -261,11 +261,7 @@ export function decideIntelligentCrew(input:{
       group.length>=4&&
       (target.reserveFraction<.4||targetRank>Math.ceil(group.length*.70)||
         (!isMain&&raceFrontM-target.positionM>75));
-    const separateCaptainNeedsEscort=input.adaptiveChase&&
-      team.strategy==='sprint'&&team.captainId&&team.sprintLeaderId&&
-      team.captainId!==team.sprintLeaderId;
-    if(input.restInPeloton&&mission==='schutz'&&!needsCaptainSupport&&
-      !separateCaptainNeedsEscort)continue;
+    if(input.restInPeloton&&mission==='schutz'&&!needsCaptainSupport)continue;
     if(input.progress>=0.97&&!sprintTrain&&
       !((input.sprintFinaleMode||input.adaptiveChase)&&chase))continue;
     const gapToFront=(r:IntelligentRider)=>group[0].positionM-r.positionM;
@@ -433,39 +429,6 @@ export function decideIntelligentCrew(input:{
             'Sprintzug trotz Feldjagd: geschützten Sprinter begleiten',
           groupFrontM:group[0].positionM,
         });
-      }
-    }
-    // Ein gesondertes Sprintziel ersetzt NICHT die zugesagte Schutzrolle
-    // des organisatorischen Kapitaens. Ein Helfer bleibt, sofern er
-    // tatsaechlich in Reichweite ist, beim Kapitaen; die anderen koennen
-    // weiterhin jagen oder einen Sprintzug aufbauen. Kein Teleportieren.
-    if(input.adaptiveChase&&team.strategy==='sprint'&&
-      team.captainId&&team.sprintLeaderId&&
-      team.captainId!==team.sprintLeaderId){
-      const captain=members.find(r=>r.id===team.captainId);
-      const captainGroup=captain?groups.find(g=>g.includes(captain)):undefined;
-      const fitHelpers=members.filter(r=>r.role==='helfer'&&
-        !r.chaseSpent&&r.reserveFraction>=R15_R16.minimumReserve);
-      if(captain&&captainGroup&&captainGroup.length>=2&&
-        fitHelpers.length>=2&&input.progress<.97){
-        const escort=fitHelpers.filter(r=>
-          captainGroup.includes(r)&&
-          Math.abs(r.positionM-captain.positionM)<=
-            R15_R16.maximumSupportDistanceToTargetM)
-          .sort((a,b)=>
-            Math.abs(a.positionM-captain.positionM)-
-              Math.abs(b.positionM-captain.positionM)||
-            b.reserveFraction-a.reserveFraction||
-            a.id.localeCompare(b.id))[0];
-        if(escort){
-          orders.set(escort.id,{
-            riderId:escort.id,mission:'schutz',duty:'unterstuetzung',
-            desiredPowerW:escort.criticalPowerW*
-              (escort.positionM<=captain.positionM?1.03:.98),
-            reason:'Eigener Begleiter bleibt beim getrennten Teamkapitaen',
-            groupFrontM:captainGroup[0].positionM,
-          });
-        }
       }
     }
     missionByTeam.set(team.id,mission);
