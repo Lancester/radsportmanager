@@ -30,6 +30,7 @@ try {
  page.on('pageerror',e=>errors.push(e.message));
  page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
  await page.goto('http://127.0.0.1:'+port+'/index.html');
+ await page.locator('#tabs [data-tab="team"]').click();
  await page.locator('#myTeam').waitFor();
  const teamDropdowns=await page.locator('#teams select').count();
  if(teamDropdowns!==22)throw Error('22 Teams nicht geladen: '+teamDropdowns);
@@ -68,12 +69,19 @@ try {
  const scrollWidth=await page.evaluate(()=>document.documentElement.scrollWidth);
  const inner=await page.evaluate(()=>window.innerWidth);
  if(scrollWidth>inner+3)throw Error('Mobile horizontale Seitenverschiebung '+scrollWidth+' > '+inner);
+ await page.locator('#tabs [data-tab="race"]').click();
  await page.locator('#teamCount').fill('2');
  await page.locator('#teamCount').dispatchEvent('change');
+ await page.locator('#tabs [data-tab="team"]').click();
  await page.locator('#myStrategy').selectOption('offensiv');
- await page.locator('#run').click();
+ await page.locator('#quickRun').click();
+ await page.waitForFunction(()=>parseInt(document.querySelector('#racePct')?.textContent)>0,
+   undefined,{timeout:30000});
  await page.waitForFunction(()=>document.querySelector('#status')?.textContent?.includes('Rennen abgeschlossen'),
    undefined,{timeout:180000});
+ const firstProgress=await page.locator('#racePct').textContent();
+ const feedItems=await page.locator('#liveFeed li').count();
+ if(feedItems<2)throw Error('Liveticker ohne echte Zwischenstände');
  const rows=await page.locator('#results tr').count();
  if(rows!==14)throw Error('Kein echtes 14-Fahrer-Ergebnis: '+rows);
  const teamRiders=await page.locator('#teamRiders tr').count();
@@ -85,8 +93,10 @@ try {
  if(report<4)throw Error('Rennbericht fehlt');
  const smallStatus=await page.locator('#status').textContent();
  // Vollständiges Referenzfeld: echte Browser-Grenze einschließlich Worker.
+ await page.locator('#tabs [data-tab="race"]').click();
  await page.locator('#teamCount').fill('22');
  await page.locator('#teamCount').dispatchEvent('change');
+ await page.locator('#tabs [data-tab="live"]').click();
  await page.locator('#run').click();
  await page.waitForFunction(()=>document.querySelector('#status')?.textContent?.includes('Rennen abgeschlossen'),
    undefined,{timeout:240000});
@@ -100,13 +110,16 @@ try {
  const onlineResultRows=fullRows;
  await context.setOffline(true);
  await page.reload({waitUntil:'domcontentloaded'});
+ await page.locator('#tabs [data-tab="team"]').click();
  await page.locator('#myTeam').waitFor();
  await page.waitForFunction(()=>document.querySelector('#offlineInfo')?.textContent?.includes('Offline bereit'),
    undefined,{timeout:30000}).catch(async()=>{
      throw Error('Offline-Status nach Neustart: '+await page.locator('#offlineInfo').textContent());
    });
+ await page.locator('#tabs [data-tab="race"]').click();
  await page.locator('#teamCount').fill('2');
  await page.locator('#teamCount').dispatchEvent('change');
+ await page.locator('#tabs [data-tab="live"]').click();
  await page.locator('#run').click();
  await page.waitForFunction(()=>document.querySelector('#status')?.textContent?.includes('Rennen abgeschlossen'),
    undefined,{timeout:90000});
@@ -116,7 +129,8 @@ try {
  await page.screenshot({path:'rennlabor-mobile-smoke.png',fullPage:true});
  console.log(JSON.stringify({mobile:'Pixel 7 Chromium',teams:teamDropdowns,
    riderControls:controls,tacticControls,ownRiders,selectedCaptain,teamRiders,testFinishers:rows,fullFinishers:onlineResultRows,
-   offlineFinishers:offlineRows,cachedState,reportLines:report,scrollWidth,inner,smallStatus,fullStatus}));
+   offlineFinishers:offlineRows,cachedState,reportLines:report,firstProgress,feedItems,
+   scrollWidth,inner,smallStatus,fullStatus}));
 }finally{
  await browser?.close();await new Promise(ok=>server.close(ok));
 }
